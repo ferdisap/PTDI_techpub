@@ -54,5 +54,14 @@ trait Brdp
     return $result->saveXML();
   }
 
+  public function getDataModule(){
+    $xml_string = $this->get_xml_string('brdp/dmodule/br/tes.xml');
+    // $xml_doc = new DOMDocument();
+    // $xml_doc->loadXML($xml_string);
+    // // return $xml_string;
+    // return $xml_doc->saveXML();
+    return $xml_string;
+  }
+
   
 }

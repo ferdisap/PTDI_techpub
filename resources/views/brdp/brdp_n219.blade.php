@@ -37,7 +37,7 @@
       @foreach($lists as $list)
       {{-- @dd($list) --}}
       <tr id="{{ $list['id'] }}" onclick="{{ $list['tr_onclick'] }}">
-        <td>{!! $list['ident'] !!}</td>
+        <td onclick="{{ $list['td_ident_onclick'] }}">{!! $list['ident'] !!}</td>
         <td>{{ $list['title'] }}</td>
         <td>{{ $list['category'] }}</td>
         <td>{{ $list['audit'] }}</td>
