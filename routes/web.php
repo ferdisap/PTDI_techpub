@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrdpController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,7 +15,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome_N219_techpub', [
-      'foo' => 'foobar'
-    ]);
+    return view('welcome_N219_techpub');
 });
+
+Route::get('/brdp', [BrdpController::class, 'index']);
+Route::get('/brdp/{aircraft}', [BrdpController::class, 'detail']);
+
+// Route::get('/brdp/{aircraft}', function ($aircraft) {
+//   return view('brdp/brdp_' . $aircraft, [
+//     'title' => 'brdp ' . $aircraft
+//   ]);
+// });
