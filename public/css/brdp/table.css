@@ -9,10 +9,11 @@ th, td {
   padding-right: 0.25rem;
   border-left: 1px solid black;
   border-right: 1px solid black;
+  vertical-align: text-top;
 }
 
 th:nth-child(1){
-  min-width: 100px;
+  min-width: 130px;
   max-width: max-content;
 }
 th:nth-child(2){

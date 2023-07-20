@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="/css/bootstrap_5.2.0.min.css">
   @yield('styles')
   <script src="/js/bootstrap_5.2.0.min.js"></script>
-  @yield('scripts')
+  @yield('scripts_onTop')
   <title>{{ $title ?? 'N219 Techpub' }}</title>
 </head>
 <body>
   @yield('body')
+  @yield('scripts_onBottom')
 </body>

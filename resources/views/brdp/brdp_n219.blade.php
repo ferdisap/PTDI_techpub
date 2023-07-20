@@ -1,7 +1,4 @@
 @extends('html_head')
-@section('scripts')
-<script src="/js/brdp/brDoc.js"></script>
-@endsection
 @section('styles')
 <link rel="stylesheet" href="/css/brdp/table.css">
 @endSection
@@ -26,7 +23,7 @@
 </header>
 
 <article class="container d-flex justify-content-center">
-  <table>
+  <table id="brdpList-table">
     <thead>
       <tr>
         <th>Ident</th>
@@ -39,8 +36,8 @@
     <tbody>
       @foreach($lists as $list)
       {{-- @dd($list) --}}
-      <tr>
-        <td>{{ $list['ident'] }}</td>
+      <tr id="{{ $list['id'] }}" onclick="{{ $list['tr_onclick'] }}">
+        <td>{!! $list['ident'] !!}</td>
         <td>{{ $list['title'] }}</td>
         <td>{{ $list['category'] }}</td>
         <td>{{ $list['audit'] }}</td>
@@ -50,6 +47,8 @@
     </tbody>
   </table>
 </article>
+@endsection
 
-
+@section('scripts_onBottom')
+<script src="/js/brdp/brDoc.js"></script>
 @endsection
