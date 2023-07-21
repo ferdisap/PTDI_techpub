@@ -28,7 +28,7 @@ class BrdpController extends Controller
   {
     $lists = $this->getList();
 
-    return view('brdp/brdp_' . $aircraft, [
+    return view('brdp/brdp_' . $aircraft .'_table', [
       'title' => 'brdp ' . $aircraft,
       'lists' => $this->brdpListToArray($lists)
     ]);
