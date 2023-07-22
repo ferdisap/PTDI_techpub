@@ -13,7 +13,6 @@ const BrdpTable = {
     setTimeout(() => {
       window.location.hash = hash;
     }, 0);
-    console.log('done');
   },
   openDetail(brIdent, brDecisionId, trId, el) {
     if (!this.detailOpen.includes(trId)) {
@@ -72,25 +71,56 @@ BrdpTable.goToHash(window.location.hash);
 
 /** Object BRDP Search */
 const BrdpSearch = {
+
   evetListener(el, evt) {
     if (evt.keyCode === 13) { // enter button
       evt.preventDefault();
-      let searchInput = [];
-      document.querySelectorAll('.brdp_input_search').forEach(el => {
-        if (el.value != '') {
-          searchInput[el.getAttribute('filterBy')] = el.value;
+      /** script baru */
+      let searchFilterInput = document.querySelectorAll("input[filterBy]");
+      let searchInput = [[searchFilterInput[0]]];
+      let fb = document.querySelectorAll(`.filterSort`);
+      [1,2,3,4,5].forEach(no => {
+        let subSearchInput = [];
+        fb.forEach(el => {
+          if (el.value == no && el.nextElementSibling.value != ''){
+            subSearchInput.push(el.nextElementSibling);
+          }
+        });
+        if (subSearchInput.length > 0) {
+          searchInput.push(subSearchInput);
         }
       });
-      console.log(window.searchInput = searchInput);
-      this.runEngine(searchInput); // input value
+      this.runEngine(searchInput);
     }
   },
-  async runEngine(filterBy = []) {
+  async runEngine(searchInput = []) {
     let brDataModule = (BrdpTable.brDataModule != undefined ? await BrdpTable.brDataModule : this.createXML("brdp/dmodule/br/tes.xml", false));
     BrdpTable.brDataModule = brDataModule;
 
-    let XPathResult = this.evaluate(this.getXPath(filterBy), await brDataModule); // output object XPathResult
-    this.renderResult(XPathResult);
+    // 1. prepare array berisi urutan filter
+    let step_xpaths = this.getXPaths(searchInput);
+
+    // 2. untuk setiap item dalam urutan (index 1 adalah filter utama)
+    for (let i = 0; i < step_xpaths.length; i++) {
+        let xPathRes = this.evaluate(step_xpaths[i],brDataModule.firstElementChild); // output object XPathResult
+
+        let extractedNode = [];
+        for (let i = 0; i < xPathRes.snapshotLength; i++) {
+          let xmlNode = xPathRes.snapshotItem(i); // output = "<brPara>"
+          extractedNode.push(xmlNode);
+        }  
+          
+        // 4. delete all brPara in updatedDb
+        while (brDataModule.firstElementChild.firstElementChild){
+          brDataModule.firstElementChild.removeChild(brDataModule.firstElementChild.lastChild)
+        }
+
+        // 5. add brPara to brDataModule
+        for (let n = 0; n < extractedNode.length; n++) {
+            brDataModule.firstElementChild.appendChild(extractedNode[n]);
+        }
+    }
+    this.renderResult(brDataModule.firstElementChild);
   },
 
   removeArrayItemOnce(arr, value) {
@@ -101,39 +131,35 @@ const BrdpSearch = {
     return arr;
   },
 
-  setXpath(key, text) {
-    switch (key) {
+  setXpath(filterBy, text) {
+    let xpath_ident = `//@brDecisionPointUniqueIdent[contains(.,'${text}')]/ancestor::brPara`;
+    let xpath_title = `//brDecisionPointContent/title[contains(.,'${text}')]/ancestor::brPara`;
+    let xpath_category = `//@brCategoryNumber[contains(.,'${text}')]/ancestor::brPara | //brCategory[contains(.,'${text}')]/ancestor::brPara`;
+
+    switch (filterBy) {
       case 'ident':
-        return `//@brDecisionPointUniqueIdent[contains(.,'${text}')]/ancestor::brPara`;
+        return xpath_ident;
       case 'title':
-        return `//brDecisionPointContent/title[contains(.,'${text}')]/ancestor::brPara`;
+        return xpath_title;
       case 'category':
-        return `//@brCategoryNumber[contains(.,'${text}')]/ancestor::brPara | //brCategory[contains(.,'${text}')]/ancestor::brPara`;
+        return xpath_category;
+      case 'all':
+        return xpath_ident + ' | ' + xpath_title + ' | ' + xpath_category;
       default:
-        return;
+        return '';
     }
   },
 
-  getXPath(filterBy = [], text) {
-    let filters = ['all', 'ident', 'title', 'category'];
-    let xpath = [];
-    for (let ky in searchInput) {
-      xpath[ky] = this.setXpath(ky, searchInput[ky]);
-      this.removeArrayItemOnce(filters, ky)
-    }
-    if (searchInput['all'] != undefined) {
-      filters.forEach(filter => {
-        xpath[filter] = this.setXpath(filter, searchInput['all'])
+  getXPaths(searchInput = []) {
+    let xpaths = [];
+    for (let i = 0; i < searchInput.length; i++) {
+      let subXPaths = [];
+      searchInput[i].forEach(el => {
+        subXPaths.push(this.setXpath(el.getAttribute('filterBy'), el.value));
       });
-      delete xpath['all'];
+      xpaths.push(subXPaths.join(' | '));
     }
-    let finalXpath = [];
-    for (let ky in xpath) {
-      finalXpath.push(xpath[ky]);
-    }
-    finalXpath = finalXpath.join(' | ');
-    console.log('finalXpath', finalXpath);
-    return finalXpath;
+    return xpaths;
   },
   createXML(url) {
     let xhr = new XMLHttpRequest();
@@ -141,39 +167,40 @@ const BrdpSearch = {
     xhr.send(null);
     return xhr.responseXML;
   },
-  evaluate(xpath, xmlRef) {
-    const searchResult = xmlRef.evaluate(xpath, xmlRef, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  evaluate(xpath, xmlRef) {    
+    // xmlRef instanceof Node, jadi perlu dijadikan Document supaya bisa pakai fungsi evaluate(xpath)
+    let newXmlDoc = document.implementation.createDocument(null, 'dmodule');
+    newXmlDoc.firstElementChild.innerHTML = xmlRef.innerHTML;
+
+    // evaluate xpath terhadap xmlDoc
+    const searchResult = newXmlDoc.evaluate(xpath, newXmlDoc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     return searchResult;
   },
-  async renderResult(rootNode) { // to generate result
-    // prepare xslt processor khusus brList_search
+  async renderResult(rootNode) {    
     const xsltProcessor = new XSLTProcessor();
     let xslList_search = (BrdpTable.xslList_search != undefined ? BrdpTable.xslList_search : this.createXML("brdp/style/js/brList_search.xsl", false));
     BrdpTable.xslList_search = await xslList_search;
     xsltProcessor.importStylesheet(await xslList_search);
 
+    // rootNode berupa <root><brPara/>...<brPara/>...</root>
+    let nodes = rootNode.children;
     let innerHTMLTbody = '';
-    // ektrak hasil result dari object XPathResult
-    for (let i = 0; i < rootNode.snapshotLength; i++) {
-      let xmlNode = rootNode.snapshotItem(i); // output = "<brPara>"
-
-      // brPara hasil result akan di transform pakai xslt menghasilkan <tr>
-      let dom = xsltProcessor.transformToDocument(xmlNode);
+    for(let node of nodes){
+      let dom = xsltProcessor.transformToDocument(node);
       let tr = dom.getRootNode().firstChild
       innerHTMLTbody += tr.outerHTML
-    }
-
+    };
     // hapus semua tr dari tbody table brdp
     let oriTbody = document.querySelector('#brdpList-table tbody');
     oriTbody.remove();
 
-    // tambahkan tr baru yang diadapt dari search
+    // tambahkan tr baru yang didapat dari search
     let newTbody = document.createElement('tbody');
     newTbody.innerHTML = innerHTMLTbody;
     document.getElementById('brdpList-table').appendChild(newTbody);
 
     // menambahkan informasi total jumlah pencarian.
-    document.getElementById('totalSearchResult').innerHTML = rootNode.snapshotLength + " result(s) found.";
+    document.getElementById('totalSearchResult').innerHTML = nodes.length + " result(s) found.";
   }
 }
 

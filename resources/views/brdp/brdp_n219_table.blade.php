@@ -17,7 +17,7 @@
     </div>
     
     <div class="container mt-3 d-flex justify-content-center">
-      <input class="brdp_input_search form-control w-50" type="text" filterBy="all" placeholder="find everything of business rule.." aria-label="find business rule" onkeypress="BrdpSearch.evetListener(this,event)">
+      <input class="form-control w-50" type="text" filterBy="all" placeholder="find everything of business rule.." aria-label="find business rule" onkeypress="BrdpSearch.evetListener(this,event)">
     </div>
     <p id="totalSearchResult" class="mb-0 my-1"></p>
   </div>
@@ -35,16 +35,40 @@
           <th>Decision</th>
         </tr>
         <tr>
-          <td><input type="text" class="brdp_input_search" filterBy="ident" placeholder="search ident.." style="width: 100px"onkeypress="BrdpSearch.evetListener(this,event)"></td>
-          <td><input type="text" class="brdp_input_search" filterBy="title" placeholder="search title.."onkeypress="BrdpSearch.evetListener(this,event)"></td>
-          <td><input type="text" class="brdp_input_search" filterBy="category" placeholder="search category.."onkeypress="BrdpSearch.evetListener(this,event)"></td>
-          <td><input type="text" class="brdp_input_search" filterBy="audit" placeholder="search audit.."onkeypress="BrdpSearch.evetListener(this,event)"></td>
-          <td><input type="text" class="brdp_input_search" filterBy="decision" placeholder="search decision.."onkeypress="BrdpSearch.evetListener(this,event)"></td>
+          <td>
+            <div class="input-group">
+              <input type="number" class="filterSort input-group-text p-0" style="width: 30px" for="ident" id="" max="5" min="1" value="1">
+              <input type="text" class="form-control" filterBy="ident" placeholder="search ident.." onkeypress="BrdpSearch.evetListener(this,event)">
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="number" class="filterSort input-group-text p-0" style="width: 30px" for="title" id="" max="5" min="1" value="2">
+              <input type="text" class="form-control" filterBy="title" placeholder="search title.." onkeypress="BrdpSearch.evetListener(this,event)">
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="number" class="filterSort input-group-text p-0" style="width: 30px" for="category" id="" max="5" min="1" value="3">
+              <input type="text" class="form-control" filterBy="category" placeholder="search category.." onkeypress="BrdpSearch.evetListener(this,event)">
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="number" class="filterSort input-group-text p-0" style="width: 30px" for="audit" id="" max="5" min="1" value="4">
+              <input type="text" class="form-control" filterBy="audit" placeholder="search audit.." onkeypress="BrdpSearch.evetListener(this,event)">
+            </div>
+          </td>
+          <td>
+            <div class="input-group">
+              <input type="number" class="filterSort input-group-text p-0" style="width: 30px" for="decision" id="" max="5" min="1" value="5">
+              <input type="text" class="form-control" filterBy="decision" placeholder="search decision.." onkeypress="BrdpSearch.evetListener(this,event)">
+            </div>
+          </td>
         </tr>
       </thead>
       <tbody>
         @foreach($lists as $list)
-        {{-- @dd($list) --}}
         <tr id="{{ $list['id'] }}" onclick="{{ $list['tr_onclick'] }}" onmouseover="BrdpTable.changeBgColor(this)">
           <td>{!! $list['ident'] !!}</td>
           <td>{{ $list['title'] }}</td>

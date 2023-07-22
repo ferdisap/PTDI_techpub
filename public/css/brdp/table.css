@@ -38,6 +38,7 @@ thead > tr > th, thead > tr > td {
   background-color: rgb(178, 241, 252);
   height: 2.5rem;
   vertical-align: middle;
+  white-space: nowrap;
 }
 thead > tr > td {
   border-top: 1px solid black;
@@ -54,7 +55,9 @@ thead {
 tr{
   height: 2rem!important;
 }
-
+tbody td:nth-child(5) {
+  white-space: nowrap;
+}
 .brdp_detail{
   border: 1px solid black;
   width: 100%;
