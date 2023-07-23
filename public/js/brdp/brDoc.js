@@ -1,5 +1,10 @@
 console.log('brDoc');
 
+// let xhr = new XMLHttpRequest();
+// xhr.open('GET', "/brdp?utility=getfile&path=view/brdp/style/css/brDetail.css", false);
+// xhr.send(null);
+
+
 /** Object BRDP Table */
 const BrdpTable = {
   detailOpen: [],
@@ -94,10 +99,15 @@ const BrdpSearch = {
     }
   },
   async runEngine(searchInput = []) {
-    let brDataModule = (BrdpTable.brDataModule != undefined ? await BrdpTable.brDataModule : this.createXML("brdp/dmodule/br/tes.xml", false));
-    BrdpTable.brDataModule = brDataModule;
+    let db = (BrdpTable.brDataModule != undefined ? BrdpTable.brDataModule : this.createXML("dmodule/brdp/br_s1000d/DMC-N219-A-00-00-0000-00A-024A-D_001-00_EN-US.xml", false));
+    BrdpTable.brDataModule = db;
 
-    // 1. prepare array berisi urutan filter
+    let brDataModule = document.implementation.createDocument(null, 'dmodule');
+    brDataModule.firstElementChild.innerHTML = db.firstElementChild.innerHTML;
+
+    console.log('brDataModule',brDataModule);
+
+    // 1. prepare array berisi XPath (filter) berurutan
     let step_xpaths = this.getXPaths(searchInput);
 
     // 2. untuk setiap item dalam urutan (index 1 adalah filter utama)
@@ -108,7 +118,7 @@ const BrdpSearch = {
         for (let i = 0; i < xPathRes.snapshotLength; i++) {
           let xmlNode = xPathRes.snapshotItem(i); // output = "<brPara>"
           extractedNode.push(xmlNode);
-        }  
+        }
           
         // 4. delete all brPara in updatedDb
         while (brDataModule.firstElementChild.firstElementChild){
@@ -178,7 +188,7 @@ const BrdpSearch = {
   },
   async renderResult(rootNode) {    
     const xsltProcessor = new XSLTProcessor();
-    let xslList_search = (BrdpTable.xslList_search != undefined ? BrdpTable.xslList_search : this.createXML("brdp/style/js/brList_search.xsl", false));
+    let xslList_search = (BrdpTable.xslList_search != undefined ? BrdpTable.xslList_search : this.createXML("view/brdp/style/js/brList_search.xsl", false));
     BrdpTable.xslList_search = await xslList_search;
     xsltProcessor.importStylesheet(await xslList_search);
 
@@ -223,7 +233,7 @@ class BrdpDetail {
     return this.#xhr.responseXML;
   }
   async #getBrdpXML(brIdent) {
-    let brDataModule = (BrdpTable.brDataModule != undefined ? BrdpTable.brDataModule : this.#createXML("brdp/dmodule/br/tes.xml", false));
+    let brDataModule = (BrdpTable.brDataModule != undefined ? BrdpTable.brDataModule : this.#createXML("dmodule/brdp/br_s1000d/DMC-N219-A-00-00-0000-00A-024A-D_001-00_EN-US.xml", false));
     BrdpTable.brDataModule = brDataModule;
 
     let xPath = `//brPara[@brDecisionPointUniqueIdent = '${brIdent}']`;
@@ -231,7 +241,7 @@ class BrdpDetail {
     return evaluate.snapshotItem(0);
   }
   async #getDecisionXML(brDecisionId) {
-    let xmlDecision = (BrdpTable.xmlDecision != undefined ? BrdpTable.xmlDecision : this.#createXML("brdp/dmodule/br/" + brDecisionId + ".xml", false));
+    let xmlDecision = (BrdpTable.xmlDecision != undefined ? BrdpTable.xmlDecision : this.#createXML("dmodule/brdp/br_s1000d/decision/" + brDecisionId + ".xml", false));
     BrdpTable.xmlDecision = xmlDecision;
     return xmlDecision;
   }
@@ -242,7 +252,7 @@ class BrdpDetail {
     td.setAttribute('colspan', 5);
     td.style.border = 'inherit';
 
-    let xslDetail = (BrdpTable.xslDetail != undefined ? BrdpTable.xslDetail : this.#createXML("brdp/style/php/brDetail.xsl", false));
+    let xslDetail = (BrdpTable.xslDetail != undefined ? BrdpTable.xslDetail : this.#createXML("view/brdp/style/php/brDetail.xsl", false));
     BrdpTable.xslDetail = xslDetail;
     this.#xsltProcessor.importStylesheet(await xslDetail);
 

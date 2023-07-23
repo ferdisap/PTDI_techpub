@@ -14,7 +14,6 @@ class BrdpController extends Controller
   use Brdp;
   public function index()
   {
-    // dd(request()->utility == 'getfile');
     if (request()->utility == 'getfile'){
       return $this->getFile(request()->path);
     } else {

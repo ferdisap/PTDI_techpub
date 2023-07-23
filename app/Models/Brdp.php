@@ -32,7 +32,7 @@ trait Brdp
 
   public function getList()
   {
-    $xml_string = $this->get_xml_string('brdp/dmodule/br/tes.xml');
+    $xml_string = $this->get_xml_string('dmodule/brdp/br_s1000d/DMC-N219-A-00-00-0000-00A-024A-D_001-00_EN-US.xml');
     $xml_doc = new DOMDocument();
     $xml_doc->loadXML($xml_string);
 
@@ -43,7 +43,7 @@ trait Brdp
     // $entries = $xpath->evaluate($query, $collection);
     // dd($entries->item(0));
 
-    $xsl_string = $this->get_xml_string('brdp/style/php/brList.xsl');
+    $xsl_string = $this->get_xml_string('view/brdp/style/php/brList.xsl');
     $xsl_doc = new DOMDocument();
     $xsl_doc->loadXML($xsl_string);
 
@@ -55,7 +55,7 @@ trait Brdp
   }
 
   public function getDataModule(){
-    $xml_string = $this->get_xml_string('brdp/dmodule/br/tes.xml');
+    $xml_string = $this->get_xml_string('brdp/dmodule/br/DMC-N219-A-00-00-0000-00A-024A-D_001-00_EN-US.xml');
     // $xml_doc = new DOMDocument();
     // $xml_doc->loadXML($xml_string);
     // // return $xml_string;

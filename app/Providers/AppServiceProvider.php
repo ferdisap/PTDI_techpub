@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    $path_included = base_path() . DIRECTORY_SEPARATOR . 'techpub' . DIRECTORY_SEPARATOR;
+    $path_included = base_path() . DIRECTORY_SEPARATOR . 'ietp' . DIRECTORY_SEPARATOR;
     set_include_path(get_include_path() . PATH_SEPARATOR . $path_included);
   }
 }
