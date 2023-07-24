@@ -14,7 +14,8 @@ return [
     */
 
     'paths' => [
-        resource_path('views'),
+      base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR,
+      resource_path('views'),
     ],
 
     /*

@@ -5,23 +5,25 @@
     @include('navbar')
   </header>
   <main>
-    <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
-      <div class="carousel-inner">
-        @for ($i = 1; $i <= 8; $i++)
-          <div class="carousel-item {{$i == 1 ? 'active' : ''}}">
-            <img src="images/n219_images/0{{ $i }}.jpg" class="d-block w-100" alt="N219" style="height:300px;object-fit:none">
-          </div>
-        @endfor
+    <div class="d-flex justify-content-center w-100">
+      <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel" style="width:1000px">
+        <div class="carousel-inner">
+          @for ($i = 1; $i <= 8; $i++)
+            <div class="carousel-item {{$i == 1 ? 'active' : ''}}">
+              <img src="images/n219_images/0{{ $i }}.jpg" class="d-block w-100" alt="N219" style="height:300px;object-fit:none">
+            </div>
+          @endfor
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        <div class="d-flex justify-content-center w-100 bg-black text-white fs-6 py-1 fst-normal">- PT Dirgantara Indonesia -</div>
       </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-      <div class="d-flex justify-content-center w-100 bg-black text-white fs-6 py-1 fst-normal">- PT Dirgantara Indonesia -</div>
     </div>
 
     <section>
@@ -48,7 +50,7 @@
           <div class="card-body">
             <h5 class="card-title">Business Rule Exchange Index</h5>
             <p class="card-text">The summary of rules for validation of each realising publication.</p>
-            <a href="#" class="btn btn-primary">Details</a>
+            <a href="/brex" class="btn btn-primary">Details</a>
           </div>
         </div>
         <div class="card mx-3" style="width: 18rem;">

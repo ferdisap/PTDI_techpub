@@ -12,7 +12,7 @@ use XMLParser;
 class BrdpController extends Controller
 {
   use Brdp;
-  public function index()
+  public function indexBrdp()
   {
     if (request()->utility == 'getfile'){
       return $this->getFile(request()->path);
@@ -23,7 +23,7 @@ class BrdpController extends Controller
     }
   }
 
-  public function detail($aircraft)
+  public function table($aircraft)
   {
     $lists = $this->getList();
 

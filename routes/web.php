@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\BrdpController;
+use App\Http\Controllers\BrexController;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,12 +16,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome_N219_techpub');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+Route::get('/', [Controller::class, 'index']);
 
-Route::get('/brdp', [BrdpController::class, 'index']);
-Route::get('/brdp/{aircraft}', [BrdpController::class, 'detail']);
+Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
+Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
+
+Route::get('/brex', [BrexController::class, 'indexBrex']);
+Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
 
 // Route::get('/brdp/{aircraft}', function ($aircraft) {
 //   return view('brdp/brdp_' . $aircraft, [
