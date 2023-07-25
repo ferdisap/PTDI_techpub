@@ -34,6 +34,10 @@ class Controller extends BaseController
         return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
           'Content-Type' => 'image/jpeg'
         ]);
+      case 'css':
+        return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
+          'Content-Type' => 'text/css'
+        ]);
       case 'html':
         return view('brex/index');
       case 'javascript':

@@ -24,7 +24,7 @@ class BrexController extends Controller
     // Blade::setPath(base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR);
     // dd(Blade::getPath());
     // dd(__DIR__.'/../components');
-    return view('brex/brex_' . $aircraft .'_table', [
+    return view('brex/brex_' . $aircraft .'_index', [
       'title' => 'brex ' . $aircraft,
       // 'lists' => $this->brdpListToArray($lists)
     ]);
