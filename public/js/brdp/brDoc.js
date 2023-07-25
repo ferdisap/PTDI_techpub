@@ -241,8 +241,7 @@ class BrdpDetail {
     return evaluate.snapshotItem(0);
   }
   async #getDecisionXML(brDecisionId) {
-    let xmlDecision = (BrdpTable.xmlDecision != undefined ? BrdpTable.xmlDecision : this.#createXML("dmodule/brdp/br_s1000d/decision/" + brDecisionId + ".xml", false));
-    BrdpTable.xmlDecision = xmlDecision;
+    let xmlDecision = await this.#createXML("dmodule/brdp/br_s1000d/decision/" + brDecisionId + ".xml", false);
     return xmlDecision;
   }
   async renderBrdptoContainer(containerId) {
