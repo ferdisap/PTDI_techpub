@@ -2,10 +2,10 @@
   <div class="container-fluid row">
     <a class="navbar-brand text-white col">Technical Publication</a>
 
-    <div class="col">
-      <a class="navbar-brand text-white col">Home</a>
-      <a class="navbar-brand text-white col">About</a>
-      <a class="navbar-brand text-white col">Contact</a>
+    <div class="col d-flex justify-content-center">
+      <a class="navbar-brand text-white">Home</a>
+      <a class="navbar-brand text-white">About</a>
+      <a class="navbar-brand text-white">Contact</a>
     </div>
 
     <form class="d-flex col" role="search">

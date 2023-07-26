@@ -11,11 +11,11 @@ use XMLParser;
 
 class BrdpController extends Controller
 {
-  use Brdp;
+  // use Brdp;
   public function indexBrdp()
   {
     if (request()->utility == 'getfile'){
-      return $this->getFile(request()->path);
+      return $this->getFile(request()->path, request()->ct);
     } else {
       return view('brdp/brdp_index', [
         'title' => 'BRDP Index'
@@ -25,40 +25,41 @@ class BrdpController extends Controller
 
   public function table($aircraft)
   {
-    $lists = $this->getList();
+    // $lists = $this->getList();
 
     return view('brdp/brdp_' . $aircraft .'_table', [
       'title' => 'brdp ' . $aircraft,
-      'lists' => $this->brdpListToArray($lists)
+      // 'lists' => $this->brdpListToArray($lists)
     ]);
   }
 
-  private function getFile($path){
-    return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
-      'Content-Type' => 'application/xml'
-    ]);
-  }
+  // private function getFile($path){
+  //   return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
+  //     'Content-Type' => 'application/xml'
+  //   ]);
+  // }
 
-  private function brdpListToArray($xml_list = null)
-  {
-    $xml_doc = new DOMDocument();
-    $xml_doc->loadXML($xml_list);
-
-    $lists = $xml_doc->getElementsByTagName('list');
-    $a = [];
-    foreach ($lists as $li) {
-      // dd($li->attributes->item(3));
-      $a[$li->getAttribute('no')] = [
-        'id' => $li->getAttribute('id'),
-        'tr_onclick' => $li->getAttribute('tr_onclick'),
-        'td_ident_onclick' => $li->getAttribute('td_ident_onclick'),
-        'ident' => simplexml_import_dom($li->getElementsByTagName('ident')->item(0)->firstChild)->asXML(),
-        'title' => $li->getElementsByTagName('title')->item(0)->textContent,
-        'category' => $li->getElementsByTagName('category')->item(0)->textContent,
-        'audit' => $li->getElementsByTagName('audit')->item(0)->textContent,
-        'decision' => $li->getElementsByTagName('decision')->item(0)->textContent,
-      ];
-    }
-    return $a;
-  }
+  // private function brdpListToArray($xml_list = null)
+  // {
+  //   $xml_doc = new DOMDocument();
+  //   $xml_doc->loadXML($xml_list);
+    
+  //   dd($xml_doc);
+  //   $lists = $xml_doc->getElementsByTagName('list');
+  //   $a = [];
+  //   foreach ($lists as $li) {
+  //     // dd($li->attributes->item(3));
+  //     $a[$li->getAttribute('no')] = [
+  //       'id' => $li->getAttribute('id'),
+  //       'tr_onclick' => $li->getAttribute('tr_onclick'),
+  //       'td_ident_onclick' => $li->getAttribute('td_ident_onclick'),
+  //       'ident' => simplexml_import_dom($li->getElementsByTagName('ident')->item(0)->firstChild)->asXML(),
+  //       'title' => $li->getElementsByTagName('title')->item(0)->textContent,
+  //       'category' => $li->getElementsByTagName('category')->item(0)->textContent,
+  //       'audit' => $li->getElementsByTagName('audit')->item(0)->textContent,
+  //       'decision' => $li->getElementsByTagName('decision')->item(0)->textContent,
+  //     ];
+  //   }
+  //   return $a;
+  // }
 }
