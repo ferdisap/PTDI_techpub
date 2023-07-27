@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Controller::class, 'index']);
 // Route::get('/{anything}', [Controller::class, 'anything']);
+// Route::get('/generateAllStyle', [Controller::class, 'generateAllStyle']);
+
 
 Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
 Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
