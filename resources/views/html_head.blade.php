@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="/css/bootstrap_5.2.0.min.css">
   @yield('styles')
-  <script src="/js/bootstrap_5.2.0.min.js"></script>
+  <script src="/js/bootstrap_5.3.1.bundel.min.js"></script>
   @yield('scripts_onTop')
   <title>{{ $title ?? 'N219 Techpub' }}</title>
 </head>

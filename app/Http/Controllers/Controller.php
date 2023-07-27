@@ -49,4 +49,15 @@ class Controller extends BaseController
         return false;
     }
   }
+
+  public function anything(Request $request)
+  {
+    $pathInfo = $request->getPathInfo();
+
+    if(strpos($pathInfo,'.xsl')){
+      return $this->getfile('view/general/xsl' . $pathInfo, 'xml');
+    } else {
+      return $this->index($request);
+    }
+  }
 }

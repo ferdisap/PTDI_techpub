@@ -16,10 +16,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
 Route::get('/', [Controller::class, 'index']);
+// Route::get('/{anything}', [Controller::class, 'anything']);
 
 Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
 Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
@@ -27,8 +25,3 @@ Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
 Route::get('/brex', [BrexController::class, 'indexBrex']);
 Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
 
-// Route::get('/brdp/{aircraft}', function ($aircraft) {
-//   return view('brdp/brdp_' . $aircraft, [
-//     'title' => 'brdp ' . $aircraft
-//   ]);
-// });
