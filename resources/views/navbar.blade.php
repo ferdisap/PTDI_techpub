@@ -3,7 +3,7 @@
     <a class="navbar-brand text-white col">Technical Publication</a>
 
     <div class="col d-flex justify-content-center">
-      <a class="navbar-brand text-white">Home</a>
+      <a class="navbar-brand text-white" href="/">Home</a>
       <a class="navbar-brand text-white">About</a>
       <a class="navbar-brand text-white">Contact</a>
     </div>
