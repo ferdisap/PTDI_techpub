@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Log;
 
 class Controller extends BaseController
 {
@@ -27,6 +28,7 @@ class Controller extends BaseController
 
   private function getfile($path,$ct)
   {
+    Log::notice($path);
     switch ($ct) {
       case 'xml':
         return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [

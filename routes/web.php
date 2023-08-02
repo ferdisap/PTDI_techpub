@@ -27,3 +27,7 @@ Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
 Route::get('/brex', [BrexController::class, 'indexBrex']);
 Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
 
+Route::get('/refreshLocalStorage', function(){
+  return view('general.refreshLocalStorage');
+});
+
