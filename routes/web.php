@@ -31,3 +31,7 @@ Route::get('/refreshLocalStorage', function(){
   return view('general.refreshLocalStorage');
 });
 
+Route::get('tesxsl', function(){
+  return view('general.test.testxsl');
+});
+
