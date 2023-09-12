@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\BrdpController;
-use App\Http\Controllers\BrexController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DmoduleController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,10 +16,26 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 Route::get('/', [Controller::class, 'index']);
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
+
+// Route::get('/', [Controller::class, 'index']);
 // Route::get('/{anything}', [Controller::class, 'anything']);
 // Route::get('/generateAllStyle', [Controller::class, 'generateAllStyle']);
-
 
 Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
 Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
@@ -31,7 +47,9 @@ Route::get('/refreshLocalStorage', function(){
   return view('general.refreshLocalStorage');
 });
 
+Route::get("/dmodule", [DmoduleController::class, 'indexDmodule']);
+Route::post("/dmodule/validate", [DmoduleController::class, 'validate'])->name('validate-dmodule');
+
 Route::get('tesxsl', function(){
   return view('general.test.testxsl');
 });
-

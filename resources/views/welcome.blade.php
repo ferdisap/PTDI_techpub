@@ -5,6 +5,7 @@
     @include('navbar')
   </header>
   <main>
+    <x-auth-session-status class="mb-4" :status="session('status')" />
     <div class="d-flex justify-content-center w-100">
       <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel" style="width:1000px">
         <div class="carousel-inner">
