@@ -1,0 +1,84 @@
+table {
+  border-collapse: collapse;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  height: inherit;
+  width: 1000px;
+}
+
+thead {
+  display: block;
+}
+
+tbody {
+  display: block;
+  width: inherit;
+  overflow: auto;
+  height: inherit;
+}
+
+tbody th, tbody td:last-child {
+  white-space: nowrap;
+}
+
+td, th {
+  border: 1px solid rgb(190, 190, 190);
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+th[scope='col'] {
+  background-color: #696969;
+  color: #fff;
+}
+
+th[scope='row'] {
+  background-color: #d7d9f2;
+}
+
+th:nth-child(1), th:nth-child(5){
+  width: 150px !important;
+  text-align: center;
+}
+th:nth-child(2), tbody > tr > td:nth-child(2) {
+  width: 400px !important;
+}
+th:nth-child(3), tbody > tr > td:nth-child(3) {
+  width: 130px !important;
+  text-align: center;
+}
+th:nth-child(4), tbody > tr > td:nth-child(4) {
+  width: 170px !important;
+  text-align: center;
+}
+
+
+li>p {
+  margin: 0;
+}
+
+.mt-minus-1 {
+  margin-top: -0.25rem !important;
+}
+
+.mt-minus-2 {
+  margin-top: -0.5rem !important;
+}
+
+.mt-minus-3 {
+  margin-top: -1rem !important;
+}
+
+.mt-minus-4 {
+  margin-top: -1.5rem !important;
+}
+
+.mt-minus-5 {
+  margin-top: -3rem !important;
+}
+
+.flex-inherit{
+  flex: inherit !important;
+}

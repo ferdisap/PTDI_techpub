@@ -55,11 +55,11 @@
           </div>
         </div>
         <div class="card mx-3" style="width: 18rem;">
-          <div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:5rem;font-weight:700">DMRL</div>
+          <div style="height:100px;display:flex;align-items:center;justify-content:center;font-size:5rem;font-weight:700">DML</div>
           <div class="card-body">
             <h5 class="card-title">Data Management List</h5>
             <p class="card-text">Manage all data modules required to grouped by each publication type.</p>
-            <a href="#" class="btn btn-primary">Details</a>
+            <a href="/dml" class="btn btn-primary">Details</a>
           </div>
         </div>
       </div>

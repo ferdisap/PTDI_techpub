@@ -30,8 +30,6 @@ class AuthenticatedSessionController extends Controller
 
     $request->session()->regenerate();
 
-    dump(session()->all());
-
     $previous_route = app('router')->getRoutes()->match($request->create(url()->previous()));
     if(in_array('guest', $previous_route->gatherMiddleware())){
       return redirect()->intended(RouteServiceProvider::HOME);
