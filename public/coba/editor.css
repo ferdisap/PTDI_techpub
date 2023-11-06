@@ -1,0 +1,7 @@
+para {
+  border: 1px solid red;
+  display: block;
+  min-height: 10px;
+  width: fit-content;
+  min-width: 100px;
+}

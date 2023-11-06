@@ -25,6 +25,10 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .dump_red{
+      border:1px solid red;
+    }
   </style>
 
   @yield('styles')
@@ -35,7 +39,7 @@
 
   <title>{{ $title ?? 'N219 Techpub' }}</title>
 </head>
-<body>
+<body class="lead">
 
   <template id="loading_buffer">
     <div style="

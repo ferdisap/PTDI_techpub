@@ -1,4 +1,4 @@
-<nav class="navbar bg-body-tertiary bg-primary bg-gradient">
+<nav class="navbar bg-body-tertiary {{ Auth::check() ? 'bg-primary' : 'bg-warning' }} bg-gradient">
   <div class="container-fluid row">
     <div class="navbar-brand text-white col">
       <a class="navbar-brand text-white fs-2">Technical Publication</a>

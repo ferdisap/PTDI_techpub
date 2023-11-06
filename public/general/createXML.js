@@ -1,5 +1,5 @@
 // function createXML(create = [null, 'root'], method = 'GET', url ="", utility = 'getfile', ct = 'xml', path = "", ){
-function createXML(create = [null, 'root'], path = null, method = null,){
+function createXML(create = [null, 'root'], path = null, method = 'GET',){
 
   if (method == null && path == null){
     let namespace = create[0];

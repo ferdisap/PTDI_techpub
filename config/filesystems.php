@@ -71,6 +71,8 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        // public_path('ietp_n219/csdb/multimedia') => base_path('ietp_n219/csdb/multimedia'),
+        public_path('ietp_n219/assets') => base_path('ietp_n219/assets'),
     ],
 
 ];

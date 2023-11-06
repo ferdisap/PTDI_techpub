@@ -11,7 +11,8 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('users_sqlite')->create('users', function (Blueprint $table) {
+    // Schema::connection('users_sqlite')->create('users', function (Blueprint $table) {
+    Schema::connection('sqlite')->create('users', function (Blueprint $table) {
       $table->id();
       $table->string('name');
       $table->string('email')->unique();
@@ -27,6 +28,7 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::connection('users_sqlite')->dropIfExists('users');
+    // Schema::connection('users_sqlite')->dropIfExists('users');
+    Schema::connection('sqlite')->dropIfExists('users');
   }
 };

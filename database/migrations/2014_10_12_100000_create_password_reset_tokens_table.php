@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::connection('users_sqlite')->create('password_resets', function (Blueprint $table) {
+        // Schema::connection('users_sqlite')->create('password_resets', function (Blueprint $table) {
+        Schema::connection('sqlite')->create('password_resets', function (Blueprint $table) {
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
@@ -27,6 +28,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::connection('users_sqlite')->dropIfExists('password_resets');
+        // Schema::connection('users_sqlite')->dropIfExists('password_resets');
+        Schema::connection('sqlite')->dropIfExists('password_resets');
     }
 };

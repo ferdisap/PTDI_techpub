@@ -17,6 +17,11 @@ Route::get("requestFile/{aircraft}/{filename?}", function(Request $request, stri
     'view-brex' => DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR.'business_rule'.DIRECTORY_SEPARATOR.'brex',
 
     'general-xsl' => DIRECTORY_SEPARATOR.'view'.DIRECTORY_SEPARATOR. 'general'. DIRECTORY_SEPARATOR. 'xsl',
+
+    'dump' =>  DIRECTORY_SEPARATOR.'dump',
+    'multimedia' => DIRECTORY_SEPARATOR. 'csdb'. DIRECTORY_SEPARATOR. 'multimedia',
+
+    'tesxsl' => DIRECTORY_SEPARATOR.'view/general/test',
   ];
   $dataType = $request->dataType;
   $path = base_path().DIRECTORY_SEPARATOR.'ietp_'.$aircraft.(isset($available_dataType[$dataType]) ? $available_dataType[$dataType] : '');

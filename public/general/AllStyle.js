@@ -19,7 +19,7 @@ const AllStyle = {
       // jika refresh == true
       // let arr = await createXML(null,"GET", "", 'requestList', 'json');
       // let arr = await createXML(null, "refreshLocalStorage/requestList", "GET",);
-      let arr = await createXML(null, "/requestList", "GET",);
+      let arr = await createXML(null, "/generateAllStyle/n219", "GET",);
       
     
       let xsl;
