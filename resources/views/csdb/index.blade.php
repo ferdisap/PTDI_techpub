@@ -7,10 +7,10 @@
     @include('navbar')
   </header>
 
-  @include('csdb.components.info')
+  @include('project.components.info')
 
   <div class="d-flex">
-    @include ('csdb.aside')
+    @include ('project.aside')
   
     <section>
       <div>
@@ -18,43 +18,44 @@
         <ol>
           <li><a href="/csdb?mic=male">MALE</a></li>
           <li><a href="/csdb?mic=n219">N219</a></li>
-          <li><a href="/csdb?mic=multimedia">multimedia</a></li>
+          <li><a href="/csdb?mic=entity">entity</a></li>
         </ol>
       </div>
       @if(isset($listsobj))
       <table>
+        
         <thead class="border-bottom">
           <tr>
             <th>Filename</th>
             <th>Status</th>
             <th>Action</th>
             <th>Description</th>
+            <th>Initiator</th>
           </tr>
         </thead>
         <tbody>
           @foreach($listsobj as $obj)
-          @php
-          $filename = preg_replace("/.+\//","",$obj->path);
-          $status = $obj->status;
-          $description = $obj->description;
-          @endphp
-          <tr>
-            <td><a href="/csdb/object/update?filename={{ $filename }}">{{ $filename }}</a></td>
-            <td><a href="/csdb?mic={{ $mic }}&status={{ $status }}">{{ $status }}</a></td>
+            @php
+            $filename = $obj->filename;
+            $status = $obj->status;
+            $description = $obj->description;
+            @endphp
+            <tr>
+              <td><a href="/csdb/object/update?filename={{ $filename }}">{{ $filename }}</a></td>
+              <td><a href="?status={{ $status }}">{{ $status }}</a></td>
 
-            <td class="d-flex">
-              @if($mic != 'multimedia')
-              <button><a href="/csdb/object/update?filename={{ $filename }}">update</a></button>
-              @endif
-              <form action="/csdb/object/delete" method="post">
-                @csrf
-                <input type="hidden" name="filename" value="{{ $filename }}">
-                <button type="submit" class="underline">delete</button>
-              </form>
-            </td>
+              <td class="d-flex">
+                <button><a href="/csdb/object/update?filename={{ $filename }}">update</a></button>
+                <form action="/csdb/object/delete" method="post">
+                  @csrf
+                  <input type="hidden" name="filename" value="{{ $filename }}">
+                  <button type="submit" class="underline">delete</button>
+                </form>
+              </td>
 
-            <td>{{ $description }}</td>
-          </tr>
+              <td>{{ $description }}</td>
+              <td><a href="?initiator={{ $obj->initiator->email }}">{{ $obj->initiator->email }}</a></td>
+            </tr>
           @endforeach
         </tbody>
       </table>

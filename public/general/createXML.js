@@ -11,6 +11,7 @@ function createXML(create = [null, 'root'], path = null, method = 'GET',){
 
     let prom = new Promise((resolve,reject) => {
       // xhr.open(method, `${url}/?utility=${utility}&ct=${ct}&path=${path}` , false); 
+      console.log(path);
       xhr.open(method, path, false);
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {

@@ -1,10 +1,18 @@
 @props([
-  'xmleditor' => $xmleditor ?? request()->old('xmleditor')
+  'use_xmleditor' => true,
+  'xmleditor' => $xmleditor ?? request()->old('xmleditor'),
+  'button',
+  'button2',
 ])
 <div class="border">
-  <h5>XML Data Module Editor</h5>
-  <textarea name="xmleditor" id="xmleditor">{{ $xmleditor }}</textarea>
-  <button type="submit" class="float-end">{{ $button }}</button>
+  @if($use_xmleditor)
+    <h5>XML Data Module Editor</h5>
+    <textarea name="xmleditor" id="xmleditor">{{ request()->old('xmleditor') ?? $xmleditor }}</textarea>
+  @endif
+  <button type="submit" class="float-end" name="button" value="{{ $button }}">{{ $button }}</button>
+  @if(isset($button2))
+  <button type="submit" class="float-end" name="button" value="{{ $button2 }}">{{ $button2 }}</button>
+  @endif
 </div>
 
 @section('scripts_onTop')

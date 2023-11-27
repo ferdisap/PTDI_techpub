@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\DmoduleController;
 use App\Http\Controllers\BrexController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Html2Pdf;
@@ -66,8 +68,9 @@ Route::get('/editor', function(){
 
 // require __Dir__."/tcpdf/tcpdf.php";
 require __Dir__."/csdb/general.php";
+require __Dir__."/csdb/service.php";
+require __Dir__."/project/general.php";
 
-// Route::get()
 
 
 

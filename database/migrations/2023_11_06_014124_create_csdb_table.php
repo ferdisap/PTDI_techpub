@@ -8,18 +8,24 @@ return new class extends Migration
 {
   /**
    * Run the migrations.
+   * seeded: file exist in local, but not in database
+   * initiated: file is created by user upload project metadata
    */
   public function up(): void
   {
     // Schema::connection('techpub_sqlite')->dropIfExists('csdb');
     Schema::connection('sqlite')->create('csdb', function (Blueprint $table) {
-      $table->id();
+      $table->ulid('id')->primary();
+      $table->string('filename')->unique();
       $table->string('path');
-      $table->string('status'); // new/changed/deleted
+      $table->string('status'); // new/modified/deleted + seeded/initiated/
       $table->text('description')->nullable();
+      $table->boolean('editable'); // yes(1) or no(0)
       $table->integer('initiator_id');
+      $table->integer('project_name');
       $table->timestamps();
     });
+
   }
 
   /**

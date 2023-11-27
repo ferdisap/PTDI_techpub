@@ -23,8 +23,8 @@ const AllStyle = {
       
     
       let xsl;
-      // await createXML(["http://www.w3.org/1999/XSL/Transform", 'xsl:stylesheet'], null).then(doc => xsl = doc);  
-      await createXML(["http://www.w3.org/1999/XSL/Transform", 'xsl:stylesheet']).then(doc => xsl = doc);  
+      // await createXML(["http://www.w3.org/1999/XSL/Transform", 'xsl:stylesheet'], null).then(doc => xsl = doc);
+      await createXML(["http://www.w3.org/1999/XSL/Transform", 'xsl:stylesheet'],null,null).then(doc => xsl = doc);  
   
       new Promise(async (resolve) => {
         arr.forEach(async (file, i) => {
