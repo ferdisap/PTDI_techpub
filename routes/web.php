@@ -71,6 +71,8 @@ require __Dir__."/csdb/general.php";
 require __Dir__."/csdb/service.php";
 require __Dir__."/project/general.php";
 
+Route::get('/route/{name}', [Controller::class, 'route']);
+
 
 
 

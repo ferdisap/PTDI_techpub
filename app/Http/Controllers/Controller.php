@@ -96,13 +96,14 @@ class Controller extends BaseController
   //   }
   // }
 
-  public static function get_file(string $path, string $filename = ''){
+  public static function get_file(string $path, string $filename = '', bool $all = false){
     $exclude = array('.','..','.git','.gitignore');
     // $arr = array_diff(scandir($dir), $exclude);
     if($path && $filename){
       $file = file_get_contents($path.DIRECTORY_SEPARATOR.$filename, FILE_USE_INCLUDE_PATH);
       return [$file, mime_content_type($path.DIRECTORY_SEPARATOR.$filename)];
     }
+    // elseif($path){
     elseif($path){
       $list = array();
       $ls = array_diff(scandir($path), $exclude);
@@ -113,5 +114,37 @@ class Controller extends BaseController
       }
       return $list;
     }
+  }
+
+  /**
+   * all returned array contains path is relative path
+   */
+  public static function searchFile(string $path, string $filename = '', bool $getFile = false)
+  {
+    $exclude = array('.','..','.git','.gitignore');
+    $list = array();
+    foreach(array_diff(scandir($path), $exclude) as $l){
+      if(is_dir($path."/".$l)){
+        $x = self::searchFile($path."/".$l); // get file
+        $x = array_map((fn($v) => $l."/".$v), $x); // agar jadi relative path
+        $list = array_merge($list, $x);
+      } else {
+        $list[] = $l;
+      }
+    }
+    if($filename){
+      $text =  array_values(array_filter($list, fn($v) => str_contains($v, $filename)))[0];
+      if($getFile){
+        return file_get_contents($path. DIRECTORY_SEPARATOR. $text);
+      } else {
+        return $text;
+      }
+    }
+    return $list;
+  }
+
+  public function route(Request $request, string $name)
+  {
+    return redirect()->route($name, $request->all());
   }
 }

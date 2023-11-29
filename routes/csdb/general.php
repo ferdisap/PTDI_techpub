@@ -24,7 +24,7 @@ Route::get("/csdb/object/update", [CsdbController::class, 'getupdate'])->middlew
 
 Route::post("/csdb/object/update", [CsdbController::class, 'postupdate'])->middleware('auth')->name('get_update_csdb_object'); // update_csdb_object
 
-Route::post('/csdb/object/delete', [CsdbController::class, 'delete'])->middleware('auth')->name('delete_csdb_object');
+Route::post('/csdb/object/delete', [CsdbController::class, 'postdelete'])->middleware('auth')->name('delete_csdb_object');
 
 Route::get('/csdb/object/detail', [CsdbController::class, 'getdetail'])->middleware('auth')->name('get_detail_csdb_object');
 

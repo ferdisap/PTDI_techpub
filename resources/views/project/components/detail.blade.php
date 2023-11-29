@@ -6,7 +6,7 @@
     <a href="{{ route('get_create_csdb_object') }}?project=MALE">Create New Object</a>
   </div>
 
-  @foreach($pr->csdb()->get() as $csdb)
+  @foreach($pr->csdb()->where('status','!=', 'deleted')->get() as $csdb)
     @php
     $filename = $csdb->filename; 
     @endphp

@@ -3,13 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\Csdb;
+use DOMDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\Pdf2\Applicability;
+use XSLTProcessor;
 
 class CsdbServiceController extends CsdbController
 {
+  use Applicability;
+
+  public function provide_csdb_transform(Request $request)
+  {
+    $filename = $request->filename;
+    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
+    $type = $csdb_dom->firstElementChild->tagName;
+
+    if($type != 'dml'){
+      $appl = (MpubCSDB::getApplicability($csdb_dom, storage_path("app/{$csdb_model->path}")));
+      if($err = MpubCSDB::get_errors(true, 'getApplicability')){
+        $appl = json_encode($err);
+      }
+      $appl = $this->getApplicability('','first', true, $appl);
+    } else {
+      $appl = '';
+    }
+
+
+    $utility = $request->get('utility');
+
+    $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/{$type}.xsl"));
+    $xsltproc = new XSLTProcessor;
+    $xsltproc->importStylesheet($xsl);
+
+    $xsltproc->registerPHPFunctions((function(){
+      return array_map(fn($name) => MpubCSDB::class."::$name", get_class_methods(MpubCSDB::class));
+    })());
+    $xsltproc->setParameter('','filename', $filename);
+    $xsltproc->setParameter('','applicability', $appl);
+    $xsltproc->setParameter('','absolute_path_csdb_input', $appl);
+    $transformed = $xsltproc->transformToDoc($csdb_dom);
+    
+    return Response::make($transformed->saveHTML(),200,['Content-Type' => 'text/html']);
+  }
+
+  public function provide_csdb_xsl(Request $request)
+  {
+    if(!($filename = $request->get('filename'))){
+      abort(400, 'filename is required');
+    }
+
+    $xsl = Controller::searchFile(resource_path("views/csdb"), $filename);
+    $txt = file_get_contents(resource_path("views/csdb").DIRECTORY_SEPARATOR.$xsl);
+    $mime = mime_content_type(resource_path("views/csdb").DIRECTORY_SEPARATOR.$xsl);
+
+    return Response::make($txt, 200, ['Content-Type' => $mime]);
+  }
 
   public function provide_csdb_js(Request $request)
   {

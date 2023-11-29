@@ -30,6 +30,7 @@ class CsdbController extends Controller
    */
   public function postcreate(Request $request)
   {
+    // dd($request->all());
     // validate form
     if(!($project = Project::find($request->get('project_name')))){
       Project::setFailMessage(['There is no such project name'],'project_name');
@@ -246,28 +247,29 @@ class CsdbController extends Controller
     }
   }
 
-  public function delete(Request $request)
+  public function postdelete(Request $request)
   {
     $user_id = $request->user()->id;
     $filename = $request->get('filename');
-    $csdb_object = ModelsCsdb::where('path', 'like', "%{$filename}")->latest('updated_at');
+    // $csdb_object = ModelsCsdb::where('path', 'like', "%{$filename}")->latest('updated_at');
+    $csdb_model = ModelsCsdb::where('filename', $filename);
 
-    if($csdb_object->first(['initiator_id'])->initiator_id != $user_id){
+    if($csdb_model->first(['initiator_id'])->initiator_id != $user_id){
       // return $this->fail(["Only the initiator can delete the DM."]);
       return back()->withInput()->with(['result' => 'fail'])->withErrors(["Only the initiator can delete the DM."],'info');
     }
     
-    if($csdb_object->first() AND Storage::exists($csdb_object->first(['path','id'])->path)){
+    if($csdb_model->first() AND Storage::exists($csdb_model->first(['path','id'])->path)){
       // update table project
-      $pr = DB::table('project')->where('csdbs','like',"%{$csdb_object->first()->id}%")->first();
+      $pr = DB::table('project')->where('csdbs','like',"%{$csdb_model->first()->id}%")->first();
       if($pr){
-        $pr->csdbs = str_replace($csdb_object->first()->id,'',$pr->csdbs);
+        $pr->csdbs = str_replace($csdb_model->first()->id,'',$pr->csdbs);
         DB::table('project')->updateOrInsert(['id' => $pr->id],collect($pr)->toArray());
       }
       // update storage
-      Storage::delete($csdb_object->first(['path','id'])->path);
+      Storage::delete($csdb_model->first(['path','id'])->path);
       // update table csdb
-      $csdb_object->update([
+      $csdb_model->update([
         'status' => 'deleted'
       ]);
 
