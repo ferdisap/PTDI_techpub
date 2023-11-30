@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Pdf2\Applicability;
+use Ptdi\Mpub\Pdf2\PMC_PDF;
 use XSLTProcessor;
 
 class CsdbServiceController extends CsdbController
@@ -36,7 +37,7 @@ class CsdbServiceController extends CsdbController
 
     $utility = $request->get('utility');
 
-    $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/{$type}.xsl"));
+    $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/"), "{$type}.xsl");
     $xsltproc = new XSLTProcessor;
     $xsltproc->importStylesheet($xsl);
 
@@ -92,6 +93,9 @@ class CsdbServiceController extends CsdbController
     return $r;
   }
 
+  /**
+   * sementara ini belum dipakai
+   */
   public function CSDB(Request $request)
   {
     $functions = explode(",",$request->get('functions'));
@@ -145,6 +149,43 @@ class CsdbServiceController extends CsdbController
     }
 
     return response()->json(['return' => $res],200);
+  }
+
+  public function provide_csdb_export(Request $request, $type = 'pdf')
+  {
+    $pmEntryType = '';
+    $filename = $request->get('filename');
+    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $filename);
+
+    $type = $csdb_dom->firstElementChild->tagName;
+    switch ($type) {
+      case 'dml':
+        abort(500);
+        break;
+      case 'dmodule';
+        // dd('lanjutkan');
+        return $this->transform_pdf_dmodule($request, storage_path("app/{$csdb_model->path}"), $filename, '' ,$pmEntryType);
+        break;
+    }
+  }
+
+  private function transform_pdf_dmodule(Request $request, $path, $filename = [], $pmType = 'pt99' ,$pmEntryType)
+  {
+    $appl = '';
+    $responsiblePartnerCompany = '';
+
+    $pmc = new PMC_PDF($path);
+    $pmc->importDocument_dump('', [
+      'pmType' => 'pt51',
+      'pmEntryType' => 'pmt01',
+      'objectRef' => [$filename]
+    ]);
+    // dd($pmc->getDOMDocument()->C14N());
+    $pmc->render();
+    $pmc->getPDF();
+    // dd($pmc->getDOMDocument());
+
 
 
   }

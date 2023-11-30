@@ -7,7 +7,7 @@
 <xsl:template match="pmEntry">
   <div class="pmEntry">
     <hr/>
-    <h1>PM Entry</h1>
+    <h1>PM Entry <span style="font-size:8pt;font-weight:normal"><xsl:value-of select="@pmEntryType"/></span></h1>
   
     <ol>
       <xsl:apply-templates/>

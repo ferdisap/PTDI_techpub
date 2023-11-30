@@ -17,7 +17,7 @@
   <div class="d-flex">
     @include('project.aside')
 
-    <div id="csdb_object" class="col-md-10 dump_red">
+    <div id="csdb_object" class="col-md-10 ">
       <input id="filename" value="{{ $filename ?? '' }}">
 
       <hr>
@@ -51,7 +51,7 @@
         <button type="submit" name="verification" value="firstVerification">First Verification</button>
       </form>
 
-      <div id="csdb_object_detail" style="width: inherit" class="dump_red">
+      <div id="csdb_object_detail" style="width: inherit" class="">
         <div class="d-flex">Title: <div id="title"></div></div>        
         <div class="d-flex">Issue Date: <div id="resolve_issueDate"></div></div>        
         <div class="d-flex">Issue Type: <div id="resolve_issueType"></div></div>        
@@ -72,39 +72,10 @@
       reader.render('detail');
     </script>
     
-  </div>    
+  </div>
 
-  {{-- <script type="importmap">
-    {
-      "imports": {
-        "detail": "{{ route('get_request_csdb_js') }}?filename=detail.js"
-      }
-    }
-  </script>
-  <script>
-    
-    csdb_detail_render({
-      filename: '{{ $filename }}',
-      id: 'csdb_object_detail',
-      mime: '{{ $mime }}'
-    }); 
-  </script> --}}
-
-  {{-- <script type="module">
-    window.route = window.route ?? {};
-    window.route.get_request_csdb_object = "{{ route('get_request_csdb_object') }}";
-    window.route.get_request_csdb_xsl = "{{ route('get_request_csdb_xsl') }}";
-    window.route.get_transform_csdb = "{{ route('get_transform_csdb') }}";
-
-    let x = 'var';
-
-    import { csdb_detail_render } from "{{ route('get_request_csdb_js') }}?filename=detail.js";
-
-    csdb_detail_render({
-      filename: '{{ $filename }}',
-      id: 'csdb_object_detail',
-      mime: '{{ $mime }}'
-    });    
-  </script> --}}
+  <div name="export_to_pdf">
+    <a href="{{ route('get_export_csdb') }}?filename={{ $filename }}">export to pdf</a>
+  </div>
 
 @endsection

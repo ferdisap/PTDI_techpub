@@ -65,7 +65,7 @@
       </tr>
       <tr>
         <td><b>ACT: </b></td>
-        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmStatus/applicCrossRefTableRef/descendant::dmRefIdent)"/></td>
+        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', pmStatus/applicCrossRefTableRef/descendant::dmRefIdent)"/></td>
       </tr>
       <tr>
         <td><b>Applicability: </b></td>
@@ -73,7 +73,7 @@
       </tr>
       <tr>
         <td><b>Brex DM Ref: </b></td>
-        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmStatus/brexDmRef/descendant::dmRefIdent)"/></td>
+        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', pmStatus/brexDmRef/descendant::dmRefIdent)"/></td>
       </tr>
       <tr>
         <td><b>Quality Assurance</b></td>

@@ -19,12 +19,13 @@ Route::get('/csdb/js/request', [CsdbServiceController::class, 'provide_csdb_js']
 
 Route::get('/csdb/object/request', [CsdbServiceController::class, 'provide_csdb_object'])->middleware('auth')->name('get_request_csdb_object');
 
+// sementara route ini belum dimanfaatkan, karena transform dilakukan di server side
 Route::post("/csdb/object/CSDB", [CsdbServiceController::class, 'CSDB']);
 
+// sementara route ini belum dimanfaatkan, karena xsl transform dilakukan di server side
 Route::get('/csdb/xsl/request', [CsdbServiceController::class, 'provide_csdb_xsl'])->middleware('auth')->name('get_request_csdb_xsl');
 
 Route::get("/csdb/object/transform", [CsdbServiceController::class, 'provide_csdb_transform'])->middleware('auth')->name('get_transform_csdb');
 
-Route::get("/test", function(){
-  dd(request()->all());
-});
+Route::get("/csdb/object/export", [CsdbServiceController::class, 'provide_csdb_export'])->middleware('auth')->name('get_export_csdb');
+
