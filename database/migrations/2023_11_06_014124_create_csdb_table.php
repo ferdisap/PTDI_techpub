@@ -18,7 +18,7 @@ return new class extends Migration
       $table->ulid('id')->primary();
       $table->string('filename')->unique();
       $table->string('path');
-      $table->string('status'); // new/modified/deleted + seeded/initiated/
+      $table->string('status'); // new/modified/deleted + seeded/initiated/ + unused
       $table->text('description')->nullable();
       $table->boolean('editable'); // yes(1) or no(0)
       $table->integer('initiator_id');

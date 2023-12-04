@@ -22,6 +22,7 @@ class CsdbProcessingController extends CsdbController
     $schema_xml = MpubCSDB::getSchemaUsed(MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $csdb_model->filename));
     $schema_xpath = new DOMXPath($schema_xml);
     $qa_schema = $schema_xpath->evaluate("//xs:element[@ref='qualityAssurance']");
+    // dd($qa_schema, $schema_xml, MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $csdb_model->filename));
     $qa_schema = ($qa_schema->length > 0) ? $qa_schema[0] : null;
     if ($qa_schema) {
       $qa_minOccurs = 1;

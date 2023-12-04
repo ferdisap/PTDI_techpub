@@ -41,15 +41,18 @@
             $description = $obj->description;
             @endphp
             <tr>
-              <td><a href="/csdb/object/update?filename={{ $filename }}">{{ $filename }}</a></td>
+              <td><a href="/route/get_update_csdb_object?filename={{ $filename }}">{{ $filename }}</a></td>
               <td><a href="?status={{ $status }}">{{ $status }}</a></td>
 
               <td class="d-flex">
-                <button><a href="/csdb/object/update?filename={{ $filename }}">update</a></button>
-                <form action="/csdb/object/delete" method="post">
+                {{-- <button><a href="/csdb/object/update?filename={{ $filename }}">update</a></button> --}}
+                <button><a href="/route/get_update_csdb_object?filename={{ $filename }}">update</a></button>
+                <button><a href="{{ route('get_delete_csdb_object') }}?filename={{ $filename }}">delete</a></button>
+                <button><a href="{{ route('get_restore_csdb_object') }}?filename={{ $filename }}">restore</a></button>
+                <form action="{{ route('post_delete_csdb_object') }}" method="post">
                   @csrf
                   <input type="hidden" name="filename" value="{{ $filename }}">
-                  <button type="submit" class="underline">delete</button>
+                  <button type="submit" class="underline">hard delete</button>
                 </form>
               </td>
 

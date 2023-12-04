@@ -4,24 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\Csdb;
 use DOMDocument;
+use DOMXPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
 use Ptdi\Mpub\Pdf2\PMC_PDF;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use XSLTProcessor;
+use ZipStream\ZipStream;
 
 class CsdbServiceController extends CsdbController
 {
   use Applicability;
+
+  /**
+   * helper function untuk crew.xsl
+   * ini tidak bisa di pindah karena bukan static method
+   * * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
+   */
+  public function setLastPositionCrewDrillStep(int $num)
+  {
+    $this->lastPositionCrewDrillStep = $num;
+  }
+
+  /**
+   * helper function untuk crew.xsl
+   * ini tidak bisa di pindah karena bukan static method
+   * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
+   */
+  public function getLastPositionCrewDrillStep()
+  {
+    return $this->lastPositionCrewDrillStep ?? 0;
+  }
+
+  private function provide_csdb_zip($obj = [])
+  {
+    // $zip = new ZipStream(
+    //   outputName: 'example.zip',
+    // );
+    // # add content here to zip based on the csdb object.
+    // $zip->finish();
+    // return new StreamedResponse(fn() => $zip,200);
+  }
 
   public function provide_csdb_transform(Request $request)
   {
     $filename = $request->filename;
     $csdb_model = Csdb::where('filename', $filename)->first(['path']);
     $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
+    if($csdb_dom instanceof ICNDocument){
+      // saat ini belum bisa baca file 3D (step,igs,stl,etc)karena mime nya tidak dikenal
+      $mime = $csdb_dom->getFileinfo()['mime_type'];
+      $file = $csdb_dom->getFile();
+      return Response::make($file, 200, ['Content-Type' => $mime]);
+    }
     $type = $csdb_dom->firstElementChild->tagName;
 
     if($type != 'dml'){
@@ -34,22 +74,21 @@ class CsdbServiceController extends CsdbController
       $appl = '';
     }
 
-
     $utility = $request->get('utility');
 
     $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/"), "{$type}.xsl");
     $xsltproc = new XSLTProcessor;
     $xsltproc->importStylesheet($xsl);
-
-    $xsltproc->registerPHPFunctions((function(){
-      return array_map(fn($name) => MpubCSDB::class."::$name", get_class_methods(MpubCSDB::class));
-    })());
+    $xsltproc->registerPHPFunctions((fn() => array_map(fn($name) => MpubCSDB::class."::$name", get_class_methods(MpubCSDB::class)))());
+    $xsltproc->registerPHPFunctions([CsdbServiceController::class."::getLastPositionCrewDrillStep", CsdbServiceController::class."::setLastPositionCrewDrillStep"]);
+    
+    $xsltproc->registerPHPFunctions();
     $xsltproc->setParameter('','filename', $filename);
     $xsltproc->setParameter('','applicability', $appl);
-    $xsltproc->setParameter('','absolute_path_csdb_input', $appl);
+    $xsltproc->setParameter('','dmOwner', preg_replace("/.xml/",'',$filename));
     $transformed = $xsltproc->transformToDoc($csdb_dom);
-    
-    return Response::make($transformed->saveHTML(),200,['Content-Type' => 'text/html']);
+    $transformed = str_replace('#ln;', "<br/>", $transformed->C14N());
+    return Response::make($transformed,200,['Content-Type' => 'text/html']);
   }
 
   public function provide_csdb_xsl(Request $request)
@@ -151,42 +190,54 @@ class CsdbServiceController extends CsdbController
     return response()->json(['return' => $res],200);
   }
 
-  public function provide_csdb_export(Request $request, $type = 'pdf')
+  public function provide_csdb_export(Request $request)
   {
-    $pmEntryType = '';
-    $filename = $request->get('filename');
-    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
-    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $filename);
-
-    $type = $csdb_dom->firstElementChild->tagName;
-    switch ($type) {
-      case 'dml':
+    if($request->get('type') == 'pdf'){
+      $pmEntryType = '';
+      $filename = $request->get('filename');
+      $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+      $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $filename);
+  
+      $schema = MpubCSDB::getSchemaUsed($csdb_dom, 'filename');
+      if(in_array($schema, ['crew.xsd', 'comrep.xsd', 'descript.xsd', 'frontmatter.xsd'])){
+        return $this->transform_pdf_dmodule($request, storage_path("app/{$csdb_model->path}"), [$filename], '' ,$pmEntryType);
+      }
+      elseif($schema == 'pm.xsd'){
+        $modelIdentCode = $csdb_dom->getElementsByTagName('pmCode')[0]->getAttribute('modelIdentCode');
+        return $this->transform_pdf_pm($request, $modelIdentCode, storage_path("app/{$csdb_model->path}"), $filename, '' ,$pmEntryType);
+      }
+      else{
         abort(500);
-        break;
-      case 'dmodule';
-        // dd('lanjutkan');
-        return $this->transform_pdf_dmodule($request, storage_path("app/{$csdb_model->path}"), $filename, '' ,$pmEntryType);
-        break;
+      }
+    }
+    elseif($request->get('type') == 'package'){
+      
     }
   }
 
-  private function transform_pdf_dmodule(Request $request, $path, $filename = [], $pmType = 'pt99' ,$pmEntryType)
+  private function transform_pdf_pm(Request $request, $modelIdentCode ,$absolute_path, string $filename, $pmType = 'pt99' ,$pmEntryType)
+  {
+    $modelIdentCode = strtolower($modelIdentCode);
+    
+    $pmc = PMC_PDF::instance($absolute_path,$modelIdentCode);
+    $pmc->setAA_Approved("DGCA approved", " DD MMM YYYY");
+    $pmc->importDocument($absolute_path."/", $filename,'');
+    $pmc->render();
+    $pmc->getPDF();
+  }
+  private function transform_pdf_dmodule(Request $request, $absolute_path, $filenames = [], $pmType = 'pt99' ,$pmEntryType)
   {
     $appl = '';
     $responsiblePartnerCompany = '';
 
-    $pmc = new PMC_PDF($path);
+    $pmc = new PMC_PDF($absolute_path);
     $pmc->importDocument_dump('', [
       'pmType' => 'pt51',
       'pmEntryType' => 'pmt01',
-      'objectRef' => [$filename]
+      'objectRef' => $filenames,
+      'use_DMC_modelIdentCode' => true,
     ]);
-    // dd($pmc->getDOMDocument()->C14N());
     $pmc->render();
     $pmc->getPDF();
-    // dd($pmc->getDOMDocument());
-
-
-
   }
 }

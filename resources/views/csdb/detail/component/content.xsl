@@ -5,6 +5,18 @@
 <xsl:include href="./frontMatter.xsl"/>
 <xsl:include href="./pmEntry.xsl"/>
 
+<xsl:include href="./descript.xsl"/>
+<xsl:include href="./crew.xsl"/>
+
+
+<xsl:include href="./attribute/id.xsl" />
+<xsl:include href="./attribute/cgmark.xsl" />
+<xsl:include href="./helper/position.xsl"/>
+<xsl:include href="./group/textElemGroup.xsl" />
+<!-- <xsl:include href="./group/listElemGroup.xsl" /> -->
+<!-- <xsl:include href="./element/levelledPara.xsl"/> -->
+<!-- <xsl:include href="./element/warningcautionnote.xsl"/> -->
+
 
 <xsl:template match="content">
   <xsl:apply-templates/>

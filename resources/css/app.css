@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* @import 'tahoma.ttf'; */
+
+@font-face {
+  font-family: tahoma;
+  src: url("./tahoma.ttf");
+}
+
+.dump_red{border:1px solid red;}

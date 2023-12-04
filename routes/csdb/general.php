@@ -20,11 +20,15 @@ Route::get('/csdb/object/create', [CsdbController::class, 'getcreate'])->middlew
 
 Route::post("/csdb/object/create", [CsdbController::class, 'postcreate'])->middleware('auth')->name('get_create_csdb_object'); //create_csdb_object
 
-Route::get("/csdb/object/update", [CsdbController::class, 'getupdate'])->middleware('auth')->name('get_update_csdb');
+Route::get("/csdb/object/update", [CsdbController::class, 'getupdate'])->middleware('auth')->name('get_update_csdb_object');
 
-Route::post("/csdb/object/update", [CsdbController::class, 'postupdate'])->middleware('auth')->name('get_update_csdb_object'); // update_csdb_object
+Route::post("/csdb/object/update", [CsdbController::class, 'postupdate'])->middleware('auth')->name('post_update_csdb_object'); // update_csdb_object
 
-Route::post('/csdb/object/delete', [CsdbController::class, 'postdelete'])->middleware('auth')->name('delete_csdb_object');
+Route::get('/csdb/object/delete', [CsdbController::class, 'getdelete'])->middleware('auth')->name('get_delete_csdb_object');
+
+Route::get('/csdb/object/restore', [CsdbController::class, 'getrestore'])->middleware('auth')->name('get_restore_csdb_object');
+
+Route::post('/csdb/object/delete', [CsdbController::class, 'postdelete'])->middleware('auth')->name('post_delete_csdb_object');
 
 Route::get('/csdb/object/detail', [CsdbController::class, 'getdetail'])->middleware('auth')->name('get_detail_csdb_object');
 

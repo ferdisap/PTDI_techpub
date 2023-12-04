@@ -16,7 +16,7 @@
     <head>
       <title>Data Module</title>
     </head>
-    <body>
+    <body style="font-family:system-ui">
       <xsl:apply-templates select="identAndStatusSection"/>
       <xsl:apply-templates select="content"/>
     </body>
