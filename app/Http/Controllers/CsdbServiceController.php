@@ -64,15 +64,15 @@ class CsdbServiceController extends CsdbController
     }
     $type = $csdb_dom->firstElementChild->tagName;
 
-    if($type != 'dml'){
-      $appl = (MpubCSDB::getApplicability($csdb_dom, storage_path("app/{$csdb_model->path}")));
-      if($err = MpubCSDB::get_errors(true, 'getApplicability')){
-        $appl = json_encode($err);
-      }
-      $appl = $this->getApplicability('','first', true, $appl);
-    } else {
-      $appl = '';
-    }
+    // if($type != 'dml'){
+    //   $appl = (MpubCSDB::getApplicability($csdb_dom, storage_path("app/{$csdb_model->path}")));
+    //   if($err = MpubCSDB::get_errors(true, 'getApplicability')){
+    //     $appl = json_encode($err);
+    //   }
+    //   $appl = $this->getApplicability('','first', true, $appl);
+    // } else {
+    //   $appl = '';
+    // }
 
     $utility = $request->get('utility');
 
@@ -84,7 +84,8 @@ class CsdbServiceController extends CsdbController
     
     $xsltproc->registerPHPFunctions();
     $xsltproc->setParameter('','filename', $filename);
-    $xsltproc->setParameter('','applicability', $appl);
+    // $xsltproc->setParameter('','applicability', $appl);
+    $xsltproc->setParameter('','absolute_path_csdbInput', storage_path("app/{$csdb_model->path}/"));
     $xsltproc->setParameter('','dmOwner', preg_replace("/.xml/",'',$filename));
     $transformed = $xsltproc->transformToDoc($csdb_dom);
     $transformed = str_replace('#ln;', "<br/>", $transformed->C14N());

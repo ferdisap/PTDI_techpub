@@ -44,12 +44,9 @@ class Project extends Model
    */
   public function csdb(): HasMany
   {
-    return $this->hasMany(Csdb::class, 'project_name');
+    // return $this->hasMany(Csdb::class, 'project_name');
+    return $this->hasMany(Csdb::class);
   }
-  // public function csdb(): BelongsToMany
-  // {
-  //   return $this->belongsToMany(Csdb::class, 'csdb_project', 'project_name' ,'csdb_id');
-  // }
 
   
   protected static $failMessages = [];

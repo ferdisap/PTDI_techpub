@@ -20,9 +20,7 @@ Route::get("project/create", [ProjectController::class, 'getcreate'])->middlewar
 Route::post("project/create", [ProjectController::class, 'postcreate'])->middleware('auth')->name('post_create_project');
 
 Route::get("project/delete", [ProjectController::class, 'delete'])->middleware('auth');
-
-Route::get('project/assign', [ProjectController::class, 'getassign'])->name('get_assign_object');
-
-Route::post("project/assign", [ProjectController::class, 'postassign'])->name('post_assign_object');
+// Route::get('project/assign', [ProjectController::class, 'getassign'])->name('get_assign_object');
+// Route::post("project/assign", [ProjectController::class, 'postassign'])->name('post_assign_object');
 
 Route::get('project/detail', [ProjectController::class, 'getdetail'])->middleware('auth')->name('get_detail_project');

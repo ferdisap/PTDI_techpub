@@ -7,9 +7,8 @@
 <xsl:include href="./component/content.xsl"/>
 
 <xsl:param name="filename"/>
-<xsl:param name="applicability"/>
-
-
+<!-- <xsl:param name="applicability"/> -->
+<xsl:param name="absolute_path_csdbInput"/>
 
 <xsl:template match="dmodule">
   <html xmlns="http://www.w3.org/1999/xhtml">
@@ -18,6 +17,7 @@
     </head>
     <body style="font-family:system-ui">
       <xsl:apply-templates select="identAndStatusSection"/>
+      <hr/>
       <xsl:apply-templates select="content"/>
     </body>
   </html>
@@ -26,6 +26,7 @@
 <xsl:template match="identAndStatusSection">
   <div class="identAndStatusSection">
     <div>Filename: <xsl:value-of select="$filename"/></div>
+    <div>Schema: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')"/></div>
   
     <h1>IDENTIFICATION AND STATUS SECTION</h1>
   
@@ -71,7 +72,7 @@
       </tr>
       <tr>
         <td><b>Applicability: </b></td>
-        <td><xsl:value-of select="$applicability"/></td>
+        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')"/></td>
       </tr>
       <tr>
         <td><b>Brex DM Ref: </b></td>

@@ -14,6 +14,13 @@
   
     <section>
       <a href="{{ route('get_create_project') }}">Create Project</a>
+      <form action="{{ route('post_create_repo') }}" method="post">
+        @csrf
+        <div>Create Repo</div>
+        <input type="text" placeholder="project name" name="project_name" id="project_name" value="{{ $pr->name ?? '' }}">
+        <input type="text" placeholder="insert token" name="token" id="token">
+        <button type="submit">Create Repo</button>
+      </form>
 
       @if(isset($create) AND $create)
         @include('project.components.create')
@@ -41,8 +48,8 @@
             <tr>
               <td><a href="{{ route('get_detail_project') }}?name={{ $pr->name }}">{{ $pr->name }}</a></td>
               <td>{{ $pr->description }}</td>
-              <td><a href="/csdb/project/delete?name={{ $pr->name }}"><button>delete</button></a></td>
-              <td><a href="{{ route('get_assign_object') }}?name={{ $pr->name }}"><button>Assign Object</button></a></td>
+              {{-- <td><a href="/csdb/project/delete?name={{ $pr->name }}"><button>delete</button></a></td> --}}
+              {{-- <td><a href="{{ route('get_assign_object') }}?name={{ $pr->name }}"><button>Assign Object</button></a></td> --}}
             </tr>   
           @endforeach
           

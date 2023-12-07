@@ -21,6 +21,7 @@ class ProjectController extends Controller
 {
   public function index(Request $request)
   {
+    // dd(Project::all()[0]);
     return view('project.index', [
       'listspr' => Project::all(),
     ]);

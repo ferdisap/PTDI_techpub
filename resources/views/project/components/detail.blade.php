@@ -6,14 +6,20 @@
     <a href="{{ route('get_create_csdb_object') }}?project=MALE">Create New Object</a>
   </div>
 
-  @foreach($pr->csdb()->where('status','!=', 'deleted')->get() as $csdb)
-    @php
-    $filename = $csdb->filename; 
-    @endphp
-    <div>
-      {{-- <a href="{{ route('get_update_csdb_object') }}?filename={{ $filename }}">{{ $filename }}</a> --}}
-      <a href="{{ route('get_detail_csdb_object') }}?filename={{ $filename }}">{{ $filename }}</a>
-    </div>
-  @endforeach
+  @php
+  $objs = $pr->csdb()->where('status','!=', 'deleted')->where('status', '!=', 'unused')->get();
+  @endphp
+  <table>
+    @foreach($objs as $object)
+      <tr>
+        <td>
+          <div>
+            <a href="{{ route('get_detail_csdb_object') }}?filename={{ $object->filename }}">{{ $object->filename }}</a>
+          </div>
+        </td>
+        <td>{{ $object->status }}</td>
+      </tr>
+    @endforeach
+  </table>
 
 </div>

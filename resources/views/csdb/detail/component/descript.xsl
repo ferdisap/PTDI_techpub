@@ -9,6 +9,7 @@
 <xsl:template match="description">
   <hr/>
   <h1>DESCRIPTION</h1>
+  <h1 style="text-align:center"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/descendant::dmTitle)"/></h1>
   <div>
     <xsl:apply-templates select="levelledPara"/>
   </div>

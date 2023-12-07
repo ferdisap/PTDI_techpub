@@ -6,6 +6,7 @@
   <xsl:param name="dmOwner"/>
   
   <xsl:template match="crew">
+    <h1 style="text-align:center"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/descendant::dmTitle)"/></h1>
     <xsl:apply-templates select="descrCrew"/>
   </xsl:template>
 

@@ -6,8 +6,13 @@ use Illuminate\Http\Request;
 
 class IetmController extends Controller
 {
-  public function getindex()
+  public function __invoke()
   {
-    return view('ietm/index');
+    return view('ietm.app');
   }
+
+  // public function getindex()
+  // {
+  //   return view('ietm/app');
+  // }
 }

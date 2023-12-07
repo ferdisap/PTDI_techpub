@@ -190,8 +190,10 @@ class CsdbController extends Controller
       $old_name = $csdb_object->filename;
       $old_path = $csdb_object->path;
       $old_status = $csdb_object->status;
+      // dd($old_path, $path, $old_name, $csdb_filename);
       if ($old_path == $path and $old_name == $csdb_filename) {
         $csdb_object->update(array_merge($request->all(), ['status' => 'modified']));
+        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
       } else {
         // validate referenced dmrl, dilakukan jika filename (tidak termasuk issueNumber dan inWork) nya berbeda dengan yang lama
         if (preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $old_name) != preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $csdb_filename)) { // untuk membersihkan inwork dan issue number pada filename
@@ -201,7 +203,6 @@ class CsdbController extends Controller
           }
         }
 
-        // dd($csdb_object->project->name);
         ModelsCsdb::create([
           'filename' => $csdb_filename,
           'path' => $path,
@@ -211,16 +212,18 @@ class CsdbController extends Controller
           'initiator_id' => $request->user()->id,
           'project_name' => $csdb_object->project->name,
         ]);
-      }
 
-      // saving to local
-      // moving old file
-      $csdb_object->update(['path' => $old_path . "/__unused", 'status' => 'unused']);
-      Storage::disk('local')->move($old_path . DIRECTORY_SEPARATOR . $old_name, $old_path . "/__unused" . DIRECTORY_SEPARATOR . $old_name);
-      // create new file
-      Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+        // saving to local
+        // moving old file
+        $csdb_object->update(['path' => $old_path . "/__unused", 'status' => 'unused']);
+        Storage::disk('local')->move($old_path . DIRECTORY_SEPARATOR . $old_name, $old_path . "/__unused" . DIRECTORY_SEPARATOR . $old_name);
+        // create new file
+        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+      }
+      
       $url = preg_replace("/filename=.+.xml/", "filename={$csdb_filename}", back()->getTargetUrl());
       return back()->setTargetUrl($url)->withInput()->with(['result' => 'success'])->withErrors(["saved with filename: {$csdb_filename}"], 'info');
+
     }
     // update by entity jika mime bukan text
     elseif ($entity) {
@@ -427,6 +430,7 @@ class CsdbController extends Controller
     }
 
     return view('csdb.detail', [
+      'object' => $csdb_model,
       'id' => $csdb_model->id,
       'filename' => $filename,
     ]);

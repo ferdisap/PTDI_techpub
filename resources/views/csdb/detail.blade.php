@@ -18,8 +18,13 @@
     @include('project.aside')
 
     <div id="csdb_object" class="col-md-10 ">
-      <input id="filename" value="{{ $filename ?? '' }}">
-      <a href="/route/get_update_csdb_object?filename={{ $filename }}">Edit</a>
+      <div>
+        <input id="filename" value="{{ $object->filename ?? '' }}">
+        <a href="/route/get_update_csdb_object?filename={{ $object->filename }}">Edit</a>
+      </div>
+      <div>
+        <span>Status: {{ $object->status }}</span>
+      </div>
 
       <hr>
       @if(substr($filename, 0,3) != 'ICN')
