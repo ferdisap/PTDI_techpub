@@ -15,12 +15,13 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+Route::get('/repo', [RepoController::class, 'getindex'])->middleware('auth')->name('get_index_repo');
 Route::get('/ietm/repo', [RepoController::class, 'get'])->middleware('auth')->name('get_repo');
+Route::get('/repo/delete', [RepoController::class, 'getdelete'])->middleware('auth')->name('get_delete_repo');
 
 Route::post('/ietm/repo/create', [RepoController::class, 'getcreate'])->middleware('auth')->name('post_create_repo');
 
-Route::get("/api/ietm/repo", function(){
-  return response()->json([
-    'repo' => 'foobar repo'
-  ],200);
-});
+Route::get("/api/ietm/repo", [RepoController::class, 'provide_repo'])->name('provide_repo');
+Route::get("/api/ietm/repo/{repo:name}", [RepoController::class, 'provide_repo_object'])->name('provide_repo_object');
+
+Route::get("/api/ietm/{repo:name}/{filename}", [RepoController::class, 'provide_object_detail'])->name('provide_object_detail');

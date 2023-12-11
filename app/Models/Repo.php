@@ -23,7 +23,14 @@ class Repo extends Model
    *
    * @var string
    */
-  protected $primaryKey = 'id';
+  protected $primaryKey = 'name';
+
+  /**
+   * Indicates if the model's ID is auto-incrementing.
+   *
+   * @var bool
+   */
+  public $incrementing = false;
 
   /**
    * The database connection that should be used by the migration.

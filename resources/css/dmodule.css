@@ -1,0 +1,28 @@
+.dmodule{
+  margin-top: 2rem;
+}
+.dmodule > .identAndStatusSection{
+  display: block;
+  text-align: start;
+  width: inherit;
+}
+
+.dmodule > .identAndStatusSection > .schema{
+  text-align: center;
+  font-size: smaller;
+}
+
+.dmodule > .identAndStatusSection > .header{
+  text-align: center;
+  font-size: larger;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.frontMatterTitlePage{
+  margin-top: 2rem;
+  text-align: start;
+}
+
+
+

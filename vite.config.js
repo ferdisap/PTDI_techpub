@@ -9,8 +9,9 @@ export default defineConfig({
     laravel({
       input: [
         // 'resources/js/csdb/detail.js',
-        'resources/js/csdb/CsdbReader.js',
         'resources/css/app.css',
+        'resources/css/dmodule.css',
+        'resources/js/csdb/CsdbReader.js',
         'resources/js/ietm/app.js',
         'resources/views/**/*.vue'
       ],
@@ -28,7 +29,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': '/resources/js',
-      '@@': '/resources/views',
       'vue': 'vue/dist/vue.esm-bundler.js',
     }
   }

@@ -9,6 +9,15 @@
   <link rel="stylesheet" href="/css/bootstrap_5.2.0.min.css">
 
   <style>
+    th{
+      border-bottom: 1px solid black
+    }
+    th,td{
+      padding: 2px;
+      padding-left:5px;
+      padding-right:5px;
+    }
+
     .loading_buffer {
       border: 16px solid #f3f3f3; /* Light grey */
       border-top: 16px solid #3498db; /* Blue */

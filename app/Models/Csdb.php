@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Ptdi\Mpub\CSDB as MpubCSDB;
 
 class Csdb extends Model
 {
@@ -58,6 +59,50 @@ class Csdb extends Model
     return $this->belongsTo(Project::class,'project_name');
   }
 
+
+
+  ###### CUSTOM #######
+  /**
+   * helper function untuk crew.xsl
+   * ini tidak bisa di pindah karena bukan static method
+   * * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
+   */
+  public function setLastPositionCrewDrillStep(int $num)
+  {
+    $this->lastPositionCrewDrillStep = $num;
+  }
+
+  /**
+   * helper function untuk crew.xsl
+   * ini tidak bisa di pindah karena bukan static method
+   * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
+   */
+  public function getLastPositionCrewDrillStep()
+  {
+    return $this->lastPositionCrewDrillStep ?? 0;
+  }
+
+  public \DOMDocument $DOMDocument;
+  public function transform_to_xml($path_xsl, $filename_xsl = '')
+  {
+    if(!$filename_xsl){
+      $type = $this->DOMDocument->documentElement->nodeName;
+      $filename = "{$type}.xsl";
+    }
+
+    $xsl = MpubCSDB::importDocument($path_xsl."/", $filename);
+    $xsltproc = new \XSLTProcessor();
+    $xsltproc->importStylesheet($xsl);
+    $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
+    $xsltproc->registerPHPFunctions([self::class."::getLastPositionCrewDrillStep", self::class."::setLastPositionCrewDrillStep"]);
+
+    $xsltproc->setParameter('','repoName', $this->repoName);
+
+    $transformed = str_replace("\n", '', $xsltproc->transformToXml($this->DOMDocument));
+    $transformed = preg_replace("/\s+/", ' ', $transformed);
+
+    return $transformed;
+  }
   // /**
   //  * Get the project joined for the csdb object
   //  */
