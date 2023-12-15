@@ -21,7 +21,15 @@ export default {
   mounted(){
     if(!Cookies.get('tokenRepo')){
       let redirect = window.location.pathname;
-      this.$router.push({name:'InsertToken',query:{redirect: redirect}});
+      let exclude = [];
+      exclude.push(this.$router.getRoutes().filter((v) => v.name == 'InsertToken')[0].path);
+      
+      if(!exclude.includes(redirect)){
+        this.$router.push({name:'InsertToken',query:{redirect: redirect}});
+      } else {
+        this.$router.push({name:'InsertToken'});
+      }
+
     }
   },
 }

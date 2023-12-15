@@ -14,11 +14,12 @@ export default {
   },
   methods: {
     async getObjects(repoName){
-      let response = await ietm.getObjects(repoName);
-      if(response.statusText == 'OK'){
-        useIetmStore().setResponse(response);
-        this.$router.push({name:'ListObject', params:{repoName: repoName}});
-      }
+      // let response = await ietm.getObjects(repoName);
+      // if(response.statusText == 'OK'){
+      //   useIetmStore().setResponse(response);
+      //   this.$router.push({name:'ListObject', params:{repoName: repoName}});
+      // }
+      this.$router.push({name:'ListObject', params:{repoName: repoName}});
     }
   },
   async beforeMount(){

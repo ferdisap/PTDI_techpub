@@ -373,7 +373,7 @@ class CsdbController extends Controller
     if (str_contains($mime, "text")) {
       $data = array_merge($data, ['xmleditor' => Storage::get($csdb_object->path . DIRECTORY_SEPARATOR . $csdb_object->filename)]);
     } else {
-      $data = array_merge($data, ['use_xmleditor' => false, 'entitysrc' => route('get_update_csdb') . "?entity={$filename}&scale={$request->get('scale')}"]);
+      $data = array_merge($data, ['use_xmleditor' => false, 'entitysrc' => route('get_update_csdb_object') . "?entity={$filename}&scale={$request->get('scale')}"]);
     }
     // return view dan text
     if ($csdb_object) {

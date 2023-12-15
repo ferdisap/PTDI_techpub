@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 // use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 // use Illuminate\Foundation\Validation\ValidatesRequests;
 
+use App\Models\Csdb;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,24 @@ class Controller extends BaseController
 
   public function index(Request $request)
   {
+    
+    // $lists = Controller::get_file(storage_path('app/csdb/MALE'));
+    // $lists = (array_filter($lists, fn($v) => str_contains($v,'.')));
+    // foreach($lists as $obj){
+    //   if(!Csdb::where('path',"csdb/{$obj}")->latest('updated_at')->first('id')){
+    //     dd('a', Csdb::where('path',"csdb/{$obj}")->latest('updated_at')->first('name') == null);
+    //     Csdb::create([
+    //       'filename' => $obj,
+    //       'path' => "/csdb/$obj",
+    //       'status' => 'new',
+    //       'description' => '',
+    //       'editable' => 1,
+    //       'initiator_id' => 1,
+    //       'project_name' => 'MALE',
+    //     ]);
+    //   }
+    // }
+
     return view('welcome');
     // switch ($request->utility) {
     //   case 'getfile':

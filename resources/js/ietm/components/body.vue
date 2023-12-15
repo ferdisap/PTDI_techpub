@@ -29,7 +29,6 @@ export default {
 
 <template>
   <div class="container mx-auto text-center">
-    <h1 class="text-2xl font-bold mt-5">BODY CONTENT</h1>
 
     <!-- <div v-if="ietmStore.detailObject">
       {{ renderDetail(ietmStore.detailObject.repos[0].objects[0].transformed_html) }}
@@ -39,7 +38,7 @@ export default {
     </div>
 
 
-    <div ref="content">Body PAGE
+    <div ref="content">
       <div ref="container"></div>
     </div>
   </div>

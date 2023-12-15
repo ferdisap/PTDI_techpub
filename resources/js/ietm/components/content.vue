@@ -16,6 +16,7 @@ export default {
       ietmStore: useIetmStore(),
       transformed_html: '',
       filename: '',
+      showListObject: false,
     }
   },
   methods:{
@@ -26,7 +27,7 @@ export default {
         this.ietmStore.listDMC = [];
         let repo = response.data.repos[0];
         for (const object of repo.objects) {
-          let prefix = object.name.split('-')[0];
+          let prefix = object.filename.split('-')[0];
           if(prefix == 'PMC'){
             this.ietmStore.listPMC.push(object);
           }
@@ -71,14 +72,16 @@ export default {
 <template>
   <Topbar/>
   <div class="container mx-auto text-center">
-    <h1 class="text-2xl font-bold mt-5">CONTENT PAGE - SELECT YOUR REPO</h1>
 
-    <div class="flex dump_red">
-      <div class="w-1/4 dump_red">
+    <div class="flex">
+      <div class="w-1/4">
         <Sidenav/>
       </div>
-      <div class="w-3/4 dump_red">
-        <ListObject :listDMC="ietmStore.listDMC" :repoName="$route.params.repoName"/>
+      <div class="w-3/4 block">
+        <button class="sticky top-20 text-underline z-20 shadow-md bg-blue-600 rounded-full p-2 text-white text-underline float-right" @click="showListObject = !showListObject">List Object</button>
+        <div v-show="showListObject" class="sticky top-10 z-10 bg-white border-4 rounded-lg p-4">
+          <ListObject :repoName="$route.params.repoName"/>
+        </div>
         <Body :filename="$route.params.filename" :transformed_html="transformed_html"/>
       </div>
     </div>

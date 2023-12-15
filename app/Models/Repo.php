@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Repo extends Model
 {
@@ -23,14 +24,14 @@ class Repo extends Model
    *
    * @var string
    */
-  protected $primaryKey = 'name';
+  protected $primaryKey = 'id';
 
   /**
    * Indicates if the model's ID is auto-incrementing.
    *
    * @var bool
    */
-  public $incrementing = false;
+  public $incrementing = true;
 
   /**
    * The database connection that should be used by the migration.
@@ -52,5 +53,14 @@ class Repo extends Model
   public function project(): BelongsTo
   {
     return $this->belongsTo(Project::class);
+  }
+
+  public function pmc(): HasMany
+  {
+    return $this->hasMany(RepoObjectPMC::class);
+  }
+  public function dmc(): HasMany
+  {
+    return $this->hasMany(RepoObjectDMC::class);
   }
 }

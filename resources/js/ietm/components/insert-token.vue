@@ -8,18 +8,17 @@ import Topbar from './topbar.vue';
 export default {
   data(){
     return {
-      token: ref(undefined),
+      token: reactive(undefined),
       ietmStore: useIetmStore(),
     }
   },
   components:{Topbar},
   methods: {
     async getRepo() {
-      // let tkn = !this.ietmStore.isEmpty(Cookies.get('tokenRepo')) ? Cookies.get('tokenRepo') : token.value;
       let tkn = token.value;
-      console.log(tkn);
       let response = await ietm.getRepos(tkn);
       if(response.statusText == 'OK'){
+        this.ietmStore.tokenRepo = tkn;
         // Cookies.set('tokenRepo', token.value, {path:'/'}); // tidak diperlukan karena sudah dilakukan oleh server. Malah lebih bagus di server (laravel)
         if(this.$route.query.redirect){
           this.$router.push({'path': this.$route.query.redirect});
@@ -29,10 +28,6 @@ export default {
       }
     }
   },
-  mounted(){
-    console.log(this.$route);
-    console.log(this.$router);
-  }
 }
 </script>
 

@@ -3,6 +3,9 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
+use function Ptdi\Mpub\Pdf2\add_font;
+use function Ptdi\Mpub\Pdf2\font_path;
+
 /*
 |--------------------------------------------------------------------------
 | Console Routes
@@ -17,3 +20,7 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('PdfAddFont', function(){
+  add_font(['tahoma']);
+});

@@ -12,10 +12,14 @@ use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
+use Ptdi\Mpub\Pdf2\Fonts;
 use Ptdi\Mpub\Pdf2\PMC_PDF;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use XSLTProcessor;
 use ZipStream\ZipStream;
+
+use function Ptdi\Mpub\Pdf2\font_path;
+use function Tes\tes;
 
 class CsdbServiceController extends CsdbController
 {
@@ -228,11 +232,12 @@ class CsdbServiceController extends CsdbController
   }
   private function transform_pdf_dmodule(Request $request, $absolute_path, $filenames = [], $pmType = 'pt99' ,$pmEntryType)
   {
+    // dd('aa', \Ptdi\Mpub\Pdf2\font_path());
     $appl = '';
     $responsiblePartnerCompany = '';
 
     $pmc = new PMC_PDF($absolute_path);
-    $pmc->importDocument_dump('', [
+    $pmc->importDocument_dump([
       'pmType' => 'pt51',
       'pmEntryType' => 'pmt01',
       'objectRef' => $filenames,

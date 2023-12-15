@@ -48,7 +48,7 @@
             <tr>
               <td><a href="{{ route('get_detail_project') }}?name={{ $pr->name }}">{{ $pr->name }}</a></td>
               <td>{{ $pr->description }}</td>
-              {{-- <td><a href="/csdb/project/delete?name={{ $pr->name }}"><button>delete</button></a></td> --}}
+              <td><a href="{{ route('get_delete_project') }}?name={{ $pr->name }}"><button>delete</button></a></td>
               {{-- <td><a href="{{ route('get_assign_object') }}?name={{ $pr->name }}"><button>Assign Object</button></a></td> --}}
             </tr>   
           @endforeach

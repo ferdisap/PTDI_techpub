@@ -59,19 +59,27 @@ class ProjectController extends Controller
     if($validator->fails()){
       return back()->withInput()->withErrors($validator)->with(['result' => 'fail']);
     }
-
-    $project = Project::create($request->all());
-    $request->file('dmrl')->storeAs("csdb/{$project->name}",$dmrlIdent);
-    $dmrl = Csdb::create([
-      'filename' => $dmrlIdent,
-      'path' => "csdb/{$project->name}",
-      'status' => 'new',
-      'description' => '',
-      'editable' => 1,
-      'initiator_id' => $request->user()->id,
-      'project_name' => $project->name,
-    ]);
+    
+    if($request->file('dmrl')->storeAs("csdb/{$request->get('name')}",$dmrlIdent)){
+      try {
+        $dmrl = Csdb::create([
+          'filename' => $dmrlIdent,
+          'path' => "csdb/{$request->get('name')}",
+          'status' => 'new',
+          'description' => '',
+          'editable' => 1,
+          'initiator_id' => $request->user()->id,
+          'project_name' => $request->get('name'),
+        ]);
+      } catch (\Throwable $th) {
+        return back()->withInput()->with(['result' => 'fail'])->withErrors(["{$dmrlIdent} cannot be duplicated storing."], 'info');
+      }
+      if($dmrl){
+        $project = Project::create($request->all());
+      }
+    }
     return Redirect::route('index_project');
+    
   }
 
   public function getassign(Request $request){
@@ -81,15 +89,14 @@ class ProjectController extends Controller
     ]);
   }
 
-  public function delete(Request $request)
+  public function getdelete(Request $request)
   {
     if(!$request->get('name')){
-      return (new CsdbController())->fail(['You have to add project name.']);
+      return back()->withInput()->with(['result' => 'fail'])->withErrors(["You have to add project name."], 'info');
     }
     if(!($pr = Project::find($request->get('name')))){
-      return (new CsdbController())->fail(['There is no such project name.']);
+      return back()->withInput()->with(['result' => 'fail'])->withErrors(["There is no such project name."], 'info');
     }
-    DB::table('csdb_project')->where('project_name',$request->get('name'))->delete();
     $pr->delete();
     return back()->withInput()->with([
       'result' => 'success',

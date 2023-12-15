@@ -4,6 +4,7 @@ import Index from "./index.vue";
 import Routes from "./routers.js";
 import Cookies from 'js-cookie';
 import { useIetmStore } from './ietmStore';
+import jQuery from 'jquery';
 
 import axios from 'axios';
 import { createPinia } from 'pinia';
@@ -21,23 +22,18 @@ const pinia = createPinia();
 
 ietm.use(pinia);
 ietm.use(router);
+ietm.use(jQuery);
 ietm.mount('#body');
 window.ietm = ietm;
-
+//  untuk delete all cookies
+// document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
 window.Cookies = Cookies;
 
-ietm.getObjects = async (repoName, handler, params) => {
-  console.log('getObjects');
+ietm.getObjects = async (repoName, params = {}) => {
   const url = new URL(window.location.origin + '/api/ietm/repo/' + repoName);
+  url.search = new URLSearchParams(params);
   let response = await axios.get(url);
   return response;
-  axios.get(url)
-    .then(response => {
-      useIetmStore().setResponse(response);
-      if (handler) {
-        handler.call(this, params);
-      }
-    });
 };
 
 ietm.getRepos = async (token, handler, params) => {
