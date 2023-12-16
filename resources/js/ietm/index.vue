@@ -19,6 +19,7 @@ export default {
   },
   props: ['repos'],
   mounted(){
+    window.router = this.$router;
     if(!Cookies.get('tokenRepo')){
       let redirect = window.location.pathname;
       let exclude = [];

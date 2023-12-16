@@ -19,9 +19,13 @@
   margin-bottom: 1rem;
 }
 
-.frontMatterTitlePage{
+.frontMatterTitlePage, .frontMatterSubList{
   margin-top: 2rem;
   text-align: start;
+}
+
+.frontMatterDmEntry{
+  display: flow-root;
 }
 
 

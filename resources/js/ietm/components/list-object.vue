@@ -1,5 +1,6 @@
 <script>
 import { useIetmStore } from '../ietmStore';
+import { RouterLink } from 'vue-router';
 
 export default {
   name: 'ListObject',
@@ -29,7 +30,9 @@ export default {
         </tr>
         <tr v-for="object in ietmStore.listDMC">
           <td>
-            <button @click="detail(object.filename)"> {{ object.filename }} </button>
+            <!-- <button @click="detail(object.filename)"> {{ object.filename }} </button> -->
+            <!-- <a :href="`/ietm/Content/${repoName}/${object.filename}`">{{ object.filename}}</a> -->
+            <RouterLink :to="`/ietm/Content/${repoName}/${object.filename}`"> {{ object.filename }} </RouterLink>
           </td>
         </tr>
       </table>

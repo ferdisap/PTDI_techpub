@@ -12,6 +12,7 @@ export default {
     };
   },
   components: { Dropdown_pmEntry },
+  props: {filename: String},
   methods: {
   },
 }
@@ -31,12 +32,12 @@ export default {
     </div>
 
     <!-- MAINTENANCE MANUAL -->
-    <div class="block mx-2 mb-5">
+    <!-- <div class="block mx-2 mb-5">
       <button class="text-xl" @click="data[filename+'_MAINTENANCE MANUAL'] = !data[filename+'_MAINTENANCE MANUAL']">MAINTENANCE MANUAL</button>
       <hr>
       <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="data[filename+'_MAINTENANCE MANUAL']">
         <Dropdown_pmEntry :title="object.title" :filename="object.filename" :pt="object.pt" v-if="(object.pt || object.pt != '') && object.pt.substr(2) > 60"/>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>

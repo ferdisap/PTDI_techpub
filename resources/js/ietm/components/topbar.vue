@@ -1,3 +1,8 @@
+<script>
+export default {
+  name: 'Topbar',
+}
+</script>
 <template>
   <div class="flex bg-neutral-100 h-16 columns-3 w-full items-center">
     <div class="w-full flex justify-start">

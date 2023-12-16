@@ -8,21 +8,23 @@ export default {
   data() {
     return {
       ietmStore: useIetmStore(),
-      title: '',
       pmType: '',
       data: reactive({}),
 
     }
   },
+  // props: { pmEntry: Array, filename: String, pt: String, title: String },
   props: { pmEntry: Array, filename: String, pt: String, title: String },
   methods: {
     async pmEntryHandler(filename) {
-      if (!this.data[filename]) {
-        let pmEntry = await this.ietmStore.pmEntryHandler(filename);
-        this.data[filename] = pmEntry;
-      }
+      // if (!this.data[filename]) {
+      //   let pmEntry = await this.ietmStore.pmEntryHandler(filename);
+      //   this.data[filename] = pmEntry;
+      // }
+      let pmEntry = await this.ietmStore.pmEntryHandler(filename);
+      this.data[filename] = pmEntry;
       this.data[filename + 'show'] = !this.data[filename + 'show'];
-      console.log(this.data[filename + 'show']);
+      // console.log(this.data[filename + 'show']);
     },
     async dmc_detail(filename) {
       this.$router.push({ name: 'Detail', params: { repoName: this.$route.params.repoName, filename: filename } });
@@ -31,7 +33,7 @@ export default {
       const objects = this.ietmStore.listPMC;
       for (const [key, object] of Object.entries(objects)) {
         if (object.filename == filename) {
-          console.log(object.title);
+          // console.log(object.title);
           return object.title
         }
       }
@@ -40,7 +42,7 @@ export default {
       const objects = this.ietmStore.listDMC;
       for (const [key, object] of Object.entries(objects)) {
         if (object.filename == filename) {
-          console.log(object.title);
+          // console.log(object.title);
           return object.title
         }
       }

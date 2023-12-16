@@ -22,6 +22,7 @@ export default {
   methods:{
     async getListObject(){
       let response = await ietm.getObjects(this.$route.params.repoName);
+      // alert('getListObject');
       if(response.statusText == 'OK'){
         this.ietmStore.listPMC = [];
         this.ietmStore.listDMC = [];
@@ -75,7 +76,7 @@ export default {
 
     <div class="flex">
       <div class="w-1/4">
-        <Sidenav/>
+        <Sidenav :filename="filename"/>
       </div>
       <div class="w-3/4 block">
         <button class="sticky top-20 text-underline z-20 shadow-md bg-blue-600 rounded-full p-2 text-white text-underline float-right" @click="showListObject = !showListObject">List Object</button>

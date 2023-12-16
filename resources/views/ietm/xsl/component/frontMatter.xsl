@@ -85,23 +85,36 @@
 <xsl:template match="frontMatterSubList">
   <div class="frontMatterSubList">
     <h1 style="text-align:center"><xsl:value-of select="title"/></h1>
-    <xsl:apply-templates select="frontMatterDmEntry"/>
+    <table>
+      <tr>
+        <th>DM Code</th>
+        <th>Issue Date</th>
+        <th>Issue Type</th>
+        <th>Title</th>
+        <th>Applicability</th>
+      </tr>
+      <xsl:apply-templates select="frontMatterDmEntry"/>
+    </table>
   </div>
 </xsl:template>
 
 <xsl:template match="frontMatterDmEntry">
-  <!-- <xsl:variable name="filename" select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', //dmIdent)"/> -->
   <xsl:variable name="filename" select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', descendant::dmRefIdent)"/>
-  <div class="frontMatterDmEntry">
-    <div class="dmCode"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmCode)"/></div>
-    <div class="issueDate">Issue Date: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', $absolute_path_csdbInput, $filename, 'resolve_issueDate')"/></div>
-    <xsl:if test="@issueType">
-      <div class="issueType">IssueType: <xsl:value-of select="@issueType"/></div>
-    </xsl:if>
-    <div class="title">Title: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', $absolute_path_csdbInput, $filename, 'resolve_dmTitle')"/></div>
-    <div class="applicability">Applicability: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', $absolute_path_csdbInput, $filename, 'getApplicability')"/></div>
-  </div>
-  <br/>
+  <tr>
+    <td class="dmCode">
+      <a>
+        <xsl:attribute name="href">
+          <xsl:variable name="fn">javascript:ietmBody.link('<xsl:value-of select="$filename"/>')</xsl:variable>
+          <xsl:value-of select="$fn"/>
+        </xsl:attribute>
+        <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmCode)"/>
+      </a>
+    </td>
+    <td class="issueDate"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, $filename, 'resolve_issueDate')"/></td>
+    <td class="issueType"><xsl:value-of select="@issueType"/></td>
+    <td class="title"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, $filename, 'resolve_dmTitle')"/></td>
+    <td class="applicability"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, $filename, 'getApplicability')"/></td>
+  </tr>
 </xsl:template>
 
 <xsl:template match="frontMatterPmEntry">

@@ -2,27 +2,31 @@
 import { useIetmStore } from '../ietmStore';
 import Topbar from './topbar.vue';
 import { reactive } from 'vue';
+import { RouterLink } from 'vue-router'
 
 export default {
   data() {
     return {
       ietmStore: useIetmStore(),
-      filename: undefined,
+      // filename: undefined,
     }
   },
-  props: ['data', 'filename', 'transformed_html'],
+  props: ['data', 'transformed_html'],
   methods: {
     renderDetail(htmlstring) {
       let html = new DOMParser();
       html = html.parseFromString(htmlstring, 'text/html');
+      let body = html.body.firstElementChild;
       this.$refs.container.innerHTML = '';
-      this.$refs.container.appendChild(html.body);
+      this.$refs.container.appendChild(body);
+    },
+    link(filename){
+      this.$router.push({ name: 'Detail', params: { repoName: this.$route.params.repoName, filename: filename } });
     }
   },
-  updated(){
-    this.renderDetail(this.$props.transformed_html);
-    // console.log(this.$props.transformed_html);
-  }
+  mounted() {
+    window.ietmBody = this;
+  },
 }
 </script>
 
@@ -30,16 +34,12 @@ export default {
 <template>
   <div class="container mx-auto text-center">
 
-    <!-- <div v-if="ietmStore.detailObject">
-      {{ renderDetail(ietmStore.detailObject.repos[0].objects[0].transformed_html) }}
-    </div> -->
     <div v-if="$props.transformed_html">
       {{ renderDetail($props.transformed_html) }}
     </div>
 
-
     <div ref="content">
-      <div ref="container"></div>
+      <div ref="container" id="detail-container"></div>
     </div>
   </div>
 </template>

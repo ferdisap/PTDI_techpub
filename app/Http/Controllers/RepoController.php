@@ -132,7 +132,7 @@ class RepoController extends Controller
       }
       return response()->json([
         'repos' => $this->getRepos(),
-      ], $code)->withCookie(cookie('tokenRepo', $tokenRepo, 5, null, null, null, false, false));
+      ], $code)->withCookie(cookie('tokenRepo', $tokenRepo, 60, null, null, null, false, false));
     } else {
       return $this->fail(400, ['no such repo available']);
     }

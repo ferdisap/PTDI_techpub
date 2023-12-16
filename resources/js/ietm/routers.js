@@ -3,6 +3,7 @@ import InsertToken from './components/insert-token.vue';
 import ListRepo from './components/list-repo.vue';
 import Index from './index.vue';
 import Content from './components/content.vue';
+import Body from './components/body.vue';
 
 export default [
   {

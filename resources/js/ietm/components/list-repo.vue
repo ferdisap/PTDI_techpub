@@ -23,7 +23,7 @@ export default {
     }
   },
   async beforeMount(){
-    console.log('beforeMount listRepo', this.data);
+    // console.log('beforeMount listRepo', this.data);
     if(!this.data && !this.ietmStore.response){
       let response = await ietm.getRepos(Cookies.get('tokenRepo'));
       this.data = response.data;
