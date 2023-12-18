@@ -1,44 +1,39 @@
 import ListObject from './components/list-object.vue';
 import InsertToken from './components/insert-token.vue';
 import ListRepo from './components/list-repo.vue';
-import Index from './index.vue';
 import Content from './components/content.vue';
-import Body from './components/body.vue';
+// import Body from './components/body.vue';
+import Index from './components/Index.vue'
 
 export default [
   {
-    path: '/ietm',
-    name: 'Index',
-    component: Index
-  },
-  {
-    path: '/ietm/InsertToken',
-    name: 'InsertToken',
-    component: InsertToken,
-  },
-  {
     name: 'ListRepo',
-    path: '/ietm/ListRepo',
+    path: '/ietm/list-repo',
     component: ListRepo,
   },
-  // {
-  //   name: 'ListObject',
-  //   path: '/ietm/Content/:repoName',
-  //   component: ListObject,
-  // },
   {
     name: 'ListObject',
-    path: '/ietm/Content/:repoName',
+    path: '/ietm/content/:repoName',
     component: Content,
   },
   {
     name: 'Content',
-    path: '/ietm/Content',
+    path: '/ietm/content',
     component: Content,
   },
   {
     name: 'Detail',
-    path: '/ietm/Content/:repoName/:filename',
+    path: '/ietm/content/:repoName/:filename',
     component: Content,
+  },
+  {
+    path: '/ietm/insert-token',
+    name: 'InsertToken',
+    component: InsertToken,
+  },
+  {
+    path: '/ietm',
+    name: 'Index',
+    component: Index
   },
 ]

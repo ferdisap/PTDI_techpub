@@ -1,5 +1,5 @@
 <script>
-import axios from 'axios';
+// import axios from 'axios';
 import { useIetmStore } from '../ietmStore';
 import Dropdown_pmEntry from './subcomponents/dropdown_pmEntry.vue';
 import { reactive } from 'vue';
@@ -9,35 +9,35 @@ export default {
       ietmStore: useIetmStore(),
       listPMC: useIetmStore().listPMC,
       data: reactive({}),
+      open: {},
     };
   },
   components: { Dropdown_pmEntry },
-  props: {filename: String},
   methods: {
   },
 }
 </script>
 
 <template>
-  <div class="bg-zinc-500 text-neutral-200 h-screen">
-    <h1 class="text-2xl font-bold my-3">Sidenav</h1>
+  <!-- <div class="bg-white text-black h-screen overflow-x-auto overflow-y-auto whitespace-nowrap py-3 w-100"> -->
+  <div class="bg-white text-black h-screen text-left py-3 w-100">
     
     <!-- OPERATION MANUAL -->
-    <div class="block mx-2 mb-5 text-start">
-      <button class="text-xl" @click="data[filename+'_OPERATION MANUAL'] = !data[filename+'_OPERATION MANUAL']">OPERATION MANUAL</button>
+    <div class="block mx-2 mb-5 text-left">
+      <button class="text-xl hover:bg-sky-300" @click="open['om'] = !open['om']">OPERATION MANUAL</button>
       <hr/>
-      <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="data[filename+'_OPERATION MANUAL']">
+      <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="open['om']">
         <Dropdown_pmEntry :title="object.title" :filename="object.filename" :pt="object.pt" v-if="(object.pt || object.pt != '') && object.pt.substr(2) > 50"/>
       </div>
     </div>
 
     <!-- MAINTENANCE MANUAL -->
-    <!-- <div class="block mx-2 mb-5">
-      <button class="text-xl" @click="data[filename+'_MAINTENANCE MANUAL'] = !data[filename+'_MAINTENANCE MANUAL']">MAINTENANCE MANUAL</button>
+    <div class="block mx-2 mb-5 text-left">
+      <button class="text-xl hover:bg-sky-300" @click="open['mm'] = !open['mm']">MAINTENANCE MANUAL</button>
       <hr>
-      <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="data[filename+'_MAINTENANCE MANUAL']">
+      <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="open['mm']">
         <Dropdown_pmEntry :title="object.title" :filename="object.filename" :pt="object.pt" v-if="(object.pt || object.pt != '') && object.pt.substr(2) > 60"/>
       </div>
-    </div> -->
+    </div>
   </div>
 </template>

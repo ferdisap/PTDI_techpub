@@ -16,7 +16,7 @@ return new class extends Migration
       $table->string('name')->unique();
       $table->string('path');
       $table->string('project_name');
-      $table->string('token')->unique();
+      $table->string('token');
       $table->timestamps();
     });
   }

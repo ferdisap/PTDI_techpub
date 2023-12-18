@@ -28,11 +28,11 @@
         </tr>
         @foreach ($repos as $repo)
         <tr>
-          <td>{{ $repo->name }}</td>
+          <td><a href="/ietm/content/{{ $repo->name }}">{{ $repo->name }}</a></td>
           <td>{{ $repo->project_name }}</td>
           <td>{{ base64_decode($repo->token) }}</td>
           <td>{{ date('d-M-Y', strtotime($repo->created_at) ) }}</td>
-          <td><a href="">Refresh</a> | <a href="">Delete</a></td>
+          <td><a href="">Refresh</a> | <a href="{{ route('get_delete_repo') }}?repoName={{ $repo->name }}">Delete</a></td>
         </tr>
         @endforeach
       </table>

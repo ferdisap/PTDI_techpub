@@ -6,6 +6,7 @@ use App\Models\Csdb;
 use DOMDocument;
 use DOMXPath;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -66,17 +67,10 @@ class CsdbServiceController extends CsdbController
       $file = $csdb_dom->getFile();
       return Response::make($file, 200, ['Content-Type' => $mime]);
     }
+    if(!Auth::check()){
+      return redirect(route('login'));
+    }
     $type = $csdb_dom->firstElementChild->tagName;
-
-    // if($type != 'dml'){
-    //   $appl = (MpubCSDB::getApplicability($csdb_dom, storage_path("app/{$csdb_model->path}")));
-    //   if($err = MpubCSDB::get_errors(true, 'getApplicability')){
-    //     $appl = json_encode($err);
-    //   }
-    //   $appl = $this->getApplicability('','first', true, $appl);
-    // } else {
-    //   $appl = '';
-    // }
 
     $utility = $request->get('utility');
 

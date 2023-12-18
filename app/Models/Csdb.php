@@ -83,6 +83,7 @@ class Csdb extends Model
   }
 
   public \DOMDocument $DOMDocument;
+  public string $output = 'html';
   public function transform_to_xml($path_xsl, $filename_xsl = '')
   {
     if(!$filename_xsl){
@@ -95,19 +96,18 @@ class Csdb extends Model
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
     $xsltproc->registerPHPFunctions([self::class."::getLastPositionCrewDrillStep", self::class."::setLastPositionCrewDrillStep"]);
+    $xsltproc->registerPHPFunctions();
 
     $xsltproc->setParameter('','repoName', $this->repoName);
-
     $transformed = str_replace("\n", '', $xsltproc->transformToXml($this->DOMDocument));
+
+    if($this->output == 'html'){
+      $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));
+    } else {
+      $transformed = str_replace("#ln;", chr(10), $xsltproc->transformToXml($this->DOMDocument));
+    }
     $transformed = preg_replace("/\s+/", ' ', $transformed);
 
     return $transformed;
   }
-  // /**
-  //  * Get the project joined for the csdb object
-  //  */
-  // public function project(): BelongsToMany
-  // {
-  //   return $this->belongsToMany(Project::class, 'csdb_project', 'csdb_id', 'project_name');
-  // }
 }

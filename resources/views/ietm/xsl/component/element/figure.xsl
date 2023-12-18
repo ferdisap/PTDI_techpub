@@ -38,6 +38,7 @@
         <table style="text-align:center;">
           <tr>
             <td>
+              FOO
               <img src="{$infoEntityIdent}">
                 <xsl:call-template name="cgmark"/>
                 <xsl:if test="@reproductionWidth">

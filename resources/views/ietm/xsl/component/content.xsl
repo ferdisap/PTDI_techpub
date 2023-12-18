@@ -11,7 +11,6 @@
 <xsl:include href="./condCrossRefTable.xsl"/>
 <xsl:include href="./productCrossRefTable.xsl"/>
 
-
 <xsl:include href="./attribute/id.xsl" />
 <xsl:include href="./attribute/cgmark.xsl" />
 <xsl:include href="./helper/position.xsl"/>

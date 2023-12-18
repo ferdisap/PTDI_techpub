@@ -13,8 +13,8 @@
 
   <xsl:template match="identAndStatusSection">
     <div class="identAndStatusSection">
-      <div>Schema: <xsl:value-of
-          select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')" /></div>
+      <div>Schema: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')" /></div>
+      <div>Publication Type: <xsl:value-of select="../@pmType"/></div>
 
       <h1>IDENTIFICATION AND STATUS SECTION</h1>
 

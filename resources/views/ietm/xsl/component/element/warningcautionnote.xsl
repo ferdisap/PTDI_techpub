@@ -65,21 +65,27 @@
         <xsl:text>border-bottom:2px solid grey</xsl:text>
       </xsl:if>
     </xsl:variable>
-    <div>
+    <div class="note">
       <xsl:call-template name="cgmark"/>
-      <table style="text-align:justify;width:100%;" cellpadding="1mm">
+      <table cellpadding="10mm">
         <xsl:if test="symbol/@infoEntityIdent">
         <tr>
-          <td style="width:100%;text-align:justify">
+          <td>
             <xsl:if test="child::symbol/@infoEntityIdent">
-              <img src="{$note_logo}"/>            
+              <img src="{$note_logo}" class="mt-3 symbol">
+                <xsl:if test="symbol/@reproductionWidth">
+                  <xsl:attribute name="width"><xsl:value-of select="symbol/@reproductionWidth"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="symbol/@reproductionHeight">
+                  <xsl:attribute name="height"><xsl:value-of select="symbol/@reproductionHeight"/></xsl:attribute>
+                </xsl:if>
+              </img>       
             </xsl:if>
-            <xsl:text>&#160;</xsl:text>
           </td>
         </tr>
         </xsl:if>
         <tr>
-          <td style="width:100%;text-align:justify;{$border}">
+          <td>
             <xsl:apply-templates select="notePara"/>
           </td>
         </tr>
@@ -108,7 +114,6 @@
           <xsl:call-template name="cgmark"/>
           <xsl:apply-templates/>
         </p>
-        <xsl:apply-templates/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>

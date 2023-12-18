@@ -9,10 +9,8 @@
   <xsl:template match="sequentialList">
     <br/>
     <xsl:if test="title">
-      <span><br style="line-height:1.25"/><b><xsl:value-of select="title"/></b></span>
+      <span><br/><b><xsl:value-of select="title"/></b></span>
     </xsl:if>
-    <!-- <ol style="line-height:0.5"> -->
-    <!-- <ol style="text-align:justify"> -->
     <ol>
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates />
@@ -22,10 +20,8 @@
   <xsl:template match="randomList">
     <br/>
     <xsl:if test="title">
-      <span><br style="line-height:1.25"/><b><xsl:value-of select="title"/></b></span>
+      <span><br/><b><xsl:value-of select="title"/></b></span>
     </xsl:if>
-    <!-- <ul style="line-height:0.5"> -->
-    <!-- <ul style="text-align:justify"> -->
     <ul>
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates/>
@@ -33,14 +29,14 @@
   </xsl:template> 
   
   <xsl:template match="listItem">
-    <li style="line-height:1.25">
+    <li>
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates/>
     </li>
   </xsl:template>
 
   <xsl:template match="note">
-    <div class="d-flex justify-content-center">
+    <div class="flex justify-content-center">
       <div class="note">
         <div class="heading"><span>NOTE</span></div>
         <xsl:apply-templates/>
@@ -58,11 +54,11 @@
 
   <xsl:template match="definitionListItem">
     <!-- di beri page-break-inside biar printing tidak melewati footer-->
-    <div style="page-break-inside: avoid;">
+    <div>
       <!-- text-align:left karena jika justify, akan merusan #ln;. Lagian seharusnya listitem tidak panjang kalimatnya -->
       <dt style="text-align:left">
         <b><xsl:apply-templates select="listItemTerm"/></b>
-        <br style="line-height:0.3"/>
+        <br/>
       </dt>
       <dd style="text-align:left">
         <xsl:apply-templates select="listItemDefinition"/>

@@ -11,12 +11,15 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\ICNDocument;
 use Symfony\Component\Uid\Ulid;
 use XSLTProcessor;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Filesystem\Filesystem;
 
 class RepoController extends Controller
 {
@@ -33,6 +36,13 @@ class RepoController extends Controller
 
   public function getdelete(Request $request)
   {
+    if(!($repoName = $request->get('repoName'))) return back()->withInput()->with(['result' => 'fail'])->withErrors(['repo name shall be provided.'],'info');
+    if(!($repo = Repo::with(['pmc', 'dmc'])->where('name', $repoName)->first())) return back()->withInput()->with(['result' => 'fail'])->withErrors(["There is no such {$repoName}"],'info');
+    if(!(@rename(storage_path("app/$repo->path"), storage_path("app/{$repo->path}__deleted")))) return back()->withInput()->with(['result' => 'fail'])->withErrors(["Deleting {$repoName} is fail."],'info');
+    $repo->dmc()->delete();
+    $repo->pmc()->delete();
+    $repo->delete();
+    return back()->withInput()->with(['result' => 'success'])->withErrors(["{$repoName} has been delete."],'info');
   }
 
   public function getcreate(Request $request)
@@ -123,18 +133,21 @@ class RepoController extends Controller
   public function provide_repo(Request $request)
   {
     if ($tokenRepo = $request->get('tokenRepo')) {
-      $encrypter = app(\Illuminate\Contracts\Encryption\Encrypter::class);
       $token = base64_encode($tokenRepo);
       $repos = Repo::where('token', $token)->get(['name', 'created_at']);
-      $code = count($repos) > 0 ? 200 : 400;
+      if(count($repos) <= 0){
+        return $this->fail(400, ["No such repo available based on the token '{$tokenRepo}'."]);
+      } else {
+
+      }
       foreach ($repos as $repo) {
         $this->addRepos(['name' => $repo->name, 'created_at' => $repo->created_at]);
       }
       return response()->json([
         'repos' => $this->getRepos(),
-      ], $code)->withCookie(cookie('tokenRepo', $tokenRepo, 60, null, null, null, false, false));
+      ], 200)->withCookie(cookie('tokenRepo', $tokenRepo, 60, null, null, null, false, false));
     } else {
-      return $this->fail(400, ['no such repo available']);
+      return $this->fail(400, ['You should put the repo token']);
     }
   }
 
@@ -153,7 +166,11 @@ class RepoController extends Controller
   public function provide_object_detail(Request $request, Repo $repo, $filename)
   {
     $tokenRepo = base64_encode(Cookie::get('tokenRepo'));
-    if ($tokenRepo != $repo->token) return $this->fail(400, ['You should put the true repo token.']);
+    if ($tokenRepo != $repo->token) {
+      $link = "/ietm/insert-token?repoName={$repo->name}&filename={$filename}";
+      // return $this->fail(400, ['<a href="javascript:ietm.link("'.$link.'")">You should put the true repo token.</a>']);
+      return $this->fail(400, ['<a href="javascript:ietm.goto('."'{$link}'".')">You should put the true repo token.</a>']);
+    }
 
     $object = new Csdb();
     $object->repoName = $repo->name;

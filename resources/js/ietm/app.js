@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
-import Index from "./index.vue";
+import App from "./App.vue";
 import Routes from "./routers.js";
 import Cookies from 'js-cookie';
 import { useIetmStore } from './ietmStore';
@@ -14,7 +14,7 @@ window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 
-const ietm = createApp(Index);
+const ietm = createApp(App);
 const router = createRouter({
   routes: Routes,
   history: createWebHistory(),
@@ -32,7 +32,7 @@ window.Cookies = Cookies;
 ietm.getObjects = async (repoName, params = {}) => {
   const url = new URL(window.location.origin + '/api/ietm/repo/' + repoName);
   url.search = new URLSearchParams(params);
-  let response = await axios.get(url);
+  let response = await axios.get(url).catch(e => e.response);;
   return response;
 };
 
@@ -40,7 +40,7 @@ ietm.getRepos = async (token, handler, params) => {
   // console.log('getRepos');
   const url = new URL(window.location.origin + "/api" + "/ietm/repo");
   url.search = new URLSearchParams({ tokenRepo: token });
-  let response = await axios.get(url);
+  let response = await axios.get(url).catch(e => e.response);
   return response;
   // if(response.status == 200){
   //   return response.data;
@@ -58,7 +58,7 @@ ietm.getRepos = async (token, handler, params) => {
 
 ietm.getDetailObject = async (repoName, filename, handler, params) => {
   const url = new URL(window.location.origin + "/api" + `/ietm/${repoName}/${filename}`);
-  let response = await axios.get(url);
+  let response = await axios.get(url).catch(e => e.response);
   return response;
   // return response;
   axios.get(url)
@@ -69,3 +69,7 @@ ietm.getDetailObject = async (repoName, filename, handler, params) => {
       }
    })
 };
+
+ietm.goto = (link) => {
+  router.push(link);
+}

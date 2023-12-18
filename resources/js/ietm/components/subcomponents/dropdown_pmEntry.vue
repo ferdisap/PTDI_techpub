@@ -17,14 +17,11 @@ export default {
   props: { pmEntry: Array, filename: String, pt: String, title: String },
   methods: {
     async pmEntryHandler(filename) {
-      // if (!this.data[filename]) {
-      //   let pmEntry = await this.ietmStore.pmEntryHandler(filename);
-      //   this.data[filename] = pmEntry;
-      // }
-      let pmEntry = await this.ietmStore.pmEntryHandler(filename);
-      this.data[filename] = pmEntry;
+      if (!this.data[filename]) {
+        let pmEntry = await this.ietmStore.pmEntryHandler(filename);
+        this.data[filename] = pmEntry;
+      }
       this.data[filename + 'show'] = !this.data[filename + 'show'];
-      // console.log(this.data[filename + 'show']);
     },
     async dmc_detail(filename) {
       this.$router.push({ name: 'Detail', params: { repoName: this.$route.params.repoName, filename: filename } });
@@ -53,30 +50,37 @@ export default {
 
 <template>
   <div v-if="filename" class="text-lg mt-2">
-    <button class="text-start" @click="pmEntryHandler(filename)"> 
+    <button class="text-left hover:bg-sky-300" @click="pmEntryHandler(filename)"> 
       <span class="mr-2">{{ title }} </span>
+      <br/>
       <span class="font-bold">{{ filename }}</span>
     </button>
     <div v-show="data[filename + 'show']">
       <Dropdown_pmEntry :pm-entry="data[filename]" v-if="data[filename]" />
     </div>
   </div>
+
   <div v-if="pmEntry" v-for="entry in pmEntry" class="mt-2">
-    <div v-for="content in entry.content" class="truncate mt-2"
+    <div v-for="content in entry.content" class="mt-2"
       :style="`margin-left:${entry.level * 10}px; text-align:left`">
       <div v-if="(typeof content == 'string')">
+
+        <!-- jika PMC -->
         <div v-if="content.split('-')[0] == 'PMC'">
-          <button @click="pmEntryHandler(content)">
+          <button @click="pmEntryHandler(content)" class="text-left hover:bg-sky-300">
             <span class="mr-2" v-html="getPMCTitle(content)"></span>
+            <br/>
             <span class="font-bold">{{ content }}</span>
           </button>
           <div v-show="data[content + 'show']">
             <Dropdown_pmEntry :pm-entry="data[content]" />
           </div>
         </div>
+
         <div v-else>
-          <button @click="dmc_detail(content)"> 
+          <button @click="dmc_detail(content)" class="text-left hover:bg-sky-300"> 
             <span class="mr-2" v-html="getDMCTitle(content)"></span>
+            <br/>
             <span class="font-bold">{{ content }}</span>
           </button>
         </div>

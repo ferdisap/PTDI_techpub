@@ -33,7 +33,7 @@
         <xsl:call-template name="cgmark" select="."/>
       </xsl:for-each>
       <table style="text-align:left;">
-        <xsl:attribute name="cellpadding">
+        <!-- <xsl:attribute name="cellpadding">
           <xsl:choose>
             <xsl:when test="@tgstyle">
               <xsl:variable name="tgstyle"><xsl:value-of select="@tgstyle"/></xsl:variable>
@@ -43,7 +43,7 @@
               <xsl:text>1mm</xsl:text>
             </xsl:otherwise>
           </xsl:choose>
-        </xsl:attribute>
+        </xsl:attribute> -->
         <thead>
           <xsl:apply-templates select="thead/row"/>
         </thead>

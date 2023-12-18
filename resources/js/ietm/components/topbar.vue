@@ -1,6 +1,11 @@
 <script>
+import { useIetmStore } from '../ietmStore';
+
 export default {
   name: 'Topbar',
+  data(){
+    ietmStore: useIetmStore()
+  }
 }
 </script>
 <template>
@@ -16,9 +21,14 @@ export default {
     </div>
     <div class="w-full flex justify-end">
       <div class="mx-8">
-        <span>welcome, Ferdi</span>
+        Repository Name:
         <br/>
-        <a href="" class="underline text-blue-600">Account Settings</a> | <a href="" class="underline text-blue-600">Logout</a>
+        <span>{{ $route.params.repoName }}</span>
+        <!-- <br/> -->
+        <!-- <span>Date Create: {{ ietmStore.repo.date }}</span> -->
+        <!-- <span>welcome, Ferdi</span>
+        <br/>
+        <a href="" class="underline text-blue-600">Account Settings</a> | <a href="" class="underline text-blue-600">Logout</a> -->
       </div>
     </div>
   </div>

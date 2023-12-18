@@ -9,7 +9,7 @@
   <xsl:output method="xml" omit-xml-declaration="yes"/>
 
   <xsl:template match="levelledPara">
-    <div>
+    <div class="levelledPara">
     <!-- <div style="border:1px solid red"> -->
       <xsl:call-template name="id"/>
       <xsl:call-template name="cgmark"/>

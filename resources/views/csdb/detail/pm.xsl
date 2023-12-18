@@ -24,6 +24,7 @@
 <xsl:template match="identAndStatusSection">
   <div class="identAndStatusSection">
     <div>Filename: <xsl:value-of select="$filename"/></div>
+    <div>Publication Type: <xsl:value-of select="../@pmType"/></div>
   
     <h1>IDENTIFICATION AND STATUS SECTION</h1>
   

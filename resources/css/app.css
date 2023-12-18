@@ -19,3 +19,61 @@ th,td{
 }
 
 .dump_red{border:1px solid red;}
+
+h1{
+  font-weight: bold;
+  /* text-2xl */
+  font-size: 1.5rem;
+  line-height: 2rem;
+  /* end text-2xl */
+}
+h2{
+  font-weight: bold;
+  /* text-xl */
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  /* end text-xl */
+}
+h3{
+  font-weight: bold;
+  /* text-lg */
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  /* end text-lg */
+}
+h4{
+  font-weight: bold;
+  /* text-base */
+  font-size: 1rem;
+  line-height: 1.5rem;
+  /* end text-base */
+}
+h5{
+  font-weight: bold;
+  /* text-sm */
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  /* end text-sm */
+}
+h6{
+  font-weight: bold;
+  /* text-xs */
+  font-size: 0.75rem;
+  line-height: 1rem;
+  /* end text-xs */
+}
+ol,ul, menu {
+  list-style: auto;
+  margin: revert;
+  padding: revert;
+}
+a{
+  color: revert;
+  text-decoration: revert;
+  -webkit-text-decoration: revert;
+}
+@layer components{
+  p{
+    @apply mb-3
+  }
+}

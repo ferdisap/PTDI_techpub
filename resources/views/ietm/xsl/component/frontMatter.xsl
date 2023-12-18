@@ -3,7 +3,6 @@
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl">
 
 <xsl:template match="frontMatter">
-  <hr/>
   <xsl:apply-templates/>
 </xsl:template>
 
@@ -102,13 +101,19 @@
   <xsl:variable name="filename" select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', descendant::dmRefIdent)"/>
   <tr>
     <td class="dmCode">
-      <a>
-        <xsl:attribute name="href">
-          <xsl:variable name="fn">javascript:ietmBody.link('<xsl:value-of select="$filename"/>')</xsl:variable>
+      <router-link>
+        <xsl:attribute name="to">
+          <xsl:value-of select="$filename"/>
+        </xsl:attribute>
+        <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmCode)"/>
+      </router-link>
+      <!-- <a href="javascript:void(0)">
+        <xsl:attribute name="onclick">
+          <xsl:variable name="fn">(this.__vueParentComponent.ctx.$parent.link('<xsl:value-of select="$filename"/>'))</xsl:variable>
           <xsl:value-of select="$fn"/>
         </xsl:attribute>
         <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmCode)"/>
-      </a>
+      </a> -->
     </td>
     <td class="issueDate"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, $filename, 'resolve_issueDate')"/></td>
     <td class="issueType"><xsl:value-of select="@issueType"/></td>

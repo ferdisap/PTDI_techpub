@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   @vite('resources/css/app.css')
+  @vite('resources/css/icon.css')
   @vite('resources/css/dmodule.css')
   @vite('resources/js/ietm/app.js')
   <title>IETM</title>

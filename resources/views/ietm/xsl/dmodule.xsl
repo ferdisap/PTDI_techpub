@@ -17,7 +17,7 @@
   </xsl:template>
 
   <xsl:template match="identAndStatusSection">
-    <div class="identAndStatusSection">
+    <div id="identAndStatusSection" v-show="ietmStore.showIdentSection">
       <div class="schema">Schema: <xsl:value-of
           select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')" /></div>
 

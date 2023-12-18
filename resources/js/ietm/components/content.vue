@@ -1,13 +1,14 @@
 <script>
 import { useIetmStore } from '../ietmStore';
-import { reactive } from 'vue';
+// import { ref, reactive } from 'vue';
 
-import InsertToken from './insert-token.vue';
-import ListRepo  from './list-repo.vue';
+// import InsertToken from './insert-token.vue';
+// import ListRepo  from './list-repo.vue';
 import ListObject from './list-object.vue';
 import Sidenav from './sidenav.vue';
-import Topbar from './topbar.vue';
+import Topbar from './Topbar.vue';
 import Body from './body.vue';
+// import Index from './Index.vue';
 
 export default {
   name: 'Content',
@@ -16,7 +17,7 @@ export default {
       ietmStore: useIetmStore(),
       transformed_html: '',
       filename: '',
-      showListObject: false,
+      showSidenav: true,
     }
   },
   methods:{
@@ -56,7 +57,8 @@ export default {
   mounted(){
     this.filename = this.$route.params.filename;
   },
-  async updated(){
+  
+  async beforeUpdate(){
     if(this.$route.params.filename != this.filename){
       this.filename = this.$route.params.filename;
       let response = await ietm.getDetailObject(this.$route.params.repoName, this.$route.params.filename);
@@ -64,6 +66,11 @@ export default {
         this.ietmStore.detailObject = response.data;
         this.transformed_html = this.ietmStore.detailObject.repos[0].objects[0].transformed_html;
       }
+      else{
+        this.$root.messages = response.data.messages;
+        this.$root.showMessages = true;
+      }
+
     }
   },
 }
@@ -71,20 +78,18 @@ export default {
 
 
 <template>
-  <Topbar/>
-  <div class="container mx-auto text-center">
-
-    <div class="flex">
-      <div class="w-1/4">
-        <Sidenav :filename="filename"/>
-      </div>
-      <div class="w-3/4 block">
-        <button class="sticky top-20 text-underline z-20 shadow-md bg-blue-600 rounded-full p-2 text-white text-underline float-right" @click="showListObject = !showListObject">List Object</button>
-        <div v-show="showListObject" class="sticky top-10 z-10 bg-white border-4 rounded-lg p-4">
-          <ListObject :repoName="$route.params.repoName"/>
+  <div class="mx-auto text-center flex">
+    <div :class="[showSidenav ? 'w-1/5' : '']">
+      <div class="border sticky top-0">
+        <div class="text-2xl font-bold bg-slate-900 text-white py-3">
+          <span class="" v-show="showSidenav">Left Side Panel</span>
+          <button class="float-right material-icons pb-3 bg-slate-900 text-white" @click="showSidenav = !showSidenav">{{ showSidenav ? 'chevron_left' : 'chevron_right'}}</button>
         </div>
-        <Body :filename="$route.params.filename" :transformed_html="transformed_html"/>
+        <Sidenav v-show="showSidenav"/>
       </div>
+    </div>
+    <div class="block w-full relative text-left">
+      <Body :filename="$route.params.filename" :transformed_html="transformed_html"/>
     </div>
   </div>
 </template>

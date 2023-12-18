@@ -12,31 +12,42 @@ export default {
   data(){
     return {
       ietmStore: useIetmStore(),
+      messages: undefined,
+      showMessages: false,
     }
   },
-  components: {
-    Topbar, Content, SideNav, InsertToken, ListRepo, 
-  },
   props: ['repos'],
+  components:{Topbar},
   mounted(){
     window.router = this.$router;
     if(!Cookies.get('tokenRepo')){
       let redirect = window.location.pathname;
-      let exclude = [];
+      let exclude = ['foo', 'bar'];
       exclude.push(this.$router.getRoutes().filter((v) => v.name == 'InsertToken')[0].path);
       
       if(!exclude.includes(redirect)){
         this.$router.push({name:'InsertToken',query:{redirect: redirect}});
       } else {
-        this.$router.push({name:'InsertToken'});
+        // this.$router.push({name:'InsertToken'});
       }
-
     }
   },
 }
 </script>
 
 <template>
+  <Topbar/>
+  <div class="flex justify-center absolute h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="messages" v-show="showMessages">
+    <div class="bg-cyan-300 px-5 shadow-sm rounded-lg block text-left w-full">
+      <div class="text-center text-xl p-3 font-bold">Message:
+        <button class="float-right" @click="showMessages = false">X</button>
+      </div>
+      <div v-for="message in messages">
+        <div v-html="message" class="mb-1" @click="showMessages = false"></div>
+      </div>
+    </div>
+  </div>
+  <div class="h-3"></div>
   <router-view v-slot="{ Component }">
     <keep-alive>
       <component :is="Component"/>

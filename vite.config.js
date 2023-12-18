@@ -17,6 +17,7 @@ export default defineConfig({
       input: [
         // 'resources/js/csdb/detail.js',
         'resources/css/app.css',
+        'resources/css/icon.css',
         'resources/css/dmodule.css',
         'resources/js/csdb/CsdbReader.js',
         'resources/js/ietm/app.js',

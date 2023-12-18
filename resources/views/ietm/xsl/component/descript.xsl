@@ -7,10 +7,8 @@
 <xsl:param name="dmOwner"/>
 
 <xsl:template match="description">
-  <hr/>
-  <h1>DESCRIPTION</h1>
-  <h1 style="text-align:center"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/descendant::dmTitle)"/></h1>
-  <div>
+  <div class="descript">
+    <h1><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/descendant::dmTitle)"/></h1>
     <xsl:apply-templates select="levelledPara"/>
   </div>
 </xsl:template>

@@ -1,18 +1,18 @@
 .dmodule{
   margin-top: 2rem;
 }
-.dmodule > .identAndStatusSection{
+.dmodule > #identAndStatusSection{
   display: block;
   text-align: start;
   width: inherit;
 }
 
-.dmodule > .identAndStatusSection > .schema{
+.dmodule > #identAndStatusSection > .schema{
   text-align: center;
   font-size: smaller;
 }
 
-.dmodule > .identAndStatusSection > .header{
+.dmodule > #identAndStatusSection > .header{
   text-align: center;
   font-size: larger;
   font-weight: bold;
@@ -29,4 +29,36 @@
 }
 
 
+/* LEVELLED PARA */
+.descript{
+  text-align: justify;
+}
+
+.descript > h1{
+  text-align: center;
+}
+.levelledPara > h1,
+.levelledPara > h2,
+.levelledPara > h3,
+.levelledPara > h4,
+.levelledPara > h5,
+.levelledPara > h6 {
+  text-align: left;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.note {
+  padding-left: 20%;
+  padding-right: 20%;
+}
+.note table {
+  width: 100%;
+}
+.note .symbol {
+  width: 20%;
+  margin-bottom: 1rem;
+}
+table {
+  width: 100%;
+}
 

@@ -21,21 +21,22 @@ export default {
 
 <template>
   <div class="flex justify-center mt-4" v-if="ietmStore.listDMC.length > 0">
-    <div class="block">
-      <h1 class="text-xl text-center">{{ repoName }}</h1>
-      <br/>
+    <div class="block mt-3 mb-4">
       <table>
         <tr>
-          <th>filename</th>
+          <th class="text-lg h-10 text-left">Filename:</th>
+          <th class="text-lg h-10 text-left">Title:</th>
         </tr>
         <tr v-for="object in ietmStore.listDMC">
-          <td>
-            <!-- <button @click="detail(object.filename)"> {{ object.filename }} </button> -->
-            <!-- <a :href="`/ietm/Content/${repoName}/${object.filename}`">{{ object.filename}}</a> -->
-            <RouterLink :to="`/ietm/Content/${repoName}/${object.filename}`"> {{ object.filename }} </RouterLink>
+          <td class="text-left">
+            <RouterLink :to="`/ietm/content/${repoName}/${object.filename}`"> {{ object.filename }} </RouterLink>
           </td>
+          <td class="text-left">{{ object.title }}</td>
         </tr>
       </table>
     </div>
+    <!-- <div>
+      {{ ietmStore.listDMC }}
+    </div> -->
   </div>
 </template>
