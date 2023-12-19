@@ -27,8 +27,6 @@ export default {
       
       if(!exclude.includes(redirect)){
         this.$router.push({name:'InsertToken',query:{redirect: redirect}});
-      } else {
-        // this.$router.push({name:'InsertToken'});
       }
     }
   },
@@ -36,6 +34,11 @@ export default {
 </script>
 
 <template>
+  <div class="h-1 sticky top-0" style="z-index: 100;">
+    <div class="wrapper">
+      <div class="loadingBar"></div>
+    </div>
+  </div>
   <Topbar/>
   <div class="flex justify-center absolute h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="messages" v-show="showMessages">
     <div class="bg-cyan-300 px-5 shadow-sm rounded-lg block text-left w-full">

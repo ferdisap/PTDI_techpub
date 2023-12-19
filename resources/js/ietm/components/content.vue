@@ -15,14 +15,12 @@ export default {
   data(){
     return {
       ietmStore: useIetmStore(),
-      transformed_html: '',
-      filename: '',
       showSidenav: true,
     }
   },
   methods:{
     async getListObject(){
-      let response = await ietm.getObjects(this.$route.params.repoName);
+      let response = await this.ietmStore.getObjects(this.$route.params.repoName);
       // alert('getListObject');
       if(response.statusText == 'OK'){
         this.ietmStore.listPMC = [];
@@ -48,30 +46,6 @@ export default {
     if(!this.$route.params.filename || this.ietmStore.listDMC.length < 1 || this.ietmStore.listPMC.length < 1){
       this.getListObject();
     }
-    if(this.$route.params.filename){
-      let response = await ietm.getDetailObject(this.$route.params.repoName, this.$route.params.filename);
-      this.data = response.data; 
-      this.transformed_html = response.data.repos[0].objects[0].transformed_html;
-    }
-  },
-  mounted(){
-    this.filename = this.$route.params.filename;
-  },
-  
-  async beforeUpdate(){
-    if(this.$route.params.filename != this.filename){
-      this.filename = this.$route.params.filename;
-      let response = await ietm.getDetailObject(this.$route.params.repoName, this.$route.params.filename);
-      if(response.statusText == 'OK'){
-        this.ietmStore.detailObject = response.data;
-        this.transformed_html = this.ietmStore.detailObject.repos[0].objects[0].transformed_html;
-      }
-      else{
-        this.$root.messages = response.data.messages;
-        this.$root.showMessages = true;
-      }
-
-    }
   },
 }
 </script>
@@ -89,7 +63,8 @@ export default {
       </div>
     </div>
     <div class="block w-full relative text-left">
-      <Body :filename="$route.params.filename" :transformed_html="transformed_html"/>
+      <!-- <Body/> -->
+      <Body :repoName="$route.params.repoName" :filename="$route.params.filename"/>
     </div>
   </div>
 </template>

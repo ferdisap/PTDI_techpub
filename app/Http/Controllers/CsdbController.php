@@ -412,6 +412,7 @@ class CsdbController extends Controller
       }
       $actual_ident = preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $object_name); // untuk membersihkan inwork dan issue number pada filename
       if (!in_array($actual_ident, $nominal_idents)) {
+        $actual_ident = preg_replace('/\.\w+$/','',$actual_ident);
         return [false, ["{$actual_ident} is not required by the DMRL."], 'info'];
       }
       return [true, ''];

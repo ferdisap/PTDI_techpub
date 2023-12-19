@@ -14,7 +14,7 @@ export default {
   },
   async beforeMount(){
     if(!this.data && !this.ietmStore.response){
-      let response = await ietm.getRepos(Cookies.get('tokenRepo'));
+      let response = await this.ietmStore.getRepos(Cookies.get('tokenRepo'));
       this.data = response.data;
     }
     else if(!this.data ){

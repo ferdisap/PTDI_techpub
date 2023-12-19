@@ -21,24 +21,20 @@
       </xsl:for-each>
     </xsl:variable>
 
-    <!-- <div style="text-align:center;page-break-before:always;page-break-after:always;border:1px solid blue"> -->
-    <!-- <div style="text-align:center;page-break-after:always;border:1px solid red"> -->
     <div style="text-align:center;page-break-inside: avoid;">
-      <!-- untuk elemen figure-->
       <xsl:call-template name="id"/>
       <xsl:call-template name="cgmark"/>
 
       <xsl:for-each select="graphic">
         <xsl:variable name="graIndex"><xsl:number/></xsl:variable>
         <xsl:variable name="infoEntityIdent">
-          <xsl:value-of select="$absolute_path_csdbInput"/>
+          <xsl:text>/route/get_transform_csdb/?filename=</xsl:text>
           <xsl:value-of select="@infoEntityIdent"/>
         </xsl:variable>
         
         <table style="text-align:center;">
           <tr>
             <td>
-              FOO
               <img src="{$infoEntityIdent}">
                 <xsl:call-template name="cgmark"/>
                 <xsl:if test="@reproductionWidth">
@@ -59,8 +55,7 @@
           </tr>
           <tr>
             <td>
-              <span style="font-size:{$fontsize_figure_title}">
-              
+              <span>
                 <xsl:if test="parent::figure/title/@changeMark = '1'">
                   <xsl:call-template name="cgmark">
                     <xsl:with-param name="changeMark" select="parent::figure/title/@changeMark"/>

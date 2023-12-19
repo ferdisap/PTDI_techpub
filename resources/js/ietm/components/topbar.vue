@@ -1,12 +1,12 @@
 <script>
-import { useIetmStore } from '../ietmStore';
+// import { useIetmStore } from '../ietmStore';
 
-export default {
-  name: 'Topbar',
-  data(){
-    ietmStore: useIetmStore()
-  }
-}
+// export default {
+  // name: 'Topbar',
+  // data(){
+    // ietmStore: useIetmStore()
+  // }
+// }
 </script>
 <template>
   <div class="flex bg-neutral-100 h-16 columns-3 w-full items-center">

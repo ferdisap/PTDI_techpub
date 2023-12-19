@@ -16,7 +16,7 @@ export default {
   methods: {
     async getRepo() {
       let tkn = token.value;
-      let response = await ietm.getRepos(tkn);
+      let response = await this.ietmStore.getRepos(tkn);
       if(response.statusText == 'OK'){
         this.ietmStore.tokenRepo = tkn;
         // Cookies.set('tokenRepo', token.value, {path:'/'}); // tidak diperlukan karena sudah dilakukan oleh server. Malah lebih bagus di server (laravel)

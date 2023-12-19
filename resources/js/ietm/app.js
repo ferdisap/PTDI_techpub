@@ -29,47 +29,6 @@ window.ietm = ietm;
 // document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
 window.Cookies = Cookies;
 
-ietm.getObjects = async (repoName, params = {}) => {
-  const url = new URL(window.location.origin + '/api/ietm/repo/' + repoName);
-  url.search = new URLSearchParams(params);
-  let response = await axios.get(url).catch(e => e.response);;
-  return response;
-};
-
-ietm.getRepos = async (token, handler, params) => {
-  // console.log('getRepos');
-  const url = new URL(window.location.origin + "/api" + "/ietm/repo");
-  url.search = new URLSearchParams({ tokenRepo: token });
-  let response = await axios.get(url).catch(e => e.response);
-  return response;
-  // if(response.status == 200){
-  //   return response.data;
-  // }
-  axios.get(url)
-    .then(response => {
-      Cookies.set('tokenRepo', token);
-      useIetmStore().setResponse(response);
-      useIetmStore().setTokenRepo(token);
-      if(handler){
-        handler.call(this, params);
-      }
-    });
-};
-
-ietm.getDetailObject = async (repoName, filename, handler, params) => {
-  const url = new URL(window.location.origin + "/api" + `/ietm/${repoName}/${filename}`);
-  let response = await axios.get(url).catch(e => e.response);
-  return response;
-  // return response;
-  axios.get(url)
-   .then(response => {
-      useIetmStore().setResponse(response);
-      if(handler){
-        handler.call(this, params);
-      }
-   })
-};
-
 ietm.goto = (link) => {
   router.push(link);
 }

@@ -18,6 +18,12 @@
           </div>
         </td>
         <td>{{ $object->status }}</td>
+        <td>
+          <button><a href="{{ route('get_delete_csdb_object') }}?filename={{ $object->filename }}">delete</a></button>
+        </td>
+        <td>
+          <button><a href="{{ route('get_update_csdb_object') }}?filename={{ $object->filename }}">update</a></button>
+        </td>
       </tr>
     @endforeach
   </table>
