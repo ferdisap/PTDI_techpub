@@ -61,7 +61,6 @@ export default {
 
   },
   async beforeUpdate() {
-    console.log('before update body', this.$route.params.filename);
     let obj;
     if (!(obj = this.ietmStore.getObj(this.$route.params.repoName, this.$route.params.filename))) {
       let response = await this.ietmStore.getDetailObject(this.$route.params.repoName, this.$route.params.filename);
@@ -87,7 +86,8 @@ export default {
 
     <div id="detail-container" class="w-full border ml-8">
       <div class="text-2xl py-3 font-bold bg-slate-950 text-white">CONTENT</div>
-      <div class="mt-2 mb-2 bg-slate-400" v-show="ietmStore.show">
+      <!-- <div class="mt-2 mb-2 bg-slate-400" v-show="ietmStore.show"> -->
+      <div class="mt-2 mb-2 bg-slate-400">
         <button :class="[ietmStore.showIdentSection ? 'border-b-black border-b-4' : '', 'mx-1 text-xl font-bold shadow-lg']"
           @click="ietmStore.showIdentSection = !ietmStore.showIdentSection;">&nbsp; Ident Section &nbsp;</button>
         <button :class="[showIndex ? 'border-b-black border-b-4' : '', 'mx-1 text-xl font-bold shadow-lg']"
@@ -116,6 +116,7 @@ export default {
           <div v-show="ietmStore.show">
             <ListObject :repoName="$route.params.repoName" v-show="ietmStore.showListObject" />
             <Entity v-show="ietmStore.showEntity" />
+            <!-- <Entity/> -->
           </div>
         </div>
       </div>

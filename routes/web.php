@@ -72,8 +72,11 @@ require __Dir__."/csdb/service.php";
 require __Dir__."/project/general.php";
 require __Dir__."/ietm/general.php";
 require __Dir__."/ietm/repo.php";
+require __Dir__."/csdb2/general.php";
+Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth');
 
 Route::get('/route/{name}', [Controller::class, 'route']);
+Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']);
 
 
 

@@ -46,7 +46,7 @@ export default {
       <div class="material-icons" style="font-size:200px">key</div>
       <br/>
 
-      <form action="" method="get" @submit.prevent="getRepoZ">
+      <form action="" method="get" @submit.prevent="getRepo">
         <div class="mb-5">
           <label for="token" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">TOKEN REPOSITORY</label>
           <br/>

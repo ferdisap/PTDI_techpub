@@ -1,0 +1,40 @@
+
+/* ref https://codepen.io/loquemedalagana/pen/eYWrXYQ */
+@keyframes growup {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes growdown {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+.sizing {
+  width: 500px;
+}
+
+.wrapper {
+  position: absolute;
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  height: inherit;
+}
+.loadingBar {
+  animation-duration: 2s;
+  animation-name: growup;
+  animation-iteration-count: infinite;
+  height: inherit;
+  background: #0057a8;
+  opacity: 1;
+}

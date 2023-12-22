@@ -42,6 +42,13 @@ class Csdb extends Model
    */
   protected $fillable = ['filename', 'path', 'status', 'description', 'editable', 'initiator_id', 'project_name'];
 
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['initiator_id'];
+
 
   /**
    * Get the initiator for the csdb object
@@ -56,7 +63,7 @@ class Csdb extends Model
    */
   public function project(): BelongsTo
   {
-    return $this->belongsTo(Project::class,'project_name');
+    return $this->belongsTo(Project::class, 'project_name');
   }
 
 
@@ -86,22 +93,22 @@ class Csdb extends Model
   public string $output = 'html';
   public function transform_to_xml($path_xsl, $filename_xsl = '')
   {
-    if(!$filename_xsl){
+    if (!$filename_xsl) {
       $type = $this->DOMDocument->documentElement->nodeName;
       $filename = "{$type}.xsl";
     }
 
-    $xsl = MpubCSDB::importDocument($path_xsl."/", $filename);
+    $xsl = MpubCSDB::importDocument($path_xsl . "/", $filename);
     $xsltproc = new \XSLTProcessor();
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
-    $xsltproc->registerPHPFunctions([self::class."::getLastPositionCrewDrillStep", self::class."::setLastPositionCrewDrillStep"]);
+    $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
     $xsltproc->registerPHPFunctions();
 
-    $xsltproc->setParameter('','repoName', $this->repoName);
+    $xsltproc->setParameter('', 'repoName', $this->repoName);
     $transformed = str_replace("\n", '', $xsltproc->transformToXml($this->DOMDocument));
 
-    if($this->output == 'html'){
+    if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));
     } else {
       $transformed = str_replace("#ln;", chr(10), $xsltproc->transformToXml($this->DOMDocument));

@@ -7,7 +7,7 @@
   </div>
 
   @php
-  $objs = $pr->csdb()->where('status','!=', 'deleted')->where('status', '!=', 'unused')->get();
+  $objs = $pr->csdb()->where('status','!=', 'deleted')->where('status', '!=', 'unused')->get()->sortBy('filename');
   @endphp
   <table>
     @foreach($objs as $object)

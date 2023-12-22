@@ -24,7 +24,7 @@ export default {
     
     <!-- OPERATION MANUAL -->
     <div class="block mx-2 mb-5 text-left">
-      <button class="text-xl hover:bg-sky-300" @click="open['om'] = !open['om']">OPERATION MANUAL</button>
+      <button class="text-xl font-bold hover:bg-sky-300" @click="open['om'] = !open['om']">OPERATION MANUAL</button>
       <hr/>
       <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="open['om']">
         <Dropdown_pmEntry :title="object.title" :filename="object.filename" :pt="object.pt" v-if="(object.pt || object.pt != '') && object.pt.substr(2) > 50"/>
@@ -33,7 +33,7 @@ export default {
 
     <!-- MAINTENANCE MANUAL -->
     <div class="block mx-2 mb-5 text-left">
-      <button class="text-xl hover:bg-sky-300" @click="open['mm'] = !open['mm']">MAINTENANCE MANUAL</button>
+      <button class="text-xl font-bold hover:bg-sky-300" @click="open['mm'] = !open['mm']">MAINTENANCE MANUAL</button>
       <hr>
       <div v-if="ietmStore.listPMC.length > 0" v-for="object in ietmStore.listPMC" style="text-align:left;" v-show="open['mm']">
         <Dropdown_pmEntry :title="object.title" :filename="object.filename" :pt="object.pt" v-if="(object.pt || object.pt != '') && object.pt.substr(2) > 60"/>

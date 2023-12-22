@@ -12,9 +12,11 @@ use DOMNode;
 use DOMXPath;
 use Gumlet\ImageResize;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
@@ -27,6 +29,173 @@ use ZipStream\ZipStream;
 
 class CsdbController extends Controller
 {
+  ################# NEW by VUE #################
+  public function general_index(Request $request)
+  {
+    return view('csdb2.app');
+  }
+  public function getallcsdb(Request $request)
+  {
+    if(!$request->get('projectName')){
+      Project::setFailMessage(['There is no such project name'], 'projectName');
+      return response()->json(Project::getFailMessage(true, 'projectName'),400);
+    }
+    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('projectName'))->get(['filename', 'status','initiator_id','description','created_at','updated_at']); 
+    return $csdb;
+  }
+  public function postupdate2(Request $request)
+  {
+    // return $this->ret(200,['bla bla bla has been updated.']);
+
+    $csdb_object = ModelsCsdb::where('filename', $request->get('filename'))->first();
+  
+    // validasi existing and editable
+    if (!$csdb_object) return $this->ret(400,["The object filename is not exist. You may to go to CREATE page to build one."]);
+    if (!$csdb_object->editable) return $this->ret(400,["The {$csdb_object->filename} is not enable to edit"]);
+    if (str_contains($csdb_object->path, "__")) $this->ret(400,["{$csdb_object->filename} with status {$csdb_object->status} cannot be modified. It must be returned to used csdb."]);
+  
+    $path = "csdb/{$csdb_object->project->name}";
+  
+    // validate initiator
+    if ($request->user()->id != $csdb_object->initiator_id) {
+      return $this->ret(400,["{$csdb_object->path} Only Initator which can be update this CSDB object."]);
+    }
+  
+    $entity = $request->file('entity');
+    if ($entity and str_contains($entity->getMimeType(), 'text')) {
+      $request->replace(['xmleditor' => file_get_contents($entity->getPathname())]);
+      $entity = false;
+    }
+    // update by xmleditor
+    if ($xmlstring = $request->get('xmleditor')) {
+      $proccessid = CSDB::$processid = self::class . "::update";
+      $dom = CSDB::importDocument('', '', trim($xmlstring));
+      if (!$dom) {
+        return $this->ret(400,CSDB::get_errors(true, $proccessid));
+      }
+  
+      // validate rootname pm or dm, sekaligus mendapatkan filename nya juga
+      if (!($validateRootname = CSDB::validateRootname($dom))) {
+        return back()->withInput()->with(['result' => 'fail'])->withErrors(CSDB::get_errors(true, 'validateRootname'), 'info');
+      }
+      $csdb_filename = $validateRootname[1];
+  
+      // validate sequencial attribbute inWork
+      $old_issueInfo = CSDB::importDocument(storage_path("app" . DIRECTORY_SEPARATOR . $csdb_object->path . DIRECTORY_SEPARATOR), $csdb_object->filename)->getElementsByTagName('issueInfo')[0];
+      $old_inwork = $old_issueInfo->getAttribute('inWork');
+      $old_issueNumber = $old_issueInfo->getAttribute('issueNumber');
+      $new_issueInfo = $dom->getElementsByTagName('issueInfo')[0];
+      $new_inwork = $new_issueInfo->getAttribute('inWork');
+      $new_issueNumber = $new_issueInfo->getAttribute('issueNumber');
+      if ($old_issueNumber != $new_issueNumber) {
+        // fail, m: you cannot update issueNumber at here.
+        return $this->ret(400,['you cannot update issueNumber of data module identification here.']);
+      }
+      if ($old_inwork != $new_inwork) {
+        if ($new_inwork - $old_inwork != 1) {
+          return $this->ret(400,['the inwork number of data module identification must be increment of 1.']);
+        }
+      }
+  
+      // validate Schema
+      if ($request->get('xsi_validate')) {
+        CSDB::validate('XSI', $dom);
+        if (CSDB::get_errors(false, 'validateBySchema')) {
+          return $this->ret(400,CSDB::get_errors(true, 'validateBySchema'));
+        }
+      }
+  
+      // validate Brex
+      if ($request->get('brex_validate') == 'on') {
+        CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
+        if (CSDB::get_errors(false, 'valPidateByBrex')) {
+          return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+        }
+      }
+  
+      // saving to database
+      $old_name = $csdb_object->filename;
+      $old_path = $csdb_object->path;
+      $old_status = $csdb_object->status;
+      // dd($old_path, $path, $old_name, $csdb_filename);
+      if ($old_path == $path and $old_name == $csdb_filename) {
+        $csdb_object->update(array_merge($request->all(), ['status' => 'modified']));
+        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+      } else {
+        // validate referenced dmrl, dilakukan jika filename (tidak termasuk issueNumber dan inWork) nya berbeda dengan yang lama
+        if (preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $old_name) != preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $csdb_filename)) { // untuk membersihkan inwork dan issue number pada filename
+          $ident = $validateRootname[2];
+          if (!(($r = $this->validateByDMRL($request->get('dmrl'), $csdb_filename, $ident))[0])) {
+            return $this->ret(400,$r[1]);
+            // return back()->withInput()->with(['result' => 'fail'])->withErrors($r[1], $r[2] ?? 'default');
+          }
+        }
+  
+        ModelsCsdb::create([
+          'filename' => $csdb_filename,
+          'path' => $path,
+          'status' => 'new',
+          'description' => '',
+          'editable' => 1,
+          'initiator_id' => $request->user()->id,
+          'project_name' => $csdb_object->project->name,
+        ]);
+  
+        // saving to local
+        // moving old file
+        $csdb_object->update(['path' => $old_path . "/__unused", 'status' => 'unused']);
+        Storage::disk('local')->move($old_path . DIRECTORY_SEPARATOR . $old_name, $old_path . "/__unused" . DIRECTORY_SEPARATOR . $old_name);
+        // create new file
+        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+      }
+      return $this->ret(200,["saved with filename: {$csdb_filename}"]);
+    }
+    // update by entity jika mime bukan text
+    elseif ($entity) {
+      // tidak perlu validate referenced dmrl karena ini update entity sehingga pasti filename nya sama
+  
+      // validate Brex
+      if ($request->get('brex_validate') == 'on') {
+        CSDB::validate('BREX-NONCONTEXT', $csdb_object->path . DIRECTORY_SEPARATOR . $csdb_object->filename, null, storage_path("app"));
+        if (CSDB::get_errors(false, 'validateByBrex')) {
+          return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+        }
+      }
+      // saving to database
+      $csdb_object->update(array_merge($request->all(), ['status' => 'modified']));
+  
+      // saving to local
+      $entity->storeAs($path, $csdb_object->filename);
+      return $this->ret(200,["{$csdb_object->filename} has been deleted from local disk."]);
+    }
+    // update ex: description or others if entity or xmleditor is empty
+    else {
+      $csdb_object->update(array_merge($request->all(), ['status' => 'modified']));
+      return $this->ret(200,["{$csdb_object->filename} has been updated."]);
+    }
+  }
+
+  /**
+   * bisa provide csdb string atau sesuai mimenya
+   */
+  public function getcsdb(Request $request)
+  {
+    if(!$request->get('filename') AND !$request->get('projectName')){
+      Project::setFailMessage(['Object filename and Project Name must be provided.'], 'messages');
+      return response()->json(Project::getFailMessage(true, 'messages'),400);
+    }
+    if(!$request->mime){
+      $csdb = ModelsCsdb::where('filename', $request->get('filename'))->first();
+      $file = Storage::get($csdb->path . DIRECTORY_SEPARATOR . $csdb->filename);
+      $mime = Storage::mimeType($csdb->path . DIRECTORY_SEPARATOR . $csdb->filename);
+      return response($file,200, [
+        'Content-Type' => $mime
+      ]);
+    }
+  }
+
+
+  ################# OLD by Blade #################
   /**
    * mendahulukan uploaded file, baru editor
    */
@@ -120,6 +289,7 @@ class CsdbController extends Controller
 
   public function postupdate(Request $request)
   {
+    // harusnya ga pakai id, karena filename itu unique jadi pakai filename.
     $csdb_object = ModelsCsdb::find($request->get('id'));
 
     // validasi existing and editable
@@ -220,10 +390,9 @@ class CsdbController extends Controller
         // create new file
         Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
       }
-      
+
       $url = preg_replace("/filename=.+.xml/", "filename={$csdb_filename}", back()->getTargetUrl());
       return back()->setTargetUrl($url)->withInput()->with(['result' => 'success'])->withErrors(["saved with filename: {$csdb_filename}"], 'info');
-
     }
     // update by entity jika mime bukan text
     elseif ($entity) {
@@ -412,7 +581,7 @@ class CsdbController extends Controller
       }
       $actual_ident = preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $object_name); // untuk membersihkan inwork dan issue number pada filename
       if (!in_array($actual_ident, $nominal_idents)) {
-        $actual_ident = preg_replace('/\.\w+$/','',$actual_ident);
+        $actual_ident = preg_replace('/\.\w+$/', '', $actual_ident);
         return [false, ["{$actual_ident} is not required by the DMRL."], 'info'];
       }
       return [true, ''];

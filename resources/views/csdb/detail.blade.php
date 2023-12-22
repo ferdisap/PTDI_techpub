@@ -17,7 +17,7 @@
   <div class="d-flex">
     @include('project.aside')
 
-    <div id="csdb_object" class="col-md-10 ">
+    <div id="csdb_object" class="col-md-8">
       <div>
         <input id="filename" value="{{ $object->filename ?? '' }}">
         <a href="/route/get_update_csdb_object?filename={{ $object->filename }}">Edit</a>
@@ -70,6 +70,19 @@
         <div class="d-flex">QA: <div id="resolve_qualityAssurance"></div></div>
       </div>
 
+    </div>
+
+    <div class="col-md-2">
+      <h5>Export to PDF</h5>
+      <form action="{{ route('get_export_csdb') }}" method="get">
+        <input type="hidden" name="type" value="pdf">
+        <input type="text" name="filename" value="{{ $filename }}"/>
+        <label for="pmType">pmType:</label>
+        <input type="text" name="pmType"/>
+        <label for="pmEntryType">pmEntryType:</label>
+        <input type="text" name="pmEntryType"/>
+        <button type="submit">Export</button>
+      </form>
     </div>
 
     {{-- @vite(['resources/js/csdb/detail.js']) --}}

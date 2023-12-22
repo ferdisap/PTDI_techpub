@@ -9,9 +9,11 @@ export const useIetmStore = defineStore('response', {
       showListObject: false,
       showIdentSection: false,
       showEntity: false,
-      show:true,
+      show:false, // untuk show right side panel
       objects: [],
-      showLoadingBar: false
+      showLoadingBar: false,
+
+      entity: {}, // dipakai di Entity.vue
 
 
     }

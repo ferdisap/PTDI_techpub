@@ -8,7 +8,9 @@ namespace App\Http\Controllers;
 use App\Models\Csdb;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 class Controller extends BaseController
 {
@@ -16,104 +18,43 @@ class Controller extends BaseController
 
   public function index(Request $request)
   {
-    
-    // $lists = Controller::get_file(storage_path('app/csdb/MALE'));
-    // $lists = (array_filter($lists, fn($v) => str_contains($v,'.')));
-    // foreach($lists as $obj){
-    //   if(!Csdb::where('path',"csdb/{$obj}")->latest('updated_at')->first('id')){
-    //     dd('a', Csdb::where('path',"csdb/{$obj}")->latest('updated_at')->first('name') == null);
-    //     Csdb::create([
-    //       'filename' => $obj,
-    //       'path' => "/csdb/$obj",
-    //       'status' => 'new',
-    //       'description' => '',
-    //       'editable' => 1,
-    //       'initiator_id' => 1,
-    //       'project_name' => 'MALE',
-    //     ]);
-    //   }
-    // }
-
     return view('welcome');
-    // switch ($request->utility) {
-    //   case 'getfile':
-    //     return $this->getFile($request->path,$request->ct);
-    //   case 'requestList':
-    //     return $this->generateAllStyle($request);
-    //   default:
-    //     return view('welcome');
-    //     break;
-    // }
   }
 
-  // private function getfile($path,$ct)
-  // {
-  //   Log::notice($path);
-  //   switch ($ct) {
-  //     case 'xml':
-  //       return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
-  //         'Content-Type' => 'application/xml'
-  //       ]);
-  //     case 'jpeg':
-  //       return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
-  //         'Content-Type' => 'image/jpeg'
-  //       ]);
-  //     case 'css':
-  //       return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
-  //         'Content-Type' => 'text/css'
-  //       ]);
-  //     case 'html':
-  //       return view('brex/index');
-  //     case 'javascript':
-  //       return response(file_get_contents($path, FILE_USE_INCLUDE_PATH), 200, [
-  //         'Content-Type' => 'text/javascript'
-  //       ]);
+  public function authcheck()
+  {
+    return response()->json([
+      'name' => Auth::user()->name,
+      'email' => Auth::user()->email,
+    ],200);
+  }
 
-  //     default:
-  //       return false;
-  //   }
-  // }
+  public function getAllRoutesNamed()
+  {
+    $allRoutes = Route::getRoutes()->getRoutes();
+    $allRoutes = array_filter($allRoutes, fn ($r) => $r->getName());
 
-  // public function anything(Request $request)
-  // {
-  //   $pathInfo = $request->getPathInfo();
-
-  //   if(strpos($pathInfo,'.xsl')){
-  //     return $this->getfile('view/general/xsl' . $pathInfo, 'xml');
-  //   } else {
-  //     return $this->index($request);
-  //   }
-  // }
-
-  // public function generateAllStyle(Request $request)
-  // {
-  //   if ($request->utility == 'requestList'){
-  //     $dir = base_path();
-  //     $pathXsl = $request->path ?? "/ietp_n219/view/general/xsl";
-  
-  //     $arr = array();
-  
-  //     // Open a known directory, and proceed to read its contents
-  //     if (is_dir($dir)) {
-  //         if ($dh = opendir($dir . $pathXsl)) {
-  //             while (($file = readdir($dh)) !== false) {
-  //                 // echo $file == "x";
-  //                 // echo "filename: $file" . "<br/>";
-  //                 if ($file != "." && $file != ".."){
-  //                   array_push($arr,$file);
-  //                 }
-  //             }
-  //             closedir($dh);
-  //         }
-  //     }
-  //     // return json_encode($arr);
-  //     // dd($arr);
-  //     return response()->json($arr);
-  //   } 
-  //   else {
-  //     return view('general/generateAllStyle');
-  //   }
-  // }
+    foreach ($allRoutes as $k => $v) {
+      $allRoutes[$v->getName()] = $v;
+      unset($allRoutes[$k]);
+    }
+    $allRoutes = array_map(function ($v) {
+      $params = $v->parameterNames();
+      foreach($params as $k => $n){
+        $params[$n] = ":$n";
+        unset($params[$k]);
+      }
+      $path = route($v->getName(), $params, false);
+      $ret = [
+        'name' => $v->getName(),
+        'method' => $v->methods(),
+        'path' => $path,
+        'params' => $params,
+      ];
+      return $ret;
+    }, $allRoutes);
+    return $allRoutes;
+  }
 
   public static function get_file(string $path, string $filename = '', bool $all = false){
     $exclude = array('.','..','.git','.gitignore');
@@ -135,6 +76,15 @@ class Controller extends BaseController
     }
   }
 
+  public function ret($code, $messages = [])
+  {
+    return response()->json([
+      'messages' => $messages,
+    ], $code);
+  }
+
+
+  
   /**
    * all returned array contains path is relative path
    */
@@ -166,4 +116,5 @@ class Controller extends BaseController
   {
     return redirect()->route($name, $request->all());
   }
+  
 }

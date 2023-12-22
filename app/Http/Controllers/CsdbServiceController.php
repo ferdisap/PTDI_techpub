@@ -202,6 +202,9 @@ class CsdbServiceController extends CsdbController
         return $this->transform_pdf_dmodule($request, storage_path("app/{$csdb_model->path}"), [$filename], '' ,$pmEntryType);
       }
       elseif($schema == 'pm.xsd'){
+        // if(!$request->get('pmType')){
+        //   $request->replace(array_merge($request->all(), ['pmType' => $csdb_dom->documentElement->getAttribute('pmType')]));
+        // }
         $modelIdentCode = $csdb_dom->getElementsByTagName('pmCode')[0]->getAttribute('modelIdentCode');
         return $this->transform_pdf_pm($request, $modelIdentCode, storage_path("app/{$csdb_model->path}"), $filename, '' ,$pmEntryType);
       }
@@ -216,24 +219,38 @@ class CsdbServiceController extends CsdbController
 
   private function transform_pdf_pm(Request $request, $modelIdentCode ,$absolute_path, string $filename, $pmType = 'pt99' ,$pmEntryType)
   {
-    $modelIdentCode = strtolower($modelIdentCode);
-    
+    $modelIdentCode = strtolower($modelIdentCode);    
     $pmc = PMC_PDF::instance($absolute_path,$modelIdentCode);
     $pmc->setAA_Approved("DGCA approved", " DD MMM YYYY");
     $pmc->importDocument($absolute_path."/", $filename,'');
-    $pmc->render();
+    
+    $params = [];
+    if($request->get('pmType')){
+      $params['pmType'] = $request->get('pmType');
+      $pmc::$static_pmType_config = [];
+    }
+    if(!empty($params)){
+      $pmc->setConfig($pmc->getDOMDocument(), $params);
+    }
+
+    try {
+      $pmc->render();
+    } catch (\Throwable $th) {
+      $err = MpubCSDB::get_errors();
+      foreach($err as &$v){
+        $v = array_merge($v, $v);
+      }
+      array_unshift($v, 'check the available object required by the pmc.');
+      return back()->withInput()->with(['result' => 'fail'])->withErrors($v, 'info');
+    }
     $pmc->getPDF();
   }
-  private function transform_pdf_dmodule(Request $request, $absolute_path, $filenames = [], $pmType = 'pt99' ,$pmEntryType)
+  private function transform_pdf_dmodule(Request $request, $absolute_path, $filenames = [])
   {
-    // dd('aa', \Ptdi\Mpub\Pdf2\font_path());
-    $appl = '';
-    $responsiblePartnerCompany = '';
-
     $pmc = new PMC_PDF($absolute_path);
     $pmc->importDocument_dump([
-      'pmType' => 'pt51',
-      'pmEntryType' => 'pmt01',
+      'pmType' => $request->pmType,
+      'pmEntryType' => $request->pmEntryType,
       'objectRef' => $filenames,
       'use_DMC_modelIdentCode' => true,
     ]);

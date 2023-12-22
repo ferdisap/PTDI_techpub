@@ -26,7 +26,7 @@
     mode: "xml",
     lineWrapping: true,
     lineNumbers: true,
-    "scrollbarStyle": "native",
+    // "scrollbarStyle": "native",
     "autocorrect": true,
     "indentWithTabs": true,
   });

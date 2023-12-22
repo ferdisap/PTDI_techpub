@@ -32,3 +32,9 @@ window.Cookies = Cookies;
 ietm.goto = (link) => {
   router.push(link);
 }
+
+ietm.clickImg = function(url) {
+  useIetmStore().entity.filename = url;
+  useIetmStore().show = true;
+  useIetmStore().showEntity = true;
+}

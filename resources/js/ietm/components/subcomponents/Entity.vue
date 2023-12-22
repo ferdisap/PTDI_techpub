@@ -10,7 +10,7 @@ export default {
 }
 </script>
 <template>
-  <div class="dump_red">
-    FOOBARR
+  <div class="">
+    <img :src="ietmStore.entity.filename"/>
   </div>
 </template>

@@ -35,15 +35,20 @@
         <table style="text-align:center;">
           <tr>
             <td>
-              <img src="{$infoEntityIdent}">
-                <xsl:call-template name="cgmark"/>
-                <xsl:if test="@reproductionWidth">
-                  <xsl:attribute name="width"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="@reproductionHeight">
-                  <xsl:attribute name="height"><xsl:value-of select="@reproductionHeight"/></xsl:attribute>
-                </xsl:if>
-              </img>
+              <div class="flex justify-center">
+                <img src="{$infoEntityIdent}">
+                  <xsl:attribute name="onclick">
+                    ietm.clickImg('<xsl:value-of select="$infoEntityIdent"/>')
+                  </xsl:attribute>
+                  <xsl:call-template name="cgmark"/>
+                  <xsl:if test="@reproductionWidth">
+                    <xsl:attribute name="width"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
+                  </xsl:if>
+                  <xsl:if test="@reproductionHeight">
+                    <xsl:attribute name="height"><xsl:value-of select="@reproductionHeight"/></xsl:attribute>
+                  </xsl:if>
+                </img>
+              </div>
             </td>
           </tr>
           <tr>

@@ -9,46 +9,6 @@
   src: url("./tahoma.ttf");
 }
 
-/* ref https://codepen.io/loquemedalagana/pen/eYWrXYQ */
-@keyframes growup {
-  from {
-    width: 0%;
-  }
-
-  to {
-    width: 100%;
-  }
-}
-
-@keyframes growdown {
-  from {
-    width: 100%;
-  }
-
-  to {
-    width: 0%;
-  }
-}
-.sizing {
-  width: 500px;
-}
-
-.wrapper {
-  position: absolute;
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
-  height: inherit;
-}
-.loadingBar {
-  animation-duration: 3s;
-  animation-name: growup;
-  animation-iteration-count: infinite;
-  height: inherit;
-  background: #0057a8;
-  opacity: 1;
-}
-
 
 th {
   border-bottom: 1px solid black
@@ -112,20 +72,29 @@ h6 {
   /* end text-xs */
 }
 
-ol, ul, menu {
+.detail-container ol, .detail-container ul, .detail-container menu {
   list-style: auto;
   margin: revert;
   padding: revert;
 }
 
-a {
+.detail-container a {
   color: revert;
   text-decoration: revert;
   -webkit-text-decoration: revert;
 }
 
 @layer components {
-  p {
+  .detail-container p {
     @apply mb-3
+  }
+  .button-nav {
+    @apply px-3 font-semibold shadow-sm mx-2 hover:bg-slate-100
+  }
+  .button {
+    @apply py-1 px-3 font-semibold shadow-sm mx-2 bg-neutral-200 hover:bg-neutral-400 rounded-full
+  }
+  .button-danger {
+    @apply py-1 px-3 font-semibold shadow-sm mx-2 rounded-full bg-red-500 hover:text-white hover:bg-red-700
   }
 }

@@ -53,7 +53,7 @@ class RepoController extends Controller
     // validation project name
     if (!($project = Project::find($request->get('project_name')))) return back()->withInput()->with(['result' => 'fail'])->withErrors(["Failed to create repo.",], 'info');;
 
-    $csdbs = $project->csdb;
+    $csdbs = $project->csdb->filter(fn($v) => $v->status == 'modified' OR $v->status == 'new');
     $csdbs = $csdbs->map(function ($item) {
       $item->prefix = explode('-', $item->filename)[0];
       switch ($item->prefix) {
@@ -107,10 +107,11 @@ class RepoController extends Controller
       }
     }
 
-    return back();
+    return back()->withInput()->with(['result' => 'success'])->withErrors(["{$repo->name} has been created."],'info');
   }
 
   ############# API #############
+  // pindah ke class parent (Controller) dengan nama ret.
   private function fail($code, $messages = [])
   {
     return response()->json([

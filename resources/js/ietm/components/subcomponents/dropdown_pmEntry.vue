@@ -51,9 +51,9 @@ export default {
 <template>
   <div v-if="filename" class="text-lg mt-2">
     <button class="text-left hover:bg-sky-300" @click="pmEntryHandler(filename)"> 
-      <span class="mr-2">{{ title }} </span>
+      <span class="mr-2 font-bold">{{ title }} </span>
       <br/>
-      <span class="font-bold">{{ filename }}</span>
+      <span class="">{{ filename }}</span>
     </button>
     <div v-show="data[filename + 'show']">
       <Dropdown_pmEntry :pm-entry="data[filename]" v-if="data[filename]" />
@@ -68,9 +68,9 @@ export default {
         <!-- jika PMC -->
         <div v-if="content.split('-')[0] == 'PMC'">
           <button @click="pmEntryHandler(content)" class="text-left hover:bg-sky-300">
-            <span class="mr-2" v-html="getPMCTitle(content)"></span>
+            <span class="mr-2 font-bold" v-html="getPMCTitle(content)"></span>
             <br/>
-            <span class="font-bold">{{ content }}</span>
+            <span class="">{{ content }}</span>
           </button>
           <div v-show="data[content + 'show']">
             <Dropdown_pmEntry :pm-entry="data[content]" />
@@ -79,9 +79,9 @@ export default {
 
         <div v-else>
           <button @click="dmc_detail(content)" class="text-left hover:bg-sky-300"> 
-            <span class="mr-2" v-html="getDMCTitle(content)"></span>
+            <span class="mr-2 font-bold" v-html="getDMCTitle(content)"></span>
             <br/>
-            <span class="font-bold">{{ content }}</span>
+            <span class="">{{ content }}</span>
           </button>
         </div>
       </div>

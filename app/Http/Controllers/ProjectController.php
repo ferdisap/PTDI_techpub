@@ -19,6 +19,16 @@ use Ptdi\Mpub\CSDB as MpubCSDB;
 
 class ProjectController extends Controller
 {
+  ################# NEW by VUE #################
+  public function getAllProject()
+  {
+    return Project::all();
+  }
+
+
+
+  ################# OLD by Blade #################
+
   public function index(Request $request)
   {
     // dd(Project::all()[0]);

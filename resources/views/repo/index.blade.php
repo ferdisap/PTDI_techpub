@@ -28,7 +28,7 @@
         </tr>
         @foreach ($repos as $repo)
         <tr>
-          <td><a href="/ietm/content/{{ $repo->name }}">{{ $repo->name }}</a></td>
+          <td><a href="/ietm/content/{{ $repo->name }}" target="_blank">{{ $repo->name }}</a></td>
           <td>{{ $repo->project_name }}</td>
           <td>{{ base64_decode($repo->token) }}</td>
           <td>{{ date('d-M-Y', strtotime($repo->created_at) ) }}</td>

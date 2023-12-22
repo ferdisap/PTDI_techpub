@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Storage;
 
 // PROJECT
 Route::get("project", [ProjectController::class, 'index'])->middleware('auth')->name('index_project');
+Route::get("api/project/index", [ProjectController::class, 'getAllProject'])->middleware('auth')->name('api.get_index_project');
+
 
 Route::get("project/create", [ProjectController::class, 'getcreate'])->middleware('auth')->name('get_create_project'); 
 

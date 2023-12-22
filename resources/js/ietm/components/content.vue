@@ -54,13 +54,11 @@ export default {
 <template>
   <div class="mx-auto text-center flex">
     <div :class="[showSidenav ? 'w-1/5' : '']">
-      <div class="border sticky top-0">
-        <div class="text-2xl font-bold bg-slate-900 text-white py-3">
-          <span class="" v-show="showSidenav">Left Side Panel</span>
-          <button class="float-right material-icons pb-3 bg-slate-900 text-white" @click="showSidenav = !showSidenav">{{ showSidenav ? 'chevron_left' : 'chevron_right'}}</button>
-        </div>
-        <Sidenav v-show="showSidenav"/>
+      <div class="text-2xl font-bold bg-slate-900 text-white py-3">
+        <span class="" v-show="showSidenav">Left Side Panel</span>
+        <button class="float-right material-icons pb-3 bg-slate-900 text-white" @click="showSidenav = !showSidenav">{{ showSidenav ? 'chevron_left' : 'chevron_right'}}</button>
       </div>
+      <Sidenav v-show="showSidenav"/>
     </div>
     <div class="block w-full relative text-left">
       <!-- <Body/> -->
