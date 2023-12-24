@@ -42,7 +42,7 @@ export default {
         template: obj ? obj.transformed_html : '',
         data() {
           return {
-            ietmStore: useIetmStore(),
+            store: useIetmStore(),
           }
         },
       }

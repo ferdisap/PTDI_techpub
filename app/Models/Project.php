@@ -48,18 +48,27 @@ class Project extends Model
     return $this->hasMany(Csdb::class);
   }
 
-  
+
+
+  // bisa ini
+  // Project::setFailMessage(["foo"], 'applicRefId');
+  // return $this->ret(200, [Project::getFailMessage()]);
+  // atau
+  // return $this->ret(200, [['applicRefId' => ["There is no such {$applicRefId} of applicRefId."]]]);
+  // hasilnya di json response.data = {messages: [{applicRefId: ["foo"]}]} // sama dengan withError() di laravel
+
   protected static $failMessages = [];
   public static function setFailMessage(array $messages = [], string $attribute = '')
   {
-    if($attribute != ''){
+    if ($attribute != '') {
       self::$failMessages[$attribute] = array_merge(self::$failMessages[$attribute] ?? [], $messages);
     } else {
       self::$failMessages = array_merge(self::$failMessages, $messages);
     }
   }
-  public static function getFailMessage(bool $empty = true, string $attribute = ''){
-    if($attribute != ''){
+  public static function getFailMessage(bool $empty = true, string $attribute = '')
+  {
+    if ($attribute != '') {
       $m = [$attribute => self::$failMessages[$attribute]];
       $empty ? (self::$failMessages[$attribute] = []) : null;
       return $m;

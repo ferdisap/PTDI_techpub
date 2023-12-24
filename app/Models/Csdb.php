@@ -91,22 +91,29 @@ class Csdb extends Model
 
   public \DOMDocument $DOMDocument;
   public string $output = 'html';
+  public string $repoName = '';
+  public string $objectpath = '';
   public function transform_to_xml($path_xsl, $filename_xsl = '')
   {
     if (!$filename_xsl) {
       $type = $this->DOMDocument->documentElement->nodeName;
-      $filename = "{$type}.xsl";
+      $filename_xsl = "{$type}.xsl";
     }
 
-    $xsl = MpubCSDB::importDocument($path_xsl . "/", $filename);
+    
+    $xsl = MpubCSDB::importDocument($path_xsl . "/", $filename_xsl);
+    // dd($filename_xsl, $xsl);
     $xsltproc = new \XSLTProcessor();
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
     $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
     $xsltproc->registerPHPFunctions();
-
+    
     $xsltproc->setParameter('', 'repoName', $this->repoName);
+    $xsltproc->setParameter('', 'objectpath', $this->objectpath);
+    // dd($path_xsl, $filename_xsl);
     $transformed = str_replace("\n", '', $xsltproc->transformToXml($this->DOMDocument));
+    
 
     if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));

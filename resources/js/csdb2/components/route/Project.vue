@@ -10,17 +10,8 @@ export default {
       showCreateRepo: false,
     }
   },
-  methods: {
-    tes(){
-      alert('foo');
-    }
-  },
-  created(){
-    // console.log(this.techpubStore.WebRoutes);
-    // console.log(window.WebRoutes);
-  },
   async mounted(){
-    await this.techpubStore.setProject(); 
+    await this.techpubStore.setProject();
   },
 }
 </script>

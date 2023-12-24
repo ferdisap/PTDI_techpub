@@ -17,6 +17,8 @@
     name: '',
     email: ''
   },
+
+  Errors: [ {name: ['text1']}, ... ]
  */
 
 import { defineStore } from 'pinia';
@@ -27,12 +29,15 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       Auth: {},
       WebRoutes: {},
       Project: [],
+      Errors: [],
+
       showLoadingBar: false,
+      showIdentSection: true,
     }
   },
   actions: {
     isEmpty(value) {
-      return (value == null || (typeof value === "string" && value.trim().length === 0));
+      return (value == null || value === '' || (typeof value === "string" && value.trim().length === 0));
     },
     date(str) {
       return (new Date(str)).toLocaleDateString('en-EN', {
@@ -40,7 +45,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       });
     },
     getWebRoute(name, params = {}) {
-      let route = this.WebRoutes[name];
+      let route = Object.assign({}, this.WebRoutes[name]);
       if (route.method.includes('GET')) {
         for (const p in route.params) {
           if (!params[p]) {
@@ -74,12 +79,28 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       }
     },
     setObjects(projectName, data){
-      console.log(this.Project[0]);
       this.Project.find(v => v.name = projectName).objects = data;
     },
     project(projectName){
-      // console.log(this.Project, projectName);
-      return this.Project.find(v => v.name = projectName);
+      return this.Project.find(v => v.name == projectName);
+    },
+    object(projectName, filename){
+      let pr = this.project(projectName);
+      if(!pr){
+        return false;
+      }
+      else if(!pr.objects){
+        return false;
+      }
+      else {
+        return pr.objects.find( v => v.filename == filename);
+      }
+    },
+    error(name){
+      let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
+      if(err){
+        return err[name];  // return array ['text1', 'text2', ...] 
+      }
     }
   }
 })

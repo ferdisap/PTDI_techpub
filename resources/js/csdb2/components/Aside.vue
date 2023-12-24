@@ -7,7 +7,8 @@ export default {
 </script>
 
 <template>
-  <aside class=" m-3 rounded-xl shadow-xl border-slate-300 bg-slate-50 min-w-[30%] text-black h-screen text-left py-3 w-100">
+  <!-- <aside class=" m-3 rounded-xl shadow-xl border-slate-300 bg-slate-50 min-w-[30%] text-black h-screen text-left py-3 md:w-1/4 2xl:w-100"> -->
+  <aside class=" m-3 rounded-xl shadow-xl border-slate-300 bg-slate-50 text-black h-5/6 text-left py-3 md:w-1/4 2xl:max-w-[50%] ">
     <div class="p-2 flex items-center space-x-3 mb-3">
       <span class="material-icons text-4xl bg-violet-800 text-white p-2 shadow-lg rounded-md">library_books</span>
       <div>

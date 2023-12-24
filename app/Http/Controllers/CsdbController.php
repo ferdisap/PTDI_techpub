@@ -34,13 +34,17 @@ class CsdbController extends Controller
   {
     return view('csdb2.app');
   }
-  public function getallcsdb(Request $request)
+  public function getcsdbdata(Request $request)
   {
     if(!$request->get('projectName')){
       Project::setFailMessage(['There is no such project name'], 'projectName');
       return response()->json(Project::getFailMessage(true, 'projectName'),400);
     }
-    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('projectName'))->get(['filename', 'status','initiator_id','description','created_at','updated_at']); 
+    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('projectName'));
+    if($request->get('filename')){
+      $csdb = $csdb->where('filename', $request->get('filename'));
+    }
+    $csdb = $csdb->get(['filename', 'status','initiator_id','description','created_at','updated_at']); 
     return $csdb;
   }
   public function postupdate2(Request $request)
@@ -71,12 +75,13 @@ class CsdbController extends Controller
       $proccessid = CSDB::$processid = self::class . "::update";
       $dom = CSDB::importDocument('', '', trim($xmlstring));
       if (!$dom) {
-        return $this->ret(400,CSDB::get_errors(true, $proccessid));
+        return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, $proccessid)]]);
       }
   
       // validate rootname pm or dm, sekaligus mendapatkan filename nya juga
       if (!($validateRootname = CSDB::validateRootname($dom))) {
-        return back()->withInput()->with(['result' => 'fail'])->withErrors(CSDB::get_errors(true, 'validateRootname'), 'info');
+        // return back()->withInput()->with(['result' => 'fail'])->withErrors(CSDB::get_errors(true, 'validateRootname'), 'info');
+        return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateRootname')]]);
       }
       $csdb_filename = $validateRootname[1];
   
@@ -89,19 +94,22 @@ class CsdbController extends Controller
       $new_issueNumber = $new_issueInfo->getAttribute('issueNumber');
       if ($old_issueNumber != $new_issueNumber) {
         // fail, m: you cannot update issueNumber at here.
-        return $this->ret(400,['you cannot update issueNumber of data module identification here.']);
+        // return $this->ret(400,['you cannot update issueNumber of data module identification here.']);
+        return $this->ret(400,[['xmleditor' => ['you cannot update issueNumber of data module identification here.']]]);
       }
       if ($old_inwork != $new_inwork) {
         if ($new_inwork - $old_inwork != 1) {
-          return $this->ret(400,['the inwork number of data module identification must be increment of 1.']);
+          // return $this->ret(400,['the inwork number of data module identification must be increment of 1.']);
+          return $this->ret(400,[['xmleditor' => ['the inwork number of data module identification must be increment of 1.']]]);
         }
       }
-  
+      
       // validate Schema
       if ($request->get('xsi_validate')) {
         CSDB::validate('XSI', $dom);
         if (CSDB::get_errors(false, 'validateBySchema')) {
-          return $this->ret(400,CSDB::get_errors(true, 'validateBySchema'));
+          // return $this->ret(400,CSDB::get_errors(true, 'validateBySchema'));
+          return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
         }
       }
   
@@ -109,7 +117,8 @@ class CsdbController extends Controller
       if ($request->get('brex_validate') == 'on') {
         CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
         if (CSDB::get_errors(false, 'valPidateByBrex')) {
-          return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+          // return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+          return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
         }
       }
   
@@ -126,8 +135,9 @@ class CsdbController extends Controller
         if (preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $old_name) != preg_replace("/_\d{3,5}-\d{2}|_[A-Za-z]{2,3}-[A-Z]{2}/", '', $csdb_filename)) { // untuk membersihkan inwork dan issue number pada filename
           $ident = $validateRootname[2];
           if (!(($r = $this->validateByDMRL($request->get('dmrl'), $csdb_filename, $ident))[0])) {
-            return $this->ret(400,$r[1]);
+            // return $this->ret(400,$r[1]);
             // return back()->withInput()->with(['result' => 'fail'])->withErrors($r[1], $r[2] ?? 'default');
+            return $this->ret(400,[['xmleditor' => $r[1]]]);
           }
         }
   
@@ -158,7 +168,8 @@ class CsdbController extends Controller
       if ($request->get('brex_validate') == 'on') {
         CSDB::validate('BREX-NONCONTEXT', $csdb_object->path . DIRECTORY_SEPARATOR . $csdb_object->filename, null, storage_path("app"));
         if (CSDB::get_errors(false, 'validateByBrex')) {
-          return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+          // return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
+          return $this->ret(400,[['entity' => CSDB::get_errors(true, 'validateByBrex')]]);
         }
       }
       // saving to database

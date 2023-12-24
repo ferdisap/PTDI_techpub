@@ -9,15 +9,38 @@ import { useTechpubStore } from '../techpub/techpubStore';
 
 
 export default {
-  data(){
+  data() {
     return {
       techpubStore: useTechpubStore(),
       messages: undefined,
       showMessages: true,
     }
   },
-  components: {Topbar, Info, Loading, Aside, Main},
-  async created(){
+  components: { Topbar, Info, Loading, Aside, Main },
+  methods: {
+    async error(axiosError) {
+      window.axiosError = axiosError;
+      this.$root.showMessages = true;
+      let messages = [];
+      if(axiosError.response.data.type == 'application/json'){
+        messages = JSON.parse(await axiosError.response.data.text()).messages ?? [JSON.parse(await axiosError.response.data.text()).message];
+      }
+      else {
+        messages = axiosError.response.data.messages;
+      }      
+      messages.unshift(axiosError.message);
+      this.$root.messages = messages;
+      this.techpubStore.showLoadingBar = false;
+    },
+    success(response) {
+      this.$root.showMessages = true;
+      let messages = response.data.messages;
+      this.messages = messages;
+      this.techpubStore.showLoadingBar = false;
+      this.techpubStore.Errors = [];
+    }
+  },
+  async created() {
     this.techpubStore.WebRoutes = window.WebRoutes;
     window.WebRoutes = undefined;
     await axios.get('/auth/check')
@@ -33,12 +56,12 @@ export default {
 </script>
 
 <template>
-  <Loading/>
-  <Topbar/>
-  <Info :messages="messages" :showMessages="showMessages"/>
+  <Loading />
+  <Topbar />
+  <Info :messages="messages" :showMessages="showMessages" />
 
   <div class="flex mx-auto">
-    <Aside/>
-    <Main/>
+    <Aside />
+    <Main />
   </div>
 </template>

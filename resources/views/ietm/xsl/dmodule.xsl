@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:php="http://php.net/xsl" exclude-result-prefixes="php xsi">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl">
+<!-- <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:php="http://php.net/xsl" exclude-result-prefixes="php xsi"> -->
 
   <xsl:output method="html" media-type="text/html"/>
 
   <xsl:include href="./component/content.xsl"/>
 
   <xsl:param name="repoName"/>
+  <xsl:param name="objectpath"/>
 
   <xsl:template match="/">
     <div class="dmodule">
@@ -17,7 +19,7 @@
   </xsl:template>
 
   <xsl:template match="identAndStatusSection">
-    <div id="identAndStatusSection" v-show="ietmStore.showIdentSection">
+    <div id="identAndStatusSection" v-show="store.showIdentSection">
       <div class="schema">Schema: <xsl:value-of
           select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')" /></div>
 

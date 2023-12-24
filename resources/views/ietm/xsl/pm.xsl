@@ -5,6 +5,11 @@
 
   <xsl:output method="html" />
 
+  <xsl:include href="./component/content.xsl"/>
+
+  <xsl:param name="repoName"/>
+  <xsl:param name="objectpath"/>
+
   <xsl:template match="/">
     <div class="pm">
       <xsl:apply-templates/>

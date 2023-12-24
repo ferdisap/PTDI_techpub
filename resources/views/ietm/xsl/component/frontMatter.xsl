@@ -35,11 +35,18 @@
           <xsl:for-each select="productIllustration/graphic">
           <img>
             <xsl:attribute name="src">
-              <xsl:text>/api/ietm/</xsl:text>
+              <xsl:value-of select="$objectpath"/>
+              <xsl:text>/</xsl:text>
               <xsl:value-of select="$repoName"/>
               <xsl:text>/</xsl:text>
               <xsl:value-of select="@infoEntityIdent"/>
             </xsl:attribute>
+            <!-- <xsl:attribute name="src">
+              <xsl:text>/api/ietm/</xsl:text>
+              <xsl:value-of select="$repoName"/>
+              <xsl:text>/</xsl:text>
+              <xsl:value-of select="@infoEntityIdent"/>
+            </xsl:attribute> -->
           </img>
           <br/>
           </xsl:for-each>

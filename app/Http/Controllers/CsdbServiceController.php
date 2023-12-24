@@ -26,6 +26,62 @@ class CsdbServiceController extends CsdbController
 {
   use Applicability;
 
+  ############### NEW by VUE ###############
+  public function provide_csdb_transform2(Request $request)
+  {
+    $projectName = $request->get('projectName') ?? $request->route('projectName');
+    $filename = $request->get('filename') ?? $request->route('filename');
+    if(!$projectName OR !$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
+
+    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
+    
+    // jika ICN Document
+    if($csdb_dom instanceof ICNDocument){
+      // saat ini belum bisa baca file 3D (step,igs,stl,etc)karena mime nya tidak dikenal
+      $mime = $csdb_dom->getFileinfo()['mime_type'];
+      $file = $csdb_dom->getFile();
+      return Response::make($file, 200, ['Content-Type' => $mime]);
+    }
+    // $type = $csdb_dom->firstElementChild->tagName;
+
+    $object = new Csdb();
+    $object->DOMDocument = $csdb_dom;
+    $object->repoName = $projectName;
+    $object->objectpath = "/api/csdb";
+    $transformed = $object->transform_to_xml(resource_path("views/ietm/xsl/"));
+    
+    if($error = MpubCSDB::get_errors(false)){
+      return $this->ret(400, [$error]);
+    }
+
+    return Response::make($transformed,200,['Content-Type' => 'text/html']);
+
+    dd($transformed);
+
+    // $xsl = MpubCSDB::importDocument(resource_path("views/ietm/xsl/"), "{$type}.xsl");
+    // dd($xsl);
+
+    $utility = $request->get('utility');
+    $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/"), "{$type}.xsl");
+    $xsltproc = new XSLTProcessor;
+    $xsltproc->importStylesheet($xsl);
+    $xsltproc->registerPHPFunctions((fn() => array_map(fn($name) => MpubCSDB::class."::$name", get_class_methods(MpubCSDB::class)))());
+    $xsltproc->registerPHPFunctions([CsdbServiceController::class."::getLastPositionCrewDrillStep", CsdbServiceController::class."::setLastPositionCrewDrillStep"]);
+    
+    $xsltproc->registerPHPFunctions();
+    $xsltproc->setParameter('','filename', $filename);
+    // $xsltproc->setParameter('','applicability', $appl);
+    $xsltproc->setParameter('','absolute_path_csdbInput', storage_path("app/{$csdb_model->path}/"));
+    $xsltproc->setParameter('','dmOwner', preg_replace("/.xml/",'',$filename));
+    $transformed = $xsltproc->transformToDoc($csdb_dom);
+    $transformed = str_replace('#ln;', "<br/>", $transformed->C14N());
+    return Response::make($transformed,200,['Content-Type' => 'text/html']);
+  }
+
+
+
+  ############### OLD by blade ###############
   /**
    * helper function untuk crew.xsl
    * ini tidak bisa di pindah karena bukan static method

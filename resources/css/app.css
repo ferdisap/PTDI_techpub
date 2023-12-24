@@ -88,6 +88,11 @@ h6 {
   .detail-container p {
     @apply mb-3
   }
+
+  .input {
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500
+  }
+
   .button-nav {
     @apply px-3 font-semibold shadow-sm mx-2 hover:bg-slate-100
   }
@@ -96,5 +101,8 @@ h6 {
   }
   .button-danger {
     @apply py-1 px-3 font-semibold shadow-sm mx-2 rounded-full bg-red-500 hover:text-white hover:bg-red-700
+  }
+  .button-violet {
+    @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-violet-400 hover:bg-violet-600 rounded-full
   }
 }
