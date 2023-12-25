@@ -6,6 +6,7 @@ use App\Http\Controllers\CsdbController;
 use App\Http\Controllers\CsdbProcessingController;
 use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\RepoController;
 use App\Models\Csdb;
 use App\Models\Project;
 use App\Models\User;
@@ -22,13 +23,14 @@ Route::get('/ms/{project?}/{name?}/{isUpdate?}', [CsdbController::class, 'genera
 
 Route::get('/api/csdb', [CsdbController::class, 'getcsdbdata'])->middleware('auth')->name('api.get_csdb_object_data');
 Route::get('/api/getobject', [CsdbController::class, 'getcsdb'])->middleware('auth')->name('api.getobject');
+Route::post("/api/csdb/object/create", [CsdbController::class, 'postcreate2'])->middleware('auth')->name('api.post_create_csdb_object'); //create_csdb_object
 Route::post("api/csdb/object/update", [CsdbController::class, 'postupdate2'])->middleware('auth')->name('api.post_update_csdb_object'); // update_csdb_object
 Route::post("/api/csdb/object/verify", [CsdbProcessingController::class, 'postverify2'])->middleware('auth')->name('api.post_csdb_object_verify');
 
 ###### service ######
-// Route::get('api/csdb/object/detail', [CsdbController::class, 'getdetail2'])->middleware('auth')->name('api.get_detail_csdb_object');
-// Route::get("/api/csdb/object/transform", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');
 Route::get("/api/csdb/{projectName}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');
+Route::get("/api/{projectName}/{filename}/pdf", [CsdbServiceController::class, 'provide_csdb_pdf'])->middleware('auth')->name('api.pdf_csdb');
+Route::get("/api/repo", [RepoController::class, 'getindex2'])->middleware('auth')->name('api.get_repo_index');
 
 // Route::get('/csdb/object/create', [CsdbController::class, 'getcreate'])->middleware('auth');
 

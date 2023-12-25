@@ -48,6 +48,13 @@ class Repo extends Model
   protected $fillable = ['name', 'path', 'project_name', 'token'];
 
   /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'path'];
+
+  /**
    * Get the project of the repo
    */
   public function project(): BelongsTo

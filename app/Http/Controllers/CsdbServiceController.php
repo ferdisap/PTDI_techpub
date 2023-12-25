@@ -78,6 +78,24 @@ class CsdbServiceController extends CsdbController
     $transformed = str_replace('#ln;', "<br/>", $transformed->C14N());
     return Response::make($transformed,200,['Content-Type' => 'text/html']);
   }
+  public function provide_csdb_pdf(Request $request)
+  {
+    $filename = $request->get('filename') ?? $request->route('filename');
+    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $filename);
+    
+    $schema = MpubCSDB::getSchemaUsed($csdb_dom, 'filename');
+    if(in_array($schema, ['crew.xsd', 'comrep.xsd', 'descript.xsd', 'frontmatter.xsd'])){
+      return $this->transform_pdf_dmodule($request, storage_path("app/{$csdb_model->path}"), [$filename]);
+    }
+    elseif($schema == 'pm.xsd'){
+      $modelIdentCode = $csdb_dom->getElementsByTagName('pmCode')[0]->getAttribute('modelIdentCode');
+      return $this->transform_pdf_pm($request, $modelIdentCode, storage_path("app/{$csdb_model->path}"), $filename,);
+    }
+    else{
+      abort(500);
+    }
+  }
 
 
 
@@ -273,13 +291,12 @@ class CsdbServiceController extends CsdbController
     }
   }
 
-  private function transform_pdf_pm(Request $request, $modelIdentCode ,$absolute_path, string $filename, $pmType = 'pt99' ,$pmEntryType)
+  private function transform_pdf_pm(Request $request, $modelIdentCode ,$absolute_path, string $filename, $pmType = 'pt99')
   {
     $modelIdentCode = strtolower($modelIdentCode);    
     $pmc = PMC_PDF::instance($absolute_path,$modelIdentCode);
     $pmc->setAA_Approved("DGCA approved", " DD MMM YYYY");
     $pmc->importDocument($absolute_path."/", $filename,'');
-    
     $params = [];
     if($request->get('pmType')){
       $params['pmType'] = $request->get('pmType');
@@ -288,7 +305,7 @@ class CsdbServiceController extends CsdbController
     if(!empty($params)){
       $pmc->setConfig($pmc->getDOMDocument(), $params);
     }
-
+    
     try {
       $pmc->render();
     } catch (\Throwable $th) {
@@ -297,8 +314,10 @@ class CsdbServiceController extends CsdbController
         $v = array_merge($v, $v);
       }
       array_unshift($v, 'check the available object required by the pmc.');
-      return back()->withInput()->with(['result' => 'fail'])->withErrors($v, 'info');
+      // return back()->withInput()->with(['result' => 'fail'])->withErrors($v, 'info');
+      return abort(400,join(", ", $v)); // erro. tidak perlu back agar kalau pake vue bisa
     }
+    dd('aaa');
     $pmc->getPDF();
   }
   private function transform_pdf_dmodule(Request $request, $absolute_path, $filenames = [])

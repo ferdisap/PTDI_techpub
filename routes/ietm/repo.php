@@ -21,6 +21,7 @@ Route::get('/repo/delete', [RepoController::class, 'getdelete'])->middleware('au
 Route::get('/ietm/repo', [RepoController::class, 'get'])->middleware('auth')->name('get_repo');
 
 Route::post('/ietm/repo/create', [RepoController::class, 'getcreate'])->middleware('auth')->name('post_create_repo');
+Route::post('/api/ietm/repo/create', [RepoController::class, 'getcreate2'])->middleware('auth')->name('api.post_create_repo');
 
 Route::get("/api/ietm/repo", [RepoController::class, 'provide_repo'])->name('provide_repo');
 Route::get("/api/ietm/repo/{name}", [RepoController::class, 'provide_repo_object'])->name('provide_repo_object');

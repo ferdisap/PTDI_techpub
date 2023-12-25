@@ -14,13 +14,14 @@ export default {
       techpubStore: useTechpubStore(),
       messages: undefined,
       showMessages: true,
+      isSuccess: true,
     }
   },
   components: { Topbar, Info, Loading, Aside, Main },
   methods: {
     async error(axiosError) {
       window.axiosError = axiosError;
-      this.$root.showMessages = true;
+      this.showMessages = true;
       let messages = [];
       if(axiosError.response.data.type == 'application/json'){
         messages = JSON.parse(await axiosError.response.data.text()).messages ?? [JSON.parse(await axiosError.response.data.text()).message];
@@ -29,13 +30,15 @@ export default {
         messages = axiosError.response.data.messages;
       }      
       messages.unshift(axiosError.message);
-      this.$root.messages = messages;
+      this.messages = messages;
+      this.isSuccess = false,
       this.techpubStore.showLoadingBar = false;
     },
     success(response) {
       this.$root.showMessages = true;
       let messages = response.data.messages;
       this.messages = messages;
+      this.isSuccess = true,
       this.techpubStore.showLoadingBar = false;
       this.techpubStore.Errors = [];
     }
@@ -58,7 +61,7 @@ export default {
 <template>
   <Loading />
   <Topbar />
-  <Info :messages="messages" :showMessages="showMessages" />
+  <Info :messages="messages" :showMessages="showMessages" :isSuccess="isSuccess"/>
 
   <div class="flex mx-auto">
     <Aside />

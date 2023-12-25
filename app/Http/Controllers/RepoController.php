@@ -23,11 +23,81 @@ use Illuminate\Filesystem\Filesystem;
 
 class RepoController extends Controller
 {
-  // public function get(Request $request)
-  // {
-  //   $repo = Repo::where('token', base64_encode($request->get('token')))->first();
-  //   dd($repo);
-  // }
+  ######### NEW by VUE ############
+  public function getcreate2(Request $request)
+  {
+
+    // validation password
+    if (!$request->get('token')) return $this->ret(400, [['token' => ['token is required.']], "failed to crate repo."]);
+
+    // validation project name
+    if (!($project = Project::find($request->get('projectName')))) return $this->ret(400, [['projectName' => ["Name of Project doesn't exist."]], "failed to crate repo."]);
+
+    $csdbs = $project->csdb->filter(fn($v) => $v->status == 'modified' OR $v->status == 'new');
+    $csdbs = $csdbs->map(function ($item) {
+      $item->prefix = explode('-', $item->filename)[0];
+
+      // untuk pembuatan repo object PMC/DMC
+      switch ($item->prefix) {
+        case 'PMC':
+          $doc = MpubCSDB::importDocument(storage_path("app/{$item->path}/"), $item->filename);
+          $item->pt = $doc->documentElement->getAttribute('pmType');
+          $item->title = MpubCSDB::resolve_pmTitle($doc->getElementsByTagName('pmTitle')[0]);
+          $item->issuedate = MpubCSDB::resolve_issueDate($doc->getElementsByTagName('issueDate')[0]);
+          $item->sc = MpubCSDB::resolve_securityClassification($doc);
+          break;
+        case 'DMC':
+          $doc = MpubCSDB::importDocument(storage_path("app/{$item->path}/"), $item->filename);
+          $item->title = MpubCSDB::resolve_dmTitle($doc->getElementsByTagName('dmTitle')[0]);
+          $item->issuedate = MpubCSDB::resolve_issueDate($doc->getElementsByTagName('issueDate')[0]);
+          $item->schema = MpubCSDB::getSchemaUsed($doc, 'filename');
+          $item->sc = MpubCSDB::resolve_securityClassification($doc);
+      }
+      return $item;
+    });
+
+    $reponame = $project->name . "_" . Carbon::now()->toDateString() . "_" . Str::random(10);
+    // rawan tokennya sama, sehingga buat dulu Repo model, baru storage dipindahkan
+    $repo = Repo::create([
+      'name' => $reponame,
+      'path' => "repo/{$reponame}",
+      'projectName' => $project->name,
+      'token' => base64_encode($request->get('token')),
+    ]);
+    foreach ($csdbs as $csdb) {
+      $oldpathname = $csdb->path . "/" . $csdb->filename;
+      $newpathname = "repo/{$reponame}/{$csdb->filename}";
+      Storage::copy($oldpathname, $newpathname);
+      if ($csdb->prefix == 'PMC') {
+        RepoObjectPMC::create([
+          'repo_id' => $repo->id,
+          'filename' => $csdb->filename,
+          'pt' => $csdb->pt,
+          'title' => $csdb->title,
+          'issuedate' => $csdb->issuedate,
+          'sc' => $csdb->sc,
+        ]);
+      } elseif ($csdb->prefix == 'DMC') {
+        RepoObjectDMC::create([
+          'repo_id' => $repo->id,
+          'filename' => $csdb->filename,
+          'title' => $csdb->title,
+          'issuedate' => $csdb->issuedate,
+          'schema' => $csdb->schema,
+          'sc' => $csdb->sc,
+        ]);
+      }
+    }
+
+    return $this->ret(200, ["{$repo->name} has been created."]);
+  }
+  public function getindex2(Request $request)
+  {
+    return Repo::all();
+  }
+
+  ######## OLD ########
+  ### tapi beberapa masih dipakai
 
   public function getindex(Request $request)
   {
@@ -51,7 +121,7 @@ class RepoController extends Controller
     if (!$request->get('token')) return back()->withInput()->with(['result' => 'fail'])->withErrors(['token' => 'token is required.'])->withErrors(["Failed to create repo."], 'info');
 
     // validation project name
-    if (!($project = Project::find($request->get('project_name')))) return back()->withInput()->with(['result' => 'fail'])->withErrors(["Failed to create repo.",], 'info');;
+    if (!($project = Project::find($request->get('projectName')))) return back()->withInput()->with(['result' => 'fail'])->withErrors(["Failed to create repo.",], 'info');;
 
     $csdbs = $project->csdb->filter(fn($v) => $v->status == 'modified' OR $v->status == 'new');
     $csdbs = $csdbs->map(function ($item) {
@@ -79,7 +149,7 @@ class RepoController extends Controller
     $repo = Repo::create([
       'name' => $reponame,
       'path' => "repo/{$reponame}",
-      'project_name' => $project->name,
+      'projectName' => $project->name,
       'token' => base64_encode($request->get('token')),
     ]);
     foreach ($csdbs as $csdb) {

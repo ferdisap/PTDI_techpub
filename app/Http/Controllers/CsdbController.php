@@ -36,11 +36,11 @@ class CsdbController extends Controller
   }
   public function getcsdbdata(Request $request)
   {
-    if(!$request->get('projectName')){
-      Project::setFailMessage(['There is no such project name'], 'projectName');
-      return response()->json(Project::getFailMessage(true, 'projectName'),400);
+    if(!$request->get('project_name')){
+      Project::setFailMessage(['There is no such project name'], 'project_name');
+      return response()->json(Project::getFailMessage(true, 'project_name'),400);
     }
-    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('projectName'));
+    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('project_name'));
     if($request->get('filename')){
       $csdb = $csdb->where('filename', $request->get('filename'));
     }
@@ -116,7 +116,7 @@ class CsdbController extends Controller
       // validate Brex
       if ($request->get('brex_validate') == 'on') {
         CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
-        if (CSDB::get_errors(false, 'valPidateByBrex')) {
+        if (CSDB::get_errors(false, 'validateByBrex')) {
           // return $this->ret(400,CSDB::get_errors(true, 'validateByBrex'));
           return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
         }
@@ -191,7 +191,7 @@ class CsdbController extends Controller
    */
   public function getcsdb(Request $request)
   {
-    if(!$request->get('filename') AND !$request->get('projectName')){
+    if(!$request->get('filename') AND !$request->get('project_name')){
       Project::setFailMessage(['Object filename and Project Name must be provided.'], 'messages');
       return response()->json(Project::getFailMessage(true, 'messages'),400);
     }
@@ -202,6 +202,112 @@ class CsdbController extends Controller
       return response($file,200, [
         'Content-Type' => $mime
       ]);
+    }
+  }
+
+  /**
+   * mendahulukan uploaded file, baru editor
+   */
+  public function postcreate2(Request $request)
+  {
+    // validate form
+    if (!($project = Project::find($request->get('project_name')))) {
+      Project::setFailMessage(['There is no such project name'], 'project_name');
+      Project::setFailMessage(['check the input of Project Name.'], 'INFO');
+      return $this->ret(400, [Project::getFailMessage(true, 'project_name')]);
+    }
+    $dom = null;
+    $proccessid = CSDB::$processid = self::class . "::create";
+
+    // set type and get dom if xml, by the string or file upload
+    $type = '';
+    $file = $request->file('entity');
+    if ($file and in_array($file->getMimeType(), array('text/xml', 'text/plain'))) {
+      $type = 'xml';
+      $xmlstring = file_get_contents($file->getPathname());
+      $dom = CSDB::importDocument('', '', $xmlstring);
+    } elseif ($file and in_array($file->getMimeType(), array('image/jpg', 'image/jpeg', 'image/png', 'image/svg'))) {
+      $type = 'multimedia';
+    } else {
+      $type = 'xml';
+      $xmlstring = $request->get('xmleditor');
+      $dom = CSDB::importDocument('', '', trim($xmlstring), '', 'tes'); // akan false jika tidak bisa jad DOM
+    }
+
+    // return false jika dom tidak bisa di buat
+    if ($type == 'xml' and !$dom) {
+      return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, $proccessid)]]);
+    } 
+    elseif ($dom) {
+      // validation: return false jika rootname buka dmodule, pm atau dml
+      if (!($validateRootname = CSDB::validateRootname($dom))) {
+        return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+      }
+      $csdb_filename = $validateRootname[1];
+      $ident = $validateRootname[2];
+      $path = "csdb/{$project->name}";
+    }
+    elseif ($type = 'multimedia') {
+      $csdb_filename = $request->file('entity')->getClientOriginalName();
+      $ident = 'infoEntity';
+      $path = "csdb/{$project->name}";
+      preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
+      if (empty($matches)) {
+        return $this->ret(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
+      }
+    }
+
+    // writing: return true or false jika ada/tidak file existing
+    if (Storage::disk('local')->exists($path . DIRECTORY_SEPARATOR . $csdb_filename)) {
+      return $this->ret(400, ["{$csdb_filename} is already existed."]);
+    }
+    elseif ($csdb_filename) {
+      // validate referenced dmrl       
+      if (!(($r = $this->validateByDMRL($request->get('dmrl'), $csdb_filename, $ident))[0])) {
+        return $this->ret(400, [[$r[2] ?? 'default' => $r[1]]]);
+      }
+
+      // / validate Schema
+      if ($request->get('xsi_validate')) {
+        CSDB::validate('XSI', $dom);
+        if (CSDB::get_errors(false, 'validateBySchema')) {
+          return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
+        }
+      }
+  
+      // validate Brex
+      if ($request->get('brex_validate') == 'on') {
+        CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
+        if (CSDB::get_errors(false, 'validateByBrex')) {
+          return $this->ret(400,[['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
+        }
+      }
+
+      // saving
+      $saved = false;
+      if ($type == 'xml') {
+        // Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+        $saved = true;
+      } elseif ($type == 'multimedia') {
+        $request->file('entity')->storeAs($path, $csdb_filename);
+        $saved = true;
+      }
+      if ($saved) {
+        // ModelsCsdb::create([
+        //   'filename' => $csdb_filename,
+        //   'path' => $path,
+        //   'description' => $request->get('description'),
+        //   'status' => 'new',
+        //   'editable' => 1,
+        //   'initiator_id' => $request->user()->id,
+        //   'project_name' => $project->name,
+        // ]);
+
+        return $this->ret(200,["saved with filename: {$csdb_filename}"]);
+      }
+      return $this->ret(400, ["Error while processing {$csdb_filename}"]);
+    } else {
+      return $this->ret(400, ["Error while writing new objects."]);
     }
   }
 
@@ -362,7 +468,7 @@ class CsdbController extends Controller
       // validate Brex
       if ($request->get('brex_validate') == 'on') {
         CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
-        if (CSDB::get_errors(false, 'valPidateByBrex')) {
+        if (CSDB::get_errors(false, 'validateByBrex')) {
           return back()->withInput()->with(['result' => 'fail'])->withErrors(CSDB::get_errors(true, 'validateByBrex'), 'info');
         }
       }

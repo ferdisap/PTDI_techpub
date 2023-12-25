@@ -9,6 +9,14 @@
   src: url("./tahoma.ttf");
 }
 
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
 
 th {
   border-bottom: 1px solid black
@@ -87,6 +95,10 @@ h6 {
 @layer components {
   .detail-container p {
     @apply mb-3
+  }
+
+  input[type='checkbox']{
+    @apply align-middle
   }
 
   .input {
