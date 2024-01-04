@@ -12,7 +12,7 @@ export default {
   async mounted() {
     await this.techpubStore.setProject();
     let projectName = this.$props.projectName;
-    let route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { projectName: projectName });
+    let route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { project_name: projectName });
     axios.get(route.url.toString())
     .then(response => this.techpubStore.setObjects(projectName, response.data))
     .catch(error => this.$root.error(error));
@@ -32,6 +32,7 @@ export default {
       <table>
         <thead>
           <tr>
+            <th>No</th>
             <th>Filename</th>
             <th>Title</th>
             <th>Description</th>
@@ -44,7 +45,8 @@ export default {
         <tbody>
           <tr class="hover:bg-blue-400" 
             v-if="techpubStore.project($props.projectName)"
-            v-for="obj in techpubStore.project($props.projectName).objects">
+            v-for="(obj, k) in techpubStore.project($props.projectName).objects">
+            <td> {{ k+1 }} </td>
             <td> <router-link
                 :to="{ name: 'ObjectDetail', params: { projectName: $props.projectName, filename: obj.filename }, }">{{
                   obj.filename }}</router-link> </td>

@@ -253,6 +253,7 @@ class RepoController extends Controller
     }
     $object->DOMDocument = $csdb;
     $object->objectpath = "/api/ietm";
+    $object->absolute_objectpath = storage_path("app/{$repo->path}");
     $transformed = $object->transform_to_xml(resource_path("views/ietm/xsl"));
 
     $this->addRepos([

@@ -49,33 +49,13 @@ class CsdbServiceController extends CsdbController
     $object->DOMDocument = $csdb_dom;
     $object->repoName = $projectName;
     $object->objectpath = "/api/csdb";
+    $object->absolute_objectpath = storage_path("app/{$csdb_model->path}");
     $transformed = $object->transform_to_xml(resource_path("views/ietm/xsl/"));
     
     if($error = MpubCSDB::get_errors(false)){
       return $this->ret(400, [$error]);
     }
 
-    return Response::make($transformed,200,['Content-Type' => 'text/html']);
-
-    dd($transformed);
-
-    // $xsl = MpubCSDB::importDocument(resource_path("views/ietm/xsl/"), "{$type}.xsl");
-    // dd($xsl);
-
-    $utility = $request->get('utility');
-    $xsl = MpubCSDB::importDocument(resource_path("views/csdb/{$utility}/"), "{$type}.xsl");
-    $xsltproc = new XSLTProcessor;
-    $xsltproc->importStylesheet($xsl);
-    $xsltproc->registerPHPFunctions((fn() => array_map(fn($name) => MpubCSDB::class."::$name", get_class_methods(MpubCSDB::class)))());
-    $xsltproc->registerPHPFunctions([CsdbServiceController::class."::getLastPositionCrewDrillStep", CsdbServiceController::class."::setLastPositionCrewDrillStep"]);
-    
-    $xsltproc->registerPHPFunctions();
-    $xsltproc->setParameter('','filename', $filename);
-    // $xsltproc->setParameter('','applicability', $appl);
-    $xsltproc->setParameter('','absolute_path_csdbInput', storage_path("app/{$csdb_model->path}/"));
-    $xsltproc->setParameter('','dmOwner', preg_replace("/.xml/",'',$filename));
-    $transformed = $xsltproc->transformToDoc($csdb_dom);
-    $transformed = str_replace('#ln;', "<br/>", $transformed->C14N());
     return Response::make($transformed,200,['Content-Type' => 'text/html']);
   }
   public function provide_csdb_pdf(Request $request)

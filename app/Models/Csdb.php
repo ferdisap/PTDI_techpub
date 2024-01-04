@@ -93,6 +93,7 @@ class Csdb extends Model
   public string $output = 'html';
   public string $repoName = '';
   public string $objectpath = '';
+  public string $absolute_objectpath = '';
   public function transform_to_xml($path_xsl, $filename_xsl = '')
   {
     if (!$filename_xsl) {
@@ -111,6 +112,7 @@ class Csdb extends Model
     
     $xsltproc->setParameter('', 'repoName', $this->repoName);
     $xsltproc->setParameter('', 'objectpath', $this->objectpath);
+    $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
     // dd($path_xsl, $filename_xsl);
     $transformed = str_replace("\n", '', $xsltproc->transformToXml($this->DOMDocument));
     
@@ -121,7 +123,8 @@ class Csdb extends Model
       $transformed = str_replace("#ln;", chr(10), $xsltproc->transformToXml($this->DOMDocument));
     }
     $transformed = preg_replace("/\s+/", ' ', $transformed);
-
+    $transformed = preg_replace("/v-on_/", 'v-on:', $transformed);
+    
     return $transformed;
   }
 }

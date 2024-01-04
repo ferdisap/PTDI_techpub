@@ -50,7 +50,7 @@ export default {
   <div class="w-full flex">
     <!-- Index -->
     <div class="w-full mr-3" v-show="showIndex">
-      <h1>All Objects</h1>
+      <h2 class="text-center">All Project</h2>
       <table>
         <thead>
           <tr>
@@ -77,6 +77,7 @@ export default {
       <div v-if="showCreateProject" class="mb-6 mt-3 w-full max-w-2/3">
         <form :action="this.techpubStore.getWebRoute('password.reset',{token: 'foo'}).path" method="get" @submit.prevent="getRepo">
           <div class="mb-5">
+            <h2 class="text-center">Create New Project</h2>
             <label for="name" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">Project Name</label>
             <span>Project name must be unique. There is not allowed two or more project with same name.</span>
             <input type="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required placeholder="name your project..">
@@ -95,6 +96,7 @@ export default {
       <div v-if="showCreateRepo" class="mt-3 w-full max-w-2/3">
         <form :action="this.techpubStore.getWebRoute('api.post_create_repo').path" method="POST" @submit.prevent="exportrepo($event)">
           <div class="mb-5 mt-5">
+            <h2 class="text-center">Create New Repository</h2>
             <label for="project_name" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">Project Name</label>
             <span>This will be repository name. At the end of repository name will be appended a random string to identify between others.</span>
             <input type="text" id="project_name" name="project_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required placeholder="name your repo..">

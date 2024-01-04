@@ -73,7 +73,6 @@ export default {
       container.css({ 'background-color': 'rgba(0, 0, 0, 0)' });
     },
     readURL(evt) {
-      window.evt = evt;
       // console.log(evt.target.files);
       let file = evt.target.files[0];
       if (file) {
@@ -133,7 +132,7 @@ export default {
 }
 </style>
 <template>
-  <h1 class="text-center"> {{ $props.utility == 'create' ? 'Create' : 'Update' }} </h1>
+  <h2 class="text-center"> {{ $props.utility == 'create' ? 'Create' : 'Update' }} Object </h2>
   <h4 class="text-center">{{ $props.filename }}</h4>
   <br />
 

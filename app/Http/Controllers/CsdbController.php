@@ -40,7 +40,7 @@ class CsdbController extends Controller
       Project::setFailMessage(['There is no such project name'], 'project_name');
       return response()->json(Project::getFailMessage(true, 'project_name'),400);
     }
-    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('project_name'));
+    $csdb = ModelsCsdb::with('initiator')->where('project_name', $request->get('project_name'))->orderBy('filename','asc');
     if($request->get('filename')){
       $csdb = $csdb->where('filename', $request->get('filename'));
     }
@@ -239,7 +239,7 @@ class CsdbController extends Controller
       return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, $proccessid)]]);
     } 
     elseif ($dom) {
-      // validation: return false jika rootname buka dmodule, pm atau dml
+      // validation: return false jika rootname buka dmodule, pm, dml atau icnMetadataFile
       if (!($validateRootname = CSDB::validateRootname($dom))) {
         return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
       }
@@ -258,7 +258,7 @@ class CsdbController extends Controller
     }
 
     // writing: return true or false jika ada/tidak file existing
-    if (Storage::disk('local')->exists($path . DIRECTORY_SEPARATOR . $csdb_filename)) {
+    if (Storage::disk('local')->exists($path . DIRECTORY_SEPARATOR . $csdb_filename) OR ModelsCsdb::where('filename', $csdb_filename)->first()) {
       return $this->ret(400, ["{$csdb_filename} is already existed."]);
     }
     elseif ($csdb_filename) {
@@ -286,22 +286,22 @@ class CsdbController extends Controller
       // saving
       $saved = false;
       if ($type == 'xml') {
-        // Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
         $saved = true;
       } elseif ($type == 'multimedia') {
         $request->file('entity')->storeAs($path, $csdb_filename);
         $saved = true;
       }
       if ($saved) {
-        // ModelsCsdb::create([
-        //   'filename' => $csdb_filename,
-        //   'path' => $path,
-        //   'description' => $request->get('description'),
-        //   'status' => 'new',
-        //   'editable' => 1,
-        //   'initiator_id' => $request->user()->id,
-        //   'project_name' => $project->name,
-        // ]);
+        ModelsCsdb::create([
+          'filename' => $csdb_filename,
+          'path' => $path,
+          'description' => $request->get('description'),
+          'status' => 'new',
+          'editable' => 1,
+          'initiator_id' => $request->user()->id,
+          'project_name' => $project->name,
+        ]);
 
         return $this->ret(200,["saved with filename: {$csdb_filename}"]);
       }

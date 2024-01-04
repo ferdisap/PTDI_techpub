@@ -10,6 +10,7 @@
 
   <xsl:param name="repoName"/>
   <xsl:param name="objectpath"/>
+  <xsl:param name="absolute_objectpath"/>
 
   <xsl:template match="/">
     <div class="dmodule">

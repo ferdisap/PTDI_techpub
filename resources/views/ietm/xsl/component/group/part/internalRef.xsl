@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl">
 
   <!-- <xsl:include href="./attribute/cgmark.xsl" /> -->
   <!-- 
@@ -8,9 +8,15 @@
   <xsl:param name="dmOwner"/>
 
   <xsl:template match="internalRef">
-    <a>
+    <a href="#">
+      <xsl:attribute name="v-on_click">
+        References.to(
+          '<xsl:value-of select="@internalRefTargetType"/>',
+          '<xsl:value-of select="@internalRefId"/>',
+        )
+      </xsl:attribute>
+      <!-- <xsl:attribute name="href"><xsl:value-of select="$dmOwner"/>,<xsl:value-of select="@internalRefId"/></xsl:attribute> -->
       <xsl:call-template name="cgmark"/>
-      <xsl:attribute name="href"><xsl:value-of select="$dmOwner"/>,<xsl:value-of select="@internalRefId"/></xsl:attribute>
       <xsl:call-template name="irtt"/>
     </a>
   </xsl:template>
@@ -141,6 +147,14 @@
         <!-- Text inside <internalRef> -->
         <xsl:apply-templates/> 
       </xsl:when>
+
+      <!-- irtt10: hotspot -->
+      <xsl:when test="@internalRefTargetType = 'irtt11'">
+        <a onclick="javascript:void(0)">
+          <xsl:apply-templates/> 
+        </a>
+      </xsl:when>
+
       <!-- irtt:11: zona -->
       <xsl:when test="@internalRefTargetType = 'irtt13'">        
         <xsl:choose>
@@ -221,6 +235,39 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
+
+      <!-- irtt51: icnObject hotspot from metafile -->
+      <xsl:when test="@internalRefTargetType = 'irtt51'">
+        <!-- output variable: "ICN-0001Z-00011-001-01.jpg,hot-001" -->
+        <xsl:variable name="entity">
+          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::getEntityIdentFromId', /, @internalRefId)"/>
+        </xsl:variable>
+        <xsl:variable name="targetId">
+          <xsl:value-of select="php:function('preg_replace', '/[\w\-.]+,/', '', $entity)"/>
+        </xsl:variable>
+        <xsl:variable name="infoEntityIdent">
+          <xsl:value-of select="php:function('preg_replace', '/,.+$/', '', $entity)"/>
+        </xsl:variable>
+
+        <xsl:attribute name="v-on_click">
+          References.to(
+            "irtt51",
+            "<xsl:value-of select="$targetId"/>"
+          )
+        </xsl:attribute>
+        <xsl:attribute name="class">
+          <xsl:value-of select="'irtt51'"/>
+        </xsl:attribute>
+        <xsl:attribute name="targetId">
+          <xsl:value-of select="$targetId"/>
+        </xsl:attribute>
+        <xsl:attribute name="infoEntityIdent">
+          <xsl:value-of select="$infoEntityIdent"/>
+        </xsl:attribute>
+        
+        <xsl:apply-templates/> 
+      </xsl:when>
+
       <!-- Other internalRefTargetType -->
       <xsl:otherwise>
         <xsl:apply-templates/>
@@ -229,16 +276,4 @@
       
   </xsl:template>
 
-  <!-- <xsl:template name="internalRefTargetType">
-    <xsl:param name="internalRefTargetType" select="@internalRefTargetType"/>
-    <xsl:choose>
-      <xsl:when test="$internalRefTargetType == 'irtt01'">
-        <xsl:text>Fig.&#160;</xsl:text>
-      </xsl:when>
-    </xsl:choose>
-  </xsl:template> -->
-
-  <!-- <xsl:template name="getPosition">
-    
-  </xsl:template> -->
 </xsl:stylesheet>

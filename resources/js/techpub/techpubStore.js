@@ -22,6 +22,7 @@
  */
 
 import { defineStore } from 'pinia';
+import References from '../References';
 
 export const useTechpubStore = defineStore('useTechpubStore', {
   state: () => {
@@ -30,9 +31,12 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       WebRoutes: {},
       Project: [],
       Errors: [],
-
+      
       showLoadingBar: false,
       showIdentSection: true,
+      
+      // showEntity: false,
+      // entityURL: ''
     }
   },
   actions: {
