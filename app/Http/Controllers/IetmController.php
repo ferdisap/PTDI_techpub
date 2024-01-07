@@ -10,9 +10,4 @@ class IetmController extends Controller
   {
     return view('ietm.app');
   }
-
-  // public function getindex()
-  // {
-  //   return view('ietm/app');
-  // }
 }

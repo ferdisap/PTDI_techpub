@@ -11,7 +11,7 @@
         <h1>Business Rule Decision Point Index</h1>
         <p class="lead text-body-secondary">A business rules document data module is one of a set of data modules that define all the business rules together with descriptions and examples that are required to support an organization and/or project. This includes the rules and requirements regarding how S1000D XML files must be configured and all of the other types of rules defined in Chap 2.5.1. This includes the entities, notations, elements, and attributes that are allowed and any restrictions on their values. The intent is to provide S1000D implementation guidance to authors, editors, and Information Technology personnel, who are responsible for the creation and development of valid content conforming to the design considerations of project managers and information architects (in accordance with contractual obligations and corporate, organization, and/or customer guidelines). Refer to Chap 2.5.1.</p>
         <div class="d-flex justify-content-center">
-          <a href="/brdp/n219" class="text-decoration-none">
+          <a href="brdp/MALE/DMC-MALE-A-04-00-0000-00A-024A-D_001-00_EN-EN.xml" class="text-decoration-none">
             <img src="/images/N219.png" alt="" srcset="" style="width:100px">
             <br><span class="fw-bold">N219</span>
           </a>

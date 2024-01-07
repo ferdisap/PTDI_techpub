@@ -26,7 +26,6 @@ export default {
           $('area').each((k, area) => {
             $(area).click((e) => {
               e.preventDefault();
-              console.log('foo');
               let data = $(e.target).mouseout().data('maphilight') || {};
               data.alwaysOn = !(data.alwaysOn);
               $(e.target).data('maphilight', data).trigger('alwaysOn.maphilight');      
@@ -63,7 +62,6 @@ export default {
       this.techpubStore.showLoadingBar = false;
     },
     transform() {
-      console.log(this.filename_transformed, this.$props.filename);
       if (this.filename_transformed != this.$props.filename) {
         this.filename_transformed = this.$props.filename;
         this.transformedObject = '';
@@ -112,7 +110,7 @@ export default {
     let object = this.techpubStore.object(this.$props.projectName, this.$props.filename);
     if (!object) {
       this.techpubStore.showLoadingBar = true;
-      const route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { projectName: this.$props.projectName, filename: this.$props.filename })
+      const route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { project_name: this.$props.projectName, filename: this.$props.filename })
       axios({
         url: route.url,
         method: 'GET',
@@ -203,13 +201,10 @@ export default {
     </h1>
     <!-- ietm viewer -->
     <div id="ietm-viewer" v-show="viewer == 'ietm'" class="flex">
-      <div class="my-3 detail-container dump_red">
+      <div :class="['my-3 detail-container h-[1000px] overflow-scroll', techpubStore.isOpenICNDetailContainer ? 'w-1/2' : 'w-full']">
         <component :is="dynamic" v-if="transformedObject" />
       </div>
-      <!-- <div class="entity-container dump_red">
-        <img :src="techpubStore.entityURL" />
-      </div> -->
-      <div id="icn-detail-container" class="min-w-[50%] dump_red">
+      <div id="icn-detail-container" :class="[techpubStore.isOpenICNDetailContainer ? 'w-1/2' : '' ,'my-3 py-3 flex justify-center bg-gray-500']">
       </div>
     </div>
     <!-- pdf viewer -->
@@ -241,7 +236,6 @@ export default {
         <div class="text-center"><button class="button-violet" type="submit">Send</button></div>
       </form>
 
-      <!-- <embed type="application/pdf" src="/csdb/object/export?type=pdf&filename=DMC-MALE-A-00-00-00-00A-001A-A_000-01_EN-EN.xml&pmType=&pmEntryType="/> -->
       <embed id="embed-pdf" type="application/pdf" class="w-full h-screen" />
 
     </div>

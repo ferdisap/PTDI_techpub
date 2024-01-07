@@ -20,21 +20,24 @@ const References = {
     else if(internalRefTargetType == 'irtt51'){
       let infoEntityIdent = event.target.getAttribute('infoEntityIdent');
       let targetId = internalRefId;
-
+      
       let src = `/route/get_transform_csdb/?filename=${infoEntityIdent}`;
       this.icnDetail(src);
-      let data = $(`#${targetId}`).mouseout().data('maphilight') || {};
+      infoEntityIdent = infoEntityIdent.replace(/.\w+$/,''); // menghapus extension pada filename
+      let data = $(`map[name = ${infoEntityIdent}] #${targetId}`).mouseout().data('maphilight') || {};
       data.alwaysOn = !data.alwaysOn;
-      $(`#${targetId}`).data('maphilight', data).trigger('alwaysOn.maphilight');      
+      $(`map[name = ${infoEntityIdent}] #${targetId}`).data('maphilight', data).trigger('alwaysOn.maphilight');      
     }
   },
   icnDetail(src, containerId = 'icn-detail-container'){
+    this.defaultStore.isOpenICNDetailContainer = true;
     let filename = src.replace(/.+(?=ICN[\w\-_.]+$)/, '');
-    let contentType = document.querySelector('.icnMetadataFile .iiit51').innerText;
+    let filename_without_extension = filename.replace(/.\w+$/,''); // menghapus extension pada filename
+    let contentType = $(`.icnMetadataFile#imf-${filename_without_extension} .iiit51`).text();
     if(contentType.includes('image')){
-      let img = `<img class="map" src="${src}" usemap="#${filename}"/>`;
+      let width_in_px = $(`.icnMetadataFile#imf-${filename_without_extension} .iiit52`).text();
+      let img = `<img class="map" src="${src}" usemap="#${filename_without_extension}" width="${width_in_px}px"/>`;
       $(`#${containerId}`).html(img);
-      console.log($('.map'));
       $('.map').maphilight();
     }
   },

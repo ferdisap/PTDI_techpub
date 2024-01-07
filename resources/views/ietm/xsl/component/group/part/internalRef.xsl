@@ -240,7 +240,7 @@
       <xsl:when test="@internalRefTargetType = 'irtt51'">
         <!-- output variable: "ICN-0001Z-00011-001-01.jpg,hot-001" -->
         <xsl:variable name="entity">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::getEntityIdentFromId', /, @internalRefId)"/>
+          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::getEntityIdentFromId', /, string(@internalRefId))"/>
         </xsl:variable>
         <xsl:variable name="targetId">
           <xsl:value-of select="php:function('preg_replace', '/[\w\-.]+,/', '', $entity)"/>

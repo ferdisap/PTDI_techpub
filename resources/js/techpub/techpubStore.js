@@ -35,8 +35,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       showLoadingBar: false,
       showIdentSection: true,
       
-      // showEntity: false,
-      // entityURL: ''
+      isOpenICNDetailContainer : false
     }
   },
   actions: {
@@ -49,17 +48,25 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       });
     },
     getWebRoute(name, params = {}) {
-      let route = Object.assign({}, this.WebRoutes[name]);
-      if (route.method.includes('GET')) {
-        for (const p in route.params) {
-          if (!params[p]) {
-            throw new Error(`Parameter '${p}' shall be exist.`);
-          }
-          else {
-            route.path = route.path.replace(`:${p}`, params[p]);
-            delete params[p];
-          }
+      if(params instanceof FormData){
+        params.delete('http://www.w3.org/1999/xhtml');
+        let a = {};
+        for(const [key,value] of params){
+          a[key] = value;
         }
+        params = a;
+      }
+      let route = Object.assign({}, this.WebRoutes[name]);
+      for (const p in route.params) {
+        if (!params[p]) {
+          throw new Error(`Parameter '${p}' shall be exist.`);
+        }
+        else {
+          route.path = route.path.replace(`:${p}`, params[p]);
+          delete params[p];
+        }
+      }
+      if (route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
         url.search = new URLSearchParams(params);
         route.url = url;
@@ -105,6 +112,6 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       if(err){
         return err[name];  // return array ['text1', 'text2', ...] 
       }
-    }
+    },
   }
 })

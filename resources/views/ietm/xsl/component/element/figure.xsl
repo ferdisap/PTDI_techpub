@@ -44,25 +44,16 @@
           style="text-align:center;">
           <tr>
             <td>
-              <img src="{$infoEntityIdent}" usemap="#tesmap" class="map"
-                width="200px" height="400px">
-                <!-- <xsl:attribute name="onclick">ietm.clickImg('<xsl:value-of select="$infoEntityIdent" />') </xsl:attribute> -->
-                <!-- <xsl:attribute name="v-on_click">References.to('<xsl:value-of
-                select="$infoEntityIdent"/>')</xsl:attribute> -->
-                <!-- <xsl:attribute name="v-on_click">References.clickImg('<xsl:value-of select="$infoEntityIdent"/>')</xsl:attribute> -->
-                <xsl:attribute name="v-on_click">References.icnDetail('<xsl:value-of select="$infoEntityIdent"/>')</xsl:attribute>
-                <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
-                <xsl:call-template name="cgmark" />
-                <!-- <xsl:if test="@reproductionWidth">
-                  <xsl:attribute name="width"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
-                </xsl:if>
-                <xsl:if test="@reproductionHeight">
-                  <xsl:attribute name="height"><xsl:value-of select="@reproductionHeight"/></xsl:attribute>
-                </xsl:if> -->
-              </img>
+              <div class="flex justify-center">
+                <img src="{$infoEntityIdent}" class="map" style="max-height:200px">
+                  <xsl:attribute name="v-on_click">References.icnDetail('<xsl:value-of select="$infoEntityIdent"/>')</xsl:attribute>
+                  <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
+                  <xsl:call-template name="cgmark" />                
+                </img>
+              </div>
               <!-- untuk hotspot -->
               <xsl:call-template name="transformICNMetaFile">
-                <xsl:with-param name="filename" select="@infoEntityIdent"/>
+                <xsl:with-param name="filename" select="php:function('preg_replace', '/.\w+$/','', string(@infoEntityIdent))"/>
               </xsl:call-template>
             </td>
           </tr>
@@ -111,7 +102,7 @@
 
   <xsl:template name="transformICNMetaFile">
     <xsl:param name="filename"/>
-    <xsl:for-each select="php:function('Ptdi\Mpub\CSDB::document',/, @infoEntityIdent)//icnMetadataFile">
+    <xsl:for-each select="php:function('Ptdi\Mpub\CSDB::document',/, string(@infoEntityIdent))//icnMetadataFile">
     <div class="icnMetadataFile hidden">
       <xsl:attribute name="id">
         <xsl:text>imf-</xsl:text>

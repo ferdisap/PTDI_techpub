@@ -98,7 +98,6 @@ class RepoController extends Controller
 
   ######## OLD ########
   ### tapi beberapa masih dipakai
-
   public function getindex(Request $request)
   {
     return view('repo.index');
@@ -182,12 +181,12 @@ class RepoController extends Controller
 
   ############# API #############
   // pindah ke class parent (Controller) dengan nama ret.
-  private function fail($code, $messages = [])
-  {
-    return response()->json([
-      'messages' => $messages,
-    ], $code);
-  }
+  // private function fail($code, $messages = [])
+  // {
+  //   return response()->json([
+  //     'messages' => $messages,
+  //   ], $code);
+  // }
 
   private function addRepos(array $repo)
   {
@@ -207,7 +206,7 @@ class RepoController extends Controller
       $token = base64_encode($tokenRepo);
       $repos = Repo::where('token', $token)->get(['name', 'created_at']);
       if(count($repos) <= 0){
-        return $this->fail(400, ["No such repo available based on the token '{$tokenRepo}'."]);
+        return $this->ret(400, ["No such repo available based on the token '{$tokenRepo}'."]);
       } else {
 
       }
@@ -218,7 +217,7 @@ class RepoController extends Controller
         'repos' => $this->getRepos(),
       ], 200)->withCookie(cookie('tokenRepo', $tokenRepo, 60, null, null, null, false, false));
     } else {
-      return $this->fail(400, ['You should put the repo token']);
+      return $this->ret(400, ['You should put the repo token']);
     }
   }
 
@@ -226,7 +225,7 @@ class RepoController extends Controller
   {
     $repo = Repo::with(['pmc', 'dmc'])->where('name', $repoName)->first();
     $tokenRepo = base64_encode(Cookie::get('tokenRepo'));
-    if ($tokenRepo != $repo->token) return $this->fail(400, ['You should put the true repo token.']);
+    if ($tokenRepo != $repo->token) return $this->ret(400, ['You should put the true repo token.']);
     
     $this->addRepos(['name' => $repo->name, 'objects' => array_merge($repo->pmc->toArray(), $repo->dmc->toArray())]);
     return response()->json([
@@ -239,8 +238,8 @@ class RepoController extends Controller
     $tokenRepo = base64_encode(Cookie::get('tokenRepo'));
     if ($tokenRepo != $repo->token) {
       $link = "/ietm/insert-token?repoName={$repo->name}&filename={$filename}";
-      // return $this->fail(400, ['<a href="javascript:ietm.link("'.$link.'")">You should put the true repo token.</a>']);
-      return $this->fail(400, ['<a href="javascript:ietm.goto('."'{$link}'".')">You should put the true repo token.</a>']);
+      // return $this->ret(400, ['<a href="javascript:ietm.link("'.$link.'")">You should put the true repo token.</a>']);
+      return $this->ret(400, ['<a href="javascript:ietm.goto('."'{$link}'".')">You should put the true repo token.</a>']);
     }
 
     $object = new Csdb();

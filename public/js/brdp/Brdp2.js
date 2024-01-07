@@ -70,6 +70,7 @@ const Brdp = {
 
       // get xml node from Brdp.brdpDoc
       let doc = this.parent.xmlToHtml(this.xmlNode, this.xslDoc);
+      console.log(this.xslDoc);
       td.innerHTML = doc.firstElementChild.outerHTML;
 
       // get decision document from server
@@ -182,7 +183,7 @@ const Brdp = {
   BrSearch: {    
     get parent() {return Brdp;},
     listener(evt) {
-      console.log(window.evt = evt)
+      // console.log(window.evt = evt)
       this.parent.BrDetail.detailOpen = [];
       if (evt.keyCode === 13 || evt.type == 'click') { // enter button
         evt.preventDefault();
@@ -229,7 +230,7 @@ const Brdp = {
   
       // 1. prepare array berisi XPath (filter) berurutan
       let step_xpaths = this.getXPaths(searchInput);
-      console.log(step_xpaths);
+      // console.log(step_xpaths);
   
       // 2. untuk setiap item dalam urutan (index 1 adalah filter utama)
       for (let i = 0; i < step_xpaths.length; i++) {

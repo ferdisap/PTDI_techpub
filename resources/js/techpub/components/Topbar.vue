@@ -28,8 +28,10 @@ export default {
 
     <form action="" method="GET">
       <div class="flex">
-        <input type="token" id="token" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required placeholder="search..">
-        <button type="submit" @click="getRepo" class="shadow-lg text-white font-semibold rounded-lg ml-2 px-5 py-1 bg-slate-500 hover:bg-slate-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 ">Search</button>
+        <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="search..">
+        <button class="shadow-lg text-white font-semibold rounded-lg ml-2 px-5 py-1 bg-slate-500 hover:bg-slate-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 ">Search</button>
+        <!-- <input type="token" id="token" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required placeholder="search..">
+        <button type="submit" @click="getRepo" class="shadow-lg text-white font-semibold rounded-lg ml-2 px-5 py-1 bg-slate-500 hover:bg-slate-600 active:bg-violet-700 focus:outline-none focus:ring focus:ring-violet-300 ">Search</button> -->
       </div>
     </form>
   </nav>

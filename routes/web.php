@@ -40,8 +40,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
+// sudah diganti dengan vue js
 Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
-Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
+// Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
 
 Route::get('/brex', [BrexController::class, 'indexBrex']);
 Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
@@ -57,9 +58,6 @@ Route::get('tesxsl', function(){
   return view('general.test.testxsl');
 });
 
-require __DIR__.'/csdb/dml.php';
-require __DIR__.'/csdb/dmc.php';
-
 require __Dir__."/fileRequest.php";
 
 Route::get('/editor', function(){
@@ -72,9 +70,9 @@ require __Dir__."/csdb/service.php";
 require __Dir__."/project/general.php";
 require __Dir__."/ietm/general.php";
 require __Dir__."/ietm/repo.php";
-require __Dir__."/csdb2/general.php";
-Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth');
+require __Dir__."/brdp/general.php";
 
+Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth'); // berguna untuk vue
 Route::get('/route/{name}', [Controller::class, 'route']);
 Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']);
 

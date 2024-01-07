@@ -32,7 +32,7 @@ class CsdbController extends Controller
   ################# NEW by VUE #################
   public function general_index(Request $request)
   {
-    return view('csdb2.app');
+    return view('csdb.app');
   }
   public function getcsdbdata(Request $request)
   {
