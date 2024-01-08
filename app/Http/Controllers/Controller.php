@@ -56,6 +56,11 @@ class Controller extends BaseController
     return $allRoutes;
   }
 
+
+  /**
+   * digunakan untuk mencari file.
+   * Fungsi ini dipakai saat seeding csdb SQL
+   */
   public static function get_file(string $path, string $filename = '', bool $all = false){
     $exclude = array('.','..','.git','.gitignore');
     // $arr = array_diff(scandir($dir), $exclude);

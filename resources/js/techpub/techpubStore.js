@@ -35,7 +35,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       showLoadingBar: false,
       showIdentSection: true,
       
-      isOpenICNDetailContainer : false
+      isOpenICNDetailContainer : false,
     }
   },
   actions: {
@@ -89,12 +89,28 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         this.showLoadingBar = false;
       }
     },
+
+    /**
+     * 
+     * @param {string} projectName 
+     * @param {Object} data 
+     */
     setObjects(projectName, data){
       this.Project.find(v => v.name = projectName).objects = data;
     },
+
+    /**
+     * get Project
+     * @param {string} projectName 
+     * @returns object
+     */
     project(projectName){
       return this.Project.find(v => v.name == projectName);
     },
+
+    /**
+     * get objects from project
+     */
     object(projectName, filename){
       let pr = this.project(projectName);
       if(!pr){
@@ -107,6 +123,47 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         return pr.objects.find( v => v.filename == filename);
       }
     },
+
+    /**
+     * sort object
+     */
+    sortObjects(projectName, key, ascending = true){
+      let objects = this.project(projectName).objects;
+      
+      // karena objects[i]['initiator'] = {name: '...', email: '...'}
+      if(key == 'initiator'){
+        let sorted_array = Object.entries(objects).sort((a,b) => {
+            const sortA = a[1][key]['name'].toUpperCase();
+            const sortB = b[1][key]['name'].toUpperCase();
+            if(ascending){
+              return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+            } else {
+              return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+            }
+        });
+        for (let i = 0; i < sorted_array.length; i++) {
+            this.project(projectName).objects[i] = sorted_array[i][1];
+        }
+      }
+      else{
+        let sorted_array = Object.entries(objects).sort((a,b) => {
+            if(!(a[1][key] && b[1][key])){
+              return 0;
+            }
+            const sortA = a[1][key].toUpperCase();
+            const sortB = b[1][key].toUpperCase();
+            if(ascending){
+              return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+            } else {
+              return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+            }
+        });
+        for (let i = 0; i < sorted_array.length; i++) {
+            this.project(projectName).objects[i] = sorted_array[i][1];
+        }
+      }
+    },
+
     error(name){
       let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
       if(err){

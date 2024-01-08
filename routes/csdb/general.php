@@ -28,7 +28,7 @@ Route::post('/csdb/object/delete', [CsdbController::class, 'postdelete'])->middl
 
 
 // for vue.js
-Route::get('/ms/{project?}/{name?}/{isUpdate?}', [CsdbController::class, 'general_index'])->middleware('auth');
+Route::get('/csdb/{project?}/{name?}/{isUpdate?}', [CsdbController::class, 'general_index'])->middleware('auth');
 
 Route::get('/api/csdb', [CsdbController::class, 'getcsdbdata'])->middleware('auth')->name('api.get_csdb_object_data');
 Route::get('/api/getobject', [CsdbController::class, 'getcsdb'])->middleware('auth')->name('api.getobject');

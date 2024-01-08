@@ -7,29 +7,29 @@ import ObjectDetail from './components/route/ObjectDetail.vue';
 export default [
   {
     name: 'Project',
-    path: '/ms/project',
+    path: '/csdb/project',
     component: Project
   },
   {
     name: 'Repository',
-    path: '/ms/repository',
+    path: '/csdb/repository',
     component: Repository
   },
   {
     name: 'ProjectDetail',
-    path: '/ms/project/:projectName',
+    path: '/csdb/project/:projectName',
     component: ProjectDetail,
     props: true,
   },
   {
     name: 'ObjectDetail',
-    path: '/ms/:projectName/:filename',
+    path: '/csdb/:projectName/:filename',
     component: ObjectDetail,
     props: true,
   },
   {
     name: 'ObjectUpdate',
-    path: '/ms/:projectName/:filename/update',
+    path: '/csdb/:projectName/:filename/update',
     component: ObjectUpdate,
     props: true,
   },

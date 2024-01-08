@@ -1,15 +1,25 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import Sort from '../subComponents/Sort.vue';
 
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      showListObject: true
+      showListObject: true,
+      sortOrder: {},
     }
   },
+  components: {Sort},
   props: ['projectName'],
+  methods:{
+    sort(status){
+      this.techpubStore.sortObjects(this.$props.projectName,status,this.sortOrder[status]);
+      this.sortOrder[status] = !this.sortOrder[status];
+    }
+  },
   async mounted() {
+    window.store = this.techpubStore;
     await this.techpubStore.setProject();
     let projectName = this.$props.projectName;
     let route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { project_name: projectName });
@@ -19,6 +29,13 @@ export default {
   },
 }
 </script>
+
+<style>
+th {
+  white-space: nowrap;
+}
+</style>
+
 <template>
   <div class="w-full mt-3">
     <h1 class="text-center">Detail of {{ $props.projectName }}</h1>
@@ -33,12 +50,12 @@ export default {
         <thead>
           <tr>
             <th>No</th>
-            <th>Filename</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Last Modified</th>
-            <th>Initiator</th>
+            <th>Filename <Sort :function="sort.bind(this,'filename')"/></th>
+            <th>Title <Sort :function="sort.bind(this,'title')"/></th>
+            <th>Description <Sort :function="sort.bind(this,'description')"/></th>
+            <th>Status <Sort :function="sort.bind(this,'status')"/></th>
+            <th>Last Modified <Sort :function="sort.bind(this,'updated_at')"/></th>
+            <th>Initiator <Sort :function="sort.bind(this,'initiator')"/></th>
             <th class="text-center">Action</th>
           </tr>
         </thead>
@@ -58,7 +75,6 @@ export default {
             <td class="text-center">
               <router-link class="button"
                 :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: obj.filename }, }">update</router-link>
-              |
               <button class="button-danger">delete</button>
             </td>
           </tr>
