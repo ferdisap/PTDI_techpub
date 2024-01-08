@@ -44,25 +44,25 @@ require __DIR__.'/auth.php';
 Route::get('/brdp', [BrdpController::class, 'indexBrdp']);
 // Route::get('/brdp/{aircraft}', [BrdpController::class, 'table']);
 
+// sudah diganti dengan vue js
 Route::get('/brex', [BrexController::class, 'indexBrex']);
-Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
+// Route::get('/brex/{aircraft}', [BrexController::class, 'table']);
 
-Route::get('/refreshLocalStorage', function(){
-  return view('general.refreshLocalStorage');
-});
+// Route::get('/refreshLocalStorage', function(){
+//   return view('general.refreshLocalStorage');
+// });
+// Route::get("/dmodule", [DmoduleController::class, 'indexDmodule']);
+// Route::post("/dmodule/validate", [DmoduleController::class, 'validate'])->name('validate-dmodule');
 
-Route::get("/dmodule", [DmoduleController::class, 'indexDmodule']);
-Route::post("/dmodule/validate", [DmoduleController::class, 'validate'])->name('validate-dmodule');
+// Route::get('tesxsl', function(){
+//   return view('general.test.testxsl');
+// });
 
-Route::get('tesxsl', function(){
-  return view('general.test.testxsl');
-});
+// require __Dir__."/fileRequest.php";
 
-require __Dir__."/fileRequest.php";
-
-Route::get('/editor', function(){
-  return view('coba.editor');
-});
+// Route::get('/editor', function(){
+//   return view('coba.editor');
+// });
 
 // require __Dir__."/tcpdf/tcpdf.php";
 require __Dir__."/csdb/general.php";
@@ -71,49 +71,8 @@ require __Dir__."/project/general.php";
 require __Dir__."/ietm/general.php";
 require __Dir__."/ietm/repo.php";
 require __Dir__."/brdp/general.php";
+require __Dir__."/brex/general.php";
 
 Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth'); // berguna untuk vue
-Route::get('/route/{name}', [Controller::class, 'route']);
-Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']);
-
-
-
-
-
-Route::get('/teshtml2pdf', function() {
-  // require base_path(). DIRECTORY_SEPARATOR. "vendor". DIRECTORY_SEPARATOR. "spipu".DIRECTORY_SEPARATOR. "html2pdf". DIRECTORY_SEPARATOR. "examples" . DIRECTORY_SEPARATOR. "about.php";
-  // require base_path(). "/vendor/spipu/html2pdf/examples/about.php";
-  // dd(dirname(__FILE__), __FILE__, public_path());
-  // try {
-  //   $html2pdf = new Html2Pdf('P', 'A4', 'fr', true, 'UTF-8', array(0, 0, 0, 0));
-  //   $html2pdf->pdf->SetDisplayMode('fullpage');
-
-  //   ob_start();
-  //   // include dirname(__FILE__).'/res/about.php';
-  //   include public_path(). '/examples/res/about.php';
-  //   $content = ob_get_clean();
-
-  //   $html2pdf->writeHTML($content);
-  //   $html2pdf->createIndex('Sommaire', 30, 12, false, true, 2, null, '10mm');
-  //   $html2pdf->output('about.pdf');
-  // } catch (Html2PdfException $e) {
-  //   $html2pdf->clean();
-
-  //   $formatter = new ExceptionFormatter($e);
-  //   echo $formatter->getHtmlMessage();
-  // }
-  //   try {
-  //     ob_start();
-  //     include public_path().'/examples/res/example13.php';
-  //     $content = ob_get_clean();
-
-  //     $html2pdf = new Html2Pdf('P', 'A4', 'fr');
-  //     $html2pdf->writeHTML($content);
-  //     $html2pdf->output('example13.pdf');
-  // } catch (Html2PdfException $e) {
-  //     $html2pdf->clean();
-
-  //     $formatter = new ExceptionFormatter($e);
-  //     echo $formatter->getHtmlMessage();
-  // }
-});
+// Route::get('/route/{name}', [Controller::class, 'route']);
+Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']); // berguna untuk vue

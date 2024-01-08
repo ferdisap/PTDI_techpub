@@ -2,15 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brdp;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BrdpTes;
 use App\Models\Csdb;
-use DOMDocument;
-use DOMXPath;
 use Ptdi\Mpub\CSDB as MpubCSDB;
-use SimpleXMLElement;
-use XMLParser;
 use Illuminate\Support\Facades\Response;
 
 class BrdpController extends Controller
@@ -28,7 +22,7 @@ class BrdpController extends Controller
   {
     $projectName = $request->get('project_name') ?? $request->route('project_name');
     $filename = $request->get('filename') ?? $request->route('filename');
-    if(!$projectName OR !$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
+    // if(!$projectName OR !$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
 
     $csdb_model = Csdb::where('filename', $filename)->first(['path']);
     $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);

@@ -1,0 +1,38 @@
+table {
+  table-layout: fixed;
+  width:auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th, td {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  vertical-align: text-top;
+  margin-bottom: 10px;
+}
+
+thead > tr > th, thead > tr > td {
+  text-align: center;
+  background-color: rgb(178, 241, 252);
+  height: 2.5rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+tr{
+  height: 2rem!important;
+}
+
+li > p {
+  margin: 0;;
+}
+
+th, td{
+  border: 1px solid black;
+}
+
+#ContextRule td:nth-child(4) {
+  text-align: center;
+  vertical-align: inherit;
+}

@@ -2,12 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Csdb;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\View;
+use Ptdi\Mpub\CSDB as MpubCSDB;
+use Illuminate\Support\Facades\Response;
 
 class BrexController extends Controller
 {
+  ######## new by VUE ########
+  /**
+   * tujuannya sama dengan fungsi table, yaitu menampilkan list number of brdp
+   */
+  public function app()
+  {
+    return view('brex/app');
+  }
+
+  public function transform(Request $request)
+  {
+    $project_name = $request->route('project_name');
+    $filename = $request->route('filename');
+    $type = $request->get('type');
+    if(!$type) return $this->ret(400, ['You must choose between SNS Rules, Context Rules, or Non-Context Rules']);
+
+    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
+
+    $object = new Csdb();
+    $object->DOMDocument = $csdb_dom;
+    $transformed = $object->transform_to_xml(resource_path("views/brex/xsl/"), "{$type}.xsl");
+
+    if($error = MpubCSDB::get_errors(false)){
+      return $this->ret(400, [$error]);
+    }
+
+    return Response::make($transformed,200,['Content-Type' => 'text/html']);
+
+    $html = <<<EOL
+    <div>Foo bar</div>
+    EOL;
+    return $html;
+    return $project_name . $filename;
+  }
+
+
+
+
+
+
+
+
+
+
+  ######## old by Blade ########
+  
   public function indexBrex()
   {
     if (request()->utility == 'getfile'){

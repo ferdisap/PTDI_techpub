@@ -49,8 +49,6 @@ class CsdbController extends Controller
   }
   public function postupdate2(Request $request)
   {
-    // return $this->ret(200,['bla bla bla has been updated.']);
-
     $csdb_object = ModelsCsdb::where('filename', $request->get('filename'))->first();
   
     // validasi existing and editable
@@ -286,22 +284,22 @@ class CsdbController extends Controller
       // saving
       $saved = false;
       if ($type == 'xml') {
-        Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+        // Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
         $saved = true;
       } elseif ($type == 'multimedia') {
         $request->file('entity')->storeAs($path, $csdb_filename);
         $saved = true;
       }
       if ($saved) {
-        ModelsCsdb::create([
-          'filename' => $csdb_filename,
-          'path' => $path,
-          'description' => $request->get('description'),
-          'status' => 'new',
-          'editable' => 1,
-          'initiator_id' => $request->user()->id,
-          'project_name' => $project->name,
-        ]);
+        // ModelsCsdb::create([
+        //   'filename' => $csdb_filename,
+        //   'path' => $path,
+        //   'description' => $request->get('description'),
+        //   'status' => 'new',
+        //   'editable' => 1,
+        //   'initiator_id' => $request->user()->id,
+        //   'project_name' => $project->name,
+        // ]);
 
         return $this->ret(200,["saved with filename: {$csdb_filename}"]);
       }
