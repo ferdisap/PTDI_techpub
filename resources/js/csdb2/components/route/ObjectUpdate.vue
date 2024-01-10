@@ -248,6 +248,6 @@ export default {
   <div v-show="showEntityViewer" class="h-max mt-3">
     <span class="text-gray-900 dark:text-white text-light">Preview Entity</span><br />
     <span id="entity-name" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold"></span><br />
-    <embed id="entity-viewer" class="max-w-full" />
+    <embed id="entity-viewer" class="max-w-full" width="100%" height="600" />
   </div>
 </template>

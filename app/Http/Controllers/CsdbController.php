@@ -28,6 +28,7 @@ use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Validation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipStream\ZipStream;
+use Illuminate\Support\Facades\Process;
 
 class CsdbController extends Controller
 {
@@ -38,6 +39,7 @@ class CsdbController extends Controller
   {
     return view('csdb.app');
   }
+  
   public function getcsdbdata(Request $request)
   {
     if(!$request->get('project_name')){
@@ -48,33 +50,11 @@ class CsdbController extends Controller
     if($request->get('filename')){
       $csdb = $csdb->where('filename', $request->get('filename'));
     }
-    $csdb = $csdb->get(['filename', 'status','initiator_id','description','created_at','updated_at']); 
+    $csdb = $csdb->get(['filename', 'status','initiator_id','description','created_at','updated_at','remarks']); 
     return $csdb;
   }
   public function postupdate2(Request $request)
   {
-    $a = 'AA';
-    $b = 'BB';
-
-    if($tes = ((int)$a).'' AND (isset($tes[0])) AND (isset($tes[1]))){ // ini untuk @inwork='AA', dst. Expression pakai AND untuk menghindari jika user nulis @inwork = '9A'. Kalau 'A9' sudah pasti false karena 'A' tidak bisa di convert ke integer
-      // dd(is_numeric('A1')); // false
-      // dd(is_numeric('01')); // true`
-      // dd(is_string('001')); // true
-      // dd(is_numeric('9A')); // false
-      // dd((int)'A9'); // false (0)
-      // dd((int)'9A'); // 9
-      // dd((int)'01'); // true (1)
-      // dd((int)'00'); // false (0)
-      // dd((int)'AA'); // false (0)`
-      $count = 0;
-      while($a < $b){
-        $a++;
-        $count++;
-      }
-    }
-    dd($tes, $a);
-
-
     // #1. check if old csdb is available
     $old_object = ModelsCsdb::where('filename', $request->get('filename'))->first();
     if (!$old_object) return $this->ret(400,["The object filename is not exist. You may to go to CREATE page to build one."]);
@@ -177,16 +157,18 @@ class CsdbController extends Controller
       }
       $old_object->update(['path' => $old_path . "/__unused", 'status' => 'unused']);
       Storage::disk('local')->move($old_path . DIRECTORY_SEPARATOR . $old_name, $old_path . "/__unused" . DIRECTORY_SEPARATOR . $old_name);
-      ModelsCsdb::create([
+      $old_object->setRemarks('title');
+      $new_object = ModelsCsdb::create([
         'filename' => $new_objectFilename,
         'path' => ("csdb/{$old_object->project->name}"),
         'status' => 'new',
         'description' => '',
-        'editable' => 1,
+        // 'editable' => 1,
         'initiator_id' => $request->user()->id,
         'project_name' => $old_object->project->name,
-      ]);
+      ]);      
       Storage::disk('local')->put("csdb/{$old_object->project->name}" . DIRECTORY_SEPARATOR . $new_objectFilename, $xmlstring);
+      $new_object->setRemarks('title');
 
       return $this->ret(200,["saved with filename: {$new_objectFilename}"]);
     }
@@ -302,26 +284,26 @@ class CsdbController extends Controller
     // #8. saving to storage
     $saved = false;
     if ($dom instanceof \DOMDocument) {
-      // Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+      Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
       $saved = true;
     }
     else{
-      // $request->file('entity')->storeAs($path, $csdb_filename);
+      $request->file('entity')->storeAs($path, $csdb_filename);
       $saved = true;
     }
 
     // #9. saving to sql
     if ($saved) {
-      // ModelsCsdb::create([
-      //   'filename' => $csdb_filename,
-      //   'path' => $path,
-      //   'description' => $request->get('description'),
-      //   'status' => 'new',
-      //   'editable' => 1,
-      //   'initiator_id' => $request->user()->id,
-      //   'project_name' => $project->name,
-      // ]);
-
+      $new_object = ModelsCsdb::create([
+        'filename' => $csdb_filename,
+        'path' => $path,
+        'description' => $request->get('description'),
+        'status' => 'new',
+        // 'editable' => 1,
+        'initiator_id' => $request->user()->id,
+        'project_name' => $project->name,
+      ]);
+      $new_object->setRemarks('title');
       return $this->ret(200,["saved with filename: {$csdb_filename}"]);
     }
     return $this->ret(400, ["Error while writing new objects."]);
@@ -406,7 +388,7 @@ class CsdbController extends Controller
           'path' => $path,
           'description' => $request->get('description'),
           'status' => 'new',
-          'editable' => 1,
+          // 'editable' => 1,
           'initiator_id' => $request->user()->id,
           'project_name' => $project->name,
         ]);
@@ -511,7 +493,7 @@ class CsdbController extends Controller
           'path' => $path,
           'status' => 'new',
           'description' => '',
-          'editable' => 1,
+          // 'editable' => 1,
           'initiator_id' => $request->user()->id,
           'project_name' => $csdb_object->project->name,
         ]);

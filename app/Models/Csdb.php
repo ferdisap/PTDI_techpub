@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\ICNDocument;
 
 class Csdb extends Model
 {
@@ -40,7 +41,7 @@ class Csdb extends Model
    *
    * @var array
    */
-  protected $fillable = ['filename', 'path', 'status', 'description', 'editable', 'initiator_id', 'project_name'];
+  protected $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -49,6 +50,12 @@ class Csdb extends Model
    */
   protected $hidden = ['initiator_id'];
 
+  /**
+   * 
+   */
+  protected $casts = [
+    'remarks' => 'array'
+  ];
 
   /**
    * Get the initiator for the csdb object
@@ -129,5 +136,49 @@ class Csdb extends Model
     $transformed = preg_replace("/v-on_/", 'v-on:', $transformed);
     
     return $transformed;
+  }
+
+  /**
+   * syaratnya harus manggil id agar bisa di save. Sengaja tidak dibuat manual agar tidak asal isi
+   * @return void
+   */
+  public function setRemarks($key, $value = '')
+  {
+    $remarks = $this->remarks;
+    $values = $remarks[$key] ?? [];
+    switch ($key) {
+      case 'searchkey':
+        array_unshift($values, $value);
+        if(count($values) >= 5) array_pop($values);
+        $values = array_unique($values);
+        break;
+      case 'title':
+        if(!$value){
+          $value = $this->setRemarks_title();
+        }
+        $values = $value;
+        break;
+      default:
+        $values = $value;
+        break;
+    }
+    $remarks[$key] = $values;
+    $this->remarks = $remarks;
+    $this->save();
+  }
+
+  /**
+   * @return string
+   */
+  private function setRemarks_title()
+  {
+    $dom = MpubCSDB::importDocument(storage_path("app/".$this->path),$this->filename);
+    if($dom instanceof ICNDocument){
+      $imfFilename = MpubCSDB::detectIMF(storage_path("app/".$this->path), $dom->getFilename());
+      $dom = MpubCSDB::importDocument(storage_path("app/".$this->path), $imfFilename);
+      if(!$dom) return '';
+    }
+    $value = MpubCSDB::resolve_DocTitle($dom);
+    return $value;
   }
 }

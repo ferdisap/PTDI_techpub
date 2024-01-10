@@ -18,16 +18,15 @@ class CsdbSeeder extends Seeder
     $lists = (array_filter($lists, fn ($v) => str_contains($v, '.')));
     foreach ($lists as $obj) {
       if (!Csdb::where('path', "csdb/{$obj}")->latest('updated_at')->first('id')) {
-        // dd('a', Csdb::where('path', "csdb/{$obj}")->latest('updated_at')->first('name') == null);
-        Csdb::create([
+        $model = Csdb::create([
           'filename' => $obj,
           'path' => "csdb/MALE",
           'status' => 'new',
           'description' => '',
-          'editable' => 1,
           'initiator_id' => 1,
           'project_name' => 'MALE',
         ]);
+        $model->setRemarks('title');
       }
     }
   }

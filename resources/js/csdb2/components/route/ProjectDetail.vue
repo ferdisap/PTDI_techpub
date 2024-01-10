@@ -55,7 +55,7 @@ th {
             <th>Description <Sort :function="sort.bind(this,'description')"/></th>
             <th>Status <Sort :function="sort.bind(this,'status')"/></th>
             <th>Last Modified <Sort :function="sort.bind(this,'updated_at')"/></th>
-            <th>Initiator <Sort :function="sort.bind(this,'initiator')"/></th>
+            <th>Initiator <Sort :function="sort.bind(this,'name')"/></th>
             <th class="text-center">Action</th>
           </tr>
         </thead>
@@ -67,7 +67,7 @@ th {
             <td> <router-link
                 :to="{ name: 'ObjectDetail', params: { projectName: $props.projectName, filename: obj.filename }, }">{{
                   obj.filename }}</router-link> </td>
-            <td> not prepared yet </td>
+            <td> {{ obj.remarks.title }} </td>
             <td> {{ obj.description }} </td>
             <td> {{ obj.status }} </td>
             <td> {{ this.techpubStore.date(obj.updated_at) }} </td>

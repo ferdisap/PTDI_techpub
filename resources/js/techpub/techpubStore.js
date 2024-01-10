@@ -31,11 +31,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       WebRoutes: {},
       Project: [],
       Errors: [],
-      
+
       showLoadingBar: false,
       showIdentSection: true,
-      
-      isOpenICNDetailContainer : false,
+
+      isOpenICNDetailContainer: false,
 
       /**
        * awalnya digunakan untuk mengirim data dari ObjectDetail to ObjectUpdate.
@@ -45,7 +45,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         model: undefined,
         blob: undefined, // transformed csdb object is blob
         // filename: undefined, // filename harusnya tidak perlu karena ada didalam
-        projectName:undefined,
+        projectName: undefined,
         // transformed: undefined, // harusnya tidak diperlukan karena sudah ada blob. Agar menghemat memory
       }, // blob object
     }
@@ -60,10 +60,10 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       });
     },
     getWebRoute(name, params = {}) {
-      if(params instanceof FormData){
+      if (params instanceof FormData) {
         params.delete('http://www.w3.org/1999/xhtml');
         let a = {};
-        for(const [key,value] of params){
+        for (const [key, value] of params) {
           a[key] = value;
         }
         params = a;
@@ -91,7 +91,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
 
     },
     async setProject() {
-      if(this.Project.length == 0){
+      if (this.Project.length == 0) {
         this.showLoadingBar = true;
         let url = this.getWebRoute('api.get_index_project').path;
         let response = await axios.get(url)
@@ -107,7 +107,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @param {string} projectName 
      * @param {Object} data 
      */
-    setObjects(projectName, data){
+    setObjects(projectName, data) {
       this.Project.find(v => v.name = projectName).objects = data;
     },
 
@@ -116,62 +116,76 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @param {string} projectName 
      * @returns object
      */
-    project(projectName){
+    project(projectName) {
       return this.Project.find(v => v.name == projectName);
     },
 
     /**
      * get objects from project
      */
-    object(projectName, filename){
+    object(projectName, filename) {
       let pr = this.project(projectName);
-      if(!pr){
+      if (!pr) {
         return false;
       }
-      else if(!pr.objects){
+      else if (!pr.objects) {
         return false;
       }
       else {
-        return pr.objects.find( v => v.filename == filename);
+        return pr.objects.find(v => v.filename == filename);
       }
     },
 
     /**
      * sort object
      */
-    sortObjects(projectName, key, ascending = true){
+    sortObjects(projectName, key, ascending = true) {
       let objects = this.project(projectName).objects;
-      
+
       // karena objects[i]['initiator'] = {name: '...', email: '...'}
-      if(key == 'initiator'){
-        let sorted_array = Object.entries(objects).sort((a,b) => {
-            const sortA = a[1][key]['name'].toUpperCase();
-            const sortB = b[1][key]['name'].toUpperCase();
-            if(ascending){
-              return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
-            } else {
-              return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
-            }
+      if ((key == 'name')) {
+        let sorted_array = Object.entries(objects).sort((a, b) => {
+          const sortA = a[1][key]['name'].toUpperCase();
+          const sortB = b[1][key]['name'].toUpperCase();
+          if (ascending) {
+            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+          } else {
+            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+          }
         });
         for (let i = 0; i < sorted_array.length; i++) {
-            this.project(projectName).objects[i] = sorted_array[i][1];
+          this.project(projectName).objects[i] = sorted_array[i][1];
         }
       }
-      else{
-        let sorted_array = Object.entries(objects).sort((a,b) => {
-            if(!(a[1][key] && b[1][key])){
-              return 0;
-            }
-            const sortA = a[1][key].toUpperCase();
-            const sortB = b[1][key].toUpperCase();
-            if(ascending){
-              return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
-            } else {
-              return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
-            }
+      else if ((key == 'title')) {
+        let sorted_array = Object.entries(objects).sort((a, b) => {
+          const sortA = a[1]['remarks'][key].toUpperCase();
+          const sortB = b[1]['remarks'][key].toUpperCase();
+          if (ascending) {
+            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+          } else {
+            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+          }
         });
         for (let i = 0; i < sorted_array.length; i++) {
-            this.project(projectName).objects[i] = sorted_array[i][1];
+          this.project(projectName).objects[i] = sorted_array[i][1];
+        }
+      }
+      else {
+        let sorted_array = Object.entries(objects).sort((a, b) => {
+          if (!(a[1][key] && b[1][key])) {
+            return 0;
+          }
+          const sortA = a[1][key].toUpperCase();
+          const sortB = b[1][key].toUpperCase();
+          if (ascending) {
+            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+          } else {
+            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+          }
+        });
+        for (let i = 0; i < sorted_array.length; i++) {
+          this.project(projectName).objects[i] = sorted_array[i][1];
         }
       }
     },
@@ -181,30 +195,30 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @param {string} name 
      * @returns array contains error text
      */
-    error(name){
+    error(name) {
       let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
-      if(err){
+      if (err) {
         return err[name];  // return array ['text1', 'text2', ...] 
       }
     },
 
     // return src:blob untuk ICN atau blob.text() jika xml
     // return Promise
-    async getCurrentDetailObject(output = '', object = {}){
+    async getCurrentDetailObject(output = '', object = {}) {
       const blob = object.blob ?? this.currentDetailObject.blob;
-      if(!blob){
-        return ['',''];
+      if (!blob) {
+        return ['', ''];
       }
       window.blob = blob;
-      if(output == 'srcblob'){
+      if (output == 'srcblob') {
         const url = URL.createObjectURL(blob);
-        return [output,url.toString()];
+        return [output, url.toString()];
       }
-      else if(output == 'text'){
+      else if (output == 'text') {
         return [output, await blob.text()];
       }
-      else if(output == ''){
-        if(blob.type.includes('text')){
+      else if (output == '') {
+        if (blob.type.includes('text')) {
           return [blob.type, await blob.text()];
         } else {
           const url = URL.createObjectURL(blob);
@@ -215,18 +229,18 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       // })();
     },
 
-    async setCurrentDetailObject_blob(){
+    async setCurrentDetailObject_blob() {
       this.showLoadingBar = true;
-      const route = this.getWebRoute('api.get_transform_csdb', { project_name: this.currentDetailObject['projectName'], filename: this.currentDetailObject.model['filename']});
+      const route = this.getWebRoute('api.get_transform_csdb', { project_name: this.currentDetailObject['projectName'], filename: this.currentDetailObject.model['filename'] });
       await axios({
         url: route.url,
         method: route[0],
         data: route.params,
         responseType: 'blob',
       })
-      .then(async (response) => {
-        this.currentDetailObject.blob = response.data;
-      });
+        .then(async (response) => {
+          this.currentDetailObject.blob = response.data;
+        });
     },
 
     /**
@@ -245,7 +259,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
             this.currentDetailObject.model = response.data[0];
           })
           .catch(error => this.$root.error(error));
-          this.currentDetailObject['projectName'] = projectName;
+        this.currentDetailObject['projectName'] = projectName;
       } else {
         this.currentDetailObject.model = object ? object : this.currentDetailObject.model;
       }
@@ -253,5 +267,5 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     }
   }
 
-  
+
 })
