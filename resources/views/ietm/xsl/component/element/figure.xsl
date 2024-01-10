@@ -36,8 +36,10 @@
         <xsl:variable name="graIndex"><xsl:number /></xsl:variable>
         <xsl:variable
           name="infoEntityIdent">
-          <xsl:text>/route/get_transform_csdb/?filename=</xsl:text>
+          <xsl:text>/route/api.get_transform_csdb/?filename=</xsl:text>
           <xsl:value-of select="@infoEntityIdent" />
+          <xsl:text>&#38;project_name=</xsl:text>
+          <xsl:value-of select="$repoName"/>
         </xsl:variable>
         
         <table

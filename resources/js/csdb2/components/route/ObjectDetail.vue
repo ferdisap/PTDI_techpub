@@ -1,24 +1,19 @@
 <script>
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import { reactive } from 'vue'
 
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      object: {},
-      filename_transformed: '',
-      transformedObject: '',
       viewer: 'ietm',
-
-      blobObject: {0: 'foo'},
+      transformedTemplate: undefined,
     }
   },
   computed: {
     dynamic() {
       return {
-        template: this.transformedObject,
+        template: this.transformedTemplate,
         data() {
           return {
             store: useTechpubStore(),
@@ -31,7 +26,7 @@ export default {
               e.preventDefault();
               let data = $(e.target).mouseout().data('maphilight') || {};
               data.alwaysOn = !(data.alwaysOn);
-              $(e.target).data('maphilight', data).trigger('alwaysOn.maphilight');      
+              $(e.target).data('maphilight', data).trigger('alwaysOn.maphilight');
             })
           });
         },
@@ -40,19 +35,20 @@ export default {
   },
   props: ['projectName', 'filename'],
   methods: {
-    submit(evt) {
+    async submit(evt) {
       this.techpubStore.showLoadingBar = true;
       const formData = new FormData(evt.target);
-      formData.append('filename', this.object.filename);
+      formData.append('filename', this.techpubStore.currentDetailObject.modelfilename);
       formData.append(evt.submitter.name, evt.submitter.value);
       let api = axios.create({
         url: evt.target.action,
         method: evt.target.method,
         data: formData,
       })
-      api
+      await api
         .then(response => this.$root.success(response))
         .catch(error => this.$root.error(error));
+      this.techpubStore.showLoadingBar = false;
     },
     exportpdf(evt) {
       this.techpubStore.showLoadingBar = true;
@@ -64,81 +60,34 @@ export default {
       embed.attr('src', url.toString())
       this.techpubStore.showLoadingBar = false;
     },
-    transform() {
-      if (this.filename_transformed != this.$props.filename) {
-        this.filename_transformed = this.$props.filename;
-        this.transformedObject = '';
-        this.techpubStore.showLoadingBar = true;
-        const route = this.techpubStore.getWebRoute('api.get_transform_csdb', { projectName: this.$props.projectName, filename: this.$props.filename });
-        axios({
-          url: route.url,
-          method: 'GET',
-          data: route.params,
-          responseType: 'blob',
-        })
-          .then(async (response) => {
-            let mime = response.headers.getContentType();
-            const blob = new Blob([response.data], { type: mime });
-            this.techpubStore.currentDetailObject.blob = blob;
-            this.techpubStore.currentDetailObject.filename = this.$props.filename;
-            this.techpubStore.currentDetailObject.projectName = this.$props.projectName;
-            // window.blob = blob;
-            if (mime.includes('text/html')) {
-              this.transformedObject = await blob.text();
-              if (window.location.hash) {
-                setTimeout(() => {
-                  document.getElementById(window.location.hash.slice(1)).scrollIntoView();
-                }, 0);
-              }
-            }
-            else if (mime.includes('image')) {
-              const url = URL.createObjectURL(blob);
-              this.transformedObject = `<img src="${url.toString()}"/>`;
-            }
-            else {
-              const url = URL.createObjectURL(blob);
-              this.transformedObject = `<embed src="${url.toString()}" style="width:100%; height:50vh"/>`;
-            }
-            this.techpubStore.showLoadingBar = false;
-            setTimeout(() => {
-              $('.map').maphilight();
-            }, 0);
-          })
-          .catch(error => {
-            this.$root.error(error);
-          });
+    async transform() {
+      const transformed = await this.techpubStore.getCurrentDetailObject();
+      const mime = transformed[0];
+      if (mime.includes('text')) {
+        this.transformedTemplate = transformed[1];
+      } else {
+        let src = transformed[1];
+        this.transformedTemplate = `<embed type="${mime}" src="${src}" style="width:inherit"/>`
       }
-
     },
+    
   },
   async mounted() {
-    // window.techpubStore = this.techpubStore;
-    await this.techpubStore.setProject();
+    await this.techpubStore.setProject(); // di page ProjectDetail sudah di set. Jika page ini di refresh, dia akan set project, 
     let object = this.techpubStore.object(this.$props.projectName, this.$props.filename);
-    if (!object) {
-      this.techpubStore.showLoadingBar = true;
-      const route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { project_name: this.$props.projectName, filename: this.$props.filename })
-      axios({
-        url: route.url,
-        method: 'GET',
-        data: route.params,
-      })
-        .then(response => {
-          this.object = response.data[0];
-          this.techpubStore.showLoadingBar = false;
-        })
-        .catch(error => {
-          this.$root.error(error);
-        })
-    } else {
-      this.object = object;
-    }
-    if (!this.transformedObject) {
-      this.transform();
-    }
-  },
-  beforeUpdate() {
+    await this.techpubStore.setCurrentObject_model(object, this.$props.projectName, this.$props.filename);
+    await this.techpubStore.setCurrentDetailObject_blob();
     this.transform();
+    this.techpubStore.showLoadingBar = false;
+  },
+  async beforeUpdate() {
+    if(this.techpubStore.currentDetailObject.model.filename != this.$props.filename){
+      let object = this.techpubStore.object(this.$props.projectName, this.$props.filename);
+      await this.techpubStore.setCurrentObject_model(object, this.$props.projectName, this.$props.filename);
+      await this.techpubStore.setCurrentDetailObject_blob();
+      this.transform();
+      this.techpubStore.showLoadingBar = false;
+    }
   },
 }
 </script>
@@ -147,18 +96,19 @@ export default {
   <h4 class="text-center"> {{ $props.filename }} </h4>
   <div class="text-center flex items-start justify-center">
     <div class="text-left border-r-2 px-2 border-slate-950">
-      Status: {{ object.status }}
+      Status: {{ techpubStore.currentDetailObject.model ? techpubStore.currentDetailObject.model.status : '' }}
       <br />
-      Initiator: {{ object.initiator ? object.initiator.name : '' }}
+      Initiator: {{ techpubStore.currentDetailObject.model ? techpubStore.currentDetailObject.model.initiator.name : '' }}
       <br />
-      Last Modified: {{ techpubStore.date(object.updated_at) }}
+      Last Modified: {{ techpubStore.date(techpubStore.currentDetailObject.model ? techpubStore.currentDetailObject.model.updated_at : '') }}
     </div>
     <router-link class="button"
-      :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: object.filename}}">update</router-link>
+      :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: $props.filename } }">update</router-link>
+    <span> {{ techpubStore.currentDetailObject.modelfilename }} </span>
   </div>
   <div class="mb-3">
     <h5>Description</h5>
-    {{ techpubStore.isEmpty(object.description) ? 'none' : object.description }}
+    {{ techpubStore.isEmpty(techpubStore.currentDetailObject.modeldescription) ? 'none' : techpubStore.currentDetailObject.modeldescription }}
   </div>
   <hr />
   <br />
@@ -208,10 +158,15 @@ export default {
     </h1>
     <!-- ietm viewer -->
     <div id="ietm-viewer" v-show="viewer == 'ietm'" class="flex">
-      <div :class="['my-3 detail-container h-[1000px] overflow-scroll', techpubStore.isOpenICNDetailContainer ? 'w-1/2' : 'w-full']">
-        <component :is="dynamic" v-if="transformedObject" />
+      <div
+        :class="['my-3 detail-container h-[1000px] overflow-scroll', techpubStore.isOpenICNDetailContainer ? 'w-1/2' : 'w-full']">
+        <!-- <component :is="dynamic" v-if="transformedObject" /> -->
+        <component :is="dynamic" v-if="transformedTemplate" />
+        <!-- <Detail :text="'texteasasa'" /> -->
+        <!-- {{ Detail() }} -->
       </div>
-      <div id="icn-detail-container" :class="[techpubStore.isOpenICNDetailContainer ? 'w-1/2' : '' ,'my-3 py-3 flex justify-center bg-gray-500']">
+      <div id="icn-detail-container"
+        :class="[techpubStore.isOpenICNDetailContainer ? 'w-1/2' : '', 'my-3 py-3 flex justify-center bg-gray-500']">
       </div>
     </div>
     <!-- pdf viewer -->
@@ -223,7 +178,7 @@ export default {
         <div class="flex w-full space-x-4 my-3">
           <div class="w-1/3">
             <label for="filename" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">Filename</label>
-            <span>This filename of current detail of object.</span>
+            <span>This filename of current detail of techpubStore.currentDetailObject.model</span>
             <input type="text" id="filename" name="filename" class="input w-full" :value="$props.filename" />
           </div>
           <div class="w-1/3">

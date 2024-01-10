@@ -29,11 +29,13 @@ class CsdbServiceController extends CsdbController
   ############### NEW by VUE ###############
   public function provide_csdb_transform2(Request $request)
   {
-    $projectName = $request->get('projectName') ?? $request->route('projectName');
-    $filename = $request->get('filename') ?? $request->route('filename');
+    $projectName = $request->route('project_name');
+    $filename = $request->route('filename');
     if(!$projectName OR !$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
 
-    $csdb_model = Csdb::where('filename', $filename)->first(['path']);
+    if(!($csdb_model = Csdb::where('filename', $filename)->first(['path']))){
+      return Response::make('', 404);
+    }
     $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
     
     // jika ICN Document

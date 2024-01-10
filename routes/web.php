@@ -74,5 +74,5 @@ require __Dir__."/brdp/general.php";
 require __Dir__."/brex/general.php";
 
 Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth'); // berguna untuk vue
-// Route::get('/route/{name}', [Controller::class, 'route']);
+Route::get('/route/{name}', [Controller::class, 'route']); // masih digunakan di xsl
 Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']); // berguna untuk vue

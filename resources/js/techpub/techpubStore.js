@@ -42,9 +42,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
        * Selanjutnya diharapkan bisa dipakai untuk menggantikan transformedObject
        */
       currentDetailObject: {
-        blob: undefined,
-        filename: undefined,
+        model: undefined,
+        blob: undefined, // transformed csdb object is blob
+        // filename: undefined, // filename harusnya tidak perlu karena ada didalam
         projectName:undefined,
+        // transformed: undefined, // harusnya tidak diperlukan karena sudah ada blob. Agar menghemat memory
       }, // blob object
     }
   },
@@ -190,6 +192,9 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     // return Promise
     async getCurrentDetailObject(output = '', object = {}){
       const blob = object.blob ?? this.currentDetailObject.blob;
+      if(!blob){
+        return ['',''];
+      }
       window.blob = blob;
       if(output == 'srcblob'){
         const url = URL.createObjectURL(blob);
@@ -208,6 +213,45 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       }
       // return (async () => {
       // })();
+    },
+
+    async setCurrentDetailObject_blob(){
+      this.showLoadingBar = true;
+      const route = this.getWebRoute('api.get_transform_csdb', { project_name: this.currentDetailObject['projectName'], filename: this.currentDetailObject.model['filename']});
+      await axios({
+        url: route.url,
+        method: route[0],
+        data: route.params,
+        responseType: 'blob',
+      })
+      .then(async (response) => {
+        this.currentDetailObject.blob = response.data;
+      });
+    },
+
+    /**
+     * object = {model: ..., blob: ...}
+     * */
+    async setCurrentObject_model(object, projectName, filename) {
+      if (!this.currentDetailObject.model) {
+        this.showLoadingBar = true;
+        const route = this.getWebRoute('api.get_csdb_object_data', { project_name: projectName, filename: filename });
+        await axios({
+          url: route.url,
+          method: route[0],
+          data: route.params,
+        })
+          .then(response => {
+            this.currentDetailObject.model = response.data[0];
+          })
+          .catch(error => this.$root.error(error));
+          this.currentDetailObject['projectName'] = projectName;
+      } else {
+        this.currentDetailObject.model = object ? object : this.currentDetailObject.model;
+      }
+      this.showLoadingBar = false;
     }
   }
+
+  
 })

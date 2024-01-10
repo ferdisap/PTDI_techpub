@@ -37,7 +37,7 @@ Route::post("api/csdb/object/update", [CsdbController::class, 'postupdate2'])->m
 Route::post("/api/csdb/object/verify", [CsdbProcessingController::class, 'postverify2'])->middleware('auth')->name('api.post_csdb_object_verify');
 
 ###### service ######
-Route::get("/api/csdb/{projectName}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');
+Route::get("/api/csdb/{project_name}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');
 Route::get("/api/{projectName}/{filename}/pdf", [CsdbServiceController::class, 'provide_csdb_pdf'])->middleware('auth')->name('api.pdf_csdb');
 Route::get("/api/repo", [RepoController::class, 'getindex2'])->middleware('auth')->name('api.get_repo_index');
 

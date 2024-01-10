@@ -6,8 +6,10 @@
   
   <xsl:template match="warning">
     <xsl:variable name="warning_logo">
-    <xsl:text>/route/get_transform_csdb/?filename=</xsl:text>
+      <xsl:text>/route/api.get_transform_csdb/?filename=</xsl:text>
       <xsl:value-of select="symbol/@infoEntityIdent"/>
+      <xsl:text>&#38;project_name=</xsl:text>
+      <xsl:value-of select="$repoName"/>
     </xsl:variable>
     <table style="text-align:center;width:100%">
       <xsl:call-template name="cgmark"/>
@@ -24,13 +26,14 @@
         <td style="width:15%">&#160;</td>
       </tr>
     </table>
-    <!-- <br/><br/> -->
   </xsl:template>
   
   <xsl:template match="caution">
     <xsl:variable name="caution_logo">
-    <xsl:text>/route/get_transform_csdb/?filename=</xsl:text>
+      <xsl:text>/route/api.get_transform_csdb/?filename=</xsl:text>
       <xsl:value-of select="symbol/@infoEntityIdent"/>
+      <xsl:text>&#38;project_name=</xsl:text>
+      <xsl:value-of select="$repoName"/>
     </xsl:variable>
     <table style="text-align:center;width:100%">
       <xsl:call-template name="cgmark"/>
@@ -51,8 +54,10 @@
   
   <xsl:template match="note">
     <xsl:variable name="note_logo">
-      <xsl:text>/route/get_transform_csdb/?filename=</xsl:text>
+      <xsl:text>/route/api.get_transform_csdb/?filename=</xsl:text>
       <xsl:value-of select="symbol/@infoEntityIdent"/>
+      <xsl:text>&#38;project_name=</xsl:text>
+      <xsl:value-of select="$repoName"/>
     </xsl:variable>
     <xsl:variable name="border">
       <xsl:if test="@noteType = 'warning'">

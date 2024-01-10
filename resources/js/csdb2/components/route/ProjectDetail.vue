@@ -19,7 +19,7 @@ export default {
     }
   },
   async mounted() {
-    window.store = this.techpubStore;
+    // window.store = this.techpubStore;
     await this.techpubStore.setProject();
     let projectName = this.$props.projectName;
     let route = this.techpubStore.getWebRoute('api.get_csdb_object_data', { project_name: projectName });

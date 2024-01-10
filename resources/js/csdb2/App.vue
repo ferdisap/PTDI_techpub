@@ -48,7 +48,7 @@ export default {
   },
   async created() {
     this.techpubStore.WebRoutes = window.WebRoutes;
-    window.WebRoutes = undefined;
+    window.techpubStore = this.techpubStore;
     await axios.get('/auth/check')
       .then(response => {
         this.techpubStore.Auth.name = response.data.name;
