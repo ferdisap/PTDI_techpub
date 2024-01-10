@@ -40,3 +40,9 @@ Route::post("/api/csdb/object/verify", [CsdbProcessingController::class, 'postve
 Route::get("/api/csdb/{projectName}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');
 Route::get("/api/{projectName}/{filename}/pdf", [CsdbServiceController::class, 'provide_csdb_pdf'])->middleware('auth')->name('api.pdf_csdb');
 Route::get("/api/repo", [RepoController::class, 'getindex2'])->middleware('auth')->name('api.get_repo_index');
+
+### NOTE
+/**
+ * harusnya route name 'api.getobject' sama dengan provide_csdb_transform2 jika yang dikelarkan adalah ICN.
+ * sehingga frontend tidak perlu request 2x jika ingin mengupdate ICN, dari page detailObject->updateObject.
+ */

@@ -1,6 +1,7 @@
 <script>
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import { reactive } from 'vue'
 
 export default {
   data() {
@@ -10,6 +11,8 @@ export default {
       filename_transformed: '',
       transformedObject: '',
       viewer: 'ietm',
+
+      blobObject: {0: 'foo'},
     }
   },
   computed: {
@@ -76,6 +79,10 @@ export default {
           .then(async (response) => {
             let mime = response.headers.getContentType();
             const blob = new Blob([response.data], { type: mime });
+            this.techpubStore.currentDetailObject.blob = blob;
+            this.techpubStore.currentDetailObject.filename = this.$props.filename;
+            this.techpubStore.currentDetailObject.projectName = this.$props.projectName;
+            // window.blob = blob;
             if (mime.includes('text/html')) {
               this.transformedObject = await blob.text();
               if (window.location.hash) {
@@ -147,7 +154,7 @@ export default {
       Last Modified: {{ techpubStore.date(object.updated_at) }}
     </div>
     <router-link class="button"
-      :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: object.filename }, }">update</router-link>
+      :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: object.filename}}">update</router-link>
   </div>
   <div class="mb-3">
     <h5>Description</h5>

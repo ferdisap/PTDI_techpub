@@ -20,7 +20,7 @@ return new class extends Migration
       $table->string('path');
       $table->string('status'); // new/modified/deleted + seeded/initiated/ + unused
       $table->text('description')->nullable();
-      $table->boolean('editable'); // yes(1) or no(0)
+      $table->boolean('editable'); // yes(1) or no(0) // sepertinya ini sudah tidak dipakai. awailnya dipakai di CsdbController@postupdate, tapi nanti dihapus saja. Kayaknya diawal ini berfungsi saat object sudah di customer, tidak bisa diedit lagi, padahal sekarang untuk customer pakai database sql yang berbeda (ietm.sqlite);
       $table->integer('initiator_id');
       $table->integer('project_name');
       $table->timestamps();

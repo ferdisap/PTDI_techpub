@@ -19,18 +19,23 @@ export default {
       dmrl_input: ''
     }
   },
-  props: ['projectName', 'filename', 'utility'],
+  props: ['projectName', 'filename', 'utility', 'blobObject'],
   methods: {
     submit(evt) {
       this.techpubStore.showLoadingBar = true;
       this.techpubStore.Errors = [];
       const formData = new FormData(evt.target);
-      if (!formData.get('upload')) {
-        formData.append('xmleditor', this.editor.state.doc.toString());
+      window.formData = formData;
+      window.evt = evt;
+      let xml = this.editor.state.doc.toString();
+      window.xml = xml;
+      // if (!formData.get('upload')) {
+      if (xml) {
+        formData.append('xmleditor', xml);
         formData.append(evt.submitter.name, evt.submitter.value);
         formData.append('filename', this.$props.filename);
       } else {
-        formData.append('filename', evt.target.files[0].name);
+        formData.append('filename', evt.target.entity.files[0].name);
       }
       // formData.append('projectName', this.project_name_input);
       axios({
@@ -46,14 +51,39 @@ export default {
       this.filename_current = this.$props.filename;
       let filename = this.$props.filename;
       let projectName = this.$props.projectName;
-      let route = this.techpubStore.getWebRoute('api.getobject', { projectName: projectName, filename: filename },);
-      axios.get(route.url.toString())
-        .then((response) => this.attachEditor(response.data))
+
+      const render = (currentDetailObject) => {
+        window.cur = currentDetailObject;
+        if(currentDetailObject[0].includes('text')){
+          this.attachEditor(currentDetailObject[1]);
+        }
+        else {
+          let container = $("#entity-viewer")
+          container.attr('src', currentDetailObject[1]);
+          container.attr('type', currentDetailObject[0]);
+          this.showEntityViewer = true;
+        }
+      }
+
+      if(this.techpubStore.currentDetailObject.filename == filename && this.techpubStore.currentDetailObject.projectName == projectName){
+        let currentDetailObject = await this.techpubStore.getCurrentDetailObject();
+        render(currentDetailObject);
+      }
+      else {
+        let route = this.techpubStore.getWebRoute('api.getobject', { projectName: projectName, filename: filename },);
+        axios({
+          url: route.url,
+          method: route.method[0],
+          data: route.params,
+          responseType: 'blob',
+        })
+        .then(async (rsp) => {
+          window.rsp = rsp;
+          const currentDetailObject = await this.techpubStore.getCurrentDetailObject('',{blob: rsp.data});
+          render(currentDetailObject);
+        })
         .catch(error => this.$root.error(error));
-      // let response = await axios.get(route.url.toString());
-      // if (response.statusText === 'OK') {
-      //   this.attachEditor(response.data)
-      // }
+      }
 
     },
     attachEditor(text) {
@@ -96,12 +126,13 @@ export default {
             let en = $('#entity-name');
             en.text(file.name);
 
+            let xmlEditor = $('#xml-editor-container');
+            xmlEditor.html('');
           }
           reader.readAsDataURL(file);
         }
       }
     }
-
   },
   mounted() {
     // update
@@ -147,11 +178,15 @@ export default {
 
   <div id="tes-img-preview"></div>
 
+  <form method="POST"
+    :action="$props.utility === 'create' ? techpubStore.getWebRoute('api.post_create_csdb_object').path : techpubStore.getWebRoute('api.post_update_csdb_object').path"
+    @submit.prevent="submit($event)">
+
   <div v-show="showUpload" class="mb-3">
     <!-- file upload -->
-    <form
+    <!-- <form
       :action="$props.utility === 'create' ? techpubStore.getWebRoute('api.post_create_csdb_object').path : techpubStore.getWebRoute('api.post_update_csdb_object').path"
-      method="POST" @submit.prevent="submit($event)" enctype="multipart/form-data">
+      method="POST" @submit.prevent="submit($event)" enctype="multipart/form-data"> -->
       <input type="hidden" name="upload" value="1">
       <div class="mb-5">
         <label for="entity" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">Upload File</label>
@@ -160,16 +195,17 @@ export default {
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         <div class="text-red-600" v-html="techpubStore.error('entity')"></div>
       </div>
-      <button type="submit" class="button bg-violet-400 text-white hover:bg-violet-600">Upload</button>
-    </form>
+      <!-- <button type="submit" class="button bg-violet-400 text-white hover:bg-violet-600">Upload</button> -->
+    <!-- </form> -->
   </div>
 
   <hr>
 
   <!-- xml editor -->
-  <form method="POST"
+  <div>
+  <!-- <form method="POST"
     :action="$props.utility === 'create' ? techpubStore.getWebRoute('api.post_create_csdb_object').path : techpubStore.getWebRoute('api.post_update_csdb_object').path"
-    @submit.prevent="submit($event)">
+    @submit.prevent="submit($event)"> -->
     <div v-show="showEditor" class="h-max mt-3">
       <div class="mb-2 flex space-x-3">
         <!-- project name -->
@@ -212,14 +248,16 @@ export default {
       <div id="xml-editor-container" class="text-xl mb-2" style="background-color:rgba(0, 0, 0, 0.091)"></div>
       <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
       <br />
-      <!-- button -->
-      <div class="flex justify-end">
-        <button v-if="$props.utility != 'create'" type="submit" name="button" value="commit"
-          class="button bg-violet-400 text-white hover:bg-violet-600">Commit</button>
-        <button type="submit" name="button" :value="$props.utility ?? 'update'"
-          class="button bg-violet-400 text-white hover:bg-violet-600"> {{ $props.utility === 'create' ? 'Create' :
-            'Update' }} </button>
-      </div>
+    </div>
+  <!-- </form> -->
+  </div>
+    <!-- button -->
+    <div class="flex justify-end">
+      <button v-if="$props.utility != 'create'" type="submit" name="button" value="commit"
+        class="button bg-violet-400 text-white hover:bg-violet-600">Commit</button>
+      <button type="submit" name="button" :value="$props.utility ?? 'update'"
+        class="button bg-violet-400 text-white hover:bg-violet-600"> {{ $props.utility === 'create' ? 'Create' :
+          'Update' }} </button>
     </div>
   </form>
 

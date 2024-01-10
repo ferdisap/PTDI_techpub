@@ -36,6 +36,16 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       showIdentSection: true,
       
       isOpenICNDetailContainer : false,
+
+      /**
+       * awalnya digunakan untuk mengirim data dari ObjectDetail to ObjectUpdate.
+       * Selanjutnya diharapkan bisa dipakai untuk menggantikan transformedObject
+       */
+      currentDetailObject: {
+        blob: undefined,
+        filename: undefined,
+        projectName:undefined,
+      }, // blob object
     }
   },
   actions: {
@@ -164,11 +174,40 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       }
     },
 
+    /**
+     * untuk form input name
+     * @param {string} name 
+     * @returns array contains error text
+     */
     error(name){
       let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
       if(err){
         return err[name];  // return array ['text1', 'text2', ...] 
       }
     },
+
+    // return src:blob untuk ICN atau blob.text() jika xml
+    // return Promise
+    async getCurrentDetailObject(output = '', object = {}){
+      const blob = object.blob ?? this.currentDetailObject.blob;
+      window.blob = blob;
+      if(output == 'srcblob'){
+        const url = URL.createObjectURL(blob);
+        return [output,url.toString()];
+      }
+      else if(output == 'text'){
+        return [output, await blob.text()];
+      }
+      else if(output == ''){
+        if(blob.type.includes('text')){
+          return [blob.type, await blob.text()];
+        } else {
+          const url = URL.createObjectURL(blob);
+          return [blob.type, url.toString()];
+        }
+      }
+      // return (async () => {
+      // })();
+    }
   }
 })
