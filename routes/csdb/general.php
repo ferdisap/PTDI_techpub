@@ -37,7 +37,8 @@ Route::post("api/csdb/object/update", [CsdbController::class, 'postupdate2'])->m
 Route::post("/api/csdb/object/verify", [CsdbProcessingController::class, 'postverify2'])->middleware('auth')->name('api.post_csdb_object_verify');
 Route::get('/api/csdb/{project_name}/{filename}/restore', [CsdbController::class, 'getrestore2'])->middleware('auth')->name('api.get_restore_csdb_object');
 Route::get('/api/csdb/{project_name}/{filename}/delete', [CsdbController::class, 'getdelete2'])->middleware('auth')->name('api.get_delete_csdb_object');
-Route::post('/api/csdb/{project_name}/{filename}/delete', [CsdbController::class, 'postdelete2'])->middleware('auth')->name('api.post_delete_csdb_object'); // belum dipakai di vue karena bingung naruhnya dimana
+// Route::post('/api/csdb/{project_name}/{filename}/delete', [CsdbController::class, 'postdelete2'])->middleware('auth')->name('api.post_delete_csdb_object'); // belum dipakai di vue karena bingung naruhnya dimana
+Route::get('/api/csdb/{project_name}/{filename}/harddelete', [CsdbController::class, 'postdelete2'])->middleware('auth')->name('api.post_delete_csdb_object'); // belum dipakai di vue karena bingung naruhnya dimana
 
 ###### service ######
 Route::get("/api/csdb/{project_name}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');

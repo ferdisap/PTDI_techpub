@@ -242,8 +242,7 @@ class CsdbController extends Controller
     if(!$dom) return $this->ret(400, [ 'Failed tp create csdb.' ,["xmleditor" => CSDB::get_errors(true, $proccessid)]]);
 
     // #3. validasi filename,rootname dom
-    if($dom instanceof \DOMDocument){
-      
+    if($dom instanceof \DOMDocument){      
       if (!($validateRootname = CSDB::validateRootname($dom))) {
         return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
       }
@@ -283,9 +282,12 @@ class CsdbController extends Controller
     }
 
     // #7. assign inWork number into '01';
-    $domXpath = new \DOMXPath($dom);
-    $inWork = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo/@inWork")[0];
-    $inWork->nodeValue = '01';
+    if (($dom instanceof \DOMDocument)) {
+      $domXpath = new \DOMXPath($dom);
+      $inWork = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo/@inWork")[0];
+      $inWork->nodeValue = '01';
+      $csdb_filename = CSDB::resolve_DocIdent($dom);
+    }
 
     // #8. validate Brex (optional). User boleh uncheck input checkbox brex_validate
     // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
@@ -300,7 +302,7 @@ class CsdbController extends Controller
     // #8. saving to storage
     $saved = false;
     if ($dom instanceof \DOMDocument) {
-      Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $xmlstring);
+      Storage::disk('local')->put($path . DIRECTORY_SEPARATOR . $csdb_filename, $dom->C14N());
       $saved = true;
     }
     else{
