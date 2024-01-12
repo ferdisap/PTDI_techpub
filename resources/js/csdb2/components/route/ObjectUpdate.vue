@@ -23,17 +23,20 @@ export default {
       this.techpubStore.Errors = [];
       const formData = new FormData(evt.target);
       window.formData = formData;
-      window.evt = evt;
-      let xml = this.editor.state.doc.toString();
-      window.xml = xml;
-      // if (!formData.get('upload')) {
-      if (xml) {
-        formData.append('xmleditor', xml);
+      if(!formData.get('entity').size) {
+        // jika yang di upload XML padahal seharusnya eg: jpg, png, dll; maka xml editor tetap ke upload walaupun text nya sudah di nol ('') kan di fungsi readAsURL()
+        formData.append('xmleditor', this.editor.state.doc.toString());
         formData.append(evt.submitter.name, evt.submitter.value);
-        formData.append('filename', this.$props.filename);
+        formData.append('filename', this.$props.filename); // kalau create, filename = ''
       } else {
+        // validasi agar orang tidak salah. Seharusnya XML tapi yang di upload eg:jpg, png, dll
+        if(this.editor.state.doc.toString() == ''){
+          this.$root.error({message: 'You should put the text file, not ICN Object'});
+          return;
+        }
         formData.append('filename', evt.target.entity.files[0].name);
       }
+      this.pn = formData.get('project_name'); // input[name=project_name] menggunakan props atau projectName
       axios({
         url: evt.target.action,
         method: evt.target.method,
@@ -79,7 +82,6 @@ export default {
         // parent: document.body
       });
       this.editor = editor;
-      // window.editor = editor;
       // editor.state.doc.toString() // untuk ngambil isi text nya
       container.html(editor.dom);
       container.css({ 'background-color': 'rgba(0, 0, 0, 0)' });
@@ -87,8 +89,8 @@ export default {
     readURL(evt) {
       let file = evt.target.files[0];
       if (file) {
-        const reader = new FileReader();
         if (file.type == 'text/xml') {
+          const reader = new FileReader();
           reader.onload = () => {
             this.attachEditor(reader.result);
             this.showEditor = true;
@@ -97,20 +99,12 @@ export default {
           reader.readAsText(file);
         }
         else {
-          reader.onload = () => {
-            let vr = $('#entity-viewer');
-            vr.attr('type', file.type);
-            vr.attr('src', reader.result);
-            this.showEntityViewer = true;
-            this.showEditor = false
-
-            let en = $('#entity-name');
-            en.text(file.name);
-
-            let xmlEditor = $('#xml-editor-container');
-            xmlEditor.html('');
-          }
-          reader.readAsDataURL(file);
+          $('#entity-viewer').attr('type', file.type).attr('src', URL.createObjectURL(file));
+          $('#entity-name').text(file.name);
+          this.attachEditor('');
+          console.log(window.editorReadURL = this.editor);
+          this.showEntityViewer = true;
+          this.showEditor = false;
         }
       }
     }
@@ -129,9 +123,13 @@ export default {
     }
   },
   async updated() {
-    let object = this.techpubStore.object(this.$props.projectName, this.$props.filename);
-    await this.techpubStore.setCurrentObject_model(object, this.$props.projectName, this.$props.filename);
-    this.getObjectText();
+    // console.log(this.$props.filename, this.techpubStore.currentDetailObject.model['filename']);
+    // if(this.$props.filename != this.techpubStore.currentDetailObject.model['filename']){
+    //   console.log('ObjectUpdate @updated');
+    //   let object = this.techpubStore.object(this.$props.projectName, this.$props.filename);
+    //   await this.techpubStore.setCurrentObject_model(object, this.$props.projectName, this.$props.filename);
+    //   this.getObjectText();
+    // }
   }
 }
 </script>
@@ -167,10 +165,6 @@ export default {
 
     <div v-show="showUpload" class="mb-3">
       <!-- file upload -->
-      <!-- <form
-      :action="$props.utility === 'create' ? techpubStore.getWebRoute('api.post_create_csdb_object').path : techpubStore.getWebRoute('api.post_update_csdb_object').path"
-      method="POST" @submit.prevent="submit($event)" enctype="multipart/form-data"> -->
-      <input type="hidden" name="upload" value="1">
       <div class="mb-5">
         <label for="entity" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold">Upload File</label>
         <span>The file can be anything as csdb object.</span>
@@ -178,17 +172,12 @@ export default {
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         <div class="text-red-600" v-html="techpubStore.error('entity')"></div>
       </div>
-      <!-- <button type="submit" class="button bg-violet-400 text-white hover:bg-violet-600">Upload</button> -->
-      <!-- </form> -->
     </div>
 
     <hr>
 
     <!-- xml editor -->
     <div>
-      <!-- <form method="POST"
-    :action="$props.utility === 'create' ? techpubStore.getWebRoute('api.post_create_csdb_object').path : techpubStore.getWebRoute('api.post_update_csdb_object').path"
-    @submit.prevent="submit($event)"> -->
       <div v-show="showEditor" class="h-max mt-3">
         <div class="mb-2 flex space-x-3">
           <!-- project name -->
@@ -196,7 +185,7 @@ export default {
             <label for="project_name" class="block mb-2 text-gray-900 dark:text-white text-lg font-bold">Project
               Name</label>
             <span>The project name is required to be filled.</span>
-            <input type="text" id="project_name" name="project_name" placeholder="type your project name .."
+            <input type="text" id="project_name" name="project_name" placeholder="type your project name .." :value="$props.projectName ?? pn"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
             <div class="text-red-600" v-html="techpubStore.error('project_name')"></div>
           </div>
@@ -232,7 +221,6 @@ export default {
         <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
         <br />
       </div>
-      <!-- </form> -->
     </div>
     <!-- button -->
     <div class="flex justify-end">
@@ -248,6 +236,8 @@ export default {
   <div v-show="showEntityViewer" class="h-max mt-3">
     <span class="text-gray-900 dark:text-white text-light">Preview Entity</span><br />
     <span id="entity-name" class="block mb-2 text-gray-900 dark:text-white text-xl font-bold"></span><br />
-    <embed id="entity-viewer" class="max-w-full" width="100%" height="600" />
+    <div>
+      <embed id="entity-viewer" class="max-w-full" width="100%" height="600" />
+    </div>
   </div>
 </template>

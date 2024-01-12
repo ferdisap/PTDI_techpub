@@ -1,4 +1,5 @@
 <script>
+import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Sort from '../subComponents/Sort.vue';
 
@@ -16,7 +17,35 @@ export default {
     sort(status){
       this.techpubStore.sortObjects(this.$props.projectName,status,this.sortOrder[status]);
       this.sortOrder[status] = !this.sortOrder[status];
-    }
+    },
+    crudObject(filename, order){
+      let route;
+      if(order == 'delete'){
+        route = this.techpubStore.getWebRoute('api.get_delete_csdb_object',{project_name: this.$props.projectName, filename:filename});
+      }
+      else if(order == 'restore'){
+        route = this.techpubStore.getWebRoute('api.get_restore_csdb_object',{project_name: this.$props.projectName, filename:filename});
+      }
+      axios({
+        url: route.url,
+        method: route.method[0],
+        data: route.params,
+      })
+      .then((response) => {
+        this.$root.success(response);
+        window.techpubStore = this.techpubStore;
+        window.object = techpubStore.object(this.$props.projectName, filename);
+        let newObject = response.data.object;
+        let object = techpubStore.object(this.$props.projectName, filename);
+        for(const col in object){
+          if(newObject[col]){
+            object[col] = newObject[col];
+          }
+        };
+
+      })
+      .catch((error) => this.$root.error(error));
+    },
   },
   async mounted() {
     // window.store = this.techpubStore;
@@ -73,9 +102,10 @@ th {
             <td> {{ this.techpubStore.date(obj.updated_at) }} </td>
             <td> {{ obj.initiator.name }} </td>
             <td class="text-center">
-              <router-link class="button"
-                :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: obj.filename }, }">update</router-link>
-              <button class="button-danger">delete</button>
+              <!-- <router-link class="button" :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: obj.filename }, }">update</router-link> -->
+              <a class="button" :href="techpubStore.getWebRoute('',{ projectName: $props.projectName, filename: obj.filename }, $router.getRoutes().find(v => v.name == 'ObjectUpdate'))['url']">Update</a>
+              <button class="button-danger" @click="crudObject(obj.filename, 'delete')">delete</button>
+              <button class="button-safe" @click="crudObject(obj.filename, 'restore')">restore</button>
             </td>
           </tr>
       </tbody>

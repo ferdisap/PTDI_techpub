@@ -102,8 +102,7 @@ export default {
       <br />
       Last Modified: {{ techpubStore.date(techpubStore.currentDetailObject.model ? techpubStore.currentDetailObject.model.updated_at : '') }}
     </div>
-    <router-link class="button"
-      :to="{ name: 'ObjectUpdate', params: { projectName: $props.projectName, filename: $props.filename } }">update</router-link>
+    <a class="button" :href="techpubStore.getWebRoute('',{ projectName: $props.projectName, filename: $props.filename }, $router.getRoutes().find(v => v.name == 'ObjectUpdate'))['url']">Update</a>
     <span> {{ techpubStore.currentDetailObject.modelfilename }} </span>
   </div>
   <div class="mb-3">

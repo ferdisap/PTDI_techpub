@@ -83,9 +83,18 @@ class Controller extends BaseController
 
   public function ret($code, $messages = [])
   {
-    return response()->json([
+    $data = [
       'messages' => $messages,
-    ], $code);
+    ];
+    $args = func_get_args();
+    for ($i=2; $i < count($args); $i++) { 
+      if(is_array($args[$i])){
+        $data = array_merge($data, $args[$i]);
+      } else {
+        $data[] = $args[$i];
+      }
+    }
+    return response()->json($data, $code);
   }
 
 

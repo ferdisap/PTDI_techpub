@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\Storage;
 // Route::post("/csdb/object/create", [CsdbController::class, 'postcreate'])->middleware('auth')->name('get_create_csdb_object'); //create_csdb_object
 // Route::get("/csdb/object/update", [CsdbController::class, 'getupdate'])->middleware('auth')->name('get_update_csdb_object');
 // Route::post("/csdb/object/update", [CsdbController::class, 'postupdate'])->middleware('auth')->name('post_update_csdb_object'); // update_csdb_object
-Route::get('/csdb/object/delete', [CsdbController::class, 'getdelete'])->middleware('auth')->name('get_delete_csdb_object');
-Route::get('/csdb/object/restore', [CsdbController::class, 'getrestore'])->middleware('auth')->name('get_restore_csdb_object');
+// Route::get('/csdb/object/delete', [CsdbController::class, 'getdelete'])->middleware('auth')->name('get_delete_csdb_object');
+// Route::get('/csdb/object/restore', [CsdbController::class, 'getrestore'])->middleware('auth')->name('get_restore_csdb_object');
 Route::post('/csdb/object/delete', [CsdbController::class, 'postdelete'])->middleware('auth')->name('post_delete_csdb_object');
 // Route::get('/csdb/object/detail', [CsdbController::class, 'getdetail'])->middleware('auth')->name('get_detail_csdb_object');
 // Route::post("/csdb/object/verify", [CsdbProcessingController::class, 'postverify'])->middleware('auth')->name('post_csdb_object_verify');
@@ -35,6 +35,9 @@ Route::get('/api/getobject', [CsdbController::class, 'getcsdb'])->middleware('au
 Route::post("/api/csdb/object/create", [CsdbController::class, 'postcreate2'])->middleware('auth')->name('api.post_create_csdb_object'); //create_csdb_object
 Route::post("api/csdb/object/update", [CsdbController::class, 'postupdate2'])->middleware('auth')->name('api.post_update_csdb_object'); // update_csdb_object
 Route::post("/api/csdb/object/verify", [CsdbProcessingController::class, 'postverify2'])->middleware('auth')->name('api.post_csdb_object_verify');
+Route::get('/api/csdb/{project_name}/{filename}/restore', [CsdbController::class, 'getrestore2'])->middleware('auth')->name('api.get_restore_csdb_object');
+Route::get('/api/csdb/{project_name}/{filename}/delete', [CsdbController::class, 'getdelete2'])->middleware('auth')->name('api.get_delete_csdb_object');
+Route::post('/api/csdb/{project_name}/{filename}/delete', [CsdbController::class, 'postdelete2'])->middleware('auth')->name('api.post_delete_csdb_object'); // belum dipakai di vue karena bingung naruhnya dimana
 
 ###### service ######
 Route::get("/api/csdb/{project_name}/{filename}", [CsdbServiceController::class, 'provide_csdb_transform2'])->middleware('auth')->name('api.get_transform_csdb');

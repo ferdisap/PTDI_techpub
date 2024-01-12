@@ -57,6 +57,18 @@ class Csdb extends Model
     'remarks' => 'array'
   ];
 
+  public function hide(mixed $column)
+  {
+    if(is_array($column)){
+      foreach($column as $col){
+        $this->hidden[] = $col;
+      }
+    } else {
+      $this->hidden[] = $column;
+    }
+    $this->hidden = array_unique($this->hidden);
+  }
+
   /**
    * Get the initiator for the csdb object
    */

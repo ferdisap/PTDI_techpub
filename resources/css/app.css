@@ -117,4 +117,7 @@ h6 {
   .button-violet {
     @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-violet-400 hover:bg-violet-600 rounded-full
   }
+  .button-safe {
+    @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-green-400 hover:bg-green-600 rounded-full
+  }
 }

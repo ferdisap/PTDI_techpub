@@ -33,7 +33,7 @@ class CsdbServiceController extends CsdbController
     $filename = $request->route('filename');
     if(!$projectName OR !$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
 
-    if(!($csdb_model = Csdb::where('filename', $filename)->first(['path']))){
+    if(!($csdb_model = Csdb::where('filename', $filename)->first())){
       return Response::make('', 404);
     }
     $csdb_dom = MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"),$filename);
@@ -48,6 +48,7 @@ class CsdbServiceController extends CsdbController
     // $type = $csdb_dom->firstElementChild->tagName;
 
     $object = new Csdb();
+    // dd($csdb_dom, MpubCSDB::get_errors(), $csdb_model->path, $csdb_model->status);
     $object->DOMDocument = $csdb_dom;
     $object->repoName = $projectName;
     $object->objectpath = "/api/csdb";

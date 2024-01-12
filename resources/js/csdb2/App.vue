@@ -23,14 +23,17 @@ export default {
       window.axiosError = axiosError;
       this.showMessages = true;
       let messages = [];
-      if(axiosError.response.data.type == 'application/json'){
-        messages = JSON.parse(await axiosError.response.data.text()).messages ?? [JSON.parse(await axiosError.response.data.text()).message];
-      }
-      else {
-        messages = axiosError.response.data.messages;
-      }      
+      try {
+        if(axiosError.response && axiosError.response.data.type == 'application/json'){
+          messages = JSON.parse(await axiosError.response.data.text()).messages ?? [JSON.parse(await axiosError.response.data.text()).message];
+        }
+        else {
+          messages = axiosError.response.data.messages;
+        }
+      } catch (error) {}
       messages.unshift(axiosError.message);
       this.messages = messages;
+      console.log(this.messages, axiosError);
       this.isSuccess = false,
       this.techpubStore.showLoadingBar = false;
     },

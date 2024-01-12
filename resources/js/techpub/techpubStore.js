@@ -59,7 +59,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         year: 'numeric', month: 'short', day: 'numeric'
       });
     },
-    getWebRoute(name, params = {}) {
+    getWebRoute(name, params = {}, route = undefined) {
       if (params instanceof FormData) {
         params.delete('http://www.w3.org/1999/xhtml');
         let a = {};
@@ -68,7 +68,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         }
         params = a;
       }
-      let route = Object.assign({}, this.WebRoutes[name]);
+      if (route) {
+        route.params = params;
+      } else {
+        route = Object.assign({}, this.WebRoutes[name]);
+      }
       for (const p in route.params) {
         if (!params[p]) {
           throw new Error(`Parameter '${p}' shall be exist.`);
@@ -78,13 +82,13 @@ export const useTechpubStore = defineStore('useTechpubStore', {
           delete params[p];
         }
       }
-      if (route.method.includes('GET')) {
+      if (!route.method || route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
         url.search = new URLSearchParams(params);
         route.url = url;
       }
-      else if (route.method.includes('POST')) {
-        route.params = params
+      else if (route.method && route.method.includes('POST')) {
+        route.params = params;
         route.url = new URL(window.location.origin + route.path);
       }
       return route;
