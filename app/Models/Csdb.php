@@ -122,8 +122,7 @@ class Csdb extends Model
     }
     
     $xsl = MpubCSDB::importDocument($path_xsl . "/", $filename_xsl);
-    // dd($xsl, $path_xsl, $filename_xsl);
-    // dd($filename_xsl, $xsl);
+    
     $xsltproc = new \XSLTProcessor();
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
@@ -144,8 +143,9 @@ class Csdb extends Model
 
     $transformed = str_replace("\n", '', $transformed);
 
-    $transformed = preg_replace("/\s+/", ' ', $transformed);
-    $transformed = preg_replace("/v-on_/", 'v-on:', $transformed);
+    $transformed = preg_replace("/\s+/m", ' ', $transformed);
+    $transformed = preg_replace("/v-on_/m", 'v-on:', $transformed); // nanti ini dihapus. Setiap xml akan ditambahkan namespace xmlns:v-bind, xmlns:v-on, dll 
+    $transformed = preg_replace('/xmlns:[\w\-=":\/\\\\._]+/m', '', $transformed); // untuk menghilangkan attribute xmlns
     
     return $transformed;
   }
@@ -193,4 +193,18 @@ class Csdb extends Model
     $value = MpubCSDB::resolve_DocTitle($dom);
     return $value;
   }
+
+  /**
+   * untuk menambah namespace pada DOMDocument xsl
+   */
+  // private function addVueNamespace(\DOMDocument $doc)
+  // {
+  //   $ns = ['v-bind','v-on'];
+  //   $root = $doc->firstElementChild;
+  //   // xmlns:v="https://vuejs.org"
+  //   foreach ($ns as $namespace) {
+  //     $root->setAttribute("xmlns:{$namespace}", "https://vuejs.org/{$namespace}");
+  //   }
+  //   return $doc;
+  // }
 }

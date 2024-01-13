@@ -50,7 +50,7 @@ export default {
       this.attachEditor('');
       $("#entity-viewer").attr('src', '').attr('type', '');
       const render = (currentDetailObject) => {
-        if (currentDetailObject[0].includes('text')) {
+        if (currentDetailObject[0].includes('text') || currentDetailObject[0].includes('xml')) {
           this.attachEditor(currentDetailObject[1]);
         }
         else {

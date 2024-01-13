@@ -1,7 +1,7 @@
 <script>
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import Sort from '../subComponents/Sort.vue';
+import Sort from '../../../techpub/components/Sort.vue';
 
 export default {
   data() {

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/">
 
+<xsl:output method="html" media-type="text/html" omit-xml-declaration="yes"/>
 
 <xsl:param name="filename"/>
-<xsl:output method="html"/>
 
 <xsl:template match="dml">
-  <html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
       <title>Data Management List</title>
     </head>
     <body>
-      <xsl:apply-templates select="identAndStatusSection"/>
-      <xsl:apply-templates select="dmlContent"/>
     </body>
-  </html>
+  </html> -->
+  <xsl:apply-templates select="identAndStatusSection"/>
+  <xsl:apply-templates select="dmlContent"/>
 </xsl:template>
 
 <xsl:template match="identAndStatusSection">
@@ -70,28 +70,48 @@
   <h1>DML CONTENT</h1>
 
   <table>
+    <tr>
+      <th> Ident Code <Sort v-bind:function="sort.bind(this)"/> </th>
+      <th> Issue Type <Sort v-bind:function="sort.bind(this)"/> </th>
+      <th> Security <Sort v-bind:function="sort.bind(this)"/> </th>
+      <th> Resposible Company <Sort v-bind:function="sort.bind(this)"/> </th>
+      <th> Answer <Sort v-bind:function="sort.bind(this)"/> </th>
+      <th> Remarks <Sort v-bind:function="sort.bind(this)"/> </th>
+    </tr>
     <xsl:for-each select="dmlEntry">
       <tr>
         <td>
-          Entry: <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
-          <xsl:text> | </xsl:text>
-          Issue Type: <xsl:value-of select="@issueType"/>
+          <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
         </td>
+        <td>
+          <xsl:value-of select="@issueType"/>
+        </td>
+        <td>
+          <xsl:value-of select="security/@securityClassification"/>
+        </td>
+        <td>
+          <xsl:value-of select="responsiblePartnerCompany/enterpriseName"/>
+          (<xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/>)
+        </td>
+        <td>-</td>
+        <td>-</td>
       </tr>
     </xsl:for-each>  
   </table>
 </xsl:template>
 
 <xsl:template match="dmRef">
-  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent)"/></span>
+  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/></span>
 </xsl:template>
 
 <xsl:template match="pmRef">
-  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmRefIdent)"/></span>
+  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmRefIdent, null, 'PMC-', '')"/></span>
 </xsl:template>
 
 <xsl:template match="infoEntityRef">
-  <span>Belum ada fungsi untuk resolve infoEntityRefIdent</span>
+  <span>
+    <xsl:value-of select="@infoEntityRefIdent"/>
+  </span>
 </xsl:template>
 
 <xsl:template match="commentRef">

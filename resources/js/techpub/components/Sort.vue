@@ -1,11 +1,8 @@
 <script>
-import { useTechpubStore } from '../../../techpub/techpubStore';
 
 export default {
   data() {
-    return {
-      techpubStore: useTechpubStore(),
-    }
+    return {}
   },
   props: ['function'],
 }

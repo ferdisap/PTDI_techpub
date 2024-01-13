@@ -222,7 +222,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         return [output, await blob.text()];
       }
       else if (output == '') {
-        if (blob.type.includes('text')) {
+        if(blob.type.includes('text') || blob.type.includes('xml')) {
           return [blob.type, await blob.text()];
         } else {
           const url = URL.createObjectURL(blob);
