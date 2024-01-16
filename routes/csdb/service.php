@@ -26,3 +26,4 @@ use Illuminate\Support\Facades\Storage;
 // Route::get("/csdb/object/transform", [CsdbServiceController::class, 'provide_csdb_transform'])->name('get_transform_csdb');
 // Route::get("/csdb/object/export", [CsdbServiceController::class, 'provide_csdb_export'])->middleware('auth')->name('get_export_csdb');
 
+Route::get("/api/csdb/search", [CsdbServiceController::class, 'search'])->middleware('auth')->name('api.csdb_search');

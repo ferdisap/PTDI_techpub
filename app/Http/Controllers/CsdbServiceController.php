@@ -79,6 +79,20 @@ class CsdbServiceController extends CsdbController
       abort(500);
     }
   }
+  public function search(Request $request)
+  {
+    return $request->all();
+    $search_key = $request->get('search-obj');
+    $filename = $request->get('filename');
+    $projectName = $request->get('project_name');
+
+    $csdb_object_model = Csdb::where('filename', $filename)->where('project_name', $projectName)->first();
+    if($csdb_object_model OR $search_key) return $this->ret(400, []);
+
+    dd($search_key, $csdb_object_model);
+
+
+  }
 
 
 

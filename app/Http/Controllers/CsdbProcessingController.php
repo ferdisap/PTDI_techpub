@@ -116,7 +116,8 @@ class CsdbProcessingController extends CsdbController
 
   public function postverify2(Request $request)
   {
-    $csdb_model = Csdb::where('filename',$request->get('filename'))->first();
+    $csdb_model = Csdb::where('filename',$request->get('filename'))->where('project_name', $request->get('project_name'))->first();
+    if(!$csdb_model) return $this->ret(400, ["There is no such {$request->get('filename')} of project {$request->get('project_name')}"]);
     $schema_xml = MpubCSDB::getSchemaUsed(MpubCSDB::importDocument(storage_path("app/{$csdb_model->path}/"), $csdb_model->filename));
     $schema_xpath = new DOMXPath($schema_xml);
     $qa_schema = $schema_xpath->evaluate("//xs:element[@ref='qualityAssurance']");
@@ -127,10 +128,9 @@ class CsdbProcessingController extends CsdbController
       $qa_maxOccurs = $qa_schema->getAttribute('maxOccurs') ?? 1;
     } 
     else {
-      return $this->ret(200,["No need verification"]);
+      return $this->ret(200,["{$request->get('filename')} is no need verification"]);
     }
     $validator = Validator::make($request->all(), [
-      // 'verification' => ['required', fn(string $attr, $value, Closure $fail) => ($value == 'firstVerification' OR $value == 'secondVerification' OR $value == 'unverified') ? true : $fail("The verification proccess must be firstVerification or secondVerification or unverified.") ],
       'verification' => [
         'required',
         function (string $attr, $value, Closure $fail) use ($request) {

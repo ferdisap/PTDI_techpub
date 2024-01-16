@@ -69,7 +69,7 @@
   <hr/>
   <h1>DML CONTENT</h1>
 
-  <table>
+  <table class="dmlContent">
     <tr>
       <th> Ident Code <Sort v-bind:function="sort.bind(this)"/> </th>
       <th> Issue Type <Sort v-bind:function="sort.bind(this)"/> </th>
@@ -89,9 +89,16 @@
         <td>
           <xsl:value-of select="security/@securityClassification"/>
         </td>
-        <td>
-          <xsl:value-of select="responsiblePartnerCompany/enterpriseName"/>
-          (<xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/>)
+        <td class="responsibleCompany">
+          <xsl:choose>
+            <xsl:when test="responsiblePartnerCompany/enterpriseName">
+              <xsl:value-of select="responsiblePartnerCompany/enterpriseName"/>
+              <span class="enterpriseCode"><xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/></span>
+            </xsl:when>
+            <xsl:when test="responsiblePartnerCompany/@enterpriseCode">
+              <xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/>
+            </xsl:when>
+          </xsl:choose>
         </td>
         <td>-</td>
         <td>-</td>
@@ -101,7 +108,7 @@
 </xsl:template>
 
 <xsl:template match="dmRef">
-  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/></span>
+  <span class="dmRef"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/></span>
 </xsl:template>
 
 <xsl:template match="pmRef">

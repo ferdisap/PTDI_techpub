@@ -72,6 +72,7 @@ require __Dir__."/ietm/general.php";
 require __Dir__."/ietm/repo.php";
 require __Dir__."/brdp/general.php";
 require __Dir__."/brex/general.php";
+require __Dir__."/dml/general.php";
 
 Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth'); // berguna untuk vue
 Route::get('/route/{name}', [Controller::class, 'route']); // masih digunakan di xsl

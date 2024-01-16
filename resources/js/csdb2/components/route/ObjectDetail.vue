@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Sort from '../../../techpub/components/Sort.vue';
+import Search from '../../../techpub/components/Search.vue';
 
 export default {
   data() {
@@ -11,6 +12,7 @@ export default {
       transformedTemplate: undefined,
     }
   },
+  components:{Search},
   computed: {
     dynamic() {
       return {
@@ -33,8 +35,8 @@ export default {
               }
             };
             let table = $(event.target).parents('table').eq(0);
-            let td = $(event.target).parents('td').eq(0);
-            let rows = table.find('tr:gt(0)').toArray().sort(comparer(td.index()));
+            let th = $(event.target).parents('th').eq(0);
+            let rows = table.find('tr:gt(0)').toArray().sort(comparer(th.index()));
             this.asc = !this.asc;
             if(!this.asc){
               rows = rows.reverse();
@@ -63,14 +65,14 @@ export default {
     async submit(evt) {
       this.techpubStore.showLoadingBar = true;
       const formData = new FormData(evt.target);
-      formData.append('filename', this.techpubStore.currentDetailObject.modelfilename);
+      formData.append('filename', this.techpubStore.currentDetailObject.model.filename);
+      formData.append('project_name', this.techpubStore.currentDetailObject.projectName);
       formData.append(evt.submitter.name, evt.submitter.value);
-      let api = axios.create({
+      let api = await axios({
         url: evt.target.action,
         method: evt.target.method,
         data: formData,
       })
-      await api
         .then(response => this.$root.success(response))
         .catch(error => this.$root.error(error));
       this.techpubStore.showLoadingBar = false;
@@ -116,6 +118,34 @@ export default {
   },
 }
 </script>
+
+<style>
+.dmRef{
+  white-space: nowrap;
+}
+.responsibleCompany{
+  position: relative;
+}
+.responsibleCompany .enterpriseCode {
+  position: absolute;
+  top: 0px;
+  display: none;
+  /**
+  */
+}
+.responsibleCompany:hover .enterpriseCode{
+  display: block;
+  position: absolute;
+  width:100%;
+  text-align: center;
+  left: 50px;
+  top: -1.25rem;
+  background-color: black;
+  color: white;
+  border-radius: 0.5rem;
+}
+</style>
+
 <template>
   <h1 class="text-center">Detail</h1>
   <h4 class="text-center"> {{ $props.filename }} </h4>
@@ -184,10 +214,11 @@ export default {
     <div id="ietm-viewer" v-show="viewer == 'ietm'" class="flex">
       <div
         :class="['my-3 detail-container h-[1000px] overflow-scroll', techpubStore.isOpenICNDetailContainer ? 'w-1/2' : 'w-full']">
-        <!-- <component :is="dynamic" v-if="transformedObject" /> -->
+        <!-- <Search v-if="transformedTemplate" :projectName="$props.projectName" :filename="$props.filename" id="search-obj" name="search-obj">
+          <input name="project_name" :value="$props.projectName" type="hidden"/>
+          <input name="filename" :value="$props.filename" type="hidden"/>
+        </Search> -->
         <component :is="dynamic" v-if="transformedTemplate" />
-        <!-- <Detail :text="'texteasasa'" /> -->
-        <!-- {{ Detail() }} -->
       </div>
       <div id="icn-detail-container"
         :class="[techpubStore.isOpenICNDetailContainer ? 'w-1/2' : '', 'my-3 py-3 flex justify-center bg-gray-500']">

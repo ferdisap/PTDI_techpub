@@ -22,7 +22,6 @@
  */
 
 import { defineStore } from 'pinia';
-import References from '../References';
 
 export const useTechpubStore = defineStore('useTechpubStore', {
   state: () => {
@@ -48,6 +47,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         projectName: undefined,
         // transformed: undefined, // harusnya tidak diperlukan karena sudah ada blob. Agar menghemat memory
       }, // blob object
+
+      /**
+       * untuk DML app
+       */
+      DMLList:{}
     }
   },
   actions: {
@@ -268,6 +272,16 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         this.currentDetailObject.model = object ? object : this.currentDetailObject.model;
       }
       this.showLoadingBar = false;
+    },
+
+    /**
+     * get one dml from DMLList
+     * @param {string} filename 
+     */
+    dml(filename){
+      if(filename){
+        return this.DMLList.find(v => v.filename == filename);
+      }
     }
   }
 

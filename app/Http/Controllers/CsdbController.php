@@ -149,11 +149,11 @@ class CsdbController extends Controller
       if($button == 'update' AND ($old_path == ("csdb/{$old_object->project->name}") AND $old_name == $new_objectFilename)) {
         // validasi terhadap dmrl. Walaupun ini cuma update, bisa saja dmrl nya sudah di revisi jadi dokumen ini tidak diperlukan lagi
         $firstElementChildName = CSDB::importDocument(storage_path("/app/{$old_object->path}"), $old_object->filename)->firstElementChild->tagName;
-        if(!($r = self::validateByDMRL(storage_path("app/{$old_path}"), $request->get('dmrl'), $old_name, $firstElementChildName))[0]) return $this->ret(400, [[$r[2] => [$r[1]]]]);
+        if($validateRootname[2] != 'dml' AND !($r = self::validateByDMRL(storage_path("app/{$old_path}"), $request->get('dmrl'), $old_name, $firstElementChildName))[0]) return $this->ret(400, [[$r[2] => [$r[1]]]]);
         $old_object->update(array_merge($request->all(), ['status' => 'modified']));
         Storage::disk('local')->put("csdb/{$old_object->project->name}" . DIRECTORY_SEPARATOR . $new_objectFilename, $xmlstring);
       }
-      // jika dicommit filename lama dan baru pasti berbeda, sehingga file lama dipindahkan ke __unused
+      // jika commit, filename lama dan baru pasti berbeda, sehingga file lama dipindahkan ke __unused
       else {
         if($button == 'commit'){
           $domXpath = new \DOMXpath($dom);
@@ -164,7 +164,7 @@ class CsdbController extends Controller
           $new_objectFilename = CSDB::resolve_DocIdent($dom);
         }
         // validasi terhadap dmrl. Walaupun ini cuma update, bisa saja dmrl nya sudah di revisi jadi dokumen ini tidak diperlukan lagi
-        if(!($r = self::validateByDMRL(storage_path("app/{$old_path}"), $request->get('dmrl'), $new_objectFilename, $validateRootname[2]))[0]) return $this->ret(400, [[$r[2] => [$r[1]]]]);
+        if($validateRootname[2] != 'dml' AND !($r = self::validateByDMRL(storage_path("app/{$old_path}"), $request->get('dmrl'), $new_objectFilename, $validateRootname[2]))[0]) return $this->ret(400, [[$r[2] => [$r[1]]]]);
 
         $old_object->update(['path' => $old_path . "/__unused", 'status' => 'unused']);
         Storage::disk('local')->move($old_path . DIRECTORY_SEPARATOR . $old_name, $old_path . "/__unused" . DIRECTORY_SEPARATOR . $old_name);
@@ -228,7 +228,7 @@ class CsdbController extends Controller
       return $this->ret(400, [Project::getFailMessage(true, 'project_name')]);
     }
     $dom = null;
-    $proccessid = CSDB::$processid = self::class . "::create";
+    // $proccessid = CSDB::$processid = self::class . "::create";
 
     // #2. create dom
     $file = $request->file('entity');
@@ -269,7 +269,7 @@ class CsdbController extends Controller
     }
 
     // #5. validasi terhadap DMRL
-    if(($ident != 'dml') AND !(($r = self::validateByDMRL($path, $request->get('dmrl'), $csdb_filename, $ident))[0])) {
+    if(($ident != 'dml') AND !(($r = self::validateByDMRL(storage_path("app/$path"), $request->get('dmrl'), $csdb_filename, $ident))[0])) {
       return $this->ret(400, [[$r[2] ?? 'default' => [$r[1]]]]);
     }
 
