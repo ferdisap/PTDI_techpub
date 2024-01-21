@@ -71,12 +71,13 @@
 
   <table class="dmlContent">
     <tr>
-      <th> Ident Code <Sort v-bind:function="sort.bind(this)"/> </th>
-      <th> Issue Type <Sort v-bind:function="sort.bind(this)"/> </th>
-      <th> Security <Sort v-bind:function="sort.bind(this)"/> </th>
-      <th> Resposible Company <Sort v-bind:function="sort.bind(this)"/> </th>
-      <th> Answer <Sort v-bind:function="sort.bind(this)"/> </th>
-      <th> Remarks <Sort v-bind:function="sort.bind(this)"/> </th>
+      <!-- <Sort v-bind:function="sort.bind(this)"/> -->
+      <th> Ident Code <Sort/> </th>
+      <th> Issue Type <Sort/> </th>
+      <th> Security <Sort/> </th>
+      <th> Resposible Company <Sort/> </th>
+      <th> Answer <Sort/> </th>
+      <th> Remarks <Sort/> </th>
     </tr>
     <xsl:for-each select="dmlEntry">
       <tr>

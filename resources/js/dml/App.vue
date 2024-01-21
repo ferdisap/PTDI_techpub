@@ -31,17 +31,19 @@ export default {
           messages = axiosError.response.data.messages;
         }
       } catch (error) {}
+      window.axiosError = axiosError;
+      window.messages = messages;
+      // console.log(axiosError);
+      // console.log(messages, axiosError.messages);
+      messages.unshift(axiosError.message);
       this.messages = messages;
       console.log(this.messages, axiosError);
       this.isSuccess = false,
       this.techpubStore.showLoadingBar = false;
     },
     success(response) {
-      window.successResponse = response;
-      console.log('aa');
       this.showMessages = true;
       let messages = response.data.messages;
-      console.log(messages);
       this.messages = messages;
       this.isSuccess = true,
       this.techpubStore.showLoadingBar = false;

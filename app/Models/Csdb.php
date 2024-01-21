@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\ICNDocument;
+use Ptdi\Mpub\Pdf2\Applicability;
 
 class Csdb extends Model
 {
-  use HasFactory, HasUlids;
+  use HasFactory, HasUlids, Applicability;
 
   /**
    * The table associated with the model.
@@ -41,7 +42,8 @@ class Csdb extends Model
    *
    * @var array
    */
-  protected $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
+  // protected $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
+  protected $fillable = ['filename', 'path', 'editable', 'initiator_id', 'remarks'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -126,7 +128,8 @@ class Csdb extends Model
     $xsltproc = new \XSLTProcessor();
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
-    $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
+    $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => self::class . "::$name", get_class_methods(self::class)))());
+    // $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
     $xsltproc->registerPHPFunctions();
     
     $xsltproc->setParameter('', 'repoName', $this->repoName);
@@ -154,6 +157,7 @@ class Csdb extends Model
    * syaratnya harus manggil id agar bisa di save. Sengaja tidak dibuat manual agar tidak asal isi
    * @return void
    */
+  public bool $direct_save = true;
   public function setRemarks($key, $value = '')
   {
     $remarks = $this->remarks;
@@ -176,7 +180,10 @@ class Csdb extends Model
     }
     $remarks[$key] = $values;
     $this->remarks = $remarks;
-    $this->save();
+    
+    if($this->direct_save){
+      $this->save();
+    }
   }
 
   /**
@@ -192,6 +199,22 @@ class Csdb extends Model
     }
     $value = MpubCSDB::resolve_DocTitle($dom);
     return $value;
+  }
+
+  public function saveModelAndDOM()
+  {
+    // coba2 | hasil: tidak berpengaruh
+    // if(isset($this->DOMDocument)){
+    //   $this->DOMDocument->formatOutput = false;
+    // }
+    // dd($this->DOMDocument);
+    
+    if(isset($this->DOMDocument) AND $this->DOMDocument->C14NFile(storage_path($this->path).DIRECTORY_SEPARATOR.$this->filename)){
+      if($this->save()){
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -25,6 +25,36 @@ use function Tes\tes;
 class CsdbServiceController extends CsdbController
 {
   use Applicability;
+  
+  ############### NEW for csdb3 ###############
+  /**
+   * $ignoreError=1 is needed when you want to send message if any error exist while transforming is success
+   */
+  public function provide_csdb_transform3(Request $request)
+  {
+    $filename = $request->route('filename');
+    if(!$filename) return $this->ret(400, ['Project name or object filename must be true provided.']);
+
+    if(!($csdb_model = Csdb::where('filename', $filename)->first())) return $this->ret(400, ["{$filename} cannot transformed."]);
+    $csdb_dom = MpubCSDB::importDocument(storage_path($csdb_model->path),$filename);
+
+    if($csdb_dom instanceof ICNDocument){
+      // saat ini belum bisa baca file 3D (step,igs,stl,etc)karena mime nya tidak dikenal
+      $mime = $csdb_dom->getFileinfo()['mime_type'];
+      $file = $csdb_dom->getFile();
+      return $this->ret(200,["Transform Success"], ['file' => $file, 'mime' => $mime]);
+    } 
+    $csdb_model->DOMDocument = $csdb_dom;
+    $csdb_model->objectpath = "/api/csdb";
+    $transformed = $csdb_model->transform_to_xml(resource_path("views/ietm/xsl/"));
+
+    if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
+      return $this->ret(200, [$error], ['file' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    }
+    // return Response::make($transformed,200,['Content-Type' => 'text/html']);
+    return $this->ret(200, null, ['file' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+  }
+
 
   ############### NEW by VUE ###############
   public function provide_csdb_transform2(Request $request)

@@ -1,0 +1,21 @@
+<?php
+
+use App\Http\Controllers\CsdbController;
+use App\Http\Controllers\CsdbServiceController;
+use Illuminate\Support\Facades\Route;
+
+Route::get("/csdb3/{view?}",[CsdbController::class, 'app'])->where('view','(.*)')->middleware('auth');
+
+Route::get("/api/csdbtransform/{filename}", [CsdbServiceController::class, 'provide_csdb_transform3'])->middleware('auth')->name('api.transform_csdb');
+Route::post("/api/csdbcreate",[CsdbController::class, 'create'])->middleware('auth')->name('api.create_object');
+Route::get("/api/getobjects",[CsdbController::class, 'get'])->middleware('auth')->name('api.get_objects');
+Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object');
+Route::post("/api/updateobject/{filename}", [CsdbController::class, 'update'])->middleware('auth')->name('api.update_object');
+
+// Route::post('api/pushtostage',)
+
+
+
+// Route::get("/api/dml/all",[CsdbController::class, 'get'])->middleware('auth')->name('api.get_dml_list');
+// Route::post("/api/dml/create",[CsdbController::class, 'create'])->middleware('auth')->name('api.post_create_dml');
+// Route::post("/api/dml/{project_name}/{filename}/addentry",[CsdbController::class, 'addEntry'])->middleware('auth')->name('api.post_addEntry_dml');

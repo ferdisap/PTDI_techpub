@@ -1,6 +1,11 @@
-/**
+/**, csdb3
  * WebRoutes: {
-    "password.reset": {
+    "passw,
+
+/**, csdb3
+ * WebRoutes: {
+    "passw
+    ord.reset": {
         "name": "password.reset",
         "method": [
             "GET",
@@ -49,9 +54,20 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       }, // blob object
 
       /**
-       * untuk DML app
+       * untuk DML app, csdb3
        */
-      DMLList:{}
+      DMLList:{},
+
+      /**
+       * untuk csdb3
+       */
+      BREXList:{},
+
+      /**
+       * untuk csdb3
+       */
+      OBJECTList:{}
+      
     }
   },
   actions: {

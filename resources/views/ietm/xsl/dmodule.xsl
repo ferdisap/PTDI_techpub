@@ -113,8 +113,8 @@
             <b>Applicability: </b>
           </td>
           <td>
-            <xsl:value-of
-              select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" />
+            <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" />
+            <!-- <xsl:value-of select="php:function('App\Models\Csdb::getApplicability')" /> -->
           </td>
         </tr>
         <tr>

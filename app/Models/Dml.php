@@ -20,118 +20,175 @@ class Dml extends ModelsCsdb
   {
     return 'foo';
   }
-  
-  public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [],$extension = 'xml')
+
+  /**
+   * fungsi ini akan merecord di sql
+   */
+  public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
-    $identAndStatusSection = $this->create_string_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $extension);
-    
-    $dom = new \DOMDocument('1.0','UTF-8');
+    $identAndStatusSection = $this->create_string_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
+
+    $dom = new \DOMDocument('1.0', 'UTF-8');
     $dml = $dom->createElement('dml');
     // kalo mau save, tambahkan attribute xsi. Ini tidak ditambahkan karena jika ingin di validasi, harus ada document URI;
-    $dml->setAttribute('xmlns:xsi',"http://www.w3.org/2001/XMLSchema-instance");
+    $dml->setAttribute('xmlns:xsi', "http://www.w3.org/2001/XMLSchema-instance");
     $dml->setAttribute('xsi:noNamespaceSchemaLocation', './dml.xsd');
     $dom->appendChild($dml);
-    
+
     $identAndStatusSection = $dom->importNode($identAndStatusSection->documentElement, true);
     $dml->appendChild($identAndStatusSection);
-    
+
     $dmlContent = $dom->createElement('dmlContent');
     $dom->documentElement->appendChild($dmlContent);
     $dom->saveXML();
-
+    
     $filename = CSDB::resolve_DocIdent($dom);
-    $project_name = $modelIdentCode;
-    $save = $dom->C14NFile(storage_path("app/csdb/{$project_name}/{$filename}"));
-    if($save){
-      $csdb = new parent();
-      // $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
-      $csdb->filename = $filename;
-      $csdb->path = "csdb/{$project_name}";
-      $csdb->status = 'new';
-      $csdb->description = '';
-      $csdb->initiator_id = Auth::user()->id;
-      $csdb->project_name = $project_name;
-      $csdb->save();
+    $this->filename = $filename;
+    $this->path = "csdb";
+    $this->editable = 1;
+    $this->initiator_id = Auth::user()->id;
+    if($this->direct_save){
+      if($dom->C14NFile(storage_path("csdb/{$filename}"))){
+        $this->save();
+      }
     }
-    return $csdb;
+    $this->DOMDocument = $dom;
+    return $this;
   }
 
   /**
-   * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
-   * @param Array $responsiblePartnerCompany; #0:enterpriseName, #1:enterpriseCode
-   * @return Array index#1 = result boolean
+   * @param Array $data berasal dari Helper::decode...;
+   * @return string ancestor::dmlEntry element
    */
-  public function add_dmlEntry(string $issueType, string $entryIdent, string $securityClassification = '', array $responsiblePartnerCompany = ['', ''], $remarks = [])
+  public static function generate_xpath_for_dmlEntry_checking($data = [], $codeType, $useIssueInfo = false ,$useLanguage = false)
   {
-    
-    $dom = CSDB::importDocument(storage_path("app/{$this->path}"), $this->filename);
-    $domxpath = new \DOMXPath($dom);
-
-    // #1. validasi dmlType
-    $dmlType = $domxpath->evaluate("string(//dmlAddress/descendant::dmlCode/@dmlType)");
-    if($dmlType == 'c') return [false, "Only the DML Type with 'p' or 's' can be add entry."];
-
-    $dmlContent = $domxpath->evaluate("//dmlContent")[0];
-
-    // #2. decode string filename entry into array
-    $ident = Helper::decode_ident($entryIdent);
-    if(!$ident) return [false, "{$entryIdent} cannot be decoded."];
-
-    // #3. checking if duplicate dmlEntry
-    $check = function($data){
-      $check = [];
-      array_walk($data, function($value, $name) use(&$check){
-        if($value != ''){
+    $check = [];
+      $code = $data[$codeType];
+      array_walk($code, function ($value, $name) use (&$check) {
+        if ($value != '') {
           $check[] = "@{$name} = '{$value}'";
         }
       });
       $check = join(" and ", $check);
-      $xpath = "//dmlEntry/descendant::dmCode[$check]";
-      return $xpath;
-    };
-    $xpath = $check($ident['dmCode']);
-    $check = $domxpath->evaluate($xpath);
-    if($dmlType == 's' AND $check->length > 0){
-      $xpath_issueInfo = "/issueInfo[@inWork = '{$ident['issueInfo']['inWork']}' AND @issueNumber='{$ident['issueInfo']['issueNumber']}']";
-      $xpath_language = "/language[@countryIsoCode = '{$ident['language']['countryIsoCode']}' AND @languageIsoCode='{$ident['language']['languageIsoCode']}']";
-      foreach($check as $dmCode){
-        $check_issueInfo = $domxpath->evaluate($xpath_issueInfo, $dmCode->parentNode);
-        $check_language = $domxpath->evaluate($xpath_language, $dmCode->parentNode);
-        if($check_issueInfo->length > 0 OR $check_language->length > 0){
-          return [false, "Entry Ident {$entryIdent} has been already listed in DML."];
-        }
+      // $xpath = "//dmlEntry/descendant::dmCode[$check]";
+      $xpath = "//dmlEntry/descendant::{$codeType}[$check]"; // eg.: //dmlEntry/descendant::dmCode[@modelIdentCode]
+      // $xpath = "//dmlEntry/descendant::dmCode[$check]/ancestor::dmlEntry";
+
+      if($useIssueInfo AND isset($data['issueInfo'])){
+        $inWork = $data['issueInfo']['inWork'];
+        $issueNumber = $data['issueInfo']['issueNumber'];
+        $xpath .= "/ancestor::dmlEntry/issueInfo[@inWork = '{$inWork}' and @issueNumber = '{$issueNumber}']";
       }
-    } else {
-      if($check->length > 0) return [false, "Entry Ident {$entryIdent} has been already listed in DML"];
+      if($useLanguage AND $data['language']){
+        $countryIsoCode = $data['language']['countryIsoCode'];
+        $languageIsoCode = $data['language']['languageIsoCode'];
+        $xpath .= "/ancestor::dmlEntry/language[@countryIsoCode = '{$countryIsoCode}' and @languageIsoCode = '{$languageIsoCode}']";
+      }
+      // return $xpath;
+      return $xpath."/ancestor::dmlEntry";
+  }
+
+  /**
+   * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
+   * ada fitur check dmlEntry di setiap DML yang tersimpan, tapi hanya yang 'p' saja karena 's' itu adalah CSL yang digenerate setiap ada load/unload object ke CSDB
+   * fitur ini tidak digunakan untuk check dmlEntry ayng pakai issueType. Jika mau ubah dari 'new' ke 'changed', maka pakai fungsi cloneDmlEntry()
+   * @param Array $responsiblePartnerCompany; #0:enterpriseName, #1:enterpriseCode
+   * @return Array index#1 = result boolean
+   */
+  public function add_dmlEntry(string $issueType = '', string $entryIdent, string $securityClassification = '', array $responsiblePartnerCompany = ['', ''], $remarks = [])
+  {
+    $dml_dom = $this->DOMDocument ?? CSDB::importDocument(storage_path($this->path), $this->filename);
+    $domxpath = new \DOMXPath($dml_dom);
+
+    // #1. validasi dmlType
+    $dmlType = $domxpath->evaluate("string(//dmlAddress/descendant::dmlCode/@dmlType)");
+    if ($dmlType == 'c') return [false, "Only the DML Type with 'p' or 's' can be add entry."];
+    
+    $dmlContent = $domxpath->evaluate("//dmlContent")[0];
+    
+    // #2. decode string filename entry into array
+    $ident = Helper::decode_ident($entryIdent);
+    if (!$ident) return [false, "{$entryIdent} cannot be decoded."];    
+
+    // #3. checking if duplicate dmlEntry (hanya dmltype='p' saja)
+    // $xpath = function ($data, $codeType, $useIssueInfo = false ,$useLanguage = false) {};    
+    $check_to_alldmls = function () use ($ident, $entryIdent) {
+      $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
+      $modelIdentCode = $ident[$codeType]['modelIdentCode'];
+      $alldmls = ModelsCsdb::where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
+      // $xpath = $xpath($ident, $codeType);
+      $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType);
+      // $results = [];
+      foreach ($alldmls as $dml) {
+        $dom = CSDB::importDocument(storage_path($dml->path), $dml->filename);
+        $domxpath = new \DOMXPath($dom);
+        // $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmCode/pmCode/dmlCode
+        $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmlEntry
+        if($res->length > 0){
+          return [false, "Entry Ident {$entryIdent} has been already listed in {$dml->filename}"];
+        }
+        // foreach ($res as $r) {
+        //   $results[] = $r;
+        // }
+        // if (count($results) > 0) {
+        //   $rs = array_map(function ($element) {
+        //     $docIdent = CSDB::resolve_DocIdent($element->ownerDocument);
+        //     return $docIdent;
+        //   }, $results);
+        //   $rs = join(", ", $rs);
+        //   return [false, "Entry Ident {$entryIdent} has been already listed in {$rs}"];
+        // }
+      }
+      return [true];
+    };
+    $check_to_currentdml = function () use ($ident, $entryIdent, $dml_dom) {
+      $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
+      // $xpath = $xpath($ident, $codeType, true, true);
+      $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType, true, true);
+      // $dml_dom = CSDB::importDocument(storage_path($this->path), $this->filename);
+      $domxpath = new \DOMXPath($dml_dom);
+      $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmlEntry
+      if($res->length > 0){        
+        return [false, "The {$entryIdent} is cannot added because already exist in this DML. If you want to change the issue type of the entry, go to edit DML."];
+      }
+      return [true];
+    };
+    if ($dmlType == 'p' AND !($check = $check_to_alldmls())[0]) {
+      return [false, $check[1]];
+    } elseif ($dmlType == 's' AND !($check = $check_to_currentdml())[0]) {
+      return [false, $check[1]];
     }
 
     // #4. create dmlEntry element 
-    if($dmlType == 'c' OR $dmlType == 'p'){
-      $ident['xml_string'] = preg_replace('/<(language|issueInfo)[\w\d\s="]+\/>/m','',$ident['xml_string']);
+    if ($dmlType == 'c' or $dmlType == 'p') {
+      $ident['xml_string'] = preg_replace('/<(language|issueInfo)[\w\d\s="]+\/>/m', '', $ident['xml_string']);
+    }
+    if($issueType){
+      $issueType = ' issueType=' . '"'. $issueType . '"' ;
     }
     $dmlEntry_string = <<<EOL
-    <dmlEntry issueType="{$issueType}">
+    <dmlEntry{$issueType}>
     {$ident['xml_string']}
-    </dmlEntry>\n
+    </dmlEntry>
     EOL;
-    $dmlEntry_string = preg_replace('/\s{2,}|\n/m','',$dmlEntry_string);
-    $dmlEntry = new DOMDocument('1.0','UTF-8');
+    $dmlEntry_string = preg_replace('/\s{2,}|\n/m', '', $dmlEntry_string);
+    $dmlEntry = new DOMDocument('1.0', 'UTF-8');
     $dmlEntry->loadXML($dmlEntry_string);
-    $dmlEntry = $dom->importNode($dmlEntry->documentElement, true);
+    $dmlEntry = $dml_dom->importNode($dmlEntry->documentElement, true);
 
     // #5. add securityClassification
-    if($securityClassification){
-      $security = $dom->createElement('security');
+    if ($securityClassification) {
+      $security = $dml_dom->createElement('security');
       $security->setAttribute('securityClassification', $securityClassification);
       // selanjutnya tambah commercialSecurityAttGroup
       // selanjutnya tambah derivativeClassificationRefId
       $dmlEntry->appendChild($security);
     }
 
-    $rspc = $dom->createElement('responsiblePartnerCompany');
-    $enterpriseName = $dom->createElement('enterpriseName');
+    $rspc = $dml_dom->createElement('responsiblePartnerCompany');
+    $enterpriseName = $dml_dom->createElement('enterpriseName');
     $enterpriseName->nodeValue = $responsiblePartnerCompany[0];
-    if($responsiblePartnerCompany[1]) $rspc->setAttribute('enterpriseCode', $responsiblePartnerCompany[1]);
+    if ($responsiblePartnerCompany[1]) $rspc->setAttribute('enterpriseCode', $responsiblePartnerCompany[1]);
     $rspc->appendChild($enterpriseName);
     $dmlEntry->appendChild($rspc);
 
@@ -139,86 +196,93 @@ class Dml extends ModelsCsdb
     // #6. tambahkan element answer disini
 
     // #7. tambahkan element remarks disini
-    $rmks = $dom->createElement('remarks');
-    foreach($remarks as $text){
-      $simplePara = $dom->createElement('simplePara');
+    $rmks = $dml_dom->createElement('remarks');
+    foreach ($remarks as $text) {
+      $simplePara = $dml_dom->createElement('simplePara');
       $simplePara->nodeValue = $text;
       $rmks->appendChild($simplePara);
     }
-    $dmlEntry->appendChild($rmks);
+    if($rmks->firstElementChild){
+      $dmlEntry->appendChild($rmks);
+    }
 
     // #5. Append dmlEntry to dmlContent
     $dmlContent->appendChild($dmlEntry);
-    $dom->saveXML();
+    $dml_dom->saveXML();
 
     // #5. save file storage
-    $dom->C14NFile(storage_path("app/{$this->path}")."/".$this->filename);
-
-    return [true, $dom];
+    if($this->direct_save){
+      $dml_dom->C14NFile(storage_path($this->path) . "/" . $this->filename);
+    }
+    return [true, $dml_dom];
   }
 
   /**
    * tidak support seqNumber yang ada letter nya 
+   * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
+   * jika ingin menaruh <dmlRef> pada <dmlStatus>, maka gunakan otherOptions = ['dmlRef' = ['DML...', 'DML...]];
+   * 
    */
-  private function create_string_identAndStatusSection(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [],$extension = 'xml')
+  private function create_string_identAndStatusSection(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], $otherOptions = [])
   {
     // $year = '2023';
     $year = date('Y');
-    $dmlCode = ['DML', $modelIdentCode, $originator, $dmlType, $year, ''];
+    $dmlCode = [strtolower($dmlType) == 's' ? 'CSL' :'DML', $modelIdentCode, $originator, $dmlType, $year, ''];
     $dmlCode = strtoupper(join('-', $dmlCode)); // DML-MALE-0001Z-P-2024-
-    $search = function($path) use($dmlCode) {
+    $seqNumber = function ($path) use ($dmlCode) {
       $dir = array_diff(scandir($path));
       $collection = [];
-      foreach($dir as $file){
-        if(str_contains($file, $dmlCode)){
+      foreach ($dir as $file) {
+        if (str_contains($file, $dmlCode)) {
           $collection[] = $file;
         }
       }
-      $c = array_map(function($v){
-        $v = preg_replace("/_.+/", '',$v); // menghilangkan issueInfo dan languange yang menempel di filename
-        $v = explode("-",$v);
+      $c = array_map(function ($v) {
+        $v = preg_replace("/_.+/", '', $v); // menghilangkan issueInfo dan languange yang menempel di filename
+        $v = explode("-", $v);
         return $v;
       }, $collection);
-      if(!empty($c)){
+      if (!empty($c)) {
         $max_seqNumber = $c[0][5];
         foreach ($c as $dmlCode_array) {
-          if((int)$max_seqNumber < (int)$dmlCode_array[5]){
+          if ((int)$max_seqNumber < (int)$dmlCode_array[5]) {
             $max_seqNumber = $dmlCode_array[5];
           }
         }
         $max_seqNumber = str_pad(((int)$max_seqNumber) + 1, 5, '0', STR_PAD_LEFT);
       }
-
-      $c = array_map(function($v){
-        $v = preg_replace("/DML-[\w-]+_/", '',$v);
-        $v = preg_replace("/.xml/", '',$v);
-        $v = explode("-",$v);
-        return $v;
-      }, $collection);
-
-      if(!empty($c)){
-        $iw = array_map((fn($v) => (int)($v[1])), $c);
-        $iw_max = str_pad(max($iw) + 1, 2, '0', STR_PAD_LEFT);
-      }
-
-      return [$max_seqNumber ?? '00001', $iw_max ?? '01'];
+      return $max_seqNumber ?? str_pad(1, 5, '0', STR_PAD_LEFT);
+      // inWork number pasti 01 jika buat BARU DML
+      // $c = array_map(function($v){
+      //   $v = preg_replace("/DML-[\w-]+_/", '',$v);
+      //   $v = preg_replace("/.xml/", '',$v);
+      //   $v = explode("-",$v);
+      //   return $v;
+      // }, $collection);
+      // $iw_max = str_pad(max($iw) + 1, 2, '0', STR_PAD_LEFT);
+      // if(!empty($c)){
+      //   $iw = array_map((fn($v) => (int)($v[1])), $c);
+      //   $iw_max = str_pad(max($iw) + 1, 2, '0', STR_PAD_LEFT);
+      // }
+      // return [$max_seqNumber ?? '00001', $iw_max ?? '01'];
     };
     $modelIdentCode = strtoupper($modelIdentCode);
     $originator = strtoupper($originator);
     $dmlType = strtolower($dmlType);
-    $search = $search(storage_path("app/csdb/" . strtoupper($modelIdentCode)));
-    $seqNumber = $search[0];
-    $inWork = $search[1];
+    // $search = $search(storage_path("app/csdb/" . strtoupper($modelIdentCode)));
+    $seqNumber = $seqNumber(storage_path("csdb"));
+    $inWork = '01';
     $day = date('d');
     $month = date('m');
 
-    $getBrexDmRefIdent = function($brexDmRef){
-      $brexDmRef = preg_replace('/.xml|DMC-/','',$brexDmRef);
-      $brexDmRefIdent_array = explode('_',$brexDmRef);
+    $getBrexDmRefIdent = function ($brexDmRef) {
+      $brexDmRef = strtoupper($brexDmRef);
+      $brexDmRef = preg_replace('/.XML|DMC-/', '', $brexDmRef);
+      $brexDmRefIdent_array = explode('_', $brexDmRef);
       $dmCode = $brexDmRefIdent_array[0];
       $issueInfo = $brexDmRefIdent_array[1];
       $language = $brexDmRefIdent_array[2];
-  
+
       $dmCode_array = explode('-', $dmCode);
       $issueInfo_array = explode('-', $issueInfo);
       $language_array = explode('-', $language);
@@ -230,15 +294,15 @@ class Dml extends ModelsCsdb
         "subSystemCode" => $dmCode_array[3][0],
         "subSubSystemCode" => $dmCode_array[3][1],
         "assyCode" => $dmCode_array[4],
-        "disassyCode" => substr($dmCode_array[5],0,2),
-        "disassyCodeVariant" => substr($dmCode_array[5],2),
-        "infoCode" => substr($dmCode_array[6],0,3),
-        "infoCodeVariant" => substr($dmCode_array[6],3),
+        "disassyCode" => substr($dmCode_array[5], 0, 2),
+        "disassyCodeVariant" => substr($dmCode_array[5], 2),
+        "infoCode" => substr($dmCode_array[6], 0, 3),
+        "infoCodeVariant" => substr($dmCode_array[6], 3),
         "itemLocationCode" => $dmCode_array[7],
       ];
-      if(isset($dmCode_array[8])){
-        $ret['learnCode'] = strtoupper(substr($dmCode_array[8],0,3));
-        $ret['learnEventCode'] = strtoupper(substr($dmCode_array[8],4));
+      if (isset($dmCode_array[8])) {
+        $ret['learnCode'] = strtoupper(substr($dmCode_array[8], 0, 3));
+        $ret['learnEventCode'] = strtoupper(substr($dmCode_array[8], 4));
       } else {
         $ret['learnCode'] = '';
         $ret['learnEventCode'] = '';
@@ -249,24 +313,37 @@ class Dml extends ModelsCsdb
 
       $ret['languageIsoCode'] = strtolower($language_array[0]);
       $ret['countryIsoCode'] = $language_array[1];
-      
+
       return $ret;
     };
 
-    $brexDmRef = $getBrexDmRefIdent(strtoupper($brexDmRef)); 
+    $brexDmRef = $getBrexDmRefIdent($brexDmRef);
 
-    $remarks = array_map((fn($v) => "<simplePara>{$v}</simplePara>"),$remarks);
-    $remarks = join("",$remarks);
+    $remarks = array_map((fn ($v) => "<simplePara>{$v}</simplePara>"), $remarks);
+    $remarks = join("", $remarks);
+    $remarks = (empty($remarks)) ? '' :
+     <<<EOD
+    <remarks>{$remarks}</remarks>
+    EOD;
 
     $learnCode = ($brexDmRef['learnCode'] == '') ? '' : 'learnCode=' . '"' . $brexDmRef['learnCode'] . '"';
     $learnEventCode = ($brexDmRef['learnEventCode'] == '') ? '' : 'learnEventCode=' . '"' . $brexDmRef['learnEventCode'] . '"';
+
+    $dmlRef = '';
+    if(isset($otherOptions['dmlRef']) AND is_array($otherOptions['dmlRef'])){
+      $dmlRef = array_map(function($filename){
+        $filename = Helper::decode_dmlIdent($filename);
+        return $filename = $filename['xml_string'];
+      }, $otherOptions['dmlRef']);
+      $dmlRef = join("",$dmlRef);
+    }
 
     $identAndStatusSection = <<<EOL
       <identAndStatusSection>
         <dmlAddress>
           <dmlIdent>
             <dmlCode dmlType="{$dmlType}" modelIdentCode="{$modelIdentCode}" senderIdent="{$originator}" seqNumber="{$seqNumber}" yearOfDataIssue="{$year}"></dmlCode>
-            <issueInfo inWork="{$inWork}" issueNumber="001"></issueInfo>
+            <issueInfo inWork="{$inWork}" issueNumber="000"></issueInfo>
           </dmlIdent>
           <dmlAddressItems>
             <issueDate day="{$day}" month="{$month}" year="{$year}"></issueDate>
@@ -274,6 +351,7 @@ class Dml extends ModelsCsdb
         </dmlAddress>
         <dmlStatus>
           <security securityClassification="{$securityClassification}"></security>
+          {$dmlRef}
           <brexDmRef>
             <dmRef>
               <dmRefIdent>
@@ -284,15 +362,14 @@ class Dml extends ModelsCsdb
               </dmRefIdent>
             </dmRef>
           </brexDmRef>
-          <remarks>
-            {$remarks}
-          </remarks>
+          {$remarks}
         </dmlStatus>
       </identAndStatusSection>
     EOL;
 
     $dom = new \DOMDocument();
-    $dom->loadXML($identAndStatusSection);
+    $identAndStatusSection = preg_replace("/\n\s+/m",'',$identAndStatusSection);
+    $dom->loadXML(trim($identAndStatusSection));
     return $dom;
   }
 }

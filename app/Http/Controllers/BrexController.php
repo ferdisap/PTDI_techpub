@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Response;
 
 class BrexController extends Controller
 {
+  ######## NEW for csdb3 ########
+  public function get()
+  {
+    $brexs = Csdb::where('filename', 'like' ,"DMC-%-%-%-%-%-022%")->get();
+    // $brexs = Csdb::where('filename', 'like' ,"DML-%-%-%-%24%-%16%")->get();
+    return $brexs;
+  }
+
   ######## new by VUE ########
   /**
    * tujuannya sama dengan fungsi table, yaitu menampilkan list number of brdp

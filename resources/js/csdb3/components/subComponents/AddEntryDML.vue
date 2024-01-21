@@ -9,10 +9,13 @@ export default {
       techpubStore: useTechpubStore(),
     }
   },
+  props:['dmlfilename'],
   components:{Remarks},
   methods: {
     submit(){
       const formData = new FormData(event.target);
+      // let project_name = this.techpubStore.dml(formData.get('filename'));
+      // formData.append('project_name', project_name);
       const route = this.techpubStore.getWebRoute('api.addEntry_dml',formData);
       
       axios({
@@ -42,10 +45,7 @@ export default {
 
     <!-- Select DML file -->
     <label for="filename">DML Filename</label>
-    <select name="filename" id="filename" v-if="techpubStore.DMLList">
-      <option value="">--select DML filename--</option>
-      <option v-for="list in techpubStore.DMLList" :value="list.filename">{{ list.filename }}</option>
-    </select>
+    <input name="filename" :value="$props.dmlfilename ?? ''"/>
 
     <!-- issueType -->
     <label for="issueType">Issue Type</label>

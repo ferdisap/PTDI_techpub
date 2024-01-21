@@ -23,7 +23,7 @@ export default {
       <div class="text-center text-xl p-3 font-bold">Message: {{ $props.isSuccess ? 'success' : 'fail'  }}
         <button class="float-right" @click="showMessages = false">X</button>
       </div>
-      <div v-for="message in messages" @click="showMessages = false">
+      <div v-for="message in messages">
         <div v-if="(message.constructor === Object)">
 
           <!-- untuk generate error text disetiap input form -->
