@@ -50,6 +50,7 @@ export default {
     <!-- issueType -->
     <label for="issueType">Issue Type</label>
     <select name="issueType" id="issueType">
+      <option value="">--select issueType--</option>
       <option value="new">New</option>
       <option value="changed">Changed</option>
       <option value="deleted">Deleted</option>
@@ -60,6 +61,16 @@ export default {
       <option value="rinstate-status">Reinstate-Status</option>
     </select>
     <div class="text-red-600" v-html="techpubStore.error('issueType')"></div>
+
+    <!-- dmlEntryType -->
+    <label for="dmlEntryType">Entry Type</label>
+    <select name="dmlEntryType" id="dmlEntryType">
+      <option value="">--select dmlEntryType--</option>
+      <option value="new">New</option>
+      <option value="changed">Changed</option>
+      <option value="deleted">Deleted</option>
+    </select>
+    <div class="text-red-600" v-html="techpubStore.error('dmlEntryType')"></div>
   
     <!-- dmlEntry -->
     <label for="entryIdent">Entry Ident</label>

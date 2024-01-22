@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org" xmlns:v-on="https://vuejs.org/click">
 
 <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes"/>
 
@@ -73,61 +73,75 @@
     <tr>
       <!-- <Sort v-bind:function="sort.bind(this)"/> -->
       <th> Ident Code <Sort/> </th>
-      <th> Issue Type <Sort/> </th>
+      <th> DML | Issue Type <Sort/> </th>
       <th> Security <Sort/> </th>
-      <th> Resposible Company <Sort/> </th>
+      <th> Resposible Company <br/> (name | code) <Sort/> </th>
       <th> Answer <Sort/> </th>
       <th> Remarks <Sort/> </th>
     </tr>
+    <tr class="add_dmlEntry">
+      <td><button class="material-icons" type="button" onclick="add_dmlEntry_row_first()">add</button></td>
+    </tr>
     <xsl:for-each select="dmlEntry">
-      <tr>
-        <td>
-          <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
+      <tr class="dmlEntry">
+        <td class="dmlEntry-ident">
+          <textarea name="entryIdent[]" class="w-full">
+            <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
+          </textarea>
         </td>
         <td>
-          <xsl:value-of select="@issueType"/>
+          <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]">
+            <xsl:attribute name="value" select="@dmlEntryType"/>
+          </input> | <input class="dmlEntry-issueType w-2/5" name="issueType[]">
+            <xsl:attribute name="value" select="@issueType"/>
+          </input>
         </td>
         <td>
-          <xsl:value-of select="security/@securityClassification"/>
+          <input class="dmlEntry-securityClassification w-full" name="securityClassification[]" value="{security/@securityClassification}"/>
         </td>
         <td class="responsibleCompany">
-          <xsl:choose>
-            <xsl:when test="responsiblePartnerCompany/enterpriseName">
-              <xsl:value-of select="responsiblePartnerCompany/enterpriseName"/>
-              <span class="enterpriseCode"><xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/></span>
-            </xsl:when>
-            <xsl:when test="responsiblePartnerCompany/@enterpriseCode">
-              <xsl:value-of select="responsiblePartnerCompany/@enterpriseCode"/>
-            </xsl:when>
-          </xsl:choose>
+          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> 
+          | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/enterpriseCode}"/>
         </td>
         <td>-</td>
-        <td>-</td>
+        <td>
+          <textarea name="remarks[]" class="w-full">
+            <xsl:apply-templates select="remarks/simplePara"/>
+          </textarea>
+        </td>
+      </tr>
+      <tr class="add_dmlEntry">
+        <xsl:variable name="number"><xsl:number/></xsl:variable>
+        <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>
+        <xsl:if test="$number>=2">
+          <td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td>
+        </xsl:if>
       </tr>
     </xsl:for-each>  
   </table>
 </xsl:template>
 
 <xsl:template match="dmRef">
-  <span class="dmRef"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/></span>
+  <!-- <span class="dmRef"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/></span> -->
+  <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', dmRefIdent, null, 'DMC-', '')"/>
 </xsl:template>
 
 <xsl:template match="pmRef">
-  <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmRefIdent, null, 'PMC-', '')"/></span>
+  <!-- <span><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmRefIdent, null, 'PMC-', '')"/></span> -->
+  <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', pmRefIdent, null, 'PMC-', '')"/>
 </xsl:template>
 
 <xsl:template match="infoEntityRef">
-  <span>
-    <xsl:value-of select="@infoEntityRefIdent"/>
-  </span>
+  <!-- <span><xsl:value-of select="@infoEntityRefIdent"/></span> -->
+  <xsl:value-of select="@infoEntityRefIdent"/>
 </xsl:template>
 
 <xsl:template match="commentRef">
-  <span>Belum ada fungsi untuk resolve commentRefIdent</span>
+  <!-- <span>Belum ada fungsi untuk resolve commentRefIdent</span> -->
 </xsl:template>
 
 <xsl:template match="dmlRef">
-  <span>Belum ada fungsi untuk resolve dmlRefIdent</span>
+  <!-- <span>Belum ada fungsi untuk resolve dmlRefIdent</span> -->
 </xsl:template>
 
 

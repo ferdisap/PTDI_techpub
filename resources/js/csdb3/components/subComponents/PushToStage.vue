@@ -2,26 +2,61 @@
 import { useRoute } from 'vue-router';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import axios from 'axios';
+import Sort from '../../../techpub/components/Sort.vue';
 
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      dmlEntryList: []
+      dmlEntryList: [],
+      cslEntryList: []
     }
   },
+  components:{Sort},
   methods: {
-    submit(){
+    createCSL() {
+      this.$root.showMessages = false;
       const formData = new FormData(event.target);
-      window.formData = formData;
-      const route = this.techpubStore.getWebRoute('api.pushtostage',formData);
+      const route = this.techpubStore.getWebRoute('api.tostaging', formData);
       axios({
         url: route.url,
         method: route.method[0],
         data: formData,
       })
-      .then(response => this.$root.success(response))
-      .catch(error => this.$root.error(error));
+        .then(response => {
+          this.$root.success(response);
+          this.cslEntryList.push(response.data.csl);
+          window.cslEntryList = this.cslEntryList;
+        })
+        .catch(error => this.$root.error(error));
+    },
+    pushToStaging(filename){
+      this.$root.showMessages = false;
+      const route = this.techpubStore.getWebRoute('api.push_csl_forstaging',{filename: filename});
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+        .then(response => {
+          this.$root.success(response);
+          let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
+          cslEntryList.splice(index);
+        })
+        .catch(error => this.$root.error(error));
+    },
+    deleteDML(filename){
+      this.$root.showMessages = false;
+      const route = this.techpubStore.getWebRoute('api.delete_dml',{filename: filename});
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+        .then(response => {
+          this.$root.success(response);
+          let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
+          this.cslEntryList.splice(index);
+        })
+        .catch(error => this.$root.error(error));
     },
     getDmlEntries() {
       const route = this.techpubStore.getWebRoute('api.get_entry', { filename: this.$route.params.filename });
@@ -32,18 +67,50 @@ export default {
         .then(response => this.dmlEntryList = response.data)
         .catch(error => this.$root.error(error));
     }
+  },
+  mounted() {
+    const route = this.techpubStore.getWebRoute('api.get_csl_forstaging');
+    axios({
+      url: route.url,
+      method: route.method[0],
+    })
+      .then(response => this.cslEntryList = response.data)
+      .catch(error => this.$root.error(error));
   }
 }
 </script>
 <template>
   <div>
-    <form @submit.prevent="submit()">
+    <!-- draft CSL ready to stage -->
+    <h2>Draft CSL before stage</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Filename</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="csl in cslEntryList">
+          <td> {{ csl.filename }} </td>
+          <td> 
+            <button @click="pushToStaging(csl.filename)"><span class="material-icons text-green-400">check_circle</span>Push</button>
+            <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailCSLEDIT')))['path']"><span class="material-icons">edit</span>Edit</a>
+            <button @click="deleteDML(csl.filename)"><span class="material-icons text-red-500">delete</span>Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- push -->
+    <form @submit.prevent="createCSL()">
       <div class="w-1/2">
         <label for="dmlFilename" class="block mb-2 text-gray-900 dark:text-white text-lg font-bold">DML</label>
         <span>The DML is required to be filled.</span>
-        <input type="text" id="dmlFilename" name="dmlFilename" :value="$route.params.filename" placeholder="type the DML file.."
+        <input type="text" id="dmlFilename" name="filename" :value="$route.params.filename"
+          placeholder="type the DML file.."
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-        <div class="text-red-600" v-html="techpubStore.error('dml')"></div>
+        <div class="text-red-600" v-html="techpubStore.error('filename')"></div>
       </div>
       <div class="mt-3">
         <h5>Choose Your Data Module <a @click="getDmlEntries()" class="font-normal underline hover:text-blue-500"
@@ -69,7 +136,7 @@ export default {
             </tr>
           </tbody>
         </table>
-        <button class="button-violet">Push</button>
+        <button class="button-violet">Create CSL</button>
       </div>
     </form>
   </div>

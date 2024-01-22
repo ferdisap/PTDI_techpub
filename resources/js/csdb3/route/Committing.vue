@@ -24,7 +24,7 @@ export default {
     <CreateDML v-if="showDML == 'createDML'"/>
     
     <div class="mb-3">
-      <IndexDML :both="true"/>
+      <IndexDML/>
     </div>
     <div class="mb-3">
       <IndexBREX/>

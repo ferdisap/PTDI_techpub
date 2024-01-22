@@ -54,5 +54,11 @@ export default [
     component: DetailDML,
     props: {isInEditing: true}
   },
+  {
+    name: 'DetailCSLEDIT',
+    path: '/csdb3/edit-csl/:filename',
+    component: DetailDML,
+    props: {isCSL: true}
+  },
 
 ];

@@ -25,7 +25,7 @@ class DmlController extends Controller
   }
 
   /**
-   * akan membuat file baru issueNumber++, inWork '01'
+   * akan membuat file baru issueNumber tetap, inWork '01'
    * fungsi ini dipakai ketika dml sudah di issue(), namun ada content yang harus di edit
    */
   public function edit(Request $request)
@@ -38,10 +38,6 @@ class DmlController extends Controller
     $dom = MpubCSDB::importDocument(storage_path($csdb_model->path),$csdb_model->filename);
     $domxpath = new \DOMXPath($dom);
     $issueInfo = $domxpath->evaluate("//identAndStatusSection/dmlAddress/dmlIdent/issueInfo")[0];
-    // $issueNumber = (int)$issueInfo->getAttribute('issueNumber');
-    // $issueNumber++;
-    // $issueNumber = str_pad($issueNumber, 3, '0', STR_PAD_LEFT);
-    // $issueInfo->setAttribute('issueNumber', $issueNumber);
     $issueInfo->setAttribute('inWork', '01');
 
     $new_filename = MpubCSDB::resolve_DocIdent($dom);
@@ -64,23 +60,25 @@ class DmlController extends Controller
   /**
    * akan membuat file baru issuNumber tetap, inWork++
    */
-  public function commit(Request $request)
+  public function commit(Request $request, string $filename)
   {
-    $filename = $request->route('filename');
+    // $filename = $request->route('filename');
     if(!$filename OR substr($filename,0,3) != 'DML') return $this->ret(400, ['Only DML is can be commited here.']);
     $csdb_model = Csdb::where('filename',$filename)->first();
     if($csdb_model->initiator_id != $request->user()->id) return $this->ret(400, ["Only Initiator ({$csdb_model->initiator->name}) can commit."]);
     if(!$csdb_model->editable) return $this->ret(400, ['This DML cannot re commit. You might have issue this DML at previous.']);
 
     $dom = MpubCSDB::importDocument(storage_path($csdb_model->path),$csdb_model->filename);
-    $domxpath = new \DOMXPath($dom);
-    $issueInfo = $domxpath->evaluate("//identAndStatusSection/dmlAddress/dmlIdent/issueInfo")[0];
-    $inWork = (int)$issueInfo->getAttribute('inWork');
-    if($inWork > 0) $this->ret(400, ["{$filename} cannot be commited due to the current inWork is 00"]); 
-    if($inWork == 99) ($inWork = 'AA');
-    else ($inWork++);
-    $inWork = str_pad($inWork, 2, '0', STR_PAD_LEFT);
-    $issueInfo->setAttribute('inWork', $inWork);
+    // $domxpath = new \DOMXPath($dom);
+    // $issueInfo = $domxpath->evaluate("//identAndStatusSection/dmlAddress/dmlIdent/issueInfo")[0];
+    // $inWork = (int)$issueInfo->getAttribute('inWork');
+    // if($inWork > 0) $this->ret(400, ["{$filename} cannot be commited due to the current inWork is 00"]); 
+    // if($inWork == 99) ($inWork = 'AA');
+    // else ($inWork++);
+    // $inWork = str_pad($inWork, 2, '0', STR_PAD_LEFT);
+    // $issueInfo->setAttribute('inWork', $inWork);
+    $dom = MpubCSDB::commit($dom);
+    if(!$dom) return $this->ret(400, MpubCSDB::get_errors(true,'commit'));
 
     $new_filename = MpubCSDB::resolve_DocIdent($dom);
     if($new_csdb_model = Csdb::where('filename', $new_filename)->first()) return $this->ret(400, ["This DML cannot be commited due duplication filename of {$new_filename}."]);
@@ -92,9 +90,7 @@ class DmlController extends Controller
         'editable' => 1,
         'initiator_id' => $csdb_model->initiator_id,
       ]);
-      if($new_csdb_model){
-        return $this->ret(200, ["New {$new_csdb_model->filename} has been created."]);
-      }
+      return $this->ret(200, ["New {$new_csdb_model->filename} has been created."]);
     }
     return $this->ret(400, ["{$filename} failed to commit."]);
   }
@@ -118,7 +114,7 @@ class DmlController extends Controller
     $issueInfo->setAttribute('issueNumber', $issueNumber);
     $issueInfo->setAttribute('inWork', '00');
 
-    dd('disini harus validate BREX dan XSI');
+    // dd('disini harus validate BREX dan XSI');
 
     $new_filename = MpubCSDB::resolve_DocIdent($dom);
     if($new_csdb_model = Csdb::where('filename', $new_filename)->first()) return $this->ret(400, ["This DML has been issued with name {$new_filename}."]);
@@ -165,6 +161,7 @@ class DmlController extends Controller
     $dml_model = new Dml();
     $otherOptions = [];
     $csdb = $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator') ,$request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+    $csdb->saveModelAndDOM();
     return $this->ret(200, ["{$dml_model->filename} has been created."], ['dml' => $csdb]);
   }
 
@@ -172,8 +169,9 @@ class DmlController extends Controller
   {
     $validator = Validator::make($request->all(),[
       'filename' => 'required',
-      'issueType' => ['required',function(string $attribute, mixed $value,  Closure $fail){
+      'issueType' => [function(string $attribute, mixed $value,  Closure $fail){
         if(!in_array($value,[
+          "",
           "new",
           "changed",
           "deleted",
@@ -182,6 +180,16 @@ class DmlController extends Controller
           "rinstate-changed",
           "rinstate-revised",
           "rinstate-status",
+        ])){
+          $fail("The {$attribute} is invalid.");
+        }
+      }],
+      'dmlEntryType' => [function(string $attribute, mixed $value,  Closure $fail){
+        if(!in_array($value,[
+          "",
+          "new",
+          "changed",
+          "deleted",
         ])){
           $fail("The {$attribute} is invalid.");
         }
@@ -207,8 +215,12 @@ class DmlController extends Controller
     if($csdb_model->initiator->id != $request->user()->id) return $this->ret(400, ["You cannot add entry unless you are the initiator of the {$request->get('filename')}"]);
     if(!$csdb_model->editable) return $this->ret(400, ["This DML is not enabled to change. It may be has been issued. You must open edit this DML."]);
 
-    $add = $csdb_model->add_dmlEntry($request->get('issueType'), $request->get('entryIdent'), $request->get('securityClassification'), [$request->get('enterpriseName'), $request->get('enterpriseCode')], $request->get('remarks'));
+    $otherOptions = [];
+    $otherOptions['issueType'] = $request->get('issueType');
+    $otherOptions['dmlEntryType'] = $request->get('dmlEntryType');
+    $add = $csdb_model->add_dmlEntry($request->get('entryIdent'), $request->get('securityClassification'), [$request->get('enterpriseName'), $request->get('enterpriseCode')], $request->get('remarks'), $otherOptions);
     if($add[0]){
+      $csdb_model->saveModelAndDOM();
       return $this->ret(200, ["{$request->get('entryIdent')} has been added to {$request->get('filename')}."]);
     } else {
       return $this->ret(400, [$add[1],"{$request->get('entryIdent')} is failed to add into {$request->get('filename')}."]);
@@ -234,12 +246,22 @@ class DmlController extends Controller
   }
 
   // ############# untuk stage #############
+  public function get_csl_forstaging(Request $request)
+  {
+    $csl_models = Csdb::where('filename', 'like' ,"CSL-%")
+        ->where('remarks','like', '%"stage":"unstaged"%')
+        ->get();
+    return $csl_models;
+  }
+
   /**
    * sementara belum di sediakan fitur $remakrks per dmlEntry CSL. 
+   * tambahkan request name=dmlEntryType
+   * tambahkan request name=issueType
    */
-  public function push(Request $request, string $dmlFilename)
+  public function create_csl_forstaging(Request $request, string $filename)
   {
-    $dml_model = Dml::where('filename', $dmlFilename)->first();
+    $dml_model = Dml::where('filename', $filename)->first();
     $dml_dom = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
     $decoder_ident = Helper::decode_dmlIdent($dml_model->filename, false);
     $dml_domxpath = new \DOMXPath($dml_dom);
@@ -248,12 +270,13 @@ class DmlController extends Controller
     $brexDmRef = MpubCSDB::resolve_dmIdent($dml_domxpath->evaluate("//dmlStatus/brexDmRef")[0]);
     $entries = $request->get('objects') ?? [];
 
-    // #1. validasi terhadap duplikasi code pada $request->get('objects');
+    // #1. validasi terhadap duplikasi code pada $request->get('objects'); dan validasi jika tidak ada dmlEntry
     $en = array_map(fn($entryIdent) => $entryIdent = preg_replace("/_.+/",'',$entryIdent), $entries);
     $en = array_count_values($en);
     foreach($en as $entryIdent => $dupplication){
       if($dupplication > 1) return $this->ret(400, ['The selected object is only one to choose. The issue info and language on its filename is counted.']);
     }
+    if(empty($en)) return $this->ret(400, ["There must be at least one dml entry."]);
 
     // #2. validasi object terhadap DMRL.
     $en = [];
@@ -272,34 +295,131 @@ class DmlController extends Controller
         'enterpriseCode' => $rsp_ec,
       ];
     }
-
     // #3. create CSL and add dmlEntry
     $remarks =  $request->get('remarks') ?? [];
-    array_unshift($remarks, "This CSL is required to comply the {$dmlFilename}");
+    array_unshift($remarks, "This CSL is required to comply the {$filename}");
     $csl_model = new Dml();
     $csl_model->direct_save = false;
     $csl_model->create_xml($decoder_ident['dmlCode']['modelIdentCode'], $decoder_ident['dmlCode']['senderIdent'], 'S', $securityClassification, $brexDmRef, $remarks, []);
     foreach ($en as $entryIdent => $option) {
-      $csl_model->add_dmlEntry('new', $entryIdent, $option['securityClassification'], [$option['enterpriseName'],$option['enterpriseCode']],[]);
+      if($entry_model = Csdb::where('filename', $entryIdent)->first()){
+        $entry_model->editable = 1;
+        $entry_model->setRemarks("stage","unstaged");
+
+        $otherOptions = [
+          'dmlEntryType' => $request->get('dmlEntryType') ?? 'new',
+        ];
+        $add = $csl_model->add_dmlEntry($entryIdent, $option['securityClassification'], [$option['enterpriseName'],$option['enterpriseCode']],$otherOptions);
+        if($add[0]){
+          $entry_model->save();
+        }
+      }
     }
-    $csl_model->setRemarks('stage', 'staging');
+    $csl_model->setRemarks('stage', 'unstaged');
     $csl_model->setRemarks('stager_id', $request->user()->id);
     // disini belum perlu validate brex, kecuali jika ingin issued / staged (fase dari stagging to issued, kalo ini kan fase editing to staging);
 
     // #3. save and return
     if(MpubCSDB::validate('XSI', $csl_model->DOMDocument)){
+      $csl_model->editable = 1;
       $csl_model->saveModelAndDOM();
-      return $this->ret(200, ["{$csl_model->filename} has been in staging phase. Check on staging page."]);
+      return $this->ret(200, ["{$csl_model->filename} has been in staging phase. Check on staging page."],["csl" => $csl_model]);
     } 
     else {
       return $this->ret(400, MpubCSDB::get_errors(true));
     }
-
   }
 
   public function get_cslstaging(Request $request)
   {
     $csl_models = Dml::where('filename','like', 'CSL-%')->where('remarks', 'like','%"stage":"staging"%')->get();
     return $csl_models;
+  }
+
+  public function dmlcontentupdate(Request $request, string $filename)
+  {
+    $dml_model = Dml::where('filename', $filename)->first();
+    $dml_model->DOMDocument = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
+    
+    $entryIdents = $request->get('entryIdent');
+    $dmlEntryTypes = $request->get('dmlEntryType');
+    $issueTypes = $request->get('issueType');
+    $securityClassifications = $request->get('securityClassification');
+    $enterpriseNames = $request->get('enterpriseName');
+    $enterpriseCodes = $request->get('enterpriseCode');
+    $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan validasi
+
+    // #1. remove all dmlEntry
+    $dmlContent = $dml_model->DOMDocument->getElementsByTagName("dmlContent")[0];
+    while($dmlContent->firstElementChild){
+      $dmlContent->firstElementChild->remove();
+    }
+    $dml_model->DOMDocument->saveXML();
+
+    $dml_model->direct_save = false;
+    foreach($entryIdents as $pos => $entryIdent){
+      $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
+      $otherOptions = [
+        'issueType' => $issueTypes[$pos],
+        'dmlEntryType' => $dmlEntryTypes[$pos],
+      ];
+      $dml_model->add_dmlEntry($entryIdent, $securityClassifications[$pos], [$enterpriseNames[$pos], $enterpriseCodes[$pos]], $remarks, $otherOptions);
+    }
+    $dml_model->DOMDocument->saveXML();
+
+    $dml_model->saveModelAndDOM();
+
+    return $this->ret(200, ['Update Success. Please reload the page.']);
+  }
+
+  /**
+   * CSL nya seperti di issue, yaitu issueNumber++, inWork='00', editable=0, tapi remarks['stage':'staging']
+   * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted;
+   */
+  public function push_csl_forstaging(Request $request, string $filename)
+  {
+    $csl_model = Dml::where('filename', $filename)->first();
+    $csl_model->direct_save = false;
+
+    // #1. ubah issueNumber dan inWork
+    $csl_model->DOMDocument = MpubCSDB::importDocument(storage_path($csl_model->path), $csl_model->filename);
+    $csl_domxpath = new \DOMXPath($csl_model->DOMDocument);
+    $issueInfo = $csl_domxpath->evaluate("//identAndStatusSection/dmlAddress/dmlIdent/issueInfo")[0];
+    $issueNumber = $issueInfo->getAttribute('issueNumber');
+    $issueNumber++;    
+    $issueInfo->setAttribute('issueNumber', $issueNumber);
+    $issueInfo->setAttribute('inWork', '00');
+    $csl_model->DOMDocument->saveXML();
+
+    // #2. set editable and remarks stage
+    $csl_model->editable = 0;
+    $csl_model->setRemarks('stage','staging');
+    
+    // #3. validasi XSI dan BREX
+    $validateXSI = MpubCSDB::validate('XSI', $csl_model->DOMDocument);
+    $validateBREX = true; // validate BREX disini nanti
+    if(!($validateXSI && $validateBREX)) return $this->ret(400, MpubCSDB::get_errors());
+
+    // #4. validasi duplikasi new filename
+    $new_filename = preg_replace("/_[0-9A-Z]{3}-[0-9A-Z]{2}/","_{$issueNumber}-00",$filename);
+    if(Csdb::where('filename', $new_filename)->first()) return $this->ret(400, ["When {$filename} changed into {$new_filename}, it failed due to dupplication object."]);
+    
+    // #5. save and return 200
+    $csl_model->saveModelAndDOM();
+    return $this->ret(200, ["Push to stage is success. {$filename} is issued by changing filename into {$new_filename}."]);
+  }
+
+  public function decline_csl_forstaging(Request $request, string $filename)
+  {
+    $csl_model = Dml::where('filename', $filename)->first();
+    $csl_model->setRemarks('stage','unstaged');
+    return $this->ret(200, ["{$filename} is remarked as unstaged. You may referesh page."]);
+  }
+
+  public function deletedml(Request $request, string $filename)
+  {
+    $csl_model = Dml::where('filename', $filename)->first();
+    $csl_model->setRemarks('stage','deleted');
+    return $this->ret(200, ["{$filename} is remarked as deleted."]);
   }
 }

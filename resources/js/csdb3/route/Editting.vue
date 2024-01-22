@@ -17,7 +17,7 @@ export default {
 
 
   <div class="mb-5">
-    <IndexDML :only_uneditable="true" />
+    <IndexDML :isInEditing="true"/>
   </div>
   <hr/>
 

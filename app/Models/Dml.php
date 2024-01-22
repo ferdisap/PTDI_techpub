@@ -26,7 +26,7 @@ class Dml extends ModelsCsdb
    */
   public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
-    $identAndStatusSection = $this->create_string_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
+    $identAndStatusSection = $this->create_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
 
     $dom = new \DOMDocument('1.0', 'UTF-8');
     $dml = $dom->createElement('dml');
@@ -91,13 +91,15 @@ class Dml extends ModelsCsdb
   /**
    * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
    * ada fitur check dmlEntry di setiap DML yang tersimpan, tapi hanya yang 'p' saja karena 's' itu adalah CSL yang digenerate setiap ada load/unload object ke CSDB
-   * fitur ini tidak digunakan untuk check dmlEntry ayng pakai issueType. Jika mau ubah dari 'new' ke 'changed', maka pakai fungsi cloneDmlEntry()
+   * fitur ini tidak digunakan untuk check dmlEntry yang pakai issueType/dmlEntryType. Jika mau ubah dari 'new' ke 'changed', maka pakai fungsi cloneDmlEntry()
    * @param Array $responsiblePartnerCompany; #0:enterpriseName, #1:enterpriseCode
-   * @return Array index#1 = result boolean
+   * @return Array index#0 = result boolean
    */
-  public function add_dmlEntry(string $issueType = '', string $entryIdent, string $securityClassification = '', array $responsiblePartnerCompany = ['', ''], $remarks = [])
+  // public function add_dmlEntry(string $issueType = '', string $entryIdent, string $securityClassification = '', array $responsiblePartnerCompany = ['', ''], $remarks = [])
+  public function add_dmlEntry(string $entryIdent, string $securityClassification = '', array $responsiblePartnerCompany = ['', ''], $remarks = [], $otherOptions = [])
   {
     $dml_dom = $this->DOMDocument ?? CSDB::importDocument(storage_path($this->path), $this->filename);
+    $this->DOMDocument = $dml_dom;
     $domxpath = new \DOMXPath($dml_dom);
 
     // #1. validasi dmlType
@@ -163,11 +165,14 @@ class Dml extends ModelsCsdb
     if ($dmlType == 'c' or $dmlType == 'p') {
       $ident['xml_string'] = preg_replace('/<(language|issueInfo)[\w\d\s="]+\/>/m', '', $ident['xml_string']);
     }
-    if($issueType){
+    if($issueType = $otherOptions['issueType'] ?? ''){
       $issueType = ' issueType=' . '"'. $issueType . '"' ;
     }
+    if($dmlEntryType = $otherOptions['dmlEntryType'] ?? ''){
+      $dmlEntryType = ' dmlEntryType=' . '"'. $dmlEntryType . '"' ;
+    }
     $dmlEntry_string = <<<EOL
-    <dmlEntry{$issueType}>
+    <dmlEntry{$issueType}{$dmlEntryType}>
     {$ident['xml_string']}
     </dmlEntry>
     EOL;
@@ -223,7 +228,7 @@ class Dml extends ModelsCsdb
    * jika ingin menaruh <dmlRef> pada <dmlStatus>, maka gunakan otherOptions = ['dmlRef' = ['DML...', 'DML...]];
    * 
    */
-  private function create_string_identAndStatusSection(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], $otherOptions = [])
+  private function create_identAndStatusSection(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], $otherOptions = [])
   {
     // $year = '2023';
     $year = date('Y');
@@ -366,6 +371,9 @@ class Dml extends ModelsCsdb
         </dmlStatus>
       </identAndStatusSection>
     EOL;
+
+    $this->direct_save = false;
+    $this->setRemarks('securityClassification', $securityClassification);
 
     $dom = new \DOMDocument();
     $identAndStatusSection = preg_replace("/\n\s+/m",'',$identAndStatusSection);

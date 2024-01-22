@@ -7,7 +7,7 @@ export default {
       techpubStore: useTechpubStore(),
     }
   },
-  props:['only_uneditable', 'both'],
+  props:['isInEditing'],
   mounted(){
     const route = this.techpubStore.getWebRoute('api.get_dml_list');
     axios({
@@ -23,7 +23,8 @@ export default {
   <div class="IndexDML">
     <h1>Index DML</h1>
     <div class="flex">
-      <table class="w-1/2 table-cell bg-red-500" v-if="!$props.only_uneditable || $props.both">
+      
+      <table class="w-1/2 table-cell bg-red-500" v-if="!$props.isInEditing">
         <h3>Editable DML</h3>
         <thead class="h-10">
           <tr>
@@ -38,8 +39,9 @@ export default {
           </tr>
         </tbody>
       </table>
-      <table class="w-1/2 table-cell bg-lime-500" v-if="$props.only_uneditable || $props.both">
-        <h3>Uneditable DML {{ $props.only_uneditable || $props.both }}</h3>
+
+      <table class="w-1/2 table-cell bg-lime-500">
+        <h3>Uneditable DML</h3>
         <thead class="h-10">
           <tr>
             <th>Filename</th>
@@ -47,10 +49,10 @@ export default {
         </thead>
         <tbody>
           <tr v-for="dml in techpubStore.DMLList">
-            <td v-if="!dml.editable && ($props.only_uneditable || $props.both)">
+            <td v-if="!dml.editable && ($props.isInEditing)">
               <a :href="techpubStore.getWebRoute('',{filename: dml.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailDMLEDIT'))).path">{{ dml.filename }}</a>
             </td>
-            <td v-else-if="!dml.editable">
+            <td v-else-if="!dml.editable && (!$props.isInEditing)">
               <a :href="techpubStore.getWebRoute('',{filename: dml.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailDML'))).path">{{ dml.filename }}</a>
             </td>
           </tr>
