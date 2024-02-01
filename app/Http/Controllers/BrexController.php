@@ -17,6 +17,12 @@ class BrexController extends Controller
     return $brexs;
   }
 
+  public function create(Request $request)
+  {
+    // sementara pakai CSdbController@create dulu
+
+  }
+
   ######## new by VUE ########
   /**
    * tujuannya sama dengan fungsi table, yaitu menampilkan list number of brdp

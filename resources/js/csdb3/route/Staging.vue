@@ -21,7 +21,18 @@ export default {
       .then(response => this.cslstaging.find(csl_models => (csl_models.filename == filename))['dmlEntries'] = response.data)
       .catch(error => this.$root.error(error));
     },
-    accept(filename){
+    accept(filename){      
+      const route = this.techpubStore.getWebRoute('api.accept_dml', { filename: filename });
+      axios({
+      url: route.url,
+      method: route.method[0],
+      })
+        .then(response => {
+          this.$root.success(response);
+          let index = this.cslstaging.indexOf(this.cslstaging.find(csl => csl.filename == filename))
+          this.cslstaging.splice(index,1);
+        })
+        .catch(error => this.$root.error(error));
     },
     decline(filename){
       this.$root.showMessages = false;
@@ -30,7 +41,11 @@ export default {
       url: route.url,
       method: route.method[0],
       })
-        .then(response => this.$root.success(response))
+        .then(response => {
+          this.$root.success(response);
+          let index = this.cslstaging.indexOf(this.cslstaging.find(csl => csl.filename == filename))
+          this.cslstaging.splice(index,1);
+        })
         .catch(error => this.$root.error(error));
     },
     edit(dmlFilename){},
@@ -85,6 +100,9 @@ export default {
                     <tr v-for="object in entry.objects">
                       <td>
                         <a target="_blank" :href="techpubStore.getWebRoute('',{filename: object.filename},Object.assign({}, $router.getRoutes().find(v => v.name == 'DetailObject')))['path']"> {{ object.filename }} </a>
+                      </td>
+                      <td>
+                        Stage: {{ object.remarks.stage }}
                       </td>
                     </tr>                      
                   </table>

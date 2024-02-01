@@ -9,7 +9,18 @@ export default {
       // showMessages: true
     }
   },
-  props: ['messages', 'showMessages', 'isSuccess'],
+  props: [
+    'messages', 'showMessages', // 2 props ini bisa di hapus
+    'isSuccess','errors', 'message'],
+  methods: {
+    replaceFilenameWithURL(text){
+      let forDML = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailDML')))['path'];
+      let forObject = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
+      text = text.replace(/(DML[\S]+.xml)/g, `<a class="font-bold" href="${forDML}">$1</a>`);
+      text = text.replace(/(DMC[\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
+      return text;
+    }
+  },
   updated(){
     window.messages = this.$props.messages;
   }
@@ -17,17 +28,31 @@ export default {
 </script>
 
 <template>
-  <div class="justify-center contents h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="messages" v-show="showMessages">
-
+  <div class="justify-center contents h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="message">
     <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
+      <div class="text-center text-xl p-3 font-bold">Message: {{ !$props.errors ? 'success' : 'fail'  }}
+        <button class="float-right" @click="message = ''">X</button>
+      </div>
+      <div v-if="message">
+        <div v-html="replaceFilenameWithURL(message)" class="mb-1"></div>
+        {{ (() => { techpubStore.Errors = errors ? [errors] : [] })() }}
+        <div class="mb-2" v-for="(ms, i) in errors">
+          <h5> {{ i }} </h5>
+          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)/g, `<a href='/csdb/$1'>$1<a/>`)"/>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
       <div class="text-center text-xl p-3 font-bold">Message: {{ $props.isSuccess ? 'success' : 'fail'  }}
         <button class="float-right" @click="showMessages = false">X</button>
       </div>
       <div v-for="message in messages">
-        <div v-if="(message.constructor === Object)">
+        <div v-if="(message.constructor === Object)"> -->
 
           <!-- untuk generate error text disetiap input form -->
-          {{ (() => {techpubStore.Errors = messages})() }}
+          <!-- {{ (() => {techpubStore.Errors = messages})() }}
 
           <div class="mb-2" v-for="(ms, i) in message">
             <h5> {{ i }} </h5>
@@ -40,6 +65,6 @@ export default {
         </div>
         <div v-else v-html="message.replace(/([\S]+.xml)/g, `<a href='/csdb/${$route.params.projectName}/$1'>$1<a/>`)" class="mb-1"></div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>

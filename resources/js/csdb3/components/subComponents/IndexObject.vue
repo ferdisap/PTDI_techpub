@@ -7,7 +7,6 @@ export default {
       techpubStore: useTechpubStore(),
     }
   },
-  props:['only_uneditable', 'both'],
   mounted(){
     const route = this.techpubStore.getWebRoute('api.get_objects');
     axios({
@@ -26,12 +25,16 @@ export default {
     <thead class="h-10">
       <tr>
         <th>Filename</th>
+        <th>Stage | Editable</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="obj in techpubStore.OBJECTList">
-        <td v-if="obj.editable">
+        <td>
           <a :href="techpubStore.getWebRoute('',{filename: obj.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailObject'))).path">{{ obj.filename }}</a>
+        </td>
+        <td>
+          {{ obj.remarks.stage }} | {{ obj.editable ? 'yes' : 'no' }}
         </td>
       </tr>
     </tbody>

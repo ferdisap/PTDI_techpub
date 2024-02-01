@@ -15,7 +15,7 @@ Route::post("/api/editdml/{filename}",[DmlController::class, 'edit'])->middlewar
 Route::post("/api/adddmlentry/{filename}/",[DmlController::class, 'addEntry'])->middleware('auth')->name('api.addEntry_dml');
 Route::get("/api/getentrylist/{filename}",[DmlController::class, 'getEntry'])->middleware('auth')->name('api.get_entry');
 
-Route::post("/api/dml/create",[DmlController::class, 'create'])->middleware('auth')->name('api.post_create_dml');
+// Route::post("/api/dml/create",[DmlController::class, 'create'])->middleware('auth')->name('api.post_create_dml');
 // Route::post("/api/dml/{project_name}/{filename}/addentry",[DmlController::class, 'addEntry'])->middleware('auth')->name('api.addEntry_dml'); // sudah tidak terpakai karena tidak ada lagi project_name
 
 
@@ -29,3 +29,4 @@ Route::get("/api/cslstaging", [DmlController::class, 'get_cslstaging'])->middlew
 Route::get("/api/pushtostaging/{filename}",[DmlController::class, 'push_csl_forstaging'])->middleware('auth')->name('api.push_csl_forstaging');
 Route::get("/api/declinestaging/{filename}",[DmlController::class, 'decline_csl_forstaging'])->middleware('auth')->name('api.decline_csl_forstaging');
 Route::get("/api/deletedml/{filename}",[DmlController::class, 'deletedml'])->middleware('auth')->name('api.delete_dml');
+Route::get("/api/accepttostaged/{filename}",[DmlController::class, 'acceptcsl'])->middleware('auth')->name('api.accept_dml');

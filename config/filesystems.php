@@ -36,6 +36,12 @@ return [
             'throw' => false,
         ],
 
+        'csdb' => [
+            'driver' => 'local',
+            'root' => storage_path('csdb'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

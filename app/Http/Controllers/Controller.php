@@ -97,6 +97,50 @@ class Controller extends BaseController
     return response()->json($data, $code);
   }
 
+  /**
+   * akan membuat output sama dengan $fail() pada $request->validate();
+   */
+  public function ret2($code, $messages = [])
+  {
+    $data = ["message" => ''];
+    $args = func_get_args();
+
+    if(!($code >= 200 AND $code < 300)){
+      $data['errors'] = [];
+    }
+
+    $isArr = function($message, $fn) use(&$data, $code){
+      if(is_array($message)) {
+        foreach($message as $key => $value){
+          // jika array sequential 
+          if((int)$key OR $key == 0){
+            if(is_array($value)){
+              $fn($value, $fn);
+            } else {
+              $data['message'] .= $value . \PHP_EOL;
+            }
+          }
+          // jika array assoc
+          else {
+            if(isset($data['errors'])){
+              $data['errors'][$key] = $value;
+            } else {
+              $data[$key] = $value;
+            }
+          }
+        }
+      } else {
+        $data['message'] .= $message .\PHP_EOL;
+      }
+    };
+
+    for ($i=1; $i < count($args); $i++) { 
+      $message =  $args[$i];
+      $isArr($message, $isArr);
+    }
+    return response()->json($data, $code);
+  }
+
 
   
   /**

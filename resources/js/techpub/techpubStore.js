@@ -56,17 +56,22 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       /**
        * untuk DML app, csdb3
        */
-      DMLList:{},
+      DMLList:[],
 
       /**
        * untuk csdb3
        */
-      BREXList:{},
+      BREXList:[],
 
       /**
        * untuk csdb3
        */
-      OBJECTList:{}
+      OBJECTList:{},
+
+      /**
+       * digunakan saat Upload.vue ke Editor.vue
+       */
+      readText: '',
       
     }
   },

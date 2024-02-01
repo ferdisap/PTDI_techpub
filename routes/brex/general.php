@@ -11,3 +11,6 @@ Route::get("/api/brex/{project_name}/{filename}/transform",[BrexController::clas
 // Route::get("/api/brdp/{project_name}/{filename}/{brParaId}/transform",[BrdpController::class, 'transformBrPara'])->middleware('auth')->name('get_brdp_transformBrPara');
 // Route::get("/api/brdp/{project_name}/{filename}/search",[BrdpController::class, 'search'])->middleware('auth')->name('get_brdp_search');
 
+// for csdb3
+Route::post("/api/brex/create",[BrexController::class, 'create'])->middleware('auth')->name('api.create_brex');
+

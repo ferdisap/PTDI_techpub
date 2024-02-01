@@ -46,8 +46,7 @@ class CsdbController extends Controller
    * issueNumber++ adalah sebuah fitur yang hanya bisa digunakan jika reviewer sudah memvalidasi dan akan di-load ke csdb
    */
   public function create(Request $request)
-  {
-    
+  {    
     // #1. create dom
     $proccessid = CSDB::$processid = self::class . "::create";
     $file = $request->file('entity');
@@ -58,37 +57,36 @@ class CsdbController extends Controller
       $xmlstring = $request->get('xmleditor');
       $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
     }
-    if (!$dom) return $this->ret(400, ['Failed to create csdb.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+    if (!$dom) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
     CSDB::$processid = '';
 
     // #2. validasi filename,rootname dom
     if ($dom instanceof \DOMDocument) {
       if (!($validateRootname = CSDB::validateRootname($dom))) {
-        return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+        return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
       }
       $csdb_filename = $validateRootname[1];
       $ident = $validateRootname[2];
       $path = "csdb";
-      if($ident == 'dml') return $this->ret(400, [['xmleditor' => ['You cannot create DML here.']]]);
+      if($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
     } elseif ($dom instanceof ICNDocument) {
       $csdb_filename = $request->file('entity')->getClientOriginalName();
-      if(substr($csdb_filename,0,3) != 'ICN') return $this->ret(400, ["The name of {$csdb_filename} is not accepted."]);
+      if(substr($csdb_filename,0,3) != 'ICN') return $this->ret2(400, ["The name of {$csdb_filename} is not accepted."]);
       $ident = 'infoEntity';
       $path = "csdb";
       preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
       if (empty($matches)) {
-        return $this->ret(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
+        return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
       }
     } else {
-      return $this->ret(400, ['Failed to create csdb Object.']);
+      return $this->ret2(400, ['Failed to create csdb Object.']);
     }
-    // dd($csdb_filename);
 
     // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
     if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
       CSDB::validate('XSI', $dom);
       if (CSDB::get_errors(false, 'validateBySchema')) {
-        return $this->ret(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
+        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
       }
     }
 
@@ -98,7 +96,6 @@ class CsdbController extends Controller
       $code = preg_replace("/_.+/", '', $csdb_filename);
       $collection = array_diff(scandir(storage_path($path)));
       $collection = array_filter($collection, fn($file) => str_contains($file, $code));
-      // dd($collection);
       if(empty($collection)){
         $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
         $issueInfo->setAttribute('issueNumber', '000');
@@ -136,7 +133,7 @@ class CsdbController extends Controller
     if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
       CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
       if (CSDB::get_errors(false, 'validateByBrex')) {
-        return $this->ret(400, [['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
+        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
       }
     }
 
@@ -154,25 +151,38 @@ class CsdbController extends Controller
         'initiator_id' => $request->user()->id,
       ]);
       if($new_csdb_model){
-        return $this->ret(200, ["New {$new_csdb_model->filename} has been created."]);
+        $new_csdb_model->setRemarks('stage', 'unstaged');
+        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
       }
     }
-    return $this->ret(400, ["{$csdb_filename} failed to issue."]);
+    return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
   }
 
   public function get(Request $request)
   {
-    $all = ModelsCsdb::where('initiator_id',$request->user()->id)->get();
-    return $all;
+    $masterCSDB = true; // $request->user()->masterCSDB ?? false
+    if($masterCSDB){
+      $all = ModelsCsdb::where('initiator_id','like','%');
+    } else {
+      $all = ModelsCsdb::where('initiator_id',$request->user()->id);
+    }
+    return $all
+      ->where('filename','not like', 'DML%')
+      ->where('filename','not like', 'CSL%')
+      ->get();
   }
 
   /**
+   * $request->get('output') = "'model'|default:''";
    * @return Illuminate\Support\Facades\Response;
    */
   public function getFile(Request $request)
   {
     $filename = $request->route('filename');
     $csdb_object = ModelsCsdb::where('filename', $filename)->first();
+    if($request->get('output') == 'model'){
+      return $csdb_object;
+    }
     $dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
     if($dom instanceof ICNDocument){
       $mime = $dom->getFileinfo()['mime_type'];
@@ -182,11 +192,19 @@ class CsdbController extends Controller
     }
   }
 
-  public function update(Request $request)
+  public function update(Request $request, string $filename)
   {
-    $old_filename = $request->route('filename');
+    // #0. validasi schema
+    $old_filename = $filename;
     $csdb_object = ModelsCsdb::where('filename', $old_filename)->first();
     $old_dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
+    $schema = $old_dom->documentElement->getAttribute('xsi:noNamespaceSchemaLocation');
+    if(str_contains($schema, 'dml.xsd')){
+      return $this->ret2(400, ["You cannot update object with schema {$schema} here."]);
+    }
+    if(!$csdb_object->editable){
+      return $this->ret2(400, ["You cannot update object with the editable status is false."]);
+    }
     
     // #1. create dom
     $proccessid = CSDB::$processid = self::class . "::update";
@@ -198,33 +216,33 @@ class CsdbController extends Controller
       $xmlstring = $request->get('xmleditor');
       $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
     }
-    if (!$dom) return $this->ret(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+    if (!$dom) return $this->ret2(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
     CSDB::$processid = '';
 
     // #2. validasi filename,rootname dom
     if ($dom instanceof \DOMDocument) {
-      if (!($validateRootname = CSDB::validateRootname($dom))) return $this->ret(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+      if (!($validateRootname = CSDB::validateRootname($dom))) return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
       $csdb_filename = $validateRootname[1];
       $ident = $validateRootname[2];
       $path = "csdb";
-      if($ident == 'dml') return $this->ret(400, [['xmleditor' => ['You cannot update DML here.']]]);
+      if($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
     } elseif ($dom instanceof ICNDocument) {
       $csdb_filename = $request->file('entity')->getClientOriginalName();
       $ident = 'infoEntity';
       $path = "csdb";
       preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
       if (empty($matches)) {
-        return $this->ret(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
+        return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
       }
     } else {
-      return $this->ret(400, ['Failed to create csdb Object.']);
+      return $this->ret2(400, ['Failed to create csdb Object.']);
     }
 
     // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
     if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
       CSDB::validate('XSI', $dom);
       if ($error = CSDB::get_errors(false, 'validateBySchema')) {
-        return $this->ret(400, [['xmleditor' => $error]]);
+        return $this->ret2(400, [['xmleditor' => $error]]);
       }
     }
 
@@ -248,7 +266,7 @@ class CsdbController extends Controller
     if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
       CSDB::validate('BREX', $dom, null, storage_path($csdb_object->path));
       if ($error = CSDB::get_errors(true, 'validateByBrex')) {
-        return $this->ret(400, [['xmleditor' => $error]]);
+        return $this->ret2(400, [['xmleditor' => $error]]);
       }
     }
 
@@ -261,11 +279,223 @@ class CsdbController extends Controller
     if($save){
       $csdb_object->updated_at = now();
       $csdb_object->save();
-      return $this->ret(200, ["{$csdb_filename} has been saved."]);
+      return $this->ret2(200, ["{$csdb_filename} has been saved."]);
     }
-    return $this->ret(400, ["{$csdb_filename} failed to issue."]);
+    return $this->ret2(400, ["{$csdb_filename} failed to issue."]);
   }
 
+  /**
+   * untuk ICN. 
+   * Filename = auto generated, based CAGE Codes
+   * prefix-cagecode-uniqueIdentifier-issueNumber-sc
+   */
+  public function uploadICN(Request $request)
+  {
+    $request->validate([
+      // "cagecode" => 'required',// akan memakai latest cagecode
+      'securityClassification' => ['required', function(string $attribute, mixed $value,  Closure $fail){
+        $value = (int)$value;
+        if(!($value <=1 OR $value >=5)) $fail("You should put the security classifcation between 1 through 5.");
+      }],
+      "entity" => ['required', function(string $attribute, mixed $value,  Closure $fail){
+        $ext = strtolower($value->getClientOriginalExtension());
+        $mime = strtolower($value->getMimeType());
+        if($ext == 'xml' OR str_contains($mime, 'text')){
+          $fail("You should put the non-text file in {$attribute}.");
+        }
+      }],
+    ]);
+
+    $file = $request->file('entity');
+    $extension = $file->getClientOriginalExtension();
+
+    $prefix = "ICN";
+    
+    // mencari nilai uniqueIdentifier terbesar +1;
+    $latestFileName = CSDB::getLatestICNFile(storage_path("csdb"), '0001Z');
+    $latestFileName_array = empty($latestFileName) ? [] : explode("-", $latestFileName);
+
+    $cagecode = $request->get('cagecode') ?? $latestFileName_array[1] ?? '';
+    if(preg_replace("/[A-Z0-9]{5}/", '', $cagecode) != '') return $this->ret2(400, ['cagecode' => ['Cage code company must contain capital alphabetical or numerical in five length.']]);
+    if(!$cagecode) return $this->ret2(400, ['cagecode' => ["Cage Code company is required for naming object."]]);
+    
+    $uniqueIdentifier = $latestFileName_array[2] ?? 0;
+    $uniqueIdentifier++;
+    $uniqueIdentifier = str_pad((int) $uniqueIdentifier, 5, '0', STR_PAD_LEFT);
+    
+    $issueNumber = $latestFileName_array[3] ?? 0;
+    $issueNumber++;
+    $issueNumber = str_pad((int) $issueNumber, 3, '0', STR_PAD_LEFT);
+    
+    $securityClassification = str_pad((int) $request->get('securityClassification'), 2, '0', STR_PAD_LEFT);
+
+    $cagecode = '0001Z';
+    $filename = "{$prefix}-{$cagecode}-{$uniqueIdentifier}-{$issueNumber}-{$securityClassification}.{$extension}";
+
+    $save = Storage::disk('csdb')->put($filename, $file->getContent());
+    if($save){
+      $new_csdb_model = ModelsCsdb::create([
+        'filename' => $filename,
+        'path' => 'csdb',
+        'editable' => '1',
+        'initiator_id' => $request->user()->id,
+      ]);
+      if($new_csdb_model){
+        $new_csdb_model->setRemarks('stage','unstaged');
+        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
+      }
+    }
+    return $this->ret2(400, ["{$filename} failed to issue."]);
+  }
+
+  /**
+   * see DmlController@commit. Algoritma nya sama
+   */
+  public function commit(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::where('filename',$filename)->first();
+    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can commit."]);
+    // if(!$model->editable) return $this->ret2(400, ['This object cannot re commit. You might have issue this object at previous.']);
+    $model->direct_save = false;
+    $model->DOMDocument = CSDB::importDocument(storage_path($model->path), $model->filename);
+
+    // new DOM
+    $dom = CSDB::commit($model->DOMDocument);
+    if(!$dom) return $this->ret2(400, CSDB::get_errors(true,'commit'));
+
+    $new_filename = CSDB::resolve_DocIdent($model->DOMDocument);
+    if($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This Object cannot be commited due duplication filename of {$new_filename}."]);
+
+    // change old object editable into false
+    $model->editable = 0;
+    $model->save();
+
+
+    // save new DOM
+    $save = $dom->C14NFile(storage_path($model->path).DIRECTORY_SEPARATOR.$new_filename);
+    if($save){
+      $new_model = ModelsCsdb::create([
+        'filename' => $new_filename,
+        'path' => $model->path,
+        'editable' => 1,
+        'initiator_id' => $model->initiator_id,
+        'remarks' => $model->remarks,
+      ]);
+      $new_model->setRemarks('stage', 'unstaged');
+      return $this->ret2(200, ["New {$new_model->filename} has been created."]);
+    }
+    return $this->ret2(400, ["{$filename} failed to commit."]);    
+  }
+
+  /**
+   * ICN tidak bisa di issue. hanya .xml yang bisa
+   * issueNumber++, $inWork = "00"
+   * kalau schemanya brex.xsd, tidak akan divalidasi brex. Selanjutnya bisa di ubah jika ingin pakai controller BREX sendiri
+   */
+  public function issue(Request $request, string $filename)
+  {
+    $issueInfo = explode("_", $filename)[1] ?? '';
+    $inWork = explode("-", $issueInfo)[1] ?? '';
+    if($inWork == '00' OR !str_contains($filename,".xml")) return $this->ret2(400, ["$filename cannot resolved."]);
+
+    $model = ModelsCsdb::where('filename',$filename)->first();
+    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
+    $model->direct_save = false;
+    if(!$model) return $this->ret2(400, ["$filename does not available."]);
+    $dom = CSDB::importDocument(storage_path($model->path), $filename);    
+
+    $initial = $dom->documentElement->tagName;
+    if($initial == 'dmodule') $initial = 'dm';
+    $domXpath = new \DOMXpath($dom);
+    $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];
+    $issueNumber = $issueInfo->getAttribute('issueNumber');
+    $issueNumber++;
+    $issueNumber = str_pad($issueNumber, 3, '0', STR_PAD_LEFT);
+    $issueInfo->setAttribute("issueNumber", $issueNumber);
+    $issueInfo->setAttribute("inWork", '00');
+
+    // validate XSI
+    $validateXSI = CSDB::validate('XSI', $dom);
+    if(!$validateXSI) return $this->ret2(400, CSDB::get_errors());
+    $schema = CSDB::getSchemaUsed($dom, '');
+    if($schema != 'brex.xsd'){
+      $validateBREX = CSDB::validate('BREX', $dom);
+      if(!$validateBREX) return $this->ret2(400, CSDB::get_errors());
+    }
+    
+    // new csdb
+    $new_filename = CSDB::resolve_DocIdent($dom);
+    if(ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["{$filename} has already issued before named {$new_filename}"]);
+    $new_model = new ModelsCsdb();
+    $new_model->direct_save = false;
+    $new_model->DOMDocument = $dom;
+    $new_model->filename = $new_filename;
+    $new_model->path = $model->path;
+    $new_model->editable = 0;
+    $new_model->initiator_id = $model->initiator_id;
+    $new_model->remarks = $model->remarks;
+    $new_model->setRemarks('securityClassification', CSDB::resolve_securityClassification($new_model->DOMDocument, 'number'));
+    $save = $new_model->saveModelAndDOM();
+    if($save){
+      return $this->ret2(200, ["Object is issued named {$new_filename}"]);
+    } else {
+      return $this->ret2(400, ["Issue {$filename} fails."]);
+    }
+    
+    // $model->save
+    
+  }
+
+  /**
+   * fungsi ini sama dengan DmlController@edit. Jadi nanti bisa digabung biar maintenancenya lebih gampang
+   * akan membuat file baru issueNumber tetap, inWork '01'
+   * fungsi ini dipakai ketika dml sudah di issue(), namun ada content yang harus di edit
+   */
+  public function edit(Request $request, string $filename)
+  {
+    if(!$filename OR substr($filename,0,3) == 'DML') return $this->ret2(400, ['This object is can not open edit here.']);
+    $model = ModelsCsdb::where('filename',$filename)->first();
+    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
+    if($model->editable) return $this->ret2(400, ["{$filename} is still in editable."]);
+
+    $dom = CSDB::importDocument(storage_path($model->path),$model->filename);
+    $initial = $dom->documentElement->tagName;
+    if($initial == 'dmodule') $initial = 'dm';
+    $domxpath = new \DOMXPath($dom);
+    $issueInfo = $domxpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];
+    $issueInfo->setAttribute('inWork', '01');
+
+    $new_filename = CSDB::resolve_DocIdent($dom);
+    if($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This object cannot be editted due duplication filename of {$new_filename}."]);
+    $save = $dom->C14NFile(storage_path($model->path).DIRECTORY_SEPARATOR.$new_filename);
+    if($save){
+      $new_model = ModelsCsdb::create([
+        'filename' => $new_filename,
+        'path' => $model->path,
+        'editable' => 1,
+        'initiator_id' => $model->initiator_id,
+        'remarks' => $model->remarks,
+      ]);
+      if($new_model){
+        $new_model->setRemarks('stage', 'unstaged');
+        return $this->ret2(200, ["New {$new_model->filename} has been created."]);
+      }
+    }
+    return $this->ret2(400, ["{$filename} failed to open edit."]);
+  }
+
+  /**
+   * hanya digunakan untuk developersaja, tidak untuk end-user
+   */
+  public function delete(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    $delete = Storage::disk('csdb')->delete($filename);
+    if($delete){
+      $model->delete();
+    }
+    return true;
+  }
 
 
 
@@ -394,7 +624,8 @@ class CsdbController extends Controller
           $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
           if (!$issueInfo) return $this->ret(400, [['xmlEditor' => ['Cannot commit due to issueInfo element not exist']]]);
           $current_inWork = (int)$issueInfo->getAttribute('inWork');
-          $issueInfo->setAttribute('inWork', str_pad($current_inWork + 1, 2, '0', STR_PAD_LEFT));
+          $current_inWork++;
+          $issueInfo->setAttribute('inWork', str_pad($current_inWork, 2, '0', STR_PAD_LEFT));
           $new_objectFilename = CSDB::resolve_DocIdent($dom);
         }
         // validasi terhadap dmrl. Walaupun ini cuma update, bisa saja dmrl nya sudah di revisi jadi dokumen ini tidak diperlukan lagi

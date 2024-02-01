@@ -80,7 +80,7 @@
       <th> Remarks <Sort/> </th>
     </tr>
     <tr class="add_dmlEntry">
-      <td><button class="material-icons" type="button" onclick="add_dmlEntry_row_first()">add</button></td>
+      <td><button class="material-icons" type="button" click="add_dmlEntry_row_first()">add</button></td>
     </tr>
     <xsl:for-each select="dmlEntry">
       <tr class="dmlEntry">
@@ -141,7 +141,7 @@
 </xsl:template>
 
 <xsl:template match="dmlRef">
-  <!-- <span>Belum ada fungsi untuk resolve dmlRefIdent</span> -->
+  <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmlIdent', dmlRefIdent, null, 'DML-', '' )"/>
 </xsl:template>
 
 

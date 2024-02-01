@@ -3,7 +3,8 @@
 
   <xsl:output method="xml" omit-xml-declaration="yes"/>
 
-  <xsl:template match="/">
+  <!-- <xsl:template match="/"> -->
+  <xsl:template match="contextRules">
     <div>
       <div class="d-flex justify-content-center flex-column container mt-3">
         <p><xsl:value-of select="//commonInfo"/></p>

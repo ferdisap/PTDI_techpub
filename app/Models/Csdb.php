@@ -12,6 +12,9 @@ use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
 
+/**
+ * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted;
+ */
 class Csdb extends Model
 {
   use HasFactory, HasUlids, Applicability;
@@ -86,8 +89,6 @@ class Csdb extends Model
   {
     return $this->belongsTo(Project::class, 'project_name');
   }
-
-
 
   ###### CUSTOM #######
   /**
@@ -216,6 +217,8 @@ class Csdb extends Model
     }
     return false;
   }
+
+ 
 
   /**
    * untuk menambah namespace pada DOMDocument xsl

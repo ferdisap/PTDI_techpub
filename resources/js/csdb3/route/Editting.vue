@@ -7,32 +7,17 @@ export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      showEditor: true,
     }
   },
-  components: { IndexDML, Editor, IndexObject, IndexObject },
+  components: {IndexObject},
 }
 </script>
 <template>
 
-
-  <div class="mb-5">
-    <IndexDML :isInEditing="true"/>
-  </div>
-  <hr/>
+  <!-- ini tidak dipakai nanti -->
 
   <div class="mb-5">
     <IndexObject/>
   </div>
-
-  
-
-  <hr/>
-  <!-- xml editor -->
-  <div class="mb-5 mt-5">
-    <Editor :is-create="true"/>
-  </div>
-
-  
   
 </template>

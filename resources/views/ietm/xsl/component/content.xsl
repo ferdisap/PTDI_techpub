@@ -19,9 +19,25 @@
 <xsl:include href="./element/levelledPara.xsl"/>
 <xsl:include href="./element/warningcautionnote.xsl"/>
 
+<xsl:include href="../../../brex/xsl/contextRules.xsl"/>
+<xsl:include href="../../../brex/xsl/nonContextRules.xsl"/>
+<xsl:include href="../../../brex/xsl/snsRules.xsl"/>
+
 
 <xsl:template match="content">
   <xsl:apply-templates/>
+</xsl:template>
+
+<xsl:template match="brex">
+  <div>
+    <xsl:value-of select="commonInfo"/>
+  </div>
+  <div>
+    <xsl:apply-templates select="snsRules"/>
+  </div>
+  <div>
+    <xsl:apply-templates select="contextRules"/>
+  </div>
 </xsl:template>
 
 </xsl:transform>

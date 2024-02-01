@@ -7,7 +7,8 @@ export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
-      transformed: undefined
+      transformed: undefined,
+      showEditor: false,
     }
   },
   computed: {
@@ -43,39 +44,55 @@ export default {
             }
           },
         },
-        mounted() {
-          $('.map').maphilight();
-          $('area').each((k, area) => {
-            $(area).click((e) => {
-              e.preventDefault();
-              let data = $(e.target).mouseout().data('maphilight') || {};
-              data.alwaysOn = !(data.alwaysOn);
-              $(e.target).data('maphilight', data).trigger('alwaysOn.maphilight');
-            })
-          });
-        },
       }
     }
   },
+  methods:{
+    submit(commitOrIssue) {
+      let routename;
+      if (commitOrIssue == 'commit') {
+        routename = 'api.commit_object';
+      } else if (commitOrIssue == 'issue') {
+        routename = 'api.issue_object';
+      } else if (commitOrIssue == 'edit') {
+        routename = 'api.edit_object';
+      }
+
+      this.$root.showMessages = false;
+      const route = this.techpubStore.getWebRoute(routename, { filename: this.$route.params.filename });
+      axios({
+        url: route.url,
+        method: route.method[0],
+        data: route.params,
+      })
+        .then(response => {
+          this.$root.success(response);
+        })
+        .catch(error => this.$root.error(error));
+    },
+  },
   mounted(){
-    // const route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename});
-    // axios({
-    //   url: route.url,
-    //   method: route.method[0],
-    //   data: route.params,
-    // })
-    // .then(response => {
-    //   window.res = response;
-    //   this.transformed = response.data.file;
-    // })
-    // .catch(error => this.$root.error(error));
+    const route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename});
+    axios({
+      url: route.url,
+      method: route.method[0],
+      data: route.params,
+    })
+    .then(response => {
+      this.transformed = response.data.file;
+    })
+    .catch(error => this.$root.error(error));
   },
 }
 </script>
 <template>
-  <div class="detailDML">
+  <!-- ini nanti tidak dipakai karena diganti DetailObject -->
+  <div class="detailBREX">
     <h1 class="text-center">Detail BREX</h1>
+    <button class="button-nav" @click="submit('commit')">Commit</button>
+    <button class="button-nav" @click="showEditor = !showEditor">Edit</button>
     <br/>
+    <Editor/>
     <component :is="dynamic" v-if="transformed" />
   </div>
 </template>

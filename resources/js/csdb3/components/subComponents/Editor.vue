@@ -3,15 +3,17 @@ import { EditorView, gutter, lineNumbers, GutterMarker, keymap } from "@codemirr
 import { defaultKeymap } from "@codemirror/commands";
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import axios from "axios";
+import $ from 'jquery';
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
       showEditor: true,
+      showEntityViewer: false,
       editor: undefined,
     }
   },
-  props:['isCreate', 'text'],
+  props:['text'],
   methods: {
     attachEditor(text = '') {
       let container = $('#xml-editor-container');
@@ -36,7 +38,7 @@ export default {
         data: formData
       })
       .then(response => this.$root.success(response))
-      .catch(error => this.$root.error($error));
+      .catch(error => this.$root.error(error));
     },
     update(){
       const formData = new FormData(event.target);
@@ -50,11 +52,13 @@ export default {
       })
       .then(response => this.$root.success(response))
       .catch(error => this.$root.error(error));
+    },
+    submit(filename){
+      return filename ? this.update() : this.create();
     }
   },
   mounted(){
-    this.attachEditor(this.$props.text);
-    // this.attachEditor('');
+    this.attachEditor(this.$props.text ? this.$props.text : this.techpubStore.readText);
   }
 }
 </script>
@@ -64,7 +68,7 @@ export default {
 }
 </style>
 <template>
-  <form @submit.prevent="$props.isCreate ? create() : update()">
+  <form @submit.prevent="submit($route.params.filename)">
     <h1>XML Editor</h1>
     <div v-show="showEditor" class="h-max mt-3">
       <div class="mb-2 flex space-x-3">

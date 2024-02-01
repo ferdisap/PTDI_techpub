@@ -128,3 +128,21 @@ h6 {
 .add_dmlEntry:hover button{
   display: block;
 }
+
+/* Aside details */
+@layer components {
+  .focus {
+    @apply cursor-pointer 
+    hover:bg-blue-500 hover:text-white 
+    focus:bg-blue-500 focus:text-white
+  }
+  aside details > summary {
+    @apply flex items-center focus rounded-lg list-none
+  }
+  aside details > div {
+    @apply ml-5    
+  }
+  aside details > div > a {
+    @apply flex items-center focus rounded-lg p-1
+  }
+}

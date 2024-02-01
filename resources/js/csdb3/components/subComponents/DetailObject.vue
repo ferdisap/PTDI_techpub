@@ -10,7 +10,8 @@ export default {
       techpubStore: useTechpubStore(),
       transformed: undefined,
       show: 'stage',
-      raw: undefined
+      raw: undefined,
+      model: {},
     }
   },
   computed: {
@@ -61,8 +62,42 @@ export default {
     }
   },
   components:{Editor},
-  methods:{},
+  methods:{
+    submit(commitOrIssue) {
+      let routename;
+      if (commitOrIssue == 'commit') {
+        routename = 'api.commit_object';
+      } else if (commitOrIssue == 'issue') {
+        routename = 'api.issue_object';
+      } else if (commitOrIssue == 'edit') {
+        routename = 'api.edit_object';
+      }
+
+      this.$root.showMessages = false;
+      const route = this.techpubStore.getWebRoute(routename, { filename: this.$route.params.filename });
+      axios({
+        url: route.url,
+        method: route.method[0],
+        data: route.params,
+      })
+        .then(response => this.$root.success(response))
+        .catch(error => this.$root.error(error));
+    },
+  },
+  created() {
+    const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output:'model'});
+    axios({
+      url: route.url,
+      method: route.method[0],
+      data: route.params,
+    })
+      .then(response => this.model = response.data)
+      .catch(error => this.$root.error(error));
+  },
   mounted(){
+    if(['DML', 'CSL'].includes(this.$route.params.filename.substr(0,3))){
+      return;
+    }
     let route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename, ignoreError:1});
     axios({
       url: route.url,
@@ -92,14 +127,20 @@ export default {
 </script>
 <template>
   <h1 class="text-center">Detail Object</h1>
-  <div class="w-full text-center mb-3 mt-3">
+  <div class="text-center">Editable: {{ model.editable ? 'yes' : 'no' }}</div>
+  <!-- jika inWork object tidak '00' maka bisa commit, edit, issue -->
+  <div class="w-full text-center mb-3 mt-3" v-if="$route.params.filename && !$route.params.filename.match(/_\d{3}-00/g)">
+    <button class="button-nav" @click="submit('commit')">Commit</button>
     <button class="button-nav" @click="show == 'editor' ? show = '' : show = 'editor'">Edit</button>
+    <button class="button-nav" @click="submit('issue')">Issue</button>
+  </div>
+  <div class="w-full text-center mb-3 mt-3" v-else>
+    <button class="button-nav" @click="submit('edit')">Open Edit</button>
   </div>
   <br/>
   
   <!-- EDITOR -->
   <Editor v-if="show == 'editor'" :text="raw" :is-create="false"/>
-
 
   <component :is="dynamic" v-if="transformed" />
 </template>

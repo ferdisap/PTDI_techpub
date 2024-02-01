@@ -11,8 +11,14 @@ Route::post("/api/csdbcreate",[CsdbController::class, 'create'])->middleware('au
 Route::get("/api/getobjects",[CsdbController::class, 'get'])->middleware('auth')->name('api.get_objects');
 Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object');
 Route::post("/api/updateobject/{filename}", [CsdbController::class, 'update'])->middleware('auth')->name('api.update_object');
+Route::post("/api/uploadICN", [CsdbController::class, 'uploadICN'])->middleware('auth')->name('api.upload_ICN');
 
+Route::get("/api/commit/{filename}",[CsdbController::class, 'commit'])->middleware('auth')->name("api.commit_object");
+Route::get("/api/issue/{filename}", [CsdbController::class, 'issue'])->middleware('auth')->name('api.issue_object');
+Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware('auth')->name('api.edit_object');
 // Route::post('api/pushtostage',)
+
+Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth');
 
 
 

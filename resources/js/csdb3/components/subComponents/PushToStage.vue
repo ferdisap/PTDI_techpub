@@ -40,7 +40,7 @@ export default {
         .then(response => {
           this.$root.success(response);
           let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
-          cslEntryList.splice(index);
+          this.cslEntryList.splice(index,1);
         })
         .catch(error => this.$root.error(error));
     },
@@ -54,12 +54,17 @@ export default {
         .then(response => {
           this.$root.success(response);
           let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
-          this.cslEntryList.splice(index);
+          this.cslEntryList.splice(index,1);
         })
         .catch(error => this.$root.error(error));
     },
     getDmlEntries() {
-      const route = this.techpubStore.getWebRoute('api.get_entry', { filename: this.$route.params.filename });
+      let filename = this.$route.params.filename ? this.$route.params.filename : $('#dmlFilename').val();
+      if(!filename){
+        this.techpubStore.Errors = [{filename: 'You should type the DML filename.'}]
+        return;
+      }
+      const route = this.techpubStore.getWebRoute('api.get_entry', { filename: filename });
       axios({
         url: route.url,
         method: route.method[0],
@@ -95,7 +100,8 @@ export default {
           <td> {{ csl.filename }} </td>
           <td> 
             <button @click="pushToStaging(csl.filename)"><span class="material-icons text-green-400">check_circle</span>Push</button>
-            <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailCSLEDIT')))['path']"><span class="material-icons">edit</span>Edit</a>
+            <!-- <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailCSLEDIT')))['path']"><span class="material-icons">edit</span>Edit</a> -->
+            <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailDML_inEditing')))['path']"><span class="material-icons">edit</span>Edit</a>
             <button @click="deleteDML(csl.filename)"><span class="material-icons text-red-500">delete</span>Delete</button>
           </td>
         </tr>
@@ -128,7 +134,15 @@ export default {
             <tr v-for="entry in dmlEntryList">
               <td> {{ entry.code }} </td>
               <td>
-                <div v-for="obj in entry.objects" class="flex">
+                <div v-if="entry.code.substr(0,3) == 'ICN'">
+                  <input type="checkbox" name="objects[]" :value="entry.code + entry.extension" class="mx-1" />                  
+                  {{ entry.code + entry.extension }}
+                  <!-- 
+                    * tambahkan IMF nya di sini atau tidak perlu jika IMF tidak dilakukan validasi terhadap DMRL.
+                    * konsekuensi nya jika DMRL di select di sini,  artinya kan remark stage:staged. Nanti ketika generate IETM, akan kesulitan untuk mencari IMF nya karena cara mencari nya berdasarkan 
+                   -->
+                </div>
+                <div v-else v-for="obj in entry.objects" class="flex">
                   <input type="checkbox" name="objects[]" :value="obj.filename" class="mx-1" />
                   {{ obj.filename }}
                 </div>
