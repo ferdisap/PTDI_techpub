@@ -146,7 +146,7 @@ class Csdb extends Model
     }
 
     $transformed = str_replace("\n", '', $transformed);
-
+    
     $transformed = preg_replace("/\s+/m", ' ', $transformed);
     $transformed = preg_replace("/v-on_/m", 'v-on:', $transformed); // nanti ini dihapus. Setiap xml akan ditambahkan namespace xmlns:v-bind, xmlns:v-on, dll 
     $transformed = preg_replace('/xmlns:[\w\-=":\/\\\\._]+/m', '', $transformed); // untuk menghilangkan attribute xmlns

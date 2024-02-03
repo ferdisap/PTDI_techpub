@@ -43,16 +43,16 @@ export default {
   beforeCreate(){
     this.References.defaultStore = useTechpubStore();
   },
-  async created(){
-    await axios.get('/auth/check')
-      .then(response => {
-        this.techpubStore.Auth.name = response.data.name;
-        this.techpubStore.Auth.email = response.data.email;
-      })
-      .catch(response => {
-        window.location.href = "/login";
-      });
-  },
+  // async created(){
+  //   await axios.get('/auth/check')
+  //     .then(response => {
+  //       this.techpubStore.Auth.name = response.data.name;
+  //       this.techpubStore.Auth.email = response.data.email;
+  //     })
+  //     .catch(response => {
+  //       window.location.href = "/login";
+  //     });
+  // },
   mounted(){
     window.route = this.$route;
     window.router = this.$router;

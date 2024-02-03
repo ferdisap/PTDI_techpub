@@ -24,7 +24,7 @@ function add_dmlEntry_row() {
   clonned_addButton.insertAfter(clonned_dmlEntry);
 }
 window.add_dmlEntry_row = add_dmlEntry_row;
-function add_dmlEntry_row_first(){
+function add_dmlEntry_row_first() {
   let dmlEntry = `
   <tr class="dmlEntry">
     <td class="dmlEntry-ident">
@@ -61,7 +61,7 @@ export default {
       model: undefined,
     }
   },
-  props:['isInEditing'],
+  props: ['isInEditing'],
   components: { AddEntryDML, Sort, PushToStage },
   computed: {
     dynamic() {
@@ -134,22 +134,23 @@ export default {
         })
         .catch(error => this.$root.error(error));
     },
-    update(){
+    update() {
       const formData = new FormData(event.target);
       window.formData = formData;
       this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute('api.dmlcontentupdate', formData);
+      // const route = this.techpubStore.getWebRoute('api.dmlcontentupdate', formData);
+      const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
       axios({
         url: route.url,
         method: route.method[0],
         data: formData,
       })
-      .then(response => this.$root.success(response))
-      .catch(error => this.$root.error(error))
+        .then(response => this.$root.success(response))
+        .catch(error => this.$root.error(error))
     }
   },
   created() {
-    const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output:'model'});
+    const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output: 'model' });
     axios({
       url: route.url,
       method: route.method[0],
@@ -166,7 +167,11 @@ export default {
       method: route.method[0],
       data: route.params,
     })
-      .then(response => this.transformed = response.data.file)
+      .then(response => {
+        let text = response.data.file;
+        text = text.replace("\\n", "\n");
+        this.transformed = text;
+      })
       .catch(error => this.$root.error(error));
   },
 }
@@ -177,13 +182,15 @@ export default {
     <div class="text-center">Editable: {{ model.editable ? 'yes' : 'no' }}</div>
 
     <!-- jika DML -->
-    <div class="w-full text-center mb-3 mt-3" v-if="model.filename.substr(0,3) == 'DML' && !$route.params.filename.match(/_\d{3}-00/g)">
+    <div class="w-full text-center mb-3 mt-3"
+      v-if="model.filename.substr(0, 3) == 'DML' && !$route.params.filename.match(/_\d{3}-00/g)">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="submit('commit')">Commit</button>
     </div>
-    <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0,3) == 'DML'">
+    <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) == 'DML'">
       <button class="button-nav" v-if="!model.editable" @click="submit('edit')">Open Edit</button>
-      <button class="button-nav" v-if="!model.editable" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
+      <button class="button-nav" v-if="!model.editable"
+        @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
     </div>
 
     <!-- jika CSL -->
@@ -192,7 +199,7 @@ export default {
       <button class="button-nav" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
     </div> -->
 
-  
+
     <!-- if is in COMMITING area (bukan CSL) -->
     <!-- <div class="w-full text-center mb-3 mt-3" v-if="!$props.isInEditing && !model.editable && model.filename.substr(0,3) != 'CSL'">
       <button :class="[showDML == 'addEntry' ? 'border-b-black border-b-4' : '', 'button-nav']"
@@ -200,27 +207,27 @@ export default {
       <button class="button-nav" @click="submit('commit')">Commit</button>
       <button class="button-nav" @click="submit('edit')">Open to Edit</button>
     </div> -->
-    
+
     <!-- if is in EDITTING area (bukan CSL) -->
     <!-- <div class="w-full text-center mb-3 mt-3" v-if="$props.isInEditing && !model.editable && model.filename.substr(0,3) != 'CSL'">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
     </div> -->
-  
+
     <!-- <AddEntryDML v-if="(!model.editable) && (showDML == 'addEntry')" :dmlfilename="$route.params.filename" /> -->
-    <PushToStage v-if="showDML == 'pushToStage'" />  
+    <PushToStage v-if="showDML == 'pushToStage'" />
     <br />
 
 
     <form id="dml" @submit.prevent="update">
-      <input type="hidden" name="filename" :value="$route.params.filename"/>
-      
+      <input type="hidden" name="filename" :value="$route.params.filename" />
+
       <component :is="dynamic" v-if="transformed" />
 
       <div class="w-full text-center mb-3 mt-3" v-if="model.editable">
         <button class="button-violet" type="submit">Update</button>
       </div>
     </form>
-    
+
   </div>
 </template>

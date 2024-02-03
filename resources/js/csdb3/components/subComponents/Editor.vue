@@ -11,9 +11,11 @@ export default {
       showEditor: true,
       showEntityViewer: false,
       editor: undefined,
+      rn_update: 'api.update_object',
+      rn_create: 'api.create_object',
     }
   },
-  props:['text'],
+  props:['text', 'routeNameCreate', 'routeNameUpdate', 'title'],
   methods: {
     attachEditor(text = '') {
       let container = $('#xml-editor-container');
@@ -31,7 +33,7 @@ export default {
     create(){
       const formData = new FormData(event.target);
       formData.append('xmleditor', this.editor.state.doc.toString());
-      const route = this.techpubStore.getWebRoute('api.create_object', formData);
+      const route = this.techpubStore.getWebRoute(this.rn_create, formData);
       axios({
         url: route.url,
         method: route.method[0],
@@ -44,7 +46,7 @@ export default {
       const formData = new FormData(event.target);
       formData.append('xmleditor', this.editor.state.doc.toString());
       formData.append('filename', this.$route.params.filename);
-      const route = this.techpubStore.getWebRoute('api.update_object', formData);
+      const route = this.techpubStore.getWebRoute(this.rn_update, formData);
       axios({
         url: route.url,
         method: route.method[0],
@@ -58,6 +60,12 @@ export default {
     }
   },
   mounted(){
+    if(this.$props.routeNameCreate) {
+      this.rn_create = this.$props.routeNameCreate;
+    }
+    if(this.$props.routeNameUpdate) {
+      this.rn_update = this.$props.routeNameUpdate;
+    }
     this.attachEditor(this.$props.text ? this.$props.text : this.techpubStore.readText);
   }
 }
@@ -68,6 +76,7 @@ export default {
 }
 </style>
 <template>
+  <h1>{{ $props.title }}</h1>
   <form @submit.prevent="submit($route.params.filename)">
     <h1>XML Editor</h1>
     <div v-show="showEditor" class="h-max mt-3">

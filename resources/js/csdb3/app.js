@@ -6,7 +6,7 @@ import Routes from "./routers.js";
 import axios from 'axios';
 import { createPinia } from 'pinia';
 import References from '../techpub/References';
-import {useTechpubStore} from  '../techpub/techpubStore';
+import { useTechpubStore } from '../techpub/techpubStore';
 
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -28,12 +28,18 @@ csdb.use({
   }
 });
 
-
+await axios.get('/auth/check')
+  .then(response => useTechpubStore().Auth = response.data)
+  .catch(response => {
+    window.location.href = "/login";
+  });
 // sebelum mounting app, akan request all Routes dulu
 await axios.get('/getAllRoutes')
   .then(response => {
     useTechpubStore().WebRoutes = response.data;
-  })
+  });
+
+
 csdb.mount('#body');
 
 

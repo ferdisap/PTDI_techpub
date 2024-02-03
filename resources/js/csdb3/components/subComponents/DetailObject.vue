@@ -8,10 +8,14 @@ export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
-      transformed: undefined,
       show: 'stage',
-      raw: undefined,
       model: {},
+      
+      transformed: undefined,
+      raw: undefined,
+      srcblob: '', // blob URL
+      typeblob: '',
+      
     }
   },
   computed: {
@@ -97,31 +101,44 @@ export default {
   mounted(){
     if(['DML', 'CSL'].includes(this.$route.params.filename.substr(0,3))){
       return;
-    }
-    let route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename, ignoreError:1});
-    axios({
-      url: route.url,
-      method: route.method[0],
-      data: route.params,
-    })
-    .then(response => {
-      this.transformed = response.data.file;
-      if(response.data.messages){
-        this.$root.success(response,false);
+    } 
+    else {
+      let route;
+      if(this.$route.params.filename.substr(0,3) != 'ICN'){
+        route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename, ignoreError:1});
+        axios({
+          url: route.url,
+          method: route.method[0],
+          data: route.params,
+        })
+        .then(response => {
+          let text = response.data.file;
+          text = text.replace("\\r", "\r");
+          text = text.replace("\\n", "\n");
+          this.transformed = text;
+          if(response.data.messages){
+            this.$root.success(response,false);
+          }
+        })
+        .catch(error => this.$root.error(error));
       }
-    })
-    .catch(error => this.$root.error(error));
-
-    route = this.techpubStore.getWebRoute('api.get_object',{filename: this.$route.params.filename});
-    axios({
-      url: route.url,
-      method: route.method[0],
-      data: route.params,
-    })
-    .then(response => {
-      this.raw = response.data;
-    })
-    .catch(error => this.$root.error(error));
+  
+      route = this.techpubStore.getWebRoute('api.get_object',{filename: this.$route.params.filename});
+      axios({
+        url: route.url,
+        method: route.method[0],
+        data: route.params,
+        responseType: 'blob'
+      })
+      .then(async (response) => {
+        this.typeblob = response.headers.getContentType();
+        if(this.typeblob.includes('xml')){
+          this.raw = await response.data.text();
+        }
+        this.srcblob = URL.createObjectURL(await response.data);
+      })
+      .catch(error => this.$root.error(error));
+    }
   },
 }
 </script>
@@ -142,5 +159,7 @@ export default {
   <!-- EDITOR -->
   <Editor v-if="show == 'editor'" :text="raw" :is-create="false"/>
 
+  <a class="underline text-blue-600" :href="srcblob" :download="$route.params.filename">download here..</a>
   <component :is="dynamic" v-if="transformed" />
+  <embed v-else :type="typeblob" :src="srcblob" class="w-full"/>
 </template>

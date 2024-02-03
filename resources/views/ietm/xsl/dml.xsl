@@ -45,19 +45,26 @@
       <!-- dmlStatus -->
       <tr>
         <td><b>Security Classification:</b></td>
-        <td><xsl:value-of select="dmlStatus/security/@securityClassification"/></td>
+        <td>
+          <input name="ident-securityClassification" value="{dmlStatus/security/@securityClassification}"/>
+        </td>
       </tr>
       <tr>
         <td><b>Brex DM Ref:</b></td>
-        <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', //dmlStatus/descendant::brexDmRef/dmRef/dmRefIdent)"/></td>
+        <td>
+          <input name="ident-brexDmRef" value="{php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', //dmlStatus/descendant::brexDmRef/dmRef/dmRefIdent)}"/>
+        </td>
       </tr>
       <tr>
         <td><b>Remarks</b>
         </td>
         <td>
-          <xsl:for-each select="//dmlStatus/remarks/simplePara">
-            <span><xsl:value-of select="."/></span> <br/>
-          </xsl:for-each>
+          <textarea name="ident-remarks">
+            <xsl:for-each select="//dmlStatus/remarks/simplePara">
+              <!-- <xsl:value-of select="string(.)"/> -->
+              <xsl:value-of select="php:function('nl2br',string(.))"/>
+            </xsl:for-each>
+          </textarea>
         </td>
       </tr>
     </table>
@@ -80,7 +87,7 @@
       <th> Remarks <Sort/> </th>
     </tr>
     <tr class="add_dmlEntry">
-      <td><button class="material-icons" type="button" click="add_dmlEntry_row_first()">add</button></td>
+      <td><button class="material-icons" type="button" onclick="add_dmlEntry_row_first()">add</button></td>
     </tr>
     <xsl:for-each select="dmlEntry">
       <tr class="dmlEntry">
@@ -90,11 +97,7 @@
           </textarea>
         </td>
         <td>
-          <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]">
-            <xsl:attribute name="value" select="@dmlEntryType"/>
-          </input> | <input class="dmlEntry-issueType w-2/5" name="issueType[]">
-            <xsl:attribute name="value" select="@issueType"/>
-          </input>
+          <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]" value="{@dmlEntryType}"/> | <input class="dmlEntry-issueType w-2/5" name="issueType[]" value="{@issueType}"/>
         </td>
         <td>
           <input class="dmlEntry-securityClassification w-full" name="securityClassification[]" value="{security/@securityClassification}"/>

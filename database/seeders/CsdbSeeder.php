@@ -30,9 +30,22 @@ class CsdbSeeder extends Seeder
     //   }
     // }
 
-    $icn = Csdb::where('filename', 'like', 'ICN%')->get();
-    foreach($icn as $file){
-      $file->setRemarks('stage', 'unstaged');
+    // $icn = Csdb::where('filename', 'like', 'ICN%')->get();
+    // foreach($icn as $file){
+    //   $file->setRemarks('stage', 'unstaged');
+    // }
+    for ($i = 1000; $i < 10000; $i++) {
+      Csdb::create([
+        'filename' => "DMC-{$i}_foo",
+        'path' => 'csdb',
+        'editable' => 1,
+        'initiator_id' => 1,
+        'remarks' => json_encode([
+          'aaaaaaaaaaa' => 'foooooooo',
+          'bbbb' => 'foooooooo',
+          'cccc' => 'foooooooo',
+        ]),
+      ]);
     }
   }
 }

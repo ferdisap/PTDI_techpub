@@ -62,6 +62,8 @@ export const useTechpubStore = defineStore('useTechpubStore', {
        * untuk csdb3
        */
       BREXList:[],
+      BRDPList:[],
+      // BRList:[],
 
       /**
        * untuk csdb3

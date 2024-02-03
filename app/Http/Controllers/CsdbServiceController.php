@@ -30,20 +30,29 @@ class CsdbServiceController extends CsdbController
   /**
    * $ignoreError=1 is needed when you want to send message if any error exist while transforming is success
    */
-  public function provide_csdb_transform3(Request $request)
+  public function provide_csdb_transform3(Request $request, string $filename)
   {
-    $filename = $request->route('filename');
-    if(!$filename) return $this->ret2(400, ['Filename must be true provided.']);
-
     if(!($csdb_model = Csdb::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} cannot transformed."]);
     $csdb_dom = MpubCSDB::importDocument(storage_path($csdb_model->path),$filename);
 
     if($csdb_dom instanceof ICNDocument){
       // saat ini belum bisa baca file 3D (step,igs,stl,etc)karena mime nya tidak dikenal
-      $mime = $csdb_dom->getFileinfo()['mime_type'];
-      $file = $csdb_dom->getFile();
-      return $this->ret2(200,["Transform Success"], ['file' => $file, 'mime' => $mime]);
-    } 
+      // $mime = $csdb_dom->getFileinfo()['mime_type'];
+      // $file = $csdb_dom->getFile();
+      // return Storage::disk('csdb')->download($filename, null, [
+      //   "Content-Type" => $mime,
+      // ]);
+      // return $file;
+      // return $this->ret2(200,["Transform Success"], ['file' => $file, 'mime' => $mime]);
+      // $ret = Response::make($file,200,[
+      //   // 'Content-Type' => $mime, // untuk display
+      //   'Content-Type' => 'plain/text', // untuk download dan display
+      // ]);
+      // return $ret;
+      // return $this->ret2(200,["Transform Success"], ['file' => base64_encode($file), 'mime' => $mime]);
+      return;
+    }
+    if(!$csdb_dom) return $this->ret2(400, ["failed to transform {$filename}."]);
     $csdb_model->DOMDocument = $csdb_dom;
     $csdb_model->objectpath = "/api/csdb";
     $transformed = $csdb_model->transform_to_xml(resource_path("views/ietm/xsl/"));

@@ -18,7 +18,12 @@ class DmlController extends Controller
     return view("dml.app");
   }
 
-  public function get(Request $request)
+  // public function get(Request $request)
+  // {
+  //   $dmls = Csdb::with('initiator')->where('filename', 'like' ,"DML-%")->get();
+  //   return $dmls;
+  // }
+  public function get_list(Request $request)
   {
     $dmls = Csdb::with('initiator')->where('filename', 'like' ,"DML-%")->get();
     return $dmls;
@@ -348,15 +353,26 @@ class DmlController extends Controller
     return $csl_models;
   }
 
-  public function dmlcontentupdate(Request $request, string $filename)
+  // public function dmlcontentupdate(Request $request, string $filename)
+  public function dmlupdate(Request $request, string $filename)
   {
+    
     $dml_model = Dml::where('filename', $filename)->first();
     if($request->user()->id != $dml_model->initiator_id) return $this->ret(400, ["Only Initiator DML can do an update."]);
     $dml_model->DOMDocument = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
-    
+    $dml_model->direct_save = false;
+
     $request->validate([
-      'entryIdent' => 'required'
+      'entryIdent' => 'required',
     ]);
+
+    // #0. update identAndStatusSection
+    $ident = [
+      'securityClassification' => $request->get('ident-securityClassification'),
+      'brexDmRef' => $request->get('ident-brexDmRef'),
+      'remarks' => $request->get('ident-remarks'),
+    ];
+    $dml_model->updateIdentAndStatusSection($ident);
 
     $entryIdents = $request->get('entryIdent');
     $dmlEntryTypes = $request->get('dmlEntryType');
@@ -372,7 +388,7 @@ class DmlController extends Controller
       $dmlContent->firstElementChild->remove();
     }
     $dml_model->DOMDocument->saveXML();
-    $dml_model->direct_save = false;
+    // $dml_model->direct_save = false;
     foreach($entryIdents as $pos => $entryIdent){
       $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
       $otherOptions = [

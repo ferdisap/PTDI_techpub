@@ -25,10 +25,10 @@ export default {
 }
 </script>
 <template>
-  <div v-if="!$props.isInEditing" class="mb-3">
+  <!-- <div v-if="!$props.isInEditing" class="mb-3">
     <button @click="(showDML = (showDML == 'createDML' ? !showDML : 'createDML'))" :class="[showDML == 'createDML' ? 'border-b-black border-b-4' : '' ,'button-nav']">Create DML</button>
     <CreateDML v-if="showDML == 'createDML'"/>
-  </div>
+  </div> -->
 
 
   <div class="IndexDML">

@@ -32,7 +32,7 @@ class Dml extends ModelsCsdb
 
     $dom = new \DOMDocument('1.0', 'UTF-8');
     $dml = $dom->createElement('dml');
-    $dml->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation', './dml.xsd');
+    $dml->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation', './dml.xsd');
     $dom->appendChild($dml);
 
     $identAndStatusSection = $dom->importNode($identAndStatusSection->documentElement, true);
@@ -57,13 +57,54 @@ class Dml extends ModelsCsdb
   }
 
   /**
+   * untuk update identAndStatusSection
+   */
+  public function updateIdentAndStatusSection($data = [])
+  {
+    $domXpath = new \DOMXpath($this->DOMDocument);
+    foreach ($data as $key => $value) {
+      if ($key == 'securityClassification') {
+        $security = $domXpath->evaluate("//identAndStatusSection/dmlStatus/security")[0];
+        $security->setAttribute('securityClassification', str_pad((int)$value, 2, '0', STR_PAD_LEFT));
+      } elseif ($key == 'brexDmRef') {
+        $new_dmRef_string = Helper::decode_dmIdent($value)['xml_string'];
+        $new_dmRef = new \DOMDocument();
+        $new_dmRef->loadXML($new_dmRef_string);
+        $new_dmRef = $this->DOMDocument->importNode($new_dmRef->documentElement, true);
+
+        $old_dmRef = $domXpath->evaluate("//identAndStatusSection/dmlStatus/brexDmRef/dmRef")[0];
+        $old_dmRef->replaceWith($new_dmRef);
+      } elseif ($key == 'remarks') {
+        $paras = preg_split("/[\r\n]+/", $value);
+        if (!empty($paras)) {
+          $old_remarks = $domXpath->evaluate("//identAndStatusSection/dmlStatus/remarks")[0];
+          $new_remarks = $this->DOMDocument->createElement('remarks');
+          foreach ($paras as $para) {
+            $simplePara = $this->DOMDocument->createElement('simplePara');
+            $simplePara->nodeValue = $para;
+            $new_remarks->appendChild($simplePara);
+          }
+          $old_remarks->replaceWith($new_remarks);
+        }
+      }
+      $filename = CSDB::resolve_DocIdent($this->DOMDocument);
+      if ($this->direct_save) {
+        if ($this->DOMDocument->C14NFile(storage_path("csdb/{$filename}"))) {
+          $this->save();
+          return true;
+        }
+      }
+    }
+  }
+
+  /**
    * @param Array $data berasal dari Helper::decode...;
    * @return string ancestor::dmlEntry element
    */
   public static function generate_xpath_for_dmlEntry_checking($data = [], $codeType, $useIssueInfo = false, $useLanguage = false)
   {
-    if($codeType == 'infoEntityIdent'){
-      $infoEntityRefIdent = $data['prefix']. join("-",$data[$codeType]). $data['extension'];
+    if ($codeType == 'infoEntityIdent') {
+      $infoEntityRefIdent = $data['prefix'] . join("-", $data[$codeType]) . $data['extension'];
       return "//infoEntityRef[@infoEntityRefIdent='{$infoEntityRefIdent}']/ancestor::dmlEntry";
     }
     $check = [];
@@ -121,7 +162,7 @@ class Dml extends ModelsCsdb
     $check_to_alldmls = function () use ($ident, $entryIdent) {
       $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
       $modelIdentCode = $ident[$codeType]['modelIdentCode'];
-      $alldmls = ModelsCsdb::where('filename','not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
+      $alldmls = ModelsCsdb::where('filename', 'not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
       // $xpath = $xpath($ident, $codeType);
       $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType);
       // $results = [];
@@ -188,14 +229,14 @@ class Dml extends ModelsCsdb
     // #5. add securityClassification
     if ($securityClassification) {
       $security = $dml_dom->createElement('security');
-      $security->setAttribute('securityClassification', str_pad($securityClassification, 2, '0', STR_PAD_LEFT));
+      $security->setAttribute('securityClassification', str_pad((int)$securityClassification, 2, '0', STR_PAD_LEFT));
       // selanjutnya tambah commercialSecurityAttGroup
       // selanjutnya tambah derivativeClassificationRefId
       $dmlEntry->appendChild($security);
     }
 
     // validasi enterpriseName dan create responsiblePartnerCompany
-    if(!$responsiblePartnerCompany[0]) return [false, "{$entryIdent} must have enterprise name as responsible partner company."];
+    if (!$responsiblePartnerCompany[0]) return [false, "{$entryIdent} must have enterprise name as responsible partner company."];
     $rspc = $dml_dom->createElement('responsiblePartnerCompany');
     $enterpriseName = $dml_dom->createElement('enterpriseName');
     $enterpriseName->nodeValue = $responsiblePartnerCompany[0];
@@ -210,7 +251,7 @@ class Dml extends ModelsCsdb
     $rmks = $dml_dom->createElement('remarks');
     foreach ($remarks as $text) {
       $smp = preg_split("/[\r\n]+/", $text);
-      foreach ($smp as $txt){
+      foreach ($smp as $txt) {
         $simplePara = $dml_dom->createElement('simplePara');
         $simplePara->nodeValue = $txt;
         $rmks->appendChild($simplePara);

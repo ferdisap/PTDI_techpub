@@ -10,7 +10,8 @@ import Upload from './components/subComponents/Upload.vue';
 import Editor from './components/subComponents/Editor.vue';
 import IndexObject from './components/subComponents/IndexObject.vue';
 import PushToStage from './components/subComponents/PushToStage.vue';
-import IndexBREX from './components/subComponents/IndexBREX.vue';
+import IndexBR from './components/subComponents/IndexBR.vue';
+import CreateDML from './components/subComponents/CreateDML.vue';
 
 export default [
   {
@@ -22,11 +23,34 @@ export default [
     name: 'IndexObject',
     path: '/csdb3/IndexObject',
     component: IndexObject,
+    props: {filter: ''}
+  },
+  {
+    name: 'InEditting-IndexObject',
+    path: '/csdb3/InEditting-IndexObject',
+    component: IndexObject,
+    props: {filter: 'inEditting'}
   },
   {
     name: 'DetailDML',
     path: '/csdb3/dml/:filename',
     component: DetailDML
+  },
+  {
+    name: 'IndexBR',
+    path: '/csdb3/indexBR',
+    component: IndexBR,
+  },
+  {
+    name: 'CreateBR',
+    path: '/csdb3/createBR',
+    component: Editor,
+    props:{routeNameCreate: 'api.create_br', title: 'Create Business Rule'}
+  },
+  {
+    name: 'CreateDML',
+    path: '/csdb3/createDML',
+    component: CreateDML,
   },
 
   // commit
@@ -41,15 +65,10 @@ export default [
     component: DetailBREX
   },
   {
-    name: 'Committing-IndexDML',
-    path: '/csdb3/commit-indexDML',
+    name: 'IndexDML',
+    path: '/csdb3/indexDML',
     component: IndexDML,
     props: {isInEditing: false}
-  },
-  {
-    name: 'Committing-IndexBREX',
-    path: '/csdb3/commit-indexBREX',
-    component: IndexBREX,
   },
 
   // stage

@@ -12,6 +12,7 @@ use DOMNode;
 use DOMXPath;
 use Gumlet\ImageResize;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -158,36 +159,55 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
   }
 
-  public function get(Request $request)
+  /**
+   * filter by initiator_email
+   * filter by stage
+   */
+  public function get_objects_list(Request $request)
   {
-    $masterCSDB = true; // $request->user()->masterCSDB ?? false
-    if($masterCSDB){
-      $all = ModelsCsdb::where('initiator_id','like','%');
-    } else {
-      $all = ModelsCsdb::where('initiator_id',$request->user()->id);
+    // $masterCSDB = true; // $request->user()->masterCSDB ?? false
+    // if($masterCSDB){
+    //   $all = ModelsCsdb::where('initiator_id','like','%');
+    // } else {
+    //   $all = ModelsCsdb::where('initiator_id',$request->user()->id);
+    // }
+    $all = ModelsCsdb::with('initiator');
+    if($request->get('initiator_email')){
+      $initiator = User::where('email',$request->get('initiator_email'))->first();
+      if($initiator){
+        $all->where('initiator_id',$initiator->id);
+      }
     }
-    return $all
+    if($request->get('stage')){
+      $all->where('remarks','"stage":"staged"');
+    }
+    $ret = $all
       ->where('filename','not like', 'DML%')
       ->where('filename','not like', 'CSL%')
-      ->get();
+      ->paginate(15);
+    $ret->setPath($request->getUri());
+    return $ret;
   }
 
   /**
    * $request->get('output') = "'model'|default:''";
    * @return Illuminate\Support\Facades\Response;
    */
-  public function getFile(Request $request)
+  public function getFile(Request $request, string $filename)
   {
-    $filename = $request->route('filename');
     $csdb_object = ModelsCsdb::where('filename', $filename)->first();
     if($request->get('output') == 'model'){
       return $csdb_object;
     }
     $dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
-    if($dom instanceof ICNDocument){
+    if(!$dom) {
+      return $this->ret2(400, ["failed to load {$filename}."]);
+    }
+    elseif($dom instanceof ICNDocument){
       $mime = $dom->getFileinfo()['mime_type'];
       return Response::make($dom->getFile(),200, ['Content-Type' => $mime]);
-    } else {
+    }
+    else {
       return Response::make($dom->C14N(),200,['Content-Type' => 'text/xml']);
     }
   }

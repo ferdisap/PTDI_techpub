@@ -20,7 +20,6 @@ class BrexController extends Controller
   public function create(Request $request)
   {
     // sementara pakai CSdbController@create dulu
-
   }
 
   ######## new by VUE ########

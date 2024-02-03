@@ -2,7 +2,7 @@
 import { useTechpubStore } from '../../techpub/techpubStore';
 import CreateDML from '../components/subComponents/CreateDML.vue';
 import IndexDML from '../components/subComponents/IndexDML.vue';
-import IndexBREX from '../components/subComponents/IndexBREX.vue';
+import IndexBR from '../components/subComponents/IndexBR.vue';
 
 export default {
   data(){
@@ -11,7 +11,7 @@ export default {
       showDML: '',
     }
   },
-  components: {CreateDML, IndexDML, IndexBREX},
+  components: {CreateDML, IndexDML, IndexBR},
 }
 </script>
 <template>
@@ -27,7 +27,7 @@ export default {
       <IndexDML/>
     </div>
     <div class="mb-3">
-      <IndexBREX/>
+      <IndexBR/>
     </div>
 
   </div>
