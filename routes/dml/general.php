@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get("/dml/{view?}",[DmlController::class, 'app'])->middleware('auth')->name('get_dml_app');
 
-Route::get("/api/dml/all",[DmlController::class, 'get'])->middleware('auth')->name('api.get_dml_list'); // nanti tidak dipakai lagi
+// Route::get("/api/dml/all",[DmlController::class, 'get'])->middleware('auth')->name('api.get_dml_list'); // nanti tidak dipakai lagi
 Route::get("/api/dml/all",[DmlController::class, 'get_list'])->middleware('auth')->name('api.get_dml_list');
 
 // new for csdb3

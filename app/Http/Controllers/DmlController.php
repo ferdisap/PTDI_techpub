@@ -25,8 +25,16 @@ class DmlController extends Controller
   // }
   public function get_list(Request $request)
   {
-    $dmls = Csdb::with('initiator')->where('filename', 'like' ,"DML-%")->get();
-    return $dmls;
+    $dmls = Csdb::with('initiator');
+    if($request->get('filenameSearch')){
+      $dmls->where('filename', 'like', "%".$request->get('filenameSearch')."%");
+    }    
+    $ret = $dmls
+    ->where('filename', 'like' ,"DML-%")
+    ->paginate(15);
+    $ret->setPath($request->getUri());
+    // ->get();
+    return $ret;
   }
 
   /**
@@ -353,10 +361,11 @@ class DmlController extends Controller
     return $csl_models;
   }
 
-  // public function dmlcontentupdate(Request $request, string $filename)
+  /**
+   * CSL juga bisa di update di sini oleh user
+   */
   public function dmlupdate(Request $request, string $filename)
-  {
-    
+  {    
     $dml_model = Dml::where('filename', $filename)->first();
     if($request->user()->id != $dml_model->initiator_id) return $this->ret(400, ["Only Initiator DML can do an update."]);
     $dml_model->DOMDocument = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
@@ -388,8 +397,28 @@ class DmlController extends Controller
       $dmlContent->firstElementChild->remove();
     }
     $dml_model->DOMDocument->saveXML();
-    // $dml_model->direct_save = false;
     foreach($entryIdents as $pos => $entryIdent){
+      // validasi entryIdent
+      // jika entryIdent == 'DML/CSL' maka tidak perlu ada language di namanya
+      // jika filename yang diupdate == 'CSL' maka harus denga issueInfo dan language nya
+      $isCSL = substr($filename,0,3) == 'CSL' ? true : false ;
+      // kalau entryIdent DML/CSL
+      // dan (kalau ini file ini CSL, count_ident harus terdiri dari code, issueInfo (2) || kalau file ini DML, count ident hanya terdiri dari code saja (1))
+      if(in_array(substr($entryIdent,0,3),['DML','CSL'])){
+        $count_ident = count(explode("_",$entryIdent));
+        if(($isCSL AND $count_ident != 2) OR (!$isCSL AND $count_ident !=1)){
+          return $this->ret2(400, ["{$filename} is wrong rule."]);
+        }
+      } 
+      else {
+        // kalau entryIdent bukan DML/CSL (DMC, PMC, etc)
+        // dan (kalau ini file ini CSL, count_ident harus terdiri dari code, issueInfo, language (3) || kalau file ini DML, count ident hanya terdiri dari code saja (1))
+        $count_ident = count(explode("_",$entryIdent));
+        if(($isCSL AND $count_ident != 3) OR (!$isCSL AND $count_ident !=1)){
+          return $this->ret2(400, ["{$filename} is wrong rule."]);
+        }
+      }
+      
       $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
       $otherOptions = [
         'issueType' => $issueTypes[$pos],

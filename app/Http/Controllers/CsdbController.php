@@ -162,6 +162,7 @@ class CsdbController extends Controller
   /**
    * filter by initiator_email
    * filter by stage
+   * filter by filenameSearch
    */
   public function get_objects_list(Request $request)
   {
@@ -180,6 +181,9 @@ class CsdbController extends Controller
     }
     if($request->get('stage')){
       $all->where('remarks','"stage":"staged"');
+    }
+    if($request->get('filenameSearch')){
+      $all->where('filename', 'like', "%".$request->get('filenameSearch')."%");
     }
     $ret = $all
       ->where('filename','not like', 'DML%')

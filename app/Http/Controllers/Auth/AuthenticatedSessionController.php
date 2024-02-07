@@ -30,9 +30,16 @@ class AuthenticatedSessionController extends Controller
 
     $request->session()->regenerate();
 
+    if($request->ajax()){
+      return $this->ret2(200, ["Login success"],['redirect' => '']);
+    }
+
     $previous_route = app('router')->getRoutes()->match($request->create(url()->previous()));
     if(in_array('guest', $previous_route->gatherMiddleware())){
-      return redirect()->intended(RouteServiceProvider::HOME);
+      // return redirect()->intended(RouteServiceProvider::HOME);
+      // return redirect()->intended(RouteServiceProvider::WELCOME);
+      // return redirect()->intended(RouteServiceProvider::CSDB);
+      return redirect()->route("welcome");
     } else {
       return back()->withInput();
     }
@@ -41,14 +48,18 @@ class AuthenticatedSessionController extends Controller
   /**
    * Destroy an authenticated session.
    */
-  public function destroy(Request $request): RedirectResponse
+  public function destroy(Request $request)
   {
-    
     Auth::guard('web')->logout();
     
     $request->session()->invalidate();
     
     $request->session()->regenerateToken();
+   
+    // jika request ajax
+    if($request->ajax()){
+      return $this->ret2(200, ["Logout success"], ["redirect" => '']);
+    }
     
     // jika previous route harus autentikasi dulu (eg: route('login)) maka ke HOME (dashboard)
     // jika previous route tidak harus auntentikasi (guest misalnya) maka back() saja

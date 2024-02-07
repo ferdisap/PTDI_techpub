@@ -113,6 +113,7 @@ export default {
   },
   methods: {
     submit(commitOrIssue) {
+      this.techpubStore.showLoadingBar = true;
       let routename;
       if (commitOrIssue == 'commit') {
         routename = 'api.commit_dml';
@@ -134,13 +135,11 @@ export default {
         })
         .catch(error => this.$root.error(error));
     },
-    update() {
+    async update() {
       const formData = new FormData(event.target);
-      window.formData = formData;
       this.$root.showMessages = false;
-      // const route = this.techpubStore.getWebRoute('api.dmlcontentupdate', formData);
       const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
-      axios({
+      await axios({
         url: route.url,
         method: route.method[0],
         data: formData,

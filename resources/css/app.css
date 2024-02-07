@@ -9,12 +9,35 @@
   src: url("./tahoma.ttf");
 }
 
+.loading_buffer {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  width:100px;
+  height:100px;
+  top:calc(50% - 50px);
+  left:calc(50% - 50px);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .material-symbols-outlined {
   font-variation-settings:
   'FILL' 0,
   'wght' 400,
   'GRAD' 0,
   'opsz' 24
+}
+
+/* font-xl */
+* {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
 }
 
 
@@ -86,7 +109,7 @@ h6 {
   padding: revert;
 }
 
-.detail-container a {
+p a, .detail-container a {
   color: revert;
   text-decoration: revert;
   -webkit-text-decoration: revert;
@@ -117,6 +140,9 @@ h6 {
   .button-violet {
     @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-violet-400 hover:bg-violet-600 rounded-full
   }
+  .button-primary {
+    @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-blue-500 hover:bg-blue-700 rounded-full
+  }
   .button-safe {
     @apply text-white py-1 px-3 font-semibold shadow-sm mx-2 bg-green-400 hover:bg-green-600 rounded-full
   }
@@ -146,3 +172,33 @@ h6 {
     @apply flex items-center focus rounded-lg p-1
   }
 }
+
+/* Dropdown */
+@layer componentns {
+  .dropdown {
+    @apply relative inline-block
+  }
+  .dropdown-content {
+    @apply absolute bg-neutral-100 min-w-40 shadow-lg py-3 z-10 rounded-sm
+  }
+  .dropdown-menu {
+    @apply px-4 py-2 block hover:bg-blue-600 hover:text-white cursor-pointer
+  }
+}
+
+
+
+/* .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+  border-radius: ;
+} */

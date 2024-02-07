@@ -74,6 +74,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
        * digunakan saat Upload.vue ke Editor.vue
        */
       readText: '',
+
+      /** pengganti fitur di App.vue */
+      isSuccess: true,
+      errors: undefined,
+      message: undefined,
       
     }
   },
@@ -121,105 +126,104 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       return route;
 
     },
-    async setProject() {
-      if (this.Project.length == 0) {
-        this.showLoadingBar = true;
-        let url = this.getWebRoute('api.get_index_project').path;
-        let response = await axios.get(url)
-        if (response.statusText === 'OK') {
-          this.Project = response.data;
-        }
-        this.showLoadingBar = false;
-      }
-    },
+    // async setProject() {
+    //   if (this.Project.length == 0) {
+    //     this.showLoadingBar = true;
+    //     let url = this.getWebRoute('api.get_index_project').path;
+    //     let response = await axios.get(url)
+    //     if (response.statusText === 'OK') {
+    //       this.Project = response.data;
+    //     }
+    //     this.showLoadingBar = false;
+    //   }
+    // },
 
     /**
-     * 
      * @param {string} projectName 
      * @param {Object} data 
      */
-    setObjects(projectName, data) {
-      this.Project.find(v => v.name = projectName).objects = data;
-    },
+    // setObjects(projectName, data) {
+    //   this.Project.find(v => v.name = projectName).objects = data;
+    // },
 
     /**
      * get Project
      * @param {string} projectName 
      * @returns object
      */
-    project(projectName) {
-      return this.Project.find(v => v.name == projectName);
-    },
+    // project(projectName) {
+    //   return this.Project.find(v => v.name == projectName);
+    // },
 
     /**
      * get objects from project
      */
-    object(projectName, filename) {
-      let pr = this.project(projectName);
-      if (!pr) {
-        return false;
-      }
-      else if (!pr.objects) {
-        return false;
-      }
-      else {
-        return pr.objects.find(v => v.filename == filename);
-      }
-    },
+    // object(projectName, filename) {
+    //   let pr = this.project(projectName);
+    //   if (!pr) {
+    //     return false;
+    //   }
+    //   else if (!pr.objects) {
+    //     return false;
+    //   }
+    //   else {
+    //     return pr.objects.find(v => v.filename == filename);
+    //   }
+    // },
 
     /**
      * sort object
      */
-    sortObjects(projectName, key, ascending = true) {
-      let objects = this.project(projectName).objects;
+    // sortObjects(projectName, key, ascending = true) {
+    //   let objects = this.project(projectName).objects;
 
-      // karena objects[i]['initiator'] = {name: '...', email: '...'}
-      if ((key == 'name')) {
-        let sorted_array = Object.entries(objects).sort((a, b) => {
-          const sortA = a[1][key]['name'].toUpperCase();
-          const sortB = b[1][key]['name'].toUpperCase();
-          if (ascending) {
-            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
-          } else {
-            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
-          }
-        });
-        for (let i = 0; i < sorted_array.length; i++) {
-          this.project(projectName).objects[i] = sorted_array[i][1];
-        }
-      }
-      else if ((key == 'title')) {
-        let sorted_array = Object.entries(objects).sort((a, b) => {
-          const sortA = a[1]['remarks'][key].toUpperCase();
-          const sortB = b[1]['remarks'][key].toUpperCase();
-          if (ascending) {
-            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
-          } else {
-            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
-          }
-        });
-        for (let i = 0; i < sorted_array.length; i++) {
-          this.project(projectName).objects[i] = sorted_array[i][1];
-        }
-      }
-      else {
-        let sorted_array = Object.entries(objects).sort((a, b) => {
-          if (!(a[1][key] && b[1][key])) {
-            return 0;
-          }
-          const sortA = a[1][key].toUpperCase();
-          const sortB = b[1][key].toUpperCase();
-          if (ascending) {
-            return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
-          } else {
-            return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
-          }
-        });
-        for (let i = 0; i < sorted_array.length; i++) {
-          this.project(projectName).objects[i] = sorted_array[i][1];
-        }
-      }
-    },
+    //   // karena objects[i]['initiator'] = {name: '...', email: '...'}
+    //   if ((key == 'name')) {
+    //     let sorted_array = Object.entries(objects).sort((a, b) => {
+    //       const sortA = a[1][key]['name'].toUpperCase();
+    //       const sortB = b[1][key]['name'].toUpperCase();
+    //       if (ascending) {
+    //         return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+    //       } else {
+    //         return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+    //       }
+    //     });
+    //     for (let i = 0; i < sorted_array.length; i++) {
+    //       this.project(projectName).objects[i] = sorted_array[i][1];
+    //     }
+    //   }
+    //   else if ((key == 'title')) {
+    //     let sorted_array = Object.entries(objects).sort((a, b) => {
+    //       const sortA = a[1]['remarks'][key].toUpperCase();
+    //       const sortB = b[1]['remarks'][key].toUpperCase();
+    //       if (ascending) {
+    //         return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+    //       } else {
+    //         return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+    //       }
+    //     });
+    //     for (let i = 0; i < sorted_array.length; i++) {
+    //       this.project(projectName).objects[i] = sorted_array[i][1];
+    //     }
+    //   }
+    //   else {
+    //     let sorted_array = Object.entries(objects).sort((a, b) => {
+    //       if (!(a[1][key] && b[1][key])) {
+    //         return 0;
+    //       }
+    //       const sortA = a[1][key].toUpperCase();
+    //       const sortB = b[1][key].toUpperCase();
+    //       if (ascending) {
+    //         return sortA < sortB ? 1 : (sortA > sortB ? -1 : 0);
+    //       } else {
+    //         return sortA < sortB ? -1 : (sortA > sortB ? 1 : 0);
+    //       }
+    //     });
+    //     for (let i = 0; i < sorted_array.length; i++) {
+    //       this.project(projectName).objects[i] = sorted_array[i][1];
+    //     }
+    //   }
+    // },
 
     /**
      * untuk form input name
@@ -231,6 +235,20 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       if (err) {
         return err[name];  // return array ['text1', 'text2', ...] 
       }
+    },
+
+    /** pengganti fitur pada App.vue */
+    async set_error(axiosError) {
+      axiosError.response.data.errors ? (this.errors = axiosError.response.data.errors) : (this.errors = undefined);
+      axiosError.response.data.message ? (this.message = axiosError.message + ': ' + axiosError.response.data.message) : (this.message = axiosError.message);
+      this.isSuccess = false;
+      this.showLoadingBar = false;
+    },
+    set_success(response, isSuccess = true) {
+      this.errors = undefined;
+      this.isSuccess = true;
+      this.message = response.data.message ? response.data.message : '';
+      this.showLoadingBar = false;
     },
 
     // return src:blob untuk ICN atau blob.text() jika xml

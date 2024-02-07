@@ -3,6 +3,7 @@
     {{-- @dump(session('status')) --}}
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    <h2 class="text-center mb-3">LOGIN FORM</h2>
     <form method="POST" action="{{ route('login') }}">
         @csrf
 

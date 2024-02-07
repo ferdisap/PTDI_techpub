@@ -9,7 +9,8 @@ export default {
     return {
       techpubStore: useTechpubStore(),
       dmlEntryList: [],
-      cslEntryList: []
+      cslEntryList: [],
+      filename: ''
     }
   },
   components:{Sort},
@@ -74,6 +75,7 @@ export default {
     }
   },
   mounted() {
+    this.dmlfilename = this.$route.params.filename ? this.$route.params.filename : this.dmlfilename;
     const route = this.techpubStore.getWebRoute('api.get_csl_forstaging');
     axios({
       url: route.url,
@@ -113,7 +115,7 @@ export default {
       <div class="w-1/2">
         <label for="dmlFilename" class="block mb-2 text-gray-900 dark:text-white text-lg font-bold">DML</label>
         <span>The DML is required to be filled.</span>
-        <input type="text" id="dmlFilename" name="filename" :value="$route.params.filename"
+        <input type="text" id="dmlFilename" name="filename" v-model="filename"
           placeholder="type the DML file.."
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         <div class="text-red-600" v-html="techpubStore.error('filename')"></div>

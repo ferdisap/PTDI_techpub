@@ -9,6 +9,9 @@ export default {
       page: ref(1),
       responsedata_get_objects_list: undefined, // {}
       currentRouteName: '',
+      filenameSearch: '',
+
+
     }
   },
   props: {
@@ -18,7 +21,9 @@ export default {
     get_list(url = undefined, method = 'GET') {
       let send;
       if(!url){
-        let params = {};
+        let params = {
+          filenameSearch: this.filenameSearch
+        };
         if(this.$props.filter == 'inEditting') {
           params.initiator_email = this.techpubStore.Auth.email;
         } else {
@@ -68,22 +73,26 @@ export default {
 </script>
 <template>
   <div v-if="responsedata_get_objects_list" class="w-full">
-    <h1>Index Object</h1>
+    <h1 class="mb-2">Index Object</h1>
+    <input @change="get_list()" v-model="filenameSearch" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <br/>
     <table class="table-cell">
       <thead class="h-10">
         <tr>
           <th>Filename</th>
           <th>Stage | Editable</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="obj in responsedata_get_objects_list.data">
           <td>
-            <a :href="techpubStore.getWebRoute('', { filename: obj.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">{{ obj.filename }}</a>
+            <a href="javascript:void(0)">{{ obj.filename }}</a>
           </td>
           <td>
             {{ obj.remarks.stage }} | {{ obj.editable ? 'yes' : 'no' }}
           </td>
+          <td><a class="material-icons text-blue-600" :href="techpubStore.getWebRoute('', { filename: obj.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a></td>
         </tr>
       </tbody>
     </table>

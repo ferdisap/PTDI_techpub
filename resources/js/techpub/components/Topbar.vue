@@ -1,12 +1,28 @@
 <script>
+import axios from 'axios';
 import { useTechpubStore } from '../../techpub/techpubStore'
+import { mount } from '@vue/test-utils';
 
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
+      openDropdown: false
     }
-  }
+  },
+  methods:{
+    // logout(params = {}){
+    //   let route = this.techpubStore.getWebRoute('logout', params);
+    //   window.router = this.$router;
+    //   axios({
+    //     url: route.url,
+    //     method: route.method[0],
+    //     data: route.params,
+    //   })
+    //   .then( response => window.location.href ="/")
+    //   .catch( e => this.$root.error(e));
+    // }
+  },
 }
 </script>
 
@@ -15,9 +31,19 @@ export default {
     <div class="pl-3">
       <a href="/" class="text-3xl">Technical Publication</a>
 
-      <span class="ml-5">
-        {{ techpubStore.Auth.name }}
-      </span>
+      <div class="ml-3 dropdown" v-if="techpubStore.Auth.name">
+        <button @click="openDropdown = !openDropdown">
+          {{ techpubStore.Auth.name }} <span class="material-symbols-outlined align-middle">keyboard_arrow_down</span>
+        </button>
+        <div v-show="openDropdown" class="dropdown-content text-black">
+          <div class="dropdown-menu"><a href="/profile">Profile</a></div>
+          <div class="dropdown-menu"><a href="/dashboard">Dashboard</a></div>
+          <div class="dropdown-menu"><a href="/csdb3">CSDB</a></div>
+          <hr/>
+          <div class="dropdown-menu"><a href="/logout">Logout</a></div>
+        </div>
+      </div>
+      <a class="ml-3" v-else :href="techpubStore.getWebRoute('login')['path']"> login here..</a>
     </div>
 
     <div class="flex text-xl">

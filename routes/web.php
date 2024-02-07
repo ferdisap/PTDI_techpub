@@ -26,11 +26,9 @@ use Spipu\Html2Pdf\Html2Pdf;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-Route::get('/', [Controller::class, 'index']);
+Route::get('/', [Controller::class, 'index'])->name('welcome');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', fn() => view('dashboard'))->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -65,7 +63,7 @@ Route::get('/brex', [BrexController::class, 'indexBrex']);
 // });
 
 // require __Dir__."/tcpdf/tcpdf.php";
-require __Dir__."/csdb/general.php";
+// require __Dir__."/csdb/general.php";
 require __Dir__."/csdb/service.php";
 require __Dir__."/project/general.php";
 require __Dir__."/ietm/general.php";

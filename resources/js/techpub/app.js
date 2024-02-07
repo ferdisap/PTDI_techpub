@@ -8,11 +8,10 @@ import { createPinia } from 'pinia';
 import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
-axios.defaults.withCredentials = true;
 window.axios = axios;
-
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
+axios.defaults.withCredentials = true;
 
 const csdb = createApp(App);
 const router = createRouter({
@@ -31,28 +30,16 @@ csdb.use({
 
 await axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)
-  .catch(response => window.location.href = "/login");
+  // .catch(response => window.location.href = "/login");
+  .catch(response => null);
 // sebelum mounting app, akan request all Routes dulu
 await axios.get('/getAllRoutes')
   .then(response => {
     useTechpubStore().WebRoutes = response.data;
   });
 
-  
-csdb.mount('#body');
 
-axios.interceptors.request.use(
-  (request) => {
-    useTechpubStore().showLoadingBar = true;
-    return request;
-  },
-);
-axios.interceptors.response.use(
-  (response) => {
-    useTechpubStore().showLoadingBar = false;
-    return response;
-  },
-);
+csdb.mount('#body');
 
 
 
