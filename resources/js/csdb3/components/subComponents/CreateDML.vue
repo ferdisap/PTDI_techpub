@@ -38,18 +38,18 @@ export default {
       <input type="hidden" value="p" name="dmlType"/>
 
       <!-- untuk Model Ident Code -->
-      <label for="modelIdentCode">Model Ident Code (Project)</label>
-      <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" />
+      <label for="modelIdentCode" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Model Ident Code (Project)</label>
+      <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" class="ml-3"/>
       <div class="text-red-600" v-html="techpubStore.error('modelIdentCode')"></div>
 
       <!-- Originator -->
-      <label for="originator">Sender / Originator CAGE Code</label>
-      <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" />
+      <label for="originator" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Sender / Originator CAGE Code</label>
+      <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" class="ml-3"/>
       <div class="text-red-600" v-html="techpubStore.error('originator')"></div>
   
       <!-- Security Classification -->
-      <label for="securityClassification">Choose Security Level</label>
-      <select name="securityClassification" id="securityClassification">
+      <label for="securityClassification" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Choose Security Level</label>
+      <select name="securityClassification" id="securityClassification" class="ml-3">
         <option value="">--Required to choose--</option>
         <option value="01">Unclassified</option>
         <option value="02">Restricted</option>
@@ -61,8 +61,8 @@ export default {
   
       <!-- BREX -->
       <br/>
-      <label for="brexDmRef">BREX Data Module Ref</label>
-      <input type="text" value="" name="brexDmRef" id="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" />
+      <label for="brexDmRef" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">BREX Data Module Ref</label>
+      <input type="text" value="" name="brexDmRef" id="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="ml-3" />
       <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>
       
       <!-- Remarks -->

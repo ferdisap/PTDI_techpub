@@ -22,6 +22,7 @@ export default {
   <div>
     <label for="remarks">Remarks <button @click.prevent="addRemarks()">+</button></label>
     <input type="text" value="" name="remarks[]" placeholder="eg.: this DML is intended for..." />
+    <!-- <textarea name="remarks[]">foo</textarea> -->
   </div>    
   <div class="text-red-600" v-html="techpubStore.error('remarks')"></div>
 </template>

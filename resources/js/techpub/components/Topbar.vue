@@ -36,11 +36,11 @@ export default {
           {{ techpubStore.Auth.name }} <span class="material-symbols-outlined align-middle">keyboard_arrow_down</span>
         </button>
         <div v-show="openDropdown" class="dropdown-content text-black">
-          <div class="dropdown-menu"><a href="/profile">Profile</a></div>
-          <div class="dropdown-menu"><a href="/dashboard">Dashboard</a></div>
-          <div class="dropdown-menu"><a href="/csdb3">CSDB</a></div>
+          <div class="dropdown-menu"><a class="block w-full" href="/profile">Profile</a></div>
+          <div class="dropdown-menu"><a class="block w-full" href="/dashboard">Dashboard</a></div>
+          <div class="dropdown-menu"><a class="block w-full" href="/csdb3">CSDB</a></div>
           <hr/>
-          <div class="dropdown-menu"><a href="/logout">Logout</a></div>
+          <div class="dropdown-menu"><a class="block w-full" href="/logout">Logout</a></div>
         </div>
       </div>
       <a class="ml-3" v-else :href="techpubStore.getWebRoute('login')['path']"> login here..</a>

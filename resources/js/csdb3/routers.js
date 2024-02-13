@@ -59,11 +59,11 @@ export default [
     path: '/csdb3/commit',
     component: Committing
   },
-  {
-    name: 'DetailBREX',
-    path: '/csdb3/commit/:filename',
-    component: DetailBREX
-  },
+  // {
+  //   name: 'DetailBREX',
+  //   path: '/csdb3/commit/:filename',
+  //   component: DetailBREX
+  // },
   {
     name: 'IndexDML',
     path: '/csdb3/indexDML',
@@ -89,31 +89,31 @@ export default [
     path: '/csdb3/edit/:filename',
     component: DetailObject
   },
-  {
-    name: 'DetailDML_inEditing',
-    path: '/csdb3/inediting/:filename',
-    component: DetailDML,
-    props: {isInEditing: true}
-  },
-  {
-    name: 'Editing-IndexDML',
-    path: '/csdb3/edit-indexDML',
-    component: IndexDML,
-    props: {isInEditing: true}
-  },
+  // {
+  //   name: 'DetailDML_inEditing',
+  //   path: '/csdb3/inediting/:filename',
+  //   component: DetailDML,
+  //   props: {isInEditing: true}
+  // },
+  // {
+  //   name: 'Editing-IndexDML',
+  //   path: '/csdb3/edit-indexDML',
+  //   component: IndexDML,
+  //   props: {isInEditing: true}
+  // },
   {
     name: 'Editing-Upload',
-    path: '/csdb3/edit-upload',
+    path: '/csdb3/upload',
     component: Upload,
   },
   {
     name: 'Editing-Editor',
-    path: '/csdb3/edit-editor',
+    path: '/csdb3/editor',
     component: Editor,
   },
   {
     name: 'Editing-PushToStage',
-    path: '/csdb3/edit-pushtostage',
+    path: '/csdb3/pushtostage',
     component: PushToStage,
   },
 ];

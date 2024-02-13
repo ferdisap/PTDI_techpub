@@ -124,7 +124,7 @@ class Dml extends ModelsCsdb
       $issueNumber = $data['issueInfo']['issueNumber'];
       $xpath .= "/ancestor::dmlEntry/issueInfo[@inWork = '{$inWork}' and @issueNumber = '{$issueNumber}']";
     }
-    if ($useLanguage and $data['language']) {
+    if ($useLanguage and isset($data['language'])) {
       $countryIsoCode = $data['language']['countryIsoCode'];
       $languageIsoCode = $data['language']['languageIsoCode'];
       $xpath .= "/ancestor::dmlEntry/language[@countryIsoCode = '{$countryIsoCode}' and @languageIsoCode = '{$languageIsoCode}']";

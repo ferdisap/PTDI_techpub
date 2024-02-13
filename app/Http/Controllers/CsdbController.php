@@ -188,6 +188,7 @@ class CsdbController extends Controller
     $ret = $all
       ->where('filename','not like', 'DML%')
       ->where('filename','not like', 'CSL%')
+      ->where('remarks', 'not like', '"crud":"deleted"')
       ->paginate(15);
     $ret->setPath($request->getUri());
     return $ret;
@@ -508,10 +509,34 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$filename} failed to open edit."]);
   }
 
+  public function restore(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    if(!$model) return $this->ret2(400, ["{$filename} failed to restore."]);
+    $model->direct_save = false;
+    $model->editable = $model->remarks['prev_editable'];
+    $model->setRemarks("crud", 'restored');
+    $model->setRemarks("prev_editable", 'undefined');
+    $model->save();
+    return $this->ret2(200, ["{$filename} is restored."]);
+  }
+
+  public function delete(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    if(!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
+    $model->direct_save = false;
+    $model->setRemarks("crud", 'deleted');
+    $model->setRemarks("prev_editable", $model->editable);
+    $model->editable = 0;
+    $model->save();
+    return $this->ret2(200, ["{$filename} is deleted."]);
+  }
+
   /**
    * hanya digunakan untuk developersaja, tidak untuk end-user
    */
-  public function delete(Request $request, string $filename)
+  public function harddelete(Request $request, string $filename)
   {
     $model = ModelsCsdb::where('filename', $filename)->first();
     $delete = Storage::disk('csdb')->delete($filename);

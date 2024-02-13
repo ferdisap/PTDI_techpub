@@ -7,6 +7,9 @@ import vue from '@vitejs/plugin-vue';
 // const path = require('path');
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: ['js-big-decimal'] // agar mitt bisa dipakai. See app.js csdb3
+  },
   plugins: [
     // inject({   // => that should be first under plugins array
     //   $: 'jquery',
@@ -21,7 +24,12 @@ export default defineConfig({
         'resources/css/dmodule.css',
         'resources/js/csdb/CsdbReader.js',
         'resources/js/ietm/app.js',
-        'resources/views/**/*.vue'
+        'resources/views/**/*.vue',
+        
+        // 'resources/js/bootstrap.js',
+        // 'resources/scss/style.scss',
+        // 'resources/css/app2.css',
+        'resources/js/alert.js',
       ],
       refresh: true
     }),

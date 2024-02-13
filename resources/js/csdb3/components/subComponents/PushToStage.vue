@@ -18,6 +18,9 @@ export default {
     createCSL() {
       this.$root.showMessages = false;
       const formData = new FormData(event.target);
+      if(!formData.get('filename')){
+        formData.set('filename', filename);
+      }
       const route = this.techpubStore.getWebRoute('api.tostaging', formData);
       axios({
         url: route.url,
@@ -31,6 +34,15 @@ export default {
         })
         .catch(error => this.$root.error(error));
     },
+    getCSL_forstaging(){
+      const route = this.techpubStore.getWebRoute('api.get_csl_forstaging');
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+        .then(response => this.cslEntryList = response.data)
+        .catch(error => this.$root.error(error));
+    },
     pushToStaging(filename){
       this.$root.showMessages = false;
       const route = this.techpubStore.getWebRoute('api.push_csl_forstaging',{filename: filename});
@@ -42,6 +54,7 @@ export default {
           this.$root.success(response);
           let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
           this.cslEntryList.splice(index,1);
+          this.emitter.emit("csl_staging_pushed");
         })
         .catch(error => this.$root.error(error));
     },
@@ -60,7 +73,8 @@ export default {
         .catch(error => this.$root.error(error));
     },
     getDmlEntries() {
-      let filename = this.$route.params.filename ? this.$route.params.filename : $('#dmlFilename').val();
+      // let filename = this.$route.params.filename ? this.$route.params.filename : $('#dmlFilename').val();
+      let filename = this.$route.params.filename ? this.$route.params.filename : this.filename;
       if(!filename){
         this.techpubStore.Errors = [{filename: 'You should type the DML filename.'}]
         return;
@@ -75,14 +89,9 @@ export default {
     }
   },
   mounted() {
-    this.dmlfilename = this.$route.params.filename ? this.$route.params.filename : this.dmlfilename;
-    const route = this.techpubStore.getWebRoute('api.get_csl_forstaging');
-    axios({
-      url: route.url,
-      method: route.method[0],
-    })
-      .then(response => this.cslEntryList = response.data)
-      .catch(error => this.$root.error(error));
+    this.emitter.on('decline_csl_forstaging', this.getCSL_forstaging);
+    this.filename = this.$route.params.filename ? this.$route.params.filename : this.filename;
+    this.getCSL_forstaging();
   }
 }
 </script>
@@ -103,7 +112,7 @@ export default {
           <td> 
             <button @click="pushToStaging(csl.filename)"><span class="material-icons text-green-400">check_circle</span>Push</button>
             <!-- <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailCSLEDIT')))['path']"><span class="material-icons">edit</span>Edit</a> -->
-            <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailDML_inEditing')))['path']"><span class="material-icons">edit</span>Edit</a>
+            <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailDML')))['path']"><span class="material-icons">edit</span>Edit</a>
             <button @click="deleteDML(csl.filename)"><span class="material-icons text-red-500">delete</span>Delete</button>
           </td>
         </tr>
@@ -152,7 +161,7 @@ export default {
             </tr>
           </tbody>
         </table>
-        <button class="button-violet">Create CSL</button>
+        <button class="button-violet mt-3">Create CSL</button>
       </div>
     </form>
   </div>

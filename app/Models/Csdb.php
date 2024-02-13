@@ -156,6 +156,7 @@ class Csdb extends Model
 
   /**
    * syaratnya harus manggil id agar bisa di save. Sengaja tidak dibuat manual agar tidak asal isi
+   * biasanya, securityClassification, stage, crud
    * @return void
    */
   public bool $direct_save = true;

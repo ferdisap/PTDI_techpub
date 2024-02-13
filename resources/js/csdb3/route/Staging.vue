@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { useTechpubStore } from '../../techpub/techpubStore';
 
-
 export default {
   data(){
     return {
@@ -11,6 +10,15 @@ export default {
     }
   },
   methods:{
+    get_csl_list(){
+      const route = this.techpubStore.getWebRoute('api.get_csl_staging');
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+      .then(response => this.cslstaging = response.data)
+      .catch(error => this.$root.error(error));
+    },
     getDmlEntries(filename) {
       this.$root.showMessages = false;
       const route = this.techpubStore.getWebRoute('api.get_entry', { filename: filename });
@@ -45,21 +53,17 @@ export default {
           this.$root.success(response);
           let index = this.cslstaging.indexOf(this.cslstaging.find(csl => csl.filename == filename))
           this.cslstaging.splice(index,1);
+          this.emitter.emit('decline_csl_forstaging');
         })
         .catch(error => this.$root.error(error));
     },
-    edit(dmlFilename){},
+    edit(dmlFilename){
+
+    },
   },
   mounted(){
-    const route = this.techpubStore.getWebRoute('api.get_csl_staging');
-    axios({
-      url: route.url,
-      method: route.method[0],
-    })
-    .then(response => this.cslstaging = response.data)
-    .catch(error => this.$root.error(error));
-
-    window.router = this.$router;
+    this.emitter.on('csl_staging_pushed', this.get_csl_list);
+    this.get_csl_list();
   },
 }
 
@@ -80,9 +84,10 @@ export default {
           <td> <a href="javascript:void(0)" @click="getDmlEntries(csl.filename);csl.show = !csl.show">{{ csl.filename }}</a></td>
           <td> {{ csl.remarks.securityClassification }} </td>
           <td> 
-            <button @click="accept(csl.filename)"><span class="material-icons text-green-400">check_circle</span>Accept</button>
-            <button @click="decline(csl.filename)"><span class="material-icons text-red-500">cancel</span>Decline</button>
-            <button @click="edit(csl.filename)"><span class="material-icons text-black">edit</span>Edit</button>
+            <button @click="accept(csl.filename)"  class="has-tooltip-arrow" data-tooltip="Accept"><span class="material-icons text-green-400">check_circle</span></button>
+            <button @click="decline(csl.filename)" class="has-tooltip-arrow" data-tooltip="Cancel"><span class="material-icons text-red-500">cancel</span></button>
+            <a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailDML'))).path">details</a>
+            
           </td>
         </tr>
         <tr v-if="csl.dmlEntries" v-show="csl.show">

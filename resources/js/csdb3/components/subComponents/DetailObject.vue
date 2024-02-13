@@ -100,6 +100,7 @@ export default {
   },
   mounted(){
     if(['DML', 'CSL'].includes(this.$route.params.filename.substr(0,3))){
+      this.$router.push({name: 'DetailDML',filename: this.$route.params.filename});
       return;
     } 
     else {

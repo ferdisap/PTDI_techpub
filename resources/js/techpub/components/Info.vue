@@ -14,10 +14,10 @@ export default {
     'isSuccess','errors', 'message'],
   methods: {
     replaceFilenameWithURL(text){
-      let forDML = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailDML')))['path'];
+      // let forDML = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailDML')))['path'];
       let forObject = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
-      text = text.replace(/(DML[\S]+.xml)/g, `<a class="font-bold" href="${forDML}">$1</a>`);
-      text = text.replace(/(DMC[\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
+      // text = text.replace(/(DML[\S]+.xml)/g, `<a class="font-bold" href="${forDML}">$1</a>`);
+      text = text.replace(/([\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
       return text;
     }
   },

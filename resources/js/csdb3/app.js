@@ -8,6 +8,9 @@ import { createPinia } from 'pinia';
 import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
+import mitt from 'mitt';
+import alert from '../alert';
+
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
 axios.defaults.withCredentials = true;
@@ -23,11 +26,14 @@ const pinia = createPinia();
 
 csdb.use(pinia);
 csdb.use(router);
-csdb.use({
-  install: (app) => {
-    app.config.globalProperties.References = References;
-  }
-});
+// csdb.use({
+//   install: (app) => {
+//     app.config.globalProperties.References = References;
+//   }
+// });
+csdb.config.globalProperties.References = References;
+csdb.config.globalProperties.emitter = mitt();
+csdb.config.globalProperties.alert = alert;
 
 await axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)

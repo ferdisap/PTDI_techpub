@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Csdb;
 use App\Models\Dml;
+use App\Rules\Dml\EntryIdent;
+use App\Rules\Dml\EntryIssueType;
+use App\Rules\Dml\EntryType;
+use App\Rules\EnterpriseCode;
+use App\Rules\SecurityClassification;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -27,13 +32,26 @@ class DmlController extends Controller
   {
     $dmls = Csdb::with('initiator');
     if($request->get('filenameSearch')){
-      $dmls->where('filename', 'like', "%".$request->get('filenameSearch')."%");
-    }    
+      // $dmls->where('filename', 'like', "%".$request->get('filenameSearch')."%");
+      $filenameSearch = str_replace("_",'\_',$request->get('filenameSearch'));
+      $dmls->selectRaw("*");
+      $dmls->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
+    }
+    
+    if($request->get('dml')){
+      $dmls->where('filename', 'like' ,"DML-%");
+    }
+    elseif($request->get('csl')){
+      $dmls->where('filename', 'like' ,"CSL-%");
+    }
+    else {
+      // ini akan membuat query tidak akan membaca apakah sudah di delete/belum. Artinya akan query all DML/CSL
+      $dmls->where('filename', 'like' ,"DML-%")->orWhere('filename', 'like' ,"CSL-%");
+    }
     $ret = $dmls
-    ->where('filename', 'like' ,"DML-%")
+    ->where('remarks', 'not like', '%"crud":"deleted"%')
     ->paginate(15);
     $ret->setPath($request->getUri());
-    // ->get();
     return $ret;
   }
 
@@ -165,13 +183,13 @@ class DmlController extends Controller
       'dmlType' => 'required',
       'securityClassification' => 'required',
       'brexDmRef' => ['required', function(string $attribute, mixed $value,  Closure $fail){
-        if(count(explode("_",$value)) < 3){
-          $fail("The {$attribute} must contain IssueInfo and Language.");
-        }
+        if(count(explode("_",$value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
+        $decode = Helper::decode_dmIdent($value);
+        if($decode AND $decode['dmCode']['infoCode'] != '022') $fail("The {$attribute} infoCode must be '022'.");
       }],
       'remarks' => 'array',
     ]);
-
+    
     if($validator->fails()){
       return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
     }
@@ -192,46 +210,44 @@ class DmlController extends Controller
   {
     $validator = Validator::make($request->all(),[
       'filename' => 'required',
-      'issueType' => [function(string $attribute, mixed $value,  Closure $fail){
-        if(!in_array($value,[
-          "",
-          "new",
-          "changed",
-          "deleted",
-          "revised",
-          "status",
-          "rinstate-changed",
-          "rinstate-revised",
-          "rinstate-status",
-        ])){
-          $fail("The {$attribute} is invalid.");
-        }
-      }],
-      'dmlEntryType' => [function(string $attribute, mixed $value,  Closure $fail){
-        if(!in_array($value,[
-          "",
-          "new",
-          "changed",
-          "deleted",
-        ])){
-          $fail("The {$attribute} is invalid.");
-        }
-      }],
+      // 'issueType' => [function(string $attribute, mixed $value,  Closure $fail){
+      //   if(!in_array($value,[
+      //     "",
+      //     "new",
+      //     "changed",
+      //     "deleted",
+      //     "revised",
+      //     "status",
+      //     "rinstate-changed",
+      //     "rinstate-revised",
+      //     "rinstate-status",
+      //   ])){
+      //     $fail("The {$attribute} is invalid.");
+      //   }
+      // }],
+      'issueType' => [new EntryIssueType],
+      // 'dmlEntryType' => [function(string $attribute, mixed $value,  Closure $fail){
+      //   if(!in_array($value,[
+      //     "",
+      //     "new",
+      //     "changed",
+      //     "deleted",
+      //   ])){
+      //     $fail("The {$attribute} is invalid.");
+      //   }
+      // }],
+      'dmlEntryType' => [new EntryType],
       'entryIdent' => 'required',
-      'securityClassification' => 'required',
+      'securityClassification' => ['required', new SecurityClassification(true)],
       'enterpriseName' => 'required',
-      'enterpriseCode' => [function(string $attribute, mixed $value, Closure $fail){
-        if(strlen($value) != 5){
-          $fail("The {$attribute} must be contain five digit alphanumeric or letter.");
-        }
-      }],
+      'enterpriseCode' => [new EnterpriseCode(false)],
       'remarks' => 'array',
     ]);
 
     if($validator->fails()){
       return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
     }
-
+    
     $validator->validated();
 
     $csdb_model = Dml::where('filename', $request->get('filename'))->first();
@@ -262,7 +278,7 @@ class DmlController extends Controller
     $dom = MpubCSDB::importDocument(storage_path($model->path), $model->filename);
     $dmlEntries = MpubCSDB::identifyDmlEntries($dom);
     foreach($dmlEntries as $k => $dmlEntry){
-      $objects = Csdb::where('filename', 'like', "%{$dmlEntry['code']}%")->get();
+      $objects = Csdb::with('initiator')->where('filename', 'like', "%{$dmlEntry['code']}%")->get();
       $dmlEntries[$k]['objects'] = $objects;
     }
     return $dmlEntries;    
@@ -287,7 +303,13 @@ class DmlController extends Controller
    */
   public function create_csl_forstaging(Request $request, string $filename)
   {
+    // #0. validasi inWork dan editable
+    $issueInfo = explode("_",$filename)[1];
+    if(substr($issueInfo,4,2) != '00') return $this->ret2(400, ["inWork {$filename} must be '00'."]);
     $dml_model = Dml::where('filename', $filename)->first();
+    if(!$dml_model) return $this->ret2(400, ["There is no such {$filename} in database."]);
+    if($dml_model->editable) return $this->ret2(400, ["{$filename} must be not editable."]);
+
     $dml_dom = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
     $decoder_ident = Helper::decode_dmlIdent($dml_model->filename, false);
     $dml_domxpath = new \DOMXPath($dml_dom);
@@ -365,15 +387,30 @@ class DmlController extends Controller
    * CSL juga bisa di update di sini oleh user
    */
   public function dmlupdate(Request $request, string $filename)
-  {    
+  {
+    // #0. validation
     $dml_model = Dml::where('filename', $filename)->first();
     if($request->user()->id != $dml_model->initiator_id) return $this->ret(400, ["Only Initiator DML can do an update."]);
+    $validator = Validator::make($request->all(), [
+      'ident-securityClassification' => ['required', new SecurityClassification(true)],
+      'ident-brexDmRef' => ['required', function(string $attribute, mixed $value, Closure $fail){
+        if(!Helper::decode_dmIdent($value)){
+          $fail("The {$attribute} is wrong rule.");
+        }
+      }],
+      'entryIdent.*' => ['required', new EntryIdent($filename)],
+      'dmlEntryType.*' => [new EntryType],
+      'issueType.*' => [new EntryIssueType],
+      'securityClassification.*' => [new SecurityClassification(false)],
+      'enterpriseCode.*' => [new EnterpriseCode(false)],
+      'enterpriseName.*' => ['required'],
+    ]);
+    if($validator->fails()){
+      return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+    }
+    $validator->validated();
     $dml_model->DOMDocument = MpubCSDB::importDocument(storage_path($dml_model->path), $dml_model->filename);
     $dml_model->direct_save = false;
-
-    $request->validate([
-      'entryIdent' => 'required',
-    ]);
 
     // #0. update identAndStatusSection
     $ident = [
@@ -397,28 +434,7 @@ class DmlController extends Controller
       $dmlContent->firstElementChild->remove();
     }
     $dml_model->DOMDocument->saveXML();
-    foreach($entryIdents as $pos => $entryIdent){
-      // validasi entryIdent
-      // jika entryIdent == 'DML/CSL' maka tidak perlu ada language di namanya
-      // jika filename yang diupdate == 'CSL' maka harus denga issueInfo dan language nya
-      $isCSL = substr($filename,0,3) == 'CSL' ? true : false ;
-      // kalau entryIdent DML/CSL
-      // dan (kalau ini file ini CSL, count_ident harus terdiri dari code, issueInfo (2) || kalau file ini DML, count ident hanya terdiri dari code saja (1))
-      if(in_array(substr($entryIdent,0,3),['DML','CSL'])){
-        $count_ident = count(explode("_",$entryIdent));
-        if(($isCSL AND $count_ident != 2) OR (!$isCSL AND $count_ident !=1)){
-          return $this->ret2(400, ["{$filename} is wrong rule."]);
-        }
-      } 
-      else {
-        // kalau entryIdent bukan DML/CSL (DMC, PMC, etc)
-        // dan (kalau ini file ini CSL, count_ident harus terdiri dari code, issueInfo, language (3) || kalau file ini DML, count ident hanya terdiri dari code saja (1))
-        $count_ident = count(explode("_",$entryIdent));
-        if(($isCSL AND $count_ident != 3) OR (!$isCSL AND $count_ident !=1)){
-          return $this->ret2(400, ["{$filename} is wrong rule."]);
-        }
-      }
-      
+    foreach($entryIdents as $pos => $entryIdent){      
       $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
       $otherOptions = [
         'issueType' => $issueTypes[$pos],
@@ -429,7 +445,7 @@ class DmlController extends Controller
     }
     $dml_model->DOMDocument->saveXML();
     $dml_model->saveModelAndDOM();
-    return $this->ret2(200, ['Update Success. Please reload the page.']);
+    return $this->ret2(200, ['Update Success.']);
   }
 
   /**
@@ -475,6 +491,9 @@ class DmlController extends Controller
     return $this->ret2(200, ["Push to stage is success. {$filename} is issued by changing filename into {$new_filename}."]);
   }
 
+  /**
+   * csl issueNumber tetap, inWorkNumber tetap (umumnya csl yang sudah issue baru bisa masuk ke path decline)
+   */
   public function decline_csl_forstaging(Request $request, string $filename)
   {
     $csl_model = Dml::where('filename', $filename)->first();
@@ -483,13 +502,14 @@ class DmlController extends Controller
     return $this->ret2(200, ["{$filename} is remarked as unstaged. You may referesh page."]);
   }
 
-  public function deletedml(Request $request, string $filename)
-  {
-    $csl_model = Dml::where('filename', $filename)->first();
-    $csl_model->setRemarks('stage','deleted');
-    $csl_model->setRemarks('stager_id',$request->user()->id);
-    return $this->ret2(200, ["{$filename} is remarked as deleted."]);
-  }
+  // diganti CsdbController@delete
+  // public function deletedml(Request $request, string $filename)
+  // {
+  //   $csl_model = Dml::where('filename', $filename)->first();
+  //   $csl_model->setRemarks('stage','deleted');
+  //   $csl_model->setRemarks('stager_id',$request->user()->id);
+  //   return $this->ret2(200, ["{$filename} is remarked as deleted."]);
+  // }
 
   /**
    * setiap issueInfo object entry tetap. issueNumber tetap, inWork tetap

@@ -18,7 +18,9 @@ Route::get("/api/issue/{filename}", [CsdbController::class, 'issue'])->middlewar
 Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware('auth')->name('api.edit_object');
 // Route::post('api/pushtostage',)
 
-Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth');
+Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');
+Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
+Route::get("/api/harddelete/{filename}", [CsdbController::class, 'harddelete'])->middleware('auth');
 
 
 

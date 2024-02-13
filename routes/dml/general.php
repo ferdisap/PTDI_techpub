@@ -30,5 +30,5 @@ Route::get("/api/getcsltostaging", [DmlController::class, 'get_csl_forstaging'])
 Route::get("/api/cslstaging", [DmlController::class, 'get_cslstaging'])->middleware('auth')->name('api.get_csl_staging');
 Route::get("/api/pushtostaging/{filename}",[DmlController::class, 'push_csl_forstaging'])->middleware('auth')->name('api.push_csl_forstaging');
 Route::get("/api/declinestaging/{filename}",[DmlController::class, 'decline_csl_forstaging'])->middleware('auth')->name('api.decline_csl_forstaging');
-Route::get("/api/deletedml/{filename}",[DmlController::class, 'deletedml'])->middleware('auth')->name('api.delete_dml');
+//ini digantikan sama CsdbController@delete // Route::get("/api/deletedml/{filename}",[DmlController::class, 'deletedml'])->middleware('auth')->name('api.delete_dml');
 Route::get("/api/accepttostaged/{filename}",[DmlController::class, 'acceptcsl'])->middleware('auth')->name('api.accept_dml');

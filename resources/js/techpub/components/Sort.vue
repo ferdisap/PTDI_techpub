@@ -4,7 +4,7 @@ export default {
   data() {
     return {}
   },
-  props: ['function'],
+  props: ['function', 'emitname'],
   methods: {
     sort() {
       const getCellValue = function (row, index) {
@@ -25,6 +25,9 @@ export default {
       }
       for (let i = 0; i < rows.length; i++) {
         table.append(rows[i]);
+      }
+      if(this.$props.emitname){
+        this.emitter.emit(this.$props.emitname);
       }
     },
   }

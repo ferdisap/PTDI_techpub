@@ -231,10 +231,18 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @returns array contains error text
      */
     error(name) {
-      let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
-      if (err) {
-        return err[name];  // return array ['text1', 'text2', ...] 
+      let err = [];
+      for(const [k,name] of Object.entries(arguments)){
+        let e = this.Errors.find(o => o[name]);
+        if(e){
+          err = err.concat(e[name]);
+        }
       }
+      return err;
+      // let err = this.Errors.find(o => o[name]); // return array karena disetiap hasil validasi error [{name: ['text1']},...]
+      // if (err) {
+      //   return err[name];  // return array ['text1', 'text2', ...] 
+      // }
     },
 
     /** pengganti fitur pada App.vue */

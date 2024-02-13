@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org" xmlns:v-on="https://vuejs.org/click">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/bind" xmlns:v-on="https://vuejs.org/on">
 
 <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes"/>
 
@@ -79,49 +79,61 @@
   <table class="dmlContent">
     <tr>
       <!-- <Sort v-bind:function="sort.bind(this)"/> -->
-      <th> Ident Code <Sort/> </th>
-      <th> DML | Issue Type <Sort/> </th>
-      <th> Security <Sort/> </th>
-      <th> Resposible Company <br/> (name | code) <Sort/> </th>
-      <th> Answer <Sort/> </th>
-      <th> Remarks <Sort/> </th>
+      <th> Ident Code <Sort emitname="dmlEntry_sorted"/> </th>
+      <th> DML <Sort emitname="dmlEntry_sorted"/> | Issue Type <Sort emitname="dmlEntry_sorted"/> </th>
+      <th> Security <Sort emitname="dmlEntry_sorted"/> </th>
+      <th> Resposible Company <br/> (name <Sort emitname="dmlEntry_sorted"/> | code <Sort emitname="dmlEntry_sorted"/>)</th>
+      <th> Answer <Sort emitname="dmlEntry_sorted"/> </th>
+      <th> Remarks <Sort emitname="dmlEntry_sorted"/> </th>
     </tr>
-    <tr class="add_dmlEntry">
-      <td><button class="material-icons" type="button" onclick="add_dmlEntry_row_first()">add</button></td>
-    </tr>
+    <DmlEntryForm>
     <xsl:for-each select="dmlEntry">
-      <tr class="dmlEntry">
-        <td class="dmlEntry-ident">
+      <tr class="dmlEntry"><td class="dmlEntry-ident">
           <textarea name="entryIdent[]" class="w-full">
             <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
           </textarea>
+          <div class="text-red-600 text-sm error">
+            <xsl:attribute name="v-html">store.error('entryIdent.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+          </div>
         </td>
         <td>
           <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]" value="{@dmlEntryType}"/> | <input class="dmlEntry-issueType w-2/5" name="issueType[]" value="{@issueType}"/>
+          <div class="text-red-600 text-sm error">
+            <xsl:attribute name="v-html">store.error('dmlEntryType.<xsl:value-of select="position()-1"/>', 'issueType.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+          </div>
         </td>
         <td>
           <input class="dmlEntry-securityClassification w-full" name="securityClassification[]" value="{security/@securityClassification}"/>
+          <div class="text-red-600 text-sm error">
+            <xsl:attribute name="v-html">store.error('securityClassification.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+          </div>
         </td>
         <td class="responsibleCompany">
-          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> 
-          | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/enterpriseCode}"/>
+          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/enterpriseCode}"/>
+          <div class="text-red-600 text-sm error">
+            <xsl:attribute name="v-html">store.error('enterpriseName.<xsl:value-of select="position()-1"/>', 'enterpriseCode.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+          </div>
         </td>
         <td>-</td>
         <td>
           <textarea name="remarks[]" class="w-full">
             <xsl:apply-templates select="remarks/simplePara"/>
           </textarea>
+          <div class="text-red-600 text-sm error">
+            <xsl:attribute name="v-html">store.error('remarks.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+          </div>
         </td>
       </tr>
-      <tr class="add_dmlEntry">
-        <xsl:variable name="number"><xsl:number/></xsl:variable>
-        <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>
-        <xsl:if test="$number>=2">
-          <td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td>
-        </xsl:if>
-      </tr>
     </xsl:for-each>  
+    </DmlEntryForm>
   </table>
+  <div>
+    <xsl:variable name="number"><xsl:number/></xsl:variable>
+    <!-- <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>
+    <td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td> -->
+    <td><button class="material-icons" type="button" v-on:click="emitter.emit('add_dmlEntry')">add</button></td>
+    <td><button class="material-icons" type="button" v-on:click="emitter.emit('remove_dmlEntry')">delete</button></td>
+  </div>
 </xsl:template>
 
 <xsl:template match="dmRef">
@@ -149,3 +161,38 @@
 
 
 </xsl:transform>
+
+
+<!-- <tr class="dmlEntry">
+  <td class="dmlEntry-ident">
+    <textarea name="entryIdent[]" class="w-full">
+      <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
+    </textarea>
+  </td>
+  <td>
+    <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]" value="{@dmlEntryType}"/> | <input class="dmlEntry-issueType w-2/5" name="issueType[]" value="{@issueType}"/>
+  </td>
+  <td>
+    <input class="dmlEntry-securityClassification w-full" name="securityClassification[]" value="{security/@securityClassification}"/>
+  </td>
+  <td class="responsibleCompany">
+    <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> 
+    <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/enterpriseCode}"/>
+    <div class="text-red-600 text-sm">
+      <xsl:attribute name="v-html">store.error('enterpriseCode.<xsl:value-of select="position()-1"/>')</xsl:attribute>
+    </div>
+  </td>
+  <td>-</td>
+  <td>
+    <textarea name="remarks[]" class="w-full">
+      <xsl:apply-templates select="remarks/simplePara"/>
+    </textarea>
+  </td>
+</tr>
+<tr class="add_dmlEntry">
+  <xsl:variable name="number"><xsl:number/></xsl:variable>
+  <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>
+  <xsl:if test="$number>=2">
+    <td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td>
+  </xsl:if>
+</tr> -->

@@ -38,8 +38,8 @@ export default {
         <span class="material-icons text-4xl p-2">rule</span>
         <span>BR</span>
       </summary>
-      <div>
-        <a @click.prevent="$router.push({name:'CreateBR'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='CreateBR')))['path']">
+      <div class="pl-5">
+        <a class="p-3" @click.prevent="$router.push({name:'CreateBR'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='CreateBR')))['path']">
           Create
         </a>
       </div>
@@ -49,8 +49,8 @@ export default {
         <span class="material-icons text-4xl p-2">donut_small</span>
         <span>DML</span>
       </summary>
-      <div>
-        <a @click.prevent="$router.push({name:'CreateDML'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='CreateDML')))['path']">
+      <div class="pl-5">
+        <a class="p-3" @click.prevent="$router.push({name:'CreateDML'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='CreateDML')))['path']">
           Create
         </a>
       </div>
@@ -62,31 +62,34 @@ export default {
         <span class="material-icons text-4xl p-2">commit</span>
         <span>Commit</span>
       </summary>
-      <div>
-        <a @click.prevent="$router.push({name:'Editing-PushToStage'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-PushToStage')))['path']">
+      <div class="pl-5">
+        <a class="p-3" @click.prevent="$router.push({name:'Editing-PushToStage'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-PushToStage')))['path']">
           Push To Stage
         </a>
       </div>
     </details>
+
     <details>
       <summary @click="$router.push({name: 'Stage'})">
         <span class="material-icons text-4xl p-2">approval</span>
         <span>Staging</span>
       </summary>
     </details>
+
     <details>
       <summary @click="$router.push({name:'InEditting-IndexObject'})">
         <span class="material-icons text-4xl p-2">edit_square</span>
         <span>Editor</span>
       </summary>
-      <div>
-        <a @click.prevent="$router.push({name:'Editing-Upload'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-Upload')))['path']">
+      <div class="pl-5">
+        <a class="p-3" @click.prevent="$router.push({name:'Editing-Upload'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-Upload')))['path']">
           Upload
         </a>
-        <a @click.prevent="$router.push({name:'Editing-Editor'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-Editor')))['path']">
+        <a class="p-3" @click.prevent="$router.push({name:'Editing-Editor'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-Editor')))['path']">
           XML Editor
         </a>
       </div>
     </details>
+    
   </aside>
 </template>

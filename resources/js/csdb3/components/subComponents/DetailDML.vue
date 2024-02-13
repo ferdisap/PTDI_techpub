@@ -4,52 +4,7 @@ import { useTechpubStore } from '../../../techpub/techpubStore';
 import Sort from '../../../techpub/components/Sort.vue';
 import AddEntryDML from '../subComponents/AddEntryDML.vue';
 import PushToStage from './PushToStage.vue';
-
-// ini dibuat di window karena belum tau caranya ketika clonne node, vue component element di clone juga
-function delete_dmlEntry_row() {
-  let clickked_addButton = $(event.target).parents('.add_dmlEntry');
-  window.clickked_addButton = clickked_addButton;
-  console.log(clickked_addButton);
-  clickked_addButton.prev().remove();
-  clickked_addButton.remove()
-}
-window.delete_dmlEntry_row = delete_dmlEntry_row;
-function add_dmlEntry_row() {
-  let clonned_dmlEntry = $(event.target).parents('.add_dmlEntry').prev().clone();
-  clonned_dmlEntry.find('*[name]').each((i, e) => $(e).val(''));
-  let clonned_addButton = $(event.target).parents('.add_dmlEntry').clone();
-
-  let clickked_addButton = $(event.target).parents('.add_dmlEntry');
-  clonned_dmlEntry.insertAfter(clickked_addButton);
-  clonned_addButton.insertAfter(clonned_dmlEntry);
-}
-window.add_dmlEntry_row = add_dmlEntry_row;
-function add_dmlEntry_row_first() {
-  let dmlEntry = `
-  <tr class="dmlEntry">
-    <td class="dmlEntry-ident">
-      <textarea name="entryIdent[]" class="w-full"/>
-    </td>
-    <td>
-      <input class="dmlEntry-dmlType w-2/5" name="dmlEntryType[]"> | <input class="dmlEntry-issueType w-2/5" name="issueType[]">
-    </td>
-    <td>
-      <input class="dmlEntry-securityClassification w-full" name="securityClassification[]">
-    </td>
-    <td class="responsibleCompany">
-      <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]"> | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]">
-    </td>
-    <td>-</td>
-    <td>
-      <textarea name="remarks[]" class="w-full"/>
-    </td>
-  </tr>`
-  let button = `<tr class="add_dmlEntry"><td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td><td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td></tr>`;
-  let clickked_addButton = $(event.target).parents('.add_dmlEntry');
-  dmlEntry = $(dmlEntry).insertAfter(clickked_addButton);
-  $(button).insertAfter(dmlEntry);
-}
-window.add_dmlEntry_row_first = add_dmlEntry_row_first;
+import DmlEntryForm from './DmlEntryForm.vue';
 
 export default {
   data() {
@@ -70,9 +25,10 @@ export default {
         data() {
           return {
             store: useTechpubStore(),
+            dmlEntryOuterHTML: '',
           }
         },
-        components: { Sort },
+        components: { Sort, DmlEntryForm},
         methods: {
           sort() {
             const getCellValue = function (row, index) {
@@ -112,15 +68,18 @@ export default {
     }
   },
   methods: {
-    submit(commitOrIssue) {
-      this.techpubStore.showLoadingBar = true;
+    submit(command) {
       let routename;
-      if (commitOrIssue == 'commit') {
+      if (command == 'commit') {
         routename = 'api.commit_dml';
-      } else if (commitOrIssue == 'issue') {
+      } else if (command == 'issue') {
         routename = 'api.issue_dml';
-      } else if (commitOrIssue == 'edit') {
+      } else if (command == 'edit') {
         routename = 'api.edit_dml';
+      } else if (command == 'delete'){
+        routename = 'api.delete_object';
+      } else if (command == 'restore'){
+        routename = 'api.restore_object';
       }
 
       this.$root.showMessages = false;
@@ -130,13 +89,15 @@ export default {
         method: route.method[0],
         data: route.params,
       })
-        .then(response => {
-          this.$root.success(response);
-        })
+        .then(response => this.$root.success(response))
         .catch(error => this.$root.error(error));
     },
     async update() {
-      const formData = new FormData(event.target);
+      let form = event.target;
+      if(!(await this.alert({message: 'are you sure want to <b>UPDATE</b> this DML?'}).result)){
+        return false;
+      }
+      const formData = new FormData(form);
       this.$root.showMessages = false;
       const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
       await axios({
@@ -148,15 +109,19 @@ export default {
         .catch(error => this.$root.error(error))
     }
   },
-  created() {
+  async created() {
     const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output: 'model' });
-    axios({
+    await axios({
       url: route.url,
       method: route.method[0],
       data: route.params,
     })
       .then(response => this.model = response.data)
       .catch(error => this.$root.error(error));
+    
+    if(this.model && this.model.remarks.crud == 'deleted'){
+      setTimeout(() => $('#dml, #dml input, #dml textarea').each((i,e) => e.style.backgroundColor = 'red'),1000);
+    }
   },
   mounted() {
     window.th = this;
@@ -175,21 +140,26 @@ export default {
   },
 }
 </script>
+<style>
+#dml th {
+  text-wrap: nowrap;
+}
+</style>
 <template>
   <div v-if="model">
     <h1 class="text-center">Detail DML</h1>
     <div class="text-center">Editable: {{ model.editable ? 'yes' : 'no' }}</div>
 
     <!-- jika DML -->
-    <div class="w-full text-center mb-3 mt-3"
-      v-if="model.filename.substr(0, 3) == 'DML' && !$route.params.filename.match(/_\d{3}-00/g)">
+    <div class="w-full text-center mb-3 mt-3" v-if="model.filename.substr(0, 3) == 'DML' && ($route.params.filename && !$route.params.filename.match(/_\d{3}-00/g))">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="submit('commit')">Commit</button>
+      <button class="button-nav" v-if="model.remarks.crud != 'deleted'" @click="submit('delete')">Delete</button>
+      <button class="button-nav" v-else @click="submit('restore')">Restore</button>
     </div>
     <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) == 'DML'">
       <button class="button-nav" v-if="!model.editable" @click="submit('edit')">Open Edit</button>
-      <button class="button-nav" v-if="!model.editable"
-        @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
+      <button class="button-nav" v-if="!model.editable" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
     </div>
 
     <!-- jika CSL -->

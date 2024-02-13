@@ -9,10 +9,10 @@ export default {
   },
   methods:{
     addRemarks(){
-      let parent = $(event.target).parents('div').eq(0);
-      let input = parent.children("input[name='remarks[]']").eq(0).clone();
-      input.val('');
-      parent.append(input);
+      let container = $('#remarks-container');
+      let textarea = container.children('textarea').eq(0).clone();
+      textarea.val('');
+      container.append(textarea);
     },
   },
 }
@@ -20,8 +20,11 @@ export default {
 <template>
   <br/>
   <div>
-    <label for="remarks">Remarks <button @click.prevent="addRemarks()">+</button></label>
-    <input type="text" value="" name="remarks[]" placeholder="eg.: this DML is intended for..." />
+    <label for="remarks" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Remarks</label>
+    <div class="flex flex-wrap" id="remarks-container">
+      <textarea name="remarks[]" placeholder="eg.: this DML is intended for..." class="ml-3 w-96"></textarea>
+    </div>
+    <button @click.prevent="addRemarks()" class="text-sm my-3">Add more+</button>
   </div>    
   <div class="text-red-600" v-html="techpubStore.error('remarks')"></div>
 </template>
