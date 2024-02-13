@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /storage/csdb/*
+/storage/csdb_deleted/*
 /vendor
 .env
 .env.backup

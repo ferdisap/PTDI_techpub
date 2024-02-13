@@ -2,6 +2,7 @@
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import CreateDML from './CreateDML.vue';
 import AnalyzeDML from './AnalyzeDML.vue';
+import axios from 'axios';
 
 export default {
   data(){
@@ -13,6 +14,8 @@ export default {
       responsedata_get_dml_list: undefined, // {}
       responsedata_get_csl_list: undefined, // {}
       page: 1,
+
+      // tes: {0: 'foo', 1:'bar', '3':'baz'}
     }
   },
   components: { CreateDML, AnalyzeDML },
@@ -48,6 +51,22 @@ export default {
       .then(response => this.responsedata_get_dml_list = response.data)
       .catch(error => this.$root.error(error));
     },
+    async deleteDML(filename){
+      let eventTarget = event.target;
+      if(!(await this.alert({message:`Are you sure to <b>DELETE</b> ${filename}?`}).result)){
+        return;
+      }
+      const route = this.techpubStore.getWebRoute('api.delete_object',{filename: filename});
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+      .then(rsp => {
+        this.$root.success(rsp);
+        $(eventTarget).parents('tr').eq(0).remove();
+      })
+      .catch(e => this.$root.error(e));
+    }
   },
   mounted(){
     this.get_list({dml:1});
@@ -56,6 +75,13 @@ export default {
 }
 </script>
 <template>
+
+  <!-- <div>
+    <div v-for="t in tes">
+      {{ t }}
+    </div>
+    <button class="button" @click="delete tes['1']">del</button>
+  </div> -->
 
   <div class="IndexDML" v-if="responsedata_get_dml_list">
     <h1>Index DML</h1>
@@ -77,7 +103,10 @@ export default {
             <td>{{ dml.editable ? 'yes' : 'no' }} </td>
             <td>{{ dml.initiator.name == techpubStore.Auth.name ? 'self' : dml.initiator.name }} </td>
             <td :class="[dml.remarks.stage == 'staged' ? 'bg-green-500' : 'bg-yellow-500']">{{ dml.remarks.stage }}</td>
-            <td><a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail" :href="techpubStore.getWebRoute('',{filename: dml.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailDML'))).path">details</a></td>
+            <td>
+              <a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail" :href="techpubStore.getWebRoute('',{filename: dml.filename}, Object.assign({},$router.getRoutes().find((route) => route.name == 'DetailDML'))).path">details</a>
+              <button @click="deleteDML(dml.filename)" class="material-icons text-red-500 has-tooltip-arrow" data-tooltip="Delete">delete</button>
+            </td>
           </tr>
         </tbody>
       </table>

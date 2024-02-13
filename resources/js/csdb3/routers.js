@@ -12,6 +12,7 @@ import IndexObject from './components/subComponents/IndexObject.vue';
 import PushToStage from './components/subComponents/PushToStage.vue';
 import IndexBR from './components/subComponents/IndexBR.vue';
 import CreateDML from './components/subComponents/CreateDML.vue';
+import Deletion from './route/Deletion.vue';
 
 export default [
   {
@@ -115,5 +116,11 @@ export default [
     name: 'Editing-PushToStage',
     path: '/csdb3/pushtostage',
     component: PushToStage,
+  },
+
+  {
+    name: 'Deletion',
+    path: '/csdb3/deletion',
+    component: Deletion,
   },
 ];

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -26,6 +27,9 @@ return new class extends Migration
     //   $table->json('remarks')->nullable();
     //   $table->timestamps();
     // });
+    $file = new Filesystem;
+    $file->cleanDirectory('storage/csdb');
+    
     Schema::connection('sqlite')->create('csdb', function (Blueprint $table) {
       $table->ulid('id')->primary();
       $table->string('filename')->unique();
@@ -33,7 +37,7 @@ return new class extends Migration
       $table->boolean('editable'); // yes(1) or no(0). Ketika di commit, editable menjadi 0 yang artinya tidak bisa di edit lagi. Sehingga harus naik index
       $table->integer('initiator_id');
       $table->json('remarks')->nullable();
-      $table->timestamps();
+      $table->timestampsTz(7);
     });
 
   }
@@ -45,5 +49,7 @@ return new class extends Migration
   {
     // Schema::connection('techpub_sqlite')->dropIfExists('csdb');
     Schema::connection('sqlite')->drop('csdb');
+    $file = new Filesystem;
+    $file->cleanDirectory('storage/csdb');
   }
 };

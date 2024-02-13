@@ -17,31 +17,50 @@ export default {
       // let forDML = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailDML')))['path'];
       let forObject = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
       // text = text.replace(/(DML[\S]+.xml)/g, `<a class="font-bold" href="${forDML}">$1</a>`);
-      text = text.replace(/([\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
+      // text = text.replace(/([\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
+      text = text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a class="font-bold" href="${forObject}">$1$2</a>`);
       return text;
     }
   },
   updated(){
-    window.messages = this.$props.messages;
+    if(this.message){
+      setTimeout(() => {
+        $('*[info-close-btn]').click();
+      }, 10000);
+    }
   }
 }
 </script>
 
 <template>
-  <div class="justify-center contents h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="message">
+  <div class="fixed w-1/2 top-1/5 right-0 shadow-xl" v-if="message">
     <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
       <div class="text-center text-xl p-3 font-bold">Message: {{ !$props.errors ? 'success' : 'fail'  }}
-        <button class="float-right" @click="message = ''">X</button>
+        <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150" @click="message = ''" info-close-btn>X</button></span>
       </div>
       <div v-if="message">
         <div v-html="replaceFilenameWithURL(message)" class="mb-1"></div>
         {{ (() => { techpubStore.Errors = errors ? [errors] : [] })() }}
         <div class="mb-2" v-for="(ms, i) in errors">
           <h5> {{ i }} </h5>
-          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)/g, `<a href='/csdb/$1'>$1<a/>`)"/>
+          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)"/>
         </div>
       </div>
     </div>
+  <!-- <div class="justify-center contents h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="message">
+    <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
+      <div class="text-center text-xl p-3 font-bold">Message: {{ !$props.errors ? 'success' : 'fail'  }}
+        <button class="float-right" @click="message = ''" info-close-btn>X</button>
+      </div>
+      <div v-if="message">
+        <div v-html="replaceFilenameWithURL(message)" class="mb-1"></div>
+        {{ (() => { techpubStore.Errors = errors ? [errors] : [] })() }}
+        <div class="mb-2" v-for="(ms, i) in errors">
+          <h5> {{ i }} </h5>
+          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)(\s|$)/g, `<a href='/csdb/$1'>$1<a/>`)"/>
+        </div>
+      </div>
+    </div> -->
 
     
     <!-- <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +15,8 @@ use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
 
 /**
- * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted;
+ * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted; 
+ * kayaknya 'deleted' tidak terpakai
  */
 class Csdb extends Model
 {
@@ -56,18 +59,41 @@ class Csdb extends Model
   protected $hidden = ['initiator_id'];
 
   /**
-   * 
+   * The attributes that should be cast.
+   * @var array
    */
   protected $casts = [
     'remarks' => 'array'
   ];
 
+  /**
+   * Set the model created_at touse current timezone.
+   */
+  protected function createdAt(): Attribute
+  {
+    return Attribute::make(
+      set: fn (string $v) => Carbon::now(7),
+    );
+  }
+
+  /**
+   * Set the model updated_at touse current timezone.
+   */
+  protected function updatedAt(): Attribute
+  {
+    return Attribute::make(
+      set: fn (string $v) => Carbon::now(7),
+    );
+  }
+
   public function hide(mixed $column)
   {
-    if(is_array($column)){
-      foreach($column as $col){
+    if (is_array($column)) {
+      foreach ($column as $col) {
         $this->hidden[] = $col;
       }
+    } elseif ($column == false) {
+      $this->hidden = [];
     } else {
       $this->hidden[] = $column;
     }
@@ -123,22 +149,22 @@ class Csdb extends Model
       $type = $this->DOMDocument->documentElement->nodeName;
       $filename_xsl = "{$type}.xsl";
     }
-    
+
     $xsl = MpubCSDB::importDocument($path_xsl . "/", $filename_xsl);
-    
+
     $xsltproc = new \XSLTProcessor();
     $xsltproc->importStylesheet($xsl);
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => MpubCSDB::class . "::$name", get_class_methods(MpubCSDB::class)))());
     $xsltproc->registerPHPFunctions((fn () => array_map(fn ($name) => self::class . "::$name", get_class_methods(self::class)))());
     // $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
     $xsltproc->registerPHPFunctions();
-    
+
     $xsltproc->setParameter('', 'repoName', $this->repoName);
     $xsltproc->setParameter('', 'objectpath', $this->objectpath);
     $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
     // dd($path_xsl, $filename_xsl);
-    
-    
+
+
     if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));
     } else {
@@ -146,11 +172,11 @@ class Csdb extends Model
     }
 
     $transformed = str_replace("\n", '', $transformed);
-    
+
     $transformed = preg_replace("/\s+/m", ' ', $transformed);
     $transformed = preg_replace("/v-on_/m", 'v-on:', $transformed); // nanti ini dihapus. Setiap xml akan ditambahkan namespace xmlns:v-bind, xmlns:v-on, dll 
     $transformed = preg_replace('/xmlns:[\w\-=":\/\\\\._]+/m', '', $transformed); // untuk menghilangkan attribute xmlns
-    
+
     return $transformed;
   }
 
@@ -167,11 +193,11 @@ class Csdb extends Model
     switch ($key) {
       case 'searchkey':
         array_unshift($values, $value);
-        if(count($values) >= 5) array_pop($values);
+        if (count($values) >= 5) array_pop($values);
         $values = array_unique($values);
         break;
       case 'title':
-        if(!$value){
+        if (!$value) {
           $value = $this->setRemarks_title();
         }
         $values = $value;
@@ -182,8 +208,8 @@ class Csdb extends Model
     }
     $remarks[$key] = $values;
     $this->remarks = $remarks;
-    
-    if($this->direct_save){
+
+    if ($this->direct_save) {
       $this->save();
     }
   }
@@ -193,11 +219,11 @@ class Csdb extends Model
    */
   private function setRemarks_title()
   {
-    $dom = MpubCSDB::importDocument(storage_path("app/".$this->path),$this->filename);
-    if($dom instanceof ICNDocument){
-      $imfFilename = MpubCSDB::detectIMF(storage_path("app/".$this->path), $dom->getFilename());
-      $dom = MpubCSDB::importDocument(storage_path("app/".$this->path), $imfFilename);
-      if(!$dom) return '';
+    $dom = MpubCSDB::importDocument(storage_path("app/" . $this->path), $this->filename);
+    if ($dom instanceof ICNDocument) {
+      $imfFilename = MpubCSDB::detectIMF(storage_path("app/" . $this->path), $dom->getFilename());
+      $dom = MpubCSDB::importDocument(storage_path("app/" . $this->path), $imfFilename);
+      if (!$dom) return '';
     }
     $value = MpubCSDB::resolve_DocTitle($dom);
     return $value;
@@ -210,16 +236,16 @@ class Csdb extends Model
     //   $this->DOMDocument->formatOutput = false;
     // }
     // dd($this->DOMDocument);
-    
-    if(isset($this->DOMDocument) AND $this->DOMDocument->C14NFile(storage_path($this->path).DIRECTORY_SEPARATOR.$this->filename)){
-      if($this->save()){
+
+    if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
+      if ($this->save()) {
         return true;
       }
     }
     return false;
   }
 
- 
+
 
   /**
    * untuk menambah namespace pada DOMDocument xsl

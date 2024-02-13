@@ -47,7 +47,7 @@ class CsdbController extends Controller
    * issueNumber++ adalah sebuah fitur yang hanya bisa digunakan jika reviewer sudah memvalidasi dan akan di-load ke csdb
    */
   public function create(Request $request)
-  {    
+  {
     // #1. create dom
     $proccessid = CSDB::$processid = self::class . "::create";
     $file = $request->file('entity');
@@ -69,10 +69,10 @@ class CsdbController extends Controller
       $csdb_filename = $validateRootname[1];
       $ident = $validateRootname[2];
       $path = "csdb";
-      if($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
+      if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
     } elseif ($dom instanceof ICNDocument) {
       $csdb_filename = $request->file('entity')->getClientOriginalName();
-      if(substr($csdb_filename,0,3) != 'ICN') return $this->ret2(400, ["The name of {$csdb_filename} is not accepted."]);
+      if (substr($csdb_filename, 0, 3) != 'ICN') return $this->ret2(400, ["The name of {$csdb_filename} is not accepted."]);
       $ident = 'infoEntity';
       $path = "csdb";
       preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
@@ -95,19 +95,19 @@ class CsdbController extends Controller
     if (($dom instanceof \DOMDocument)) {
       $domXpath = new \DOMXPath($dom);
       $code = preg_replace("/_.+/", '', $csdb_filename);
-      $collection = array_diff(scandir(storage_path($path)));
-      $collection = array_filter($collection, fn($file) => str_contains($file, $code));
-      if(empty($collection)){
+      $collection = array_diff(scandir(storage_path($path))); // harusnya ga usa pakai array_dif. Nanti di cek lagi
+      $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
+      if (empty($collection)) {
         $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
         $issueInfo->setAttribute('issueNumber', '000');
         $issueInfo->setAttribute('inWork', '01');
       } else {
         $collection_issueNumber = [];
         $collection_inWork = [];
-        array_walk($collection, function($file,$i)use(&$collection_issueNumber, &$collection_inWork){
-          $file = explode('_',$file);
-          if(isset($file[1])){
-            $issueInfo = explode("-",$file[1]);
+        array_walk($collection, function ($file, $i) use (&$collection_issueNumber, &$collection_inWork) {
+          $file = explode('_', $file);
+          if (isset($file[1])) {
+            $issueInfo = explode("-", $file[1]);
             $collection_issueNumber[$i] = $issueInfo[0];
             $collection_inWork[$i] = $issueInfo[1];
           }
@@ -115,13 +115,13 @@ class CsdbController extends Controller
 
         $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
         $max_in = max($collection_issueNumber);
-        $max_in = array_keys(array_filter($collection_issueNumber, fn($v) => $v == $max_in))[0]; // output key. bukan value array
+        $max_in = array_keys(array_filter($collection_issueNumber, fn ($v) => $v == $max_in))[0]; // output key. bukan value array
         $max_in = $collection_issueNumber[$max_in];
         $max_iw = max($collection_inWork);
-        $max_iw = array_keys(array_filter($collection_inWork, fn($v) => $v == $max_iw))[0]; // output key. bukan value array
+        $max_iw = array_keys(array_filter($collection_inWork, fn ($v) => $v == $max_iw))[0]; // output key. bukan value array
         $max_iw = $collection_inWork[$max_iw];
         $max_iw++;
-                
+
         $issueInfo->setAttribute('issueNumber', str_pad($max_in, 3, '0', STR_PAD_LEFT));
         $issueInfo->setAttribute('inWork', str_pad($max_iw, 2, '0', STR_PAD_LEFT));
       }
@@ -139,19 +139,19 @@ class CsdbController extends Controller
     }
 
     // #6. saving
-    if($dom instanceof \DOMDocument){
-      $save = $dom->C14NFile(storage_path($path).DIRECTORY_SEPARATOR.$csdb_filename);
+    if ($dom instanceof \DOMDocument) {
+      $save = $dom->C14NFile(storage_path($path) . DIRECTORY_SEPARATOR . $csdb_filename);
     } else {
       $save = $file->storeAs("../{$path}", $csdb_filename);
     }
-    if($save){
+    if ($save) {
       $new_csdb_model = ModelsCsdb::create([
         'filename' => $csdb_filename,
         'path' => $path,
         'editable' => 1,
         'initiator_id' => $request->user()->id,
       ]);
-      if($new_csdb_model){
+      if ($new_csdb_model) {
         $new_csdb_model->setRemarks('stage', 'unstaged');
         return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
       }
@@ -173,22 +173,24 @@ class CsdbController extends Controller
     //   $all = ModelsCsdb::where('initiator_id',$request->user()->id);
     // }
     $all = ModelsCsdb::with('initiator');
-    if($request->get('initiator_email')){
-      $initiator = User::where('email',$request->get('initiator_email'))->first();
-      if($initiator){
-        $all->where('initiator_id',$initiator->id);
+    if ($request->get('initiator_email')) {
+      $initiator = User::where('email', $request->get('initiator_email'))->first();
+      if ($initiator) {
+        $all->where('initiator_id', $initiator->id);
       }
     }
-    if($request->get('stage')){
-      $all->where('remarks','"stage":"staged"');
+    if ($request->get('stage')) {
+      $all->where('remarks', '"stage":"staged"');
     }
-    if($request->get('filenameSearch')){
-      $all->where('filename', 'like', "%".$request->get('filenameSearch')."%");
+    if ($request->get('filenameSearch')) {
+      // $all->where('filename', 'like', "%" . $request->get('filenameSearch') . "%");
+      $filenameSearch = $request->get('filenameSearch');
+      $all->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
     }
     $ret = $all
-      ->where('filename','not like', 'DML%')
-      ->where('filename','not like', 'CSL%')
-      ->where('remarks', 'not like', '"crud":"deleted"')
+      ->where('filename', 'not like', 'DML%')
+      ->where('filename', 'not like', 'CSL%')
+      // ->where('remarks', 'not like', '"crud":"deleted"')
       ->paginate(15);
     $ret->setPath($request->getUri());
     return $ret;
@@ -201,19 +203,17 @@ class CsdbController extends Controller
   public function getFile(Request $request, string $filename)
   {
     $csdb_object = ModelsCsdb::where('filename', $filename)->first();
-    if($request->get('output') == 'model'){
+    if ($request->get('output') == 'model') {
       return $csdb_object;
     }
     $dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
-    if(!$dom) {
+    if (!$dom) {
       return $this->ret2(400, ["failed to load {$filename}."]);
-    }
-    elseif($dom instanceof ICNDocument){
+    } elseif ($dom instanceof ICNDocument) {
       $mime = $dom->getFileinfo()['mime_type'];
-      return Response::make($dom->getFile(),200, ['Content-Type' => $mime]);
-    }
-    else {
-      return Response::make($dom->C14N(),200,['Content-Type' => 'text/xml']);
+      return Response::make($dom->getFile(), 200, ['Content-Type' => $mime]);
+    } else {
+      return Response::make($dom->C14N(), 200, ['Content-Type' => 'text/xml']);
     }
   }
 
@@ -224,13 +224,13 @@ class CsdbController extends Controller
     $csdb_object = ModelsCsdb::where('filename', $old_filename)->first();
     $old_dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
     $schema = $old_dom->documentElement->getAttribute('xsi:noNamespaceSchemaLocation');
-    if(str_contains($schema, 'dml.xsd')){
+    if (str_contains($schema, 'dml.xsd')) {
       return $this->ret2(400, ["You cannot update object with schema {$schema} here."]);
     }
-    if(!$csdb_object->editable){
+    if (!$csdb_object->editable) {
       return $this->ret2(400, ["You cannot update object with the editable status is false."]);
     }
-    
+
     // #1. create dom
     $proccessid = CSDB::$processid = self::class . "::update";
     $file = $request->file('entity');
@@ -250,7 +250,7 @@ class CsdbController extends Controller
       $csdb_filename = $validateRootname[1];
       $ident = $validateRootname[2];
       $path = "csdb";
-      if($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
+      if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
     } elseif ($dom instanceof ICNDocument) {
       $csdb_filename = $request->file('entity')->getClientOriginalName();
       $ident = 'infoEntity';
@@ -272,15 +272,15 @@ class CsdbController extends Controller
     }
 
     // #4. change new filename (if user change) with old filename
-    if($dom instanceof \DOMDocument){
+    if ($dom instanceof \DOMDocument) {
       $new_filename = CSDB::resolve_DocIdent($dom);
-      if($old_filename != $new_filename){
+      if ($old_filename != $new_filename) {
         $domXpath = new \DOMXPath($dom);
         $ident = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
         $old_domXpath = new \DOMXPath($old_dom);
         $old_ident = $old_domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
 
-        $ident->replaceWith($dom->importNode($old_ident,true));
+        $ident->replaceWith($dom->importNode($old_ident, true));
         $dom->saveXML();
       }
     }
@@ -296,12 +296,12 @@ class CsdbController extends Controller
     }
 
     // #6. saving
-    if($dom instanceof \DOMDocument){
-      $save = $dom->C14NFile(storage_path($csdb_object->path).DIRECTORY_SEPARATOR.$csdb_filename);
+    if ($dom instanceof \DOMDocument) {
+      $save = $dom->C14NFile(storage_path($csdb_object->path) . DIRECTORY_SEPARATOR . $csdb_filename);
     } else {
       $save = $file->storeAs("../{$csdb_object->path}", $csdb_filename);
     }
-    if($save){
+    if ($save) {
       $csdb_object->updated_at = now();
       $csdb_object->save();
       return $this->ret2(200, ["{$csdb_filename} has been saved."]);
@@ -318,14 +318,14 @@ class CsdbController extends Controller
   {
     $request->validate([
       // "cagecode" => 'required',// akan memakai latest cagecode
-      'securityClassification' => ['required', function(string $attribute, mixed $value,  Closure $fail){
+      'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
         $value = (int)$value;
-        if(!($value <=1 OR $value >=5)) $fail("You should put the security classifcation between 1 through 5.");
+        if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
       }],
-      "entity" => ['required', function(string $attribute, mixed $value,  Closure $fail){
+      "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
         $ext = strtolower($value->getClientOriginalExtension());
         $mime = strtolower($value->getMimeType());
-        if($ext == 'xml' OR str_contains($mime, 'text')){
+        if ($ext == 'xml' or str_contains($mime, 'text')) {
           $fail("You should put the non-text file in {$attribute}.");
         }
       }],
@@ -335,38 +335,38 @@ class CsdbController extends Controller
     $extension = $file->getClientOriginalExtension();
 
     $prefix = "ICN";
-    
+
     // mencari nilai uniqueIdentifier terbesar +1;
     $latestFileName = CSDB::getLatestICNFile(storage_path("csdb"), '0001Z');
     $latestFileName_array = empty($latestFileName) ? [] : explode("-", $latestFileName);
 
     $cagecode = $request->get('cagecode') ?? $latestFileName_array[1] ?? '';
-    if(preg_replace("/[A-Z0-9]{5}/", '', $cagecode) != '') return $this->ret2(400, ['cagecode' => ['Cage code company must contain capital alphabetical or numerical in five length.']]);
-    if(!$cagecode) return $this->ret2(400, ['cagecode' => ["Cage Code company is required for naming object."]]);
-    
+    if (preg_replace("/[A-Z0-9]{5}/", '', $cagecode) != '') return $this->ret2(400, ['cagecode' => ['Cage code company must contain capital alphabetical or numerical in five length.']]);
+    if (!$cagecode) return $this->ret2(400, ['cagecode' => ["Cage Code company is required for naming object."]]);
+
     $uniqueIdentifier = $latestFileName_array[2] ?? 0;
     $uniqueIdentifier++;
     $uniqueIdentifier = str_pad((int) $uniqueIdentifier, 5, '0', STR_PAD_LEFT);
-    
+
     $issueNumber = $latestFileName_array[3] ?? 0;
     $issueNumber++;
     $issueNumber = str_pad((int) $issueNumber, 3, '0', STR_PAD_LEFT);
-    
+
     $securityClassification = str_pad((int) $request->get('securityClassification'), 2, '0', STR_PAD_LEFT);
 
     $cagecode = '0001Z';
     $filename = "{$prefix}-{$cagecode}-{$uniqueIdentifier}-{$issueNumber}-{$securityClassification}.{$extension}";
 
     $save = Storage::disk('csdb')->put($filename, $file->getContent());
-    if($save){
+    if ($save) {
       $new_csdb_model = ModelsCsdb::create([
         'filename' => $filename,
         'path' => 'csdb',
         'editable' => '1',
         'initiator_id' => $request->user()->id,
       ]);
-      if($new_csdb_model){
-        $new_csdb_model->setRemarks('stage','unstaged');
+      if ($new_csdb_model) {
+        $new_csdb_model->setRemarks('stage', 'unstaged');
         return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
       }
     }
@@ -378,18 +378,18 @@ class CsdbController extends Controller
    */
   public function commit(Request $request, string $filename)
   {
-    $model = ModelsCsdb::where('filename',$filename)->first();
-    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can commit."]);
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    if ($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can commit."]);
     // if(!$model->editable) return $this->ret2(400, ['This object cannot re commit. You might have issue this object at previous.']);
     $model->direct_save = false;
     $model->DOMDocument = CSDB::importDocument(storage_path($model->path), $model->filename);
 
     // new DOM
     $dom = CSDB::commit($model->DOMDocument);
-    if(!$dom) return $this->ret2(400, CSDB::get_errors(true,'commit'));
+    if (!$dom) return $this->ret2(400, CSDB::get_errors(true, 'commit'));
 
     $new_filename = CSDB::resolve_DocIdent($model->DOMDocument);
-    if($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This Object cannot be commited due duplication filename of {$new_filename}."]);
+    if ($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This Object cannot be commited due duplication filename of {$new_filename}."]);
 
     // change old object editable into false
     $model->editable = 0;
@@ -397,8 +397,8 @@ class CsdbController extends Controller
 
 
     // save new DOM
-    $save = $dom->C14NFile(storage_path($model->path).DIRECTORY_SEPARATOR.$new_filename);
-    if($save){
+    $save = $dom->C14NFile(storage_path($model->path) . DIRECTORY_SEPARATOR . $new_filename);
+    if ($save) {
       $new_model = ModelsCsdb::create([
         'filename' => $new_filename,
         'path' => $model->path,
@@ -409,7 +409,7 @@ class CsdbController extends Controller
       $new_model->setRemarks('stage', 'unstaged');
       return $this->ret2(200, ["New {$new_model->filename} has been created."]);
     }
-    return $this->ret2(400, ["{$filename} failed to commit."]);    
+    return $this->ret2(400, ["{$filename} failed to commit."]);
   }
 
   /**
@@ -421,16 +421,16 @@ class CsdbController extends Controller
   {
     $issueInfo = explode("_", $filename)[1] ?? '';
     $inWork = explode("-", $issueInfo)[1] ?? '';
-    if($inWork == '00' OR !str_contains($filename,".xml")) return $this->ret2(400, ["$filename cannot resolved."]);
+    if ($inWork == '00' or !str_contains($filename, ".xml")) return $this->ret2(400, ["$filename cannot resolved."]);
 
-    $model = ModelsCsdb::where('filename',$filename)->first();
-    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    if ($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
     $model->direct_save = false;
-    if(!$model) return $this->ret2(400, ["$filename does not available."]);
-    $dom = CSDB::importDocument(storage_path($model->path), $filename);    
+    if (!$model) return $this->ret2(400, ["$filename does not available."]);
+    $dom = CSDB::importDocument(storage_path($model->path), $filename);
 
     $initial = $dom->documentElement->tagName;
-    if($initial == 'dmodule') $initial = 'dm';
+    if ($initial == 'dmodule') $initial = 'dm';
     $domXpath = new \DOMXpath($dom);
     $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];
     $issueNumber = $issueInfo->getAttribute('issueNumber');
@@ -441,16 +441,16 @@ class CsdbController extends Controller
 
     // validate XSI
     $validateXSI = CSDB::validate('XSI', $dom);
-    if(!$validateXSI) return $this->ret2(400, CSDB::get_errors());
+    if (!$validateXSI) return $this->ret2(400, CSDB::get_errors());
     $schema = CSDB::getSchemaUsed($dom, '');
-    if($schema != 'brex.xsd'){
+    if ($schema != 'brex.xsd') {
       $validateBREX = CSDB::validate('BREX', $dom);
-      if(!$validateBREX) return $this->ret2(400, CSDB::get_errors());
+      if (!$validateBREX) return $this->ret2(400, CSDB::get_errors());
     }
-    
+
     // new csdb
     $new_filename = CSDB::resolve_DocIdent($dom);
-    if(ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["{$filename} has already issued before named {$new_filename}"]);
+    if (ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["{$filename} has already issued before named {$new_filename}"]);
     $new_model = new ModelsCsdb();
     $new_model->direct_save = false;
     $new_model->DOMDocument = $dom;
@@ -461,14 +461,14 @@ class CsdbController extends Controller
     $new_model->remarks = $model->remarks;
     $new_model->setRemarks('securityClassification', CSDB::resolve_securityClassification($new_model->DOMDocument, 'number'));
     $save = $new_model->saveModelAndDOM();
-    if($save){
+    if ($save) {
       return $this->ret2(200, ["Object is issued named {$new_filename}"]);
     } else {
       return $this->ret2(400, ["Issue {$filename} fails."]);
     }
-    
+
     // $model->save
-    
+
   }
 
   /**
@@ -478,22 +478,22 @@ class CsdbController extends Controller
    */
   public function edit(Request $request, string $filename)
   {
-    if(!$filename OR substr($filename,0,3) == 'DML') return $this->ret2(400, ['This object is can not open edit here.']);
-    $model = ModelsCsdb::where('filename',$filename)->first();
-    if($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
-    if($model->editable) return $this->ret2(400, ["{$filename} is still in editable."]);
+    if (!$filename or substr($filename, 0, 3) == 'DML') return $this->ret2(400, ['This object is can not open edit here.']);
+    $model = ModelsCsdb::where('filename', $filename)->first();
+    if ($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can edit."]);
+    if ($model->editable) return $this->ret2(400, ["{$filename} is still in editable."]);
 
-    $dom = CSDB::importDocument(storage_path($model->path),$model->filename);
+    $dom = CSDB::importDocument(storage_path($model->path), $model->filename);
     $initial = $dom->documentElement->tagName;
-    if($initial == 'dmodule') $initial = 'dm';
+    if ($initial == 'dmodule') $initial = 'dm';
     $domxpath = new \DOMXPath($dom);
     $issueInfo = $domxpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];
     $issueInfo->setAttribute('inWork', '01');
 
     $new_filename = CSDB::resolve_DocIdent($dom);
-    if($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This object cannot be editted due duplication filename of {$new_filename}."]);
-    $save = $dom->C14NFile(storage_path($model->path).DIRECTORY_SEPARATOR.$new_filename);
-    if($save){
+    if ($new_model = ModelsCsdb::where('filename', $new_filename)->first()) return $this->ret2(400, ["This object cannot be editted due duplication filename of {$new_filename}."]);
+    $save = $dom->C14NFile(storage_path($model->path) . DIRECTORY_SEPARATOR . $new_filename);
+    if ($save) {
       $new_model = ModelsCsdb::create([
         'filename' => $new_filename,
         'path' => $model->path,
@@ -501,7 +501,7 @@ class CsdbController extends Controller
         'initiator_id' => $model->initiator_id,
         'remarks' => $model->remarks,
       ]);
-      if($new_model){
+      if ($new_model) {
         $new_model->setRemarks('stage', 'unstaged');
         return $this->ret2(200, ["New {$new_model->filename} has been created."]);
       }
@@ -509,28 +509,79 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$filename} failed to open edit."]);
   }
 
-  public function restore(Request $request, string $filename)
+  // public function restore(Request $request, string $filename)
+  // {
+  //   $model = ModelsCsdb::where('filename', $filename)->first();
+  //   if(!$model) return $this->ret2(400, ["{$filename} failed to restore."]);
+  //   $model->direct_save = false;
+  //   $model->editable = $model->remarks['prev_editable'];
+  //   $model->setRemarks("crud", 'restored');
+  //   $model->setRemarks("prev_editable", 'undefined');
+  //   $model->save();
+  //   return $this->ret2(200, ["{$filename} is restored."]);
+  // }
+
+  public function get_deletion_list(Request $request)
   {
-    $model = ModelsCsdb::where('filename', $filename)->first();
-    if(!$model) return $this->ret2(400, ["{$filename} failed to restore."]);
-    $model->direct_save = false;
-    $model->editable = $model->remarks['prev_editable'];
-    $model->setRemarks("crud", 'restored');
-    $model->setRemarks("prev_editable", 'undefined');
-    $model->save();
-    return $this->ret2(200, ["{$filename} is restored."]);
+    $all = DB::table('csdb_deleted');
+    $all->where('deleter_id', $request->user()->id);    
+    if ($request->get('filenameSearch')) {
+      $filenameSearch = $request->get('filenameSearch');
+      $all->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
+    }
+    $ret = $all
+      ->latest()
+      ->paginate(15);
+    $ret->setPath($request->getUri());
+
+    foreach($ret->items() as $k => $v){
+      $v->meta = json_decode($v->meta);
+
+      // $deleter = json_decode(json_encode([
+      //   "name" => $request->user()->name,
+      //   "email" => $request->user()->email
+      // ]));
+      // $v->deleter = $deleter;
+    }
+    return $ret;
   }
 
+  /**
+   * akan memindahkan file ke folder csdb_deleted.
+   * Object yang sudah di delete, tidak akan bisa diapa-apain kecuali di download
+   * Object hanya bisa di delete jika remark->stage != unstaged
+   * filename akan ditambah dengan 'filename.xml__timestamp_microsecond'
+   */
   public function delete(Request $request, string $filename)
   {
-    $model = ModelsCsdb::where('filename', $filename)->first();
-    if(!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
+    // dd(Carbon::createFromTimestamp(1707835349,7)->toString());
+
+    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
+    if (!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
+
+    $model->hide(false);
+    $model_meta = $model->toArray();
+    
+    if ($model->initiator->id = !$request->user()->id) return $this->ret2(400, ["Deleting {$filename} must be done by {$model->initiator->name}"]);
+    if (isset($model->remarks['stage']) and $model->remarks['stage'] == 'staged') return $this->ret2(400, ["{$filename} has been staged and cannot be deleted."]);
+    
     $model->direct_save = false;
-    $model->setRemarks("crud", 'deleted');
-    $model->setRemarks("prev_editable", $model->editable);
-    $model->editable = 0;
-    $model->save();
-    return $this->ret2(200, ["{$filename} is deleted."]);
+    $time = Carbon::now()->timezone(7);
+    $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);
+    
+    
+    $create_deleted_db = fn () => DB::table('csdb_deleted')->insert([
+      "filename" => $new_filename,
+      "deleter_id" => $request->user()->id,
+      "meta" => collect($model_meta),
+      "created_at" => Carbon::now(7),
+    ]);
+    $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
+    
+    if(!($create_deleted_db() AND $move_file())) return $this->ret2(400,["{$filename} fails to delete"]);
+
+    $model->delete();    
+    return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."]);
   }
 
   /**
@@ -540,7 +591,7 @@ class CsdbController extends Controller
   {
     $model = ModelsCsdb::where('filename', $filename)->first();
     $delete = Storage::disk('csdb')->delete($filename);
-    if($delete){
+    if ($delete) {
       $model->delete();
     }
     return true;

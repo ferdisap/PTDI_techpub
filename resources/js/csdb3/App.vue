@@ -17,6 +17,8 @@ export default {
       showMessages: false,
       errors: undefined, // {}
       message: undefined, // ""
+
+      infoData: {}, // requiredAttribute: 'show:Boolean', 'message:String'
     }
   },
   components: { Topbar, Info, Aside, Main },
@@ -84,12 +86,32 @@ export default {
         <hr class="border-2"/>
         <div class="max-h-[65%] overflow-auto px-10" message></div>
         <div class="w-full text-center bottom-3 absolute">
-          <button autofocus class="button-danger" alert-not-ok>X</button>
-          <button class="button-safe" alert-ok>O</button>
+          <button autofocus class="button-danger shadow-md" alert-not-ok>X</button>
+          <button class="button-safe shadow-md" alert-ok>O</button>
         </div>
       </div>
     </div>
   </dialog>
+
+  <div v-if="infoData.show" id="info" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
+    <div style="
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background:rgba(0,0,0,0.5);
+    ">
+      <div class="w-1/2 h-1/2 bg-white opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-cyan-200">
+        <h1 class="text-center mt-3 mb-3">INFORMATION</h1>
+        <hr class="border-2"/>
+        <div class="max-h-[65%] overflow-auto px-10" v-html="infoData.message"></div>
+        <div class="w-full text-center bottom-3 absolute">
+          <button autofocus class="button-danger shadow-md" @click="infoData.show = false">X</button>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- <div class="w-1/2 h-1/2 bg-white opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-red-500 border-dashed">
     <h1 class="text-center mt-3 mb-3">ALERT !</h1>
