@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/csdb/*
 /storage/csdb_deleted/*
+/resources/notes/info/README.md
 /vendor
 .env
 .env.backup

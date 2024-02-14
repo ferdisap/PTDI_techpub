@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use PhpParser\Node\Stmt\TryCatch;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
@@ -243,6 +245,28 @@ class Csdb extends Model
       }
     }
     return false;
+  }
+
+  /**
+   * jika $column tersedia di database 'csdb' atau 'csdb_deleted'.
+   * jika ada dua column yang sama, tetap akan diambil column pertama yang found.
+   * @return string 
+   */
+  public static function columnNameMatching(string $column , string $dbName = '')
+  {
+    if(!$dbName){
+      $found = array_unique(array_merge(DB::getSchemaBuilder()->getColumnListing('csdb'), DB::getSchemaBuilder()->getColumnListing('csdb_deleted')));
+    } else {
+      $found = DB::getSchemaBuilder()->getColumnListing($dbName);
+    }
+    $found = array_filter($found, function($v) use($column){
+      $v = str_contains($v, $column) ? $column : (
+        str_contains($column, $v) ? $column : false
+      );
+      return $v;
+    });
+    $found = !empty($found) ? $found[array_key_first($found)] : '';
+    return $found;
   }
 
 

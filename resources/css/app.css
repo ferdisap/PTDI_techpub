@@ -106,13 +106,26 @@ h6 {
   /* end text-xs */
 }
 
-.detail-container ol, .detail-container ul, .detail-container menu {
+.detail-container ol, 
+.detail-container ul, 
+.detail-container menu,
+dialog ol, 
+dialog ul, 
+#info ol, 
+#info ul
+{
   list-style: auto;
   margin: revert;
   padding: revert;
 }
 
-p a, .detail-container a {
+p a,
+.detail-container a,
+dialog a,
+dialog a,
+#info a,
+#info a 
+{
   color: revert;
   text-decoration: revert;
   -webkit-text-decoration: revert;
@@ -148,7 +161,6 @@ p a, .detail-container a {
     dark:focus:ring-blue-500
     dark:focus:border-blue-500
   }
-
 }
 
 /* button */
@@ -208,6 +220,25 @@ p a, .detail-container a {
   }
   .dropdown-menu {
     @apply px-4 py-2 block hover:bg-blue-600 hover:text-white cursor-pointer
+  }
+}
+
+/* Misc */
+@layer componentns {
+  code {
+    @apply 
+    inline-block
+    mt-1 mb-1 p-2
+    rounded-lg
+    bg-gray-700
+    text-pink-400    
+    dark:bg-neutral-100
+    dark:text-pink-600
+  }
+  * {
+    @apply
+    dark:bg-neutral-900
+    dark:text-white
   }
 }
 

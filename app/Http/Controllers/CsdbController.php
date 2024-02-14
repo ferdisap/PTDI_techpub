@@ -30,15 +30,42 @@ use Ptdi\Mpub\Validation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipStream\ZipStream;
 use Illuminate\Support\Facades\Process;
+use Ptdi\Mpub\Helper;
 
 class CsdbController extends Controller
 {
   use Validation;
 
+  /**
+   * $model bisa berupa ModelsCsdb atau DB::table()
+   */
+  private mixed $model;
+
   ################# NEW for csdb3 #################
   public function app()
   {
     return view('csdb3.app');
+  }
+
+  /**
+   * default search column db is filename 
+   */
+  public function search($keyword)
+  {
+    $keywords = Helper::explodeSearchKey($keyword);
+    foreach($keywords as $k => $keyword){
+      if((int)$k OR $k == 0){ // jika $keyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
+        $this->model->whereRaw("filename LIKE '%{$keyword}%' ESCAPE '\'");
+      } else {
+        $column = ModelsCsdb::columnNameMatching($k, 'csdb_deleted');
+        if($column){
+          $this->model->whereRaw("{$column} LIKE '%{$keyword}%' ESCAPE '\'");
+        }
+        else {
+          $messages[] = "'{$column}::{$keyword}' cannot be found.";
+        }
+      }
+    }
   }
 
   /**
@@ -521,29 +548,27 @@ class CsdbController extends Controller
   //   return $this->ret2(200, ["{$filename} is restored."]);
   // }
 
+  /**
+   * jika ada filenamSearch, default pencarian adalah column 'filename'
+   */
   public function get_deletion_list(Request $request)
   {
-    $all = DB::table('csdb_deleted');
-    $all->where('deleter_id', $request->user()->id);    
+    $messages = [];
+    $this->model = DB::table('csdb_deleted');
+    $this->model->where('deleter_id', $request->user()->id);    
     if ($request->get('filenameSearch')) {
-      $filenameSearch = $request->get('filenameSearch');
-      $all->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
+      $this->model = $this->model;
+      $this->search($request->get('filenameSearch'));
     }
-    $ret = $all
+    $ret = $this->model
       ->latest()
       ->paginate(15);
     $ret->setPath($request->getUri());
 
     foreach($ret->items() as $k => $v){
       $v->meta = json_decode($v->meta);
-
-      // $deleter = json_decode(json_encode([
-      //   "name" => $request->user()->name,
-      //   "email" => $request->user()->email
-      // ]));
-      // $v->deleter = $deleter;
     }
-    return $ret;
+    return $this->ret2(200, $messages, $ret->toArray());
   }
 
   /**

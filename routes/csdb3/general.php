@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CsdbController;
 use App\Http\Controllers\CsdbServiceController;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::get("/csdb3/{view?}",[CsdbController::class, 'app'])->where('view','(.*)')->middleware('auth');
@@ -21,8 +22,10 @@ Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware(
 // Route::post('api/pushtostage',)
 
 Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');
-Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
+// Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
 Route::get("/api/harddelete/{filename}", [CsdbController::class, 'harddelete'])->middleware('auth'); // untuk developer saja
+
+
 
 
 

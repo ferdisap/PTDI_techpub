@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<script src="https://projects.davidlynch.org/maphilight/jquery.maphilight.min.js"></script>
+  <script type="text/javascript" src="/js/jquery.maphilight.min.js"></script>
   @vite('resources/css/app.css')
   @vite('resources/css/loadingbar.css')
   @vite('resources/css/dmodule.css')

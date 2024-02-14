@@ -5,13 +5,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\DmoduleController;
 use App\Http\Controllers\BrexController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Html2Pdf;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -77,3 +78,17 @@ require __Dir__."/br/general.php";
 Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth'); // berguna untuk vue
 Route::get('/route/{name}', [Controller::class, 'route']); // masih digunakan di xsl
 Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']); // berguna untuk vue
+
+Route::get("/api/info", function(Request $request){
+  $name = $request->get('name');
+  if($name){
+    $content = file_get_contents(resource_path("notes/info/{$name}.md"));
+    if($content){
+      $status = 200;
+      $contentType = "text/markdown";
+    }
+  }
+  return Response::make($content ?? '',$status ?? 400,[
+    "Content-Type" => $contentType ?? "text/plain"
+  ]);
+})->middleware('auth')->name('api.info');

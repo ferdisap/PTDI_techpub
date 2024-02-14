@@ -11,10 +11,23 @@ import { useTechpubStore } from '../techpub/techpubStore';
 import mitt from 'mitt';
 import alert from '../alert';
 
+// import { markdown } from 'markdown';
+
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
 axios.defaults.withCredentials = true;
 window.axios = axios;
+
+// let md =  await axios({
+//   url: "/csdb/info",
+//   responseType: "text"
+// });
+// window.md = md;
+// window.MarkDown = markdown;
+// let info = MarkDown.toHTML(md.data);
+// $('body').html($(info));
+// console.log(md);
+// return;
 
 
 const csdb = createApp(App);
