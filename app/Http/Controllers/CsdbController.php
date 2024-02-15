@@ -600,9 +600,9 @@ class CsdbController extends Controller
    */
   public function restore(Request $request, string $filename)
   {
+    // #1. get deleted model
     $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
     $deleted_model = $deleted_QB->first();
-
     if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
     $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
       $stdClass = get_object_vars($stdClass);
@@ -612,24 +612,35 @@ class CsdbController extends Controller
       return $stdClass;
     };
     $meta = $meta(json_decode($deleted_model->meta), $meta);
-    $restore = function() use($meta, $deleted_QB, $filename){
-      $model = ModelsCsdb::updateOrCreate($meta);
-      if($model) {
-        $isDel = $deleted_QB->delete();
-        if($isDel){
-          $new_filename = preg_replace("/__[\S]+/",'',$filename);
-          $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
-          if($is_move_file) return $new_filename;
-        }
-      };
+
+    // #2. restore by re-creating ModelsCsdb and move file from path 'csdb_deleted' to 'csdb'
+    $message = "{$filename} fail to restore.";
+    $restore = function() use($meta, $deleted_QB, $filename, &$message){
+      $model = ModelsCsdb::find($meta['id']);
+      if($model){
+        $message = "Failed to restore due to duplication filename. See {$filename}.";
+        return false;
+      } else {
+        $model = ModelsCsdb::create($meta);
+      }
+      $isDel = $deleted_QB->delete();
+      if($isDel){
+        $new_filename = preg_replace("/__[\S]+/",'',$filename);
+        $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
+        if($is_move_file) {
+          $message = "{$filename} has been restored";
+          return $new_filename;
+        };
+      }
       return false;
     };
+    // #3. return
     if($filename = $restore()){
       $filename = preg_replace("/__[\S]+/",'',$filename);
-      return $this->ret2(200, ["{$filename} has been restored"]);
+      return $this->ret2(200, [$message]);
     } else {
       $filename = preg_replace("/__[\S]+/",'',$filename);
-      return $this->ret2(400, ["{$filename} fail to restore."]);
+      return $this->ret2(400, [$message]);
     }
   }
 
