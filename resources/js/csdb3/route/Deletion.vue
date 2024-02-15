@@ -47,7 +47,6 @@ export default {
         return;
       }
       const route = this.techpubStore.getWebRoute('api.permanentdelete_object', {filename: filename});
-      console.log(window.route = route);
       axios({
         url: route.url,
         method: route.method[0],

@@ -11,6 +11,7 @@ use App\Rules\EnterpriseCode;
 use App\Rules\SecurityClassification;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Ptdi\Mpub\CSDB as MpubCSDB;
@@ -30,26 +31,20 @@ class DmlController extends Controller
   // }
   public function get_list(Request $request)
   {
-    $dmls = Csdb::with('initiator');
-    if($request->get('filenameSearch')){
-      // $dmls->where('filename', 'like', "%".$request->get('filenameSearch')."%");
-      $filenameSearch = str_replace("_",'\_',$request->get('filenameSearch'));
-      $dmls->selectRaw("*");
-      $dmls->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
-    }
-    
+    $this->model = Csdb::with('initiator');
+    $this->search($request->get('filenameSearch'));
     if($request->get('dml')){
-      $dmls->where('filename', 'like' ,"DML-%");
+      $this->model->where('filename', 'like' ,"DML-%");
     }
     elseif($request->get('csl')){
-      $dmls->where('filename', 'like' ,"CSL-%");
+      $this->model->where('filename', 'like' ,"CSL-%");
     }
     else {
       // ini akan membuat query tidak akan membaca apakah sudah di delete/belum. Artinya akan query all DML/CSL
-      $dmls->where('filename', 'like' ,"DML-%")->orWhere('filename', 'like' ,"CSL-%");
+      $this->model->where('filename', 'like' ,"DML-%")->orWhere('filename', 'like' ,"CSL-%");
     }
-    $ret = $dmls
-    ->where('remarks', 'not like', '%"crud":"deleted"%')
+    $ret = $this->model
+    // ->where('remarks', 'not like', '%"crud":"deleted"%')
     ->paginate(15);
     $ret->setPath($request->getUri());
     return $ret;

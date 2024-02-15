@@ -13,3 +13,10 @@ You can only do request csdb objects by passing parameters as below:
 SearchText = ``` filename::MALE filename::0001Z date::2024-02-20 ```
 
 The SearchText will look for CSDB Object which the filename contains `MALE` and `0001Z` and the its date contains `2024-02-20`.
+
+## Available Column
+1. filename | value: text
+1. path | value: text
+1. editable | value = 1 or 0
+1. created_at | value = yyyy-mm-dd xx:xx:xx (24 hours format)
+1. updated_at | value = yyyy-mm-dd xx:xx:xx (24 hours format)

@@ -38,8 +38,9 @@ class CsdbController extends Controller
 
   /**
    * $model bisa berupa ModelsCsdb atau DB::table()
+   * dipindahkan ke parent class
    */
-  private mixed $model;
+  // private mixed $model;
 
   ################# NEW for csdb3 #################
   public function app()
@@ -48,25 +49,27 @@ class CsdbController extends Controller
   }
 
   /**
-   * default search column db is filename 
+   * default search column db is filename
+   * harus set $this->model terlebih dahulu baru bisa jalankan fungsi ini
+   * dipindahkan ke parent class
    */
-  public function search($keyword)
-  {
-    $keywords = Helper::explodeSearchKey($keyword);
-    foreach($keywords as $k => $keyword){
-      if((int)$k OR $k == 0){ // jika $keyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
-        $this->model->whereRaw("filename LIKE '%{$keyword}%' ESCAPE '\'");
-      } else {
-        $column = ModelsCsdb::columnNameMatching($k, 'csdb_deleted');
-        if($column){
-          $this->model->whereRaw("{$column} LIKE '%{$keyword}%' ESCAPE '\'");
-        }
-        else {
-          $messages[] = "'{$column}::{$keyword}' cannot be found.";
-        }
-      }
-    }
-  }
+  // public function search($keyword)
+  // {
+  //   $keywords = Helper::explodeSearchKey($keyword);
+  //   foreach($keywords as $k => $keyword){
+  //     if((int)$k OR $k == 0){ // jika $keyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
+  //       $this->model->whereRaw("filename LIKE '%{$keyword}%' ESCAPE '\'");
+  //     } else {
+  //       $column = ModelsCsdb::columnNameMatching($k, 'csdb_deleted');
+  //       if($column){
+  //         $this->model->whereRaw("{$column} LIKE '%{$keyword}%' ESCAPE '\'");
+  //       }
+  //       else {
+  //         $messages[] = "'{$column}::{$keyword}' cannot be found.";
+  //       }
+  //     }
+  //   }
+  // }
 
   /**
    * akan membuat file baru dengan issueNumber largest dan inWork '01'
@@ -545,7 +548,6 @@ class CsdbController extends Controller
     $this->model = DB::table('csdb_deleted');
     $this->model->where('deleter_id', $request->user()->id);    
     if ($request->get('filenameSearch')) {
-      $this->model = $this->model;
       $this->search($request->get('filenameSearch'));
     }
     $ret = $this->model

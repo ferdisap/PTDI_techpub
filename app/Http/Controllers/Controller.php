@@ -11,6 +11,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Ptdi\Mpub\Helper;
 
 class Controller extends BaseController
 {
@@ -174,6 +175,33 @@ class Controller extends BaseController
   public function route(Request $request, string $name)
   {
     return redirect()->route($name, $request->all());
+  }
+
+    /**
+   * $model bisa berupa ModelsCsdb atau DB::table()
+   */
+  public mixed $model;
+
+  /**
+   * default search column db is filename
+   * harus set $this->model terlebih dahulu baru bisa jalankan fungsi ini
+   */
+  public function search($keyword)
+  {
+    $keywords = Helper::explodeSearchKey(str_replace("_",'\_',$keyword));
+    foreach($keywords as $k => $keyword){
+      if((int)$k OR $k == 0){ // jika $keyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
+        $this->model->whereRaw("filename LIKE '%{$keyword}%' ESCAPE '\'");
+      } else {
+        $column = Csdb::columnNameMatching($k, 'csdb');
+        if($column){
+          $this->model->whereRaw("{$column} LIKE '%{$keyword}%' ESCAPE '\'");
+        }
+        else {
+          $messages[] = "'{$column}::{$keyword}' cannot be found.";
+        }
+      }
+    }
   }
   
 }

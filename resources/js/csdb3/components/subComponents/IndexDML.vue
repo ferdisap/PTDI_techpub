@@ -78,17 +78,13 @@ export default {
 }
 </script>
 <template>
-  <!-- <div>
-    <div v-for="t in tes">
-      {{ t }}
-    </div>
-    <button class="button" @click="delete tes['1']">del</button>
-  </div> -->
-
   <div class="IndexDML" v-if="responsedata_get_dml_list">
     <h1>Index DML</h1>
-    <input @change="get_list({ dml: 1 })" placeholder="find filename" type="text"
-      class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <div class="flex">
+      <input @change="get_list({ dml: 1 })" placeholder="find filename" type="text"
+        class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({filename: 'searchCsdbObject'})">info</button>
+    </div>
     <div class="flex">
       <table class="w-full table-cell">
         <thead class="h-10">
@@ -131,8 +127,11 @@ export default {
 
   <div class="IndexCSL" v-if="responsedata_get_csl_list">
     <h1>Index CSL</h1>
-    <input @change="get_list({ csl: 1 })" placeholder="find filename" type="text"
-      class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <div class="flex">
+      <input @change="get_list({ csl: 1 })" placeholder="find filename" type="text"
+        class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({filename: 'searchCsdbObject'})">info</button>
+    </div>
     <div class="flex">
       <table class="w-full table-cell">
         <thead class="h-10">
