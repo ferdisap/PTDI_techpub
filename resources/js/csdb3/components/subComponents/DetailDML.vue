@@ -68,7 +68,7 @@ export default {
     }
   },
   methods: {
-    submit(command) {
+    async submit(command) {
       let routename;
       if (command == 'commit') {
         routename = 'api.commit_dml';
@@ -77,6 +77,9 @@ export default {
       } else if (command == 'edit') {
         routename = 'api.edit_dml';
       } else if (command == 'delete'){
+        if(!(await this.$root.alert({filename: 'beforeDeleteDML', name:this.$route.params.filename}))){
+          return;
+        }
         routename = 'api.delete_object';
       } else if (command == 'restore'){
         routename = 'api.restore_object';

@@ -1,11 +1,13 @@
 <script>
+import axios from 'axios';
 import { useTechpubStore } from '../../techpub/techpubStore';
 
 export default {
   data(){
     return {
       techpubStore: useTechpubStore(),
-      responsedata_get_deletion_list: {} // undefined
+      responsedata_get_deletion_list: {}, // undefined
+      page: 1,
     }
   },
   methods: {
@@ -25,9 +27,53 @@ export default {
         })
         .catch(error => this.$root.error(error));
     },
+    restoreDeletion(filename){
+      let eventTarget = event.target;
+      const route = this.techpubStore.getWebRoute('api.restore_object', {filename: filename});
+      axios({
+        url: route.url,
+        method: route.method[0],
+      })
+      .then(rsp => {
+        this.$root.success(rsp);
+        $(eventTarget).parents('tr').eq(0).remove();
+        this.emitter.emit(`csdb_restore-${filename.substr(0,3)}`);
+      })
+      .catch(e => this.$root.error(e));
+    },
+    async permanentDelete(filename){
+      let eventTarget = event.target;
+      if(!(await this.alert({message:`Are you sure to <b>PERMANENT DELETE</b> ${filename}? The csdb object will never be restored or get of its content.`}).result)){
+        return;
+      }
+      const route = this.techpubStore.getWebRoute('api.permanentdelete_object', {filename: filename});
+      console.log(window.route = route);
+      axios({
+        url: route.url,
+        method: route.method[0],
+        data: route.params
+      })
+      .then(rsp => {
+        this.$root.success(rsp);
+        $(eventTarget).parents('tr').eq(0).remove();
+      })
+      .catch(e => this.$root.error(e));
+    },
+    goto(page = undefined){
+      let url = new URL(this.responsedata_get_deletion_list.path);
+      if(!page){
+        url.searchParams.set('page',this.page);
+      } else {
+        url.searchParams.set('page',page);
+      }
+      axios.get(url)
+      .then(response => this.responsedata_get_deletion_list = response.data)
+      .catch(error => this.$root.error(error));
+    },
   },
   mounted(){
     this.get_list();
+    this.emitter.on('csdb_delete',this.get_list);
   },
 }
 </script>
@@ -36,7 +82,7 @@ export default {
     <h1>Index Deleted Object</h1>
     <div class="flex">
       <input @change="get_list()" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info('searchCsdbObject')">info</button>
+      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({filename: 'searchCsdbObject'})">info</button>
     </div>
     <div class="flex">      
       <table class="w-full table-cell">
@@ -52,8 +98,8 @@ export default {
             <td><a href="#" @click="filenameAnalysis = deletion.filename">{{ deletion.filename }}</a></td>
             <td>{{ techpubStore.date(deletion.created_at) }}</td>
             <td>
-              <button class="material-icons text-green-700 has-tooltip-arrow" data-tooltip="Restore">restore_from_trash</button>
-              <button @click="deleteDeletion(deletion.filename)" class="material-icons text-red-700 has-tooltip-arrow" data-tooltip="Permanent Delete">delete_forever</button>
+              <button @click="restoreDeletion(deletion.filename)" class="material-icons text-green-700 has-tooltip-arrow" data-tooltip="Restore">restore_from_trash</button>
+              <button @click="permanentDelete(deletion.filename)" class="material-icons text-red-700 has-tooltip-arrow" data-tooltip="Permanent Delete">delete_forever</button>
             </td>
           </tr>
         </tbody>

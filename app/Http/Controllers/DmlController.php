@@ -398,6 +398,7 @@ class DmlController extends Controller
           $fail("The {$attribute} is wrong rule.");
         }
       }],
+      'entryIdent' => [ fn(string $attribute, mixed $value, Closure $fail) => count($value) !== count(array_unique($value)) ? $fail("Entry Ident must be unique.") : '' ],
       'entryIdent.*' => ['required', new EntryIdent($filename)],
       'dmlEntryType.*' => [new EntryType],
       'issueType.*' => [new EntryIssueType],

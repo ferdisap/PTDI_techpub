@@ -536,18 +536,6 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$filename} failed to open edit."]);
   }
 
-  // public function restore(Request $request, string $filename)
-  // {
-  //   $model = ModelsCsdb::where('filename', $filename)->first();
-  //   if(!$model) return $this->ret2(400, ["{$filename} failed to restore."]);
-  //   $model->direct_save = false;
-  //   $model->editable = $model->remarks['prev_editable'];
-  //   $model->setRemarks("crud", 'restored');
-  //   $model->setRemarks("prev_editable", 'undefined');
-  //   $model->save();
-  //   return $this->ret2(200, ["{$filename} is restored."]);
-  // }
-
   /**
    * jika ada filenamSearch, default pencarian adalah column 'filename'
    */
@@ -579,8 +567,6 @@ class CsdbController extends Controller
    */
   public function delete(Request $request, string $filename)
   {
-    // dd(Carbon::createFromTimestamp(1707835349,7)->toString());
-
     $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
     if (!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
 
@@ -607,6 +593,63 @@ class CsdbController extends Controller
 
     $model->delete();    
     return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."]);
+  }
+
+  /**
+   * Restore the soft deleted @delete() csdb object.
+   */
+  public function restore(Request $request, string $filename)
+  {
+    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+    $deleted_model = $deleted_QB->first();
+
+    if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
+    $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
+      $stdClass = get_object_vars($stdClass);
+      foreach($stdClass as $k => $v){
+        if(is_object($v)) $stdClass[$k] = $fn($v, $fn);
+      }
+      return $stdClass;
+    };
+    $meta = $meta(json_decode($deleted_model->meta), $meta);
+    $restore = function() use($meta, $deleted_QB, $filename){
+      $model = ModelsCsdb::updateOrCreate($meta);
+      if($model) {
+        $isDel = $deleted_QB->delete();
+        if($isDel){
+          $new_filename = preg_replace("/__[\S]+/",'',$filename);
+          $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
+          if($is_move_file) return $new_filename;
+        }
+      };
+      return false;
+    };
+    if($filename = $restore()){
+      $filename = preg_replace("/__[\S]+/",'',$filename);
+      return $this->ret2(200, ["{$filename} has been restored"]);
+    } else {
+      $filename = preg_replace("/__[\S]+/",'',$filename);
+      return $this->ret2(400, ["{$filename} fail to restore."]);
+    }
+  }
+
+  public function permanentDelete(Request $request)
+  {
+    $filename = $request->get('filename');
+    $message = 'There is no need to be permanently deleted.';
+    $code = 400;
+    if(!$filename){
+      return $this->ret2($code, [$message]);
+    }
+    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+    if($deleted_QB->delete() AND Storage::disk('csdb_deleted')->delete($filename)){
+      $code = 200;
+      $message = "{$filename} has been permanently deleted.";
+    }
+    return $this->ret2($code, [$message]);
+    
+    
+
   }
 
   /**

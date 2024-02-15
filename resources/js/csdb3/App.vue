@@ -5,6 +5,7 @@ import Aside from './components/Aside.vue';
 import Main from './components/Main.vue';
 import { useTechpubStore } from '../techpub/techpubStore';
 import { markdown } from 'markdown';
+import createAlert from '../alert';
 
 
 
@@ -20,50 +21,93 @@ export default {
       message: undefined, // ""
 
       infoData: {}, // requiredAttribute: 'show:Boolean', 'message:String', 'name:String'
+      alertData: {}
     }
   },
   components: { Topbar, Info, Aside, Main },
   methods: {
     // ini sesuai ret2(). Bedanya, yang fungsi ini ada pesan axiosError.message dan errors untuk input name
+    // fungsi ini nanti bisa dihapus karena sekarang <info/> pakai emitt buz
     async error(axiosError) {
-      console.log(axiosError);
-      axiosError.response.data.errors ? (this.errors = axiosError.response.data.errors) : (this.errors = undefined);
-      axiosError.response.data.message ? (this.message = axiosError.message + ': ' + axiosError.response.data.message) : (this.message = axiosError.message);
-      this.isSuccess = false;
-      this.techpubStore.showLoadingBar = false;
-      this.showMessages = true;
+      let errors, message;
+      axiosError.response.data.errors ? (errors = axiosError.response.data.errors) : (errors = undefined);
+      axiosError.response.data.message ? (message = axiosError.message + ': ' + axiosError.response.data.message) : (message = axiosError.message);
+      this.emitter.emit('flash', {
+        isSuccess: false,
+        errors: errors,
+        message: message,
+      });
+      // this.techpubStore.showLoadingBar = false;
+      // this.showMessages = true;
     },
     // ini sesuai ret2(). 
     success(response, isSuccess = true) {
-      window.rsp = response;
-      this.errors = undefined;
-      this.isSuccess = true;
-      this.message = response.data.message ? response.data.message : '';
-      this.techpubStore.showLoadingBar = false;
-      this.showMessages = true;
+      this.emitter.emit('flash', {
+        isSuccess: true,
+        message: response.data.message ? response.data.message : '',
+      });
+      // this.techpubStore.showLoadingBar = false;
+      // this.showMessages = true;
     },
-    async info(name) {
-      if(this.infoData.name === name){
-        this.infoData.show = true;
-      } else {
-        const route = this.techpubStore.getWebRoute('api.info',{name: name});
-        let md = await axios({
-          url: route.url,
-          data: route.data,
-          responseType: "text"
-        });
-        // membuat <div> dulu agar didalam MD bisa ada tag HTML. Ini dicontohkan dalam README.md punya laravel (basic);
-        let text = md.data;
-        let div = $('<div/>').html(text);
-        div.contents().each((i,e) => {
-          if(e.nodeType === 3){
-            $(e).replaceWith(markdown.toHTML(e.textContent));
-          }
-        })
-        this.infoData.message = div[0].innerHTML;
-        this.infoData.show = true;
-        this.infoData.name = name;
+    /**
+     * required data.filename 
+     */
+    async info(data = {}) {
+      const route = this.techpubStore.getWebRoute('api.info', { filename: data.filename });
+      let md = await axios({
+        url: route.url,
+        data: route.data,
+        responseType: "text"
+      });
+      // membuat <div> dulu agar didalam MD bisa ada tag HTML. Ini dicontohkan dalam README.md punya laravel (basic);
+      let text = md.data;
+      let div = $('<div/>').html(text);
+      div.contents().each((i, e) => {
+        if (e.nodeType === 3) {
+          $(e).replaceWith(markdown.toHTML(e.textContent));
+        }
+      })
+      this.infoData.message = div[0].innerHTML;
+      this.infoData.show = true;
+      this.infoData.name = name;
+    },
+    /**
+     * required data.filename, data.objectame
+     * diutamakan request filename.md. Jika request error, maka akan pakai data.message
+     */
+    async alert(data = {}) {
+      const route = this.techpubStore.getWebRoute('api.alert', { filename: data.filename });
+      delete data.filename;
+      
+      // get MD file
+      let md = await axios({
+        url: route.url,
+        data: route.data,
+        responseType: "text"
+      }).then(r => r).catch(e => e);
+      // set text
+      let text = md.data;
+      if(!text){
+        text = data.message;
       }
+      delete data.message;
+      // replace all variable in MD file with params 'data'
+      this.$root.findText(/`\${([\S]+)}`/gm, text).forEach(v => {
+        let replaced = v[0].replace(/(?<=`\${)([\S]+)(?=}`)/gm, 'data.$1')
+        text = text.replace(v[0], eval(replaced));
+      })
+
+      // escaping text jikalau ada html didalam MD file
+      let div = $('<div/>').html(text);
+      div.contents().each((i, e) => {
+        if (e.nodeType === 3) {
+          $(e).replaceWith(markdown.toHTML(e.textContent));
+        }
+      })
+      data.message = div[0].innerHTML;
+      // finish by creating Alert;
+      this.alertData = createAlert(data);
+      return this.alertData.result;
     }
   },
   beforeCreate() {
@@ -75,7 +119,9 @@ export default {
 <template>
   <Topbar />
   <!-- <Info :messages="messages" :showMessages="showMessages" :isSuccess="isSuccess"/> -->
-  <Info :isSuccess="isSuccess" :errors="errors" :message="message" />
+  <!-- <Info :isSuccess="isSuccess" :errors="errors" :message="message" /> -->
+  <!-- <Info :isSuccess="isSuccess" :errors="errors" :message="message" /> -->
+  <Info />
 
   <div class="flex mx-auto">
     <Aside />
@@ -96,7 +142,7 @@ export default {
   </div>
 
 
-  <dialog class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
+  <div v-if="alertData.show" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
     width: 100%;
     height: 100%;
@@ -105,18 +151,18 @@ export default {
     left: 0;
     background:rgba(0,0,0,0.5);
     ">
-      <div id="#dialog"
+      <div
         class="w-1/2 h-1/2 bg-white dark:bg-neutral-900 opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-red-500 border-dashed">
         <h1 class="text-center mt-3 mb-3">ALERT !</h1>
         <hr class="border-2" />
-        <div class="max-h-[65%] overflow-auto px-10" message></div>
+        <div class="max-h-[65%] overflow-auto px-10" message v-html="alertData.message"></div>
         <div class="w-full text-center bottom-3 absolute">
-          <button autofocus class="button-danger shadow-md" alert-not-ok>X</button>
-          <button class="button-safe shadow-md" alert-ok>O</button>
+          <button autofocus class="button-danger shadow-md" alert-not-ok @click="alertData.button(0)">X</button>
+          <button class="button-safe shadow-md" alert-ok @click="alertData.button(1)">O</button>
         </div>
       </div>
     </div>
-  </dialog>
+  </div>
 
   <div v-if="infoData.show" id="info" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
@@ -127,7 +173,8 @@ export default {
     left: 0;
     background:rgba(0,0,0,0.5);
     ">
-      <div class="w-1/2 h-1/2 bg-white dark:bg-neutral-900 opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-cyan-200">
+      <div
+        class="w-1/2 h-1/2 bg-white dark:bg-neutral-900 opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-cyan-200">
         <h1 class="text-center mt-3 mb-3">INFORMATION</h1>
         <hr class="border-2" />
         <div class="max-h-[65%] overflow-auto px-10" v-html="infoData.message"></div>
@@ -169,5 +216,4 @@ export default {
         </div>
       </div>
     </div>
-  </dialog> -->
-</template>
+  </dialog> --></template>

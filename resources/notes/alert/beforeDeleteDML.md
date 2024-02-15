@@ -1,0 +1,1 @@
+Are you sure want to delete this DML (`${name}`) ?

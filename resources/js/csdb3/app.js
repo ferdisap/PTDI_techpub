@@ -11,6 +11,24 @@ import { useTechpubStore } from '../techpub/techpubStore';
 import mitt from 'mitt';
 import alert from '../alert';
 
+/**
+ * @param {string} pattern 
+ * @param {string} subject 
+ * @returns [Array(match1, match2)] 
+ */
+function find(pattern, subject ) {
+  let match = [];
+  let m;
+  while ((m = pattern.exec(subject)) !== null) {
+    if (m.index === pattern.lastIndex) {
+      pattern.lastIndex++;
+    }
+    match.push(m);
+  }
+  return match;
+}
+window.findText = find;
+
 // import { markdown } from 'markdown';
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -47,6 +65,7 @@ csdb.use(router);
 csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.alert = alert;
+csdb.config.globalProperties.findText = find;
 
 await axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)
@@ -57,7 +76,7 @@ await axios.get('/getAllRoutes')
     useTechpubStore().WebRoutes = response.data;
   });
 
-  
+
 csdb.mount('#body');
 
 axios.interceptors.request.use(

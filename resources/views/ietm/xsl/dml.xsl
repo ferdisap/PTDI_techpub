@@ -127,6 +127,9 @@
     </xsl:for-each>  
     </DmlEntryForm>
   </table>
+  <div class="text-red-600 text-sm error">
+    <xsl:attribute name="v-html">store.error('entryIdent')</xsl:attribute>
+  </div>
   <div>
     <xsl:variable name="number"><xsl:number/></xsl:variable>
     <!-- <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>

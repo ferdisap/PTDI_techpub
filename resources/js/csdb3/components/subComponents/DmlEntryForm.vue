@@ -82,10 +82,9 @@ export default {
       let str = ''
       let dmlEntries = $('.dmlEntry');
       if (!dmlEntries.length) {
-        alert('use:dmlEntryRowTemplate');
         dmlEntries = $(this.dmlEntryRowTemplate);
       }
-
+      
       // tambah attribute v-html
       // dmlEntries = this.setVHtml(dmlEntries);
       dmlEntries = this.setVHtml(dmlEntries);

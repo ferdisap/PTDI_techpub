@@ -2,88 +2,57 @@
 import { useTechpubStore } from '../techpubStore';
 
 export default {
-  data(){
+  data() {
     return {
       techpubStore: useTechpubStore(),
+      bag: [], // 'isSuccess:String', 'errors:{}', 'message:String',
       // messages: undefined,
       // showMessages: true
     }
   },
   props: [
     'messages', 'showMessages', // 2 props ini bisa di hapus
-    'isSuccess','errors', 'message'],
+    'isSuccess', 'errors', 'message'], // tidak diperlukan lagi karena sekarang <info/> pakai emitbuz
   methods: {
-    replaceFilenameWithURL(text){
-      // let forDML = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailDML')))['path'];
-      let forObject = this.techpubStore.getWebRoute('',{filename: '$1'}, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
-      // text = text.replace(/(DML[\S]+.xml)/g, `<a class="font-bold" href="${forDML}">$1</a>`);
-      // text = text.replace(/([\S]+.xml)/g, `<a class="font-bold" href="${forObject}">$1</a>`);
+    replaceFilenameWithURL(text) {
+      let forObject = this.techpubStore.getWebRoute('', { filename: '$1' }, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
       text = text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a class="font-bold" href="${forObject}">$1$2</a>`);
       return text;
-    }
+    },
+    addBag(data = {}) {
+      if (data.message) {
+        if (!(this.bag.find((b) => b.message == data.message))) {
+          this.bag.push(data);
+          this.techpubStore.Errors = data.errors ? [data.errors] : [];
+          setTimeout(() => this.popBag(data), 10000);
+        }
+      }
+      this.techpubStore.showLoadingBar = false;
+    },
+    popBag(value) {
+      let index = this.bag.indexOf(value);
+      this.bag.splice(index,1);
+    },
   },
-  updated(){
-    if(this.message){
-      setTimeout(() => {
-        $('*[info-close-btn]').click();
-      }, 10000);
-    }
-  }
+  mounted() {
+    this.emitter.on('flash', (data) => this.addBag(data));
+  },
 }
 </script>
 
 <template>
-  <div class="fixed w-1/2 top-1/5 right-0 shadow-xl" v-if="message">
-    <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
-      <div class="text-center text-xl p-3 font-bold">Message: {{ !$props.errors ? 'success' : 'fail'  }}
-        <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150" @click="message = ''" info-close-btn>X</button></span>
+  <div class="fixed w-1/2 top-1/5 right-0 z-50 bg-transparent" v-if="bag.length !== 0">
+    <div v-for="info in bag" :class="[info.isSuccess ? 'bg-cyan-300' : 'bg-red-600', 'mb-3 pb-3 px-5 shadow-lg rounded-lg block text-left w-full']">
+      <div class="text-center text-xl p-3 font-bold">Message
+        <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150"
+            @click="popBag(info)" info-close-btn>X</button></span>
       </div>
-      <div v-if="message">
-        <div v-html="replaceFilenameWithURL(message)" class="mb-1"></div>
-        {{ (() => { techpubStore.Errors = errors ? [errors] : [] })() }}
-        <div class="mb-2" v-for="(ms, i) in errors">
-          <h5> {{ i }} </h5>
-          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)"/>
-        </div>
+      <div v-html="replaceFilenameWithURL(info.message)" class="mb-1"></div>
+      <div class="mb-2" v-for="(ms, i) in info.errors">
+        <h5> {{ i }} </h5>
+        <p style="line-break: anywhere" v-for="text in ms"
+          v-html="text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)" />
       </div>
     </div>
-  <!-- <div class="justify-center contents h-2/3 z-50 w-1/2 left-1/4 top-1/4 shadow-2xl" v-if="message">
-    <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
-      <div class="text-center text-xl p-3 font-bold">Message: {{ !$props.errors ? 'success' : 'fail'  }}
-        <button class="float-right" @click="message = ''" info-close-btn>X</button>
-      </div>
-      <div v-if="message">
-        <div v-html="replaceFilenameWithURL(message)" class="mb-1"></div>
-        {{ (() => { techpubStore.Errors = errors ? [errors] : [] })() }}
-        <div class="mb-2" v-for="(ms, i) in errors">
-          <h5> {{ i }} </h5>
-          <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)(\s|$)/g, `<a href='/csdb/$1'>$1<a/>`)"/>
-        </div>
-      </div>
-    </div> -->
-
-    
-    <!-- <div :class="[ $props.isSuccess ? 'bg-cyan-300' : 'bg-red-600' ,'pb-3  px-5 shadow-sm rounded-lg block text-left w-full']">
-      <div class="text-center text-xl p-3 font-bold">Message: {{ $props.isSuccess ? 'success' : 'fail'  }}
-        <button class="float-right" @click="showMessages = false">X</button>
-      </div>
-      <div v-for="message in messages">
-        <div v-if="(message.constructor === Object)"> -->
-
-          <!-- untuk generate error text disetiap input form -->
-          <!-- {{ (() => {techpubStore.Errors = messages})() }}
-
-          <div class="mb-2" v-for="(ms, i) in message">
-            <h5> {{ i }} </h5>
-            <p style="line-break: anywhere" v-for="text in ms" v-html="text.replace(/([\S]+.xml)/g, `<a href='/csdb/${$route.params.projectName}/$1'>$1<a/>`)"/>
-          </div>
-        </div>
-        <div v-else-if="(message.constructor === Array)">
-          <div v-for="ms in message" v-html="ms.replace(/([\S]+.xml)/g, `<a href='/csdb/${$route.params.projectName}/$1'>$1<a/>`)" class="mb-1"></div>
-
-        </div>
-        <div v-else v-html="message.replace(/([\S]+.xml)/g, `<a href='/csdb/${$route.params.projectName}/$1'>$1<a/>`)" class="mb-1"></div>
-      </div>
-    </div> -->
   </div>
 </template>

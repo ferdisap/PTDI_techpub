@@ -174,17 +174,6 @@ class Dml extends ModelsCsdb
         if ($res->length > 0) {
           return [false, "Entry Ident {$entryIdent} has been already listed in {$dml->filename}"];
         }
-        // foreach ($res as $r) {
-        //   $results[] = $r;
-        // }
-        // if (count($results) > 0) {
-        //   $rs = array_map(function ($element) {
-        //     $docIdent = CSDB::resolve_DocIdent($element->ownerDocument);
-        //     return $docIdent;
-        //   }, $results);
-        //   $rs = join(", ", $rs);
-        //   return [false, "Entry Ident {$entryIdent} has been already listed in {$rs}"];
-        // }
       }
       return [true];
     };

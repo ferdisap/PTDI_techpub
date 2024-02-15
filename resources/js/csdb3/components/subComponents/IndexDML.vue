@@ -64,6 +64,7 @@ export default {
       .then(rsp => {
         this.$root.success(rsp);
         $(eventTarget).parents('tr').eq(0).remove();
+        this.emitter.emit('csdb_delete');
       })
       .catch(e => this.$root.error(e));
     }
@@ -71,6 +72,8 @@ export default {
   mounted(){
     this.get_list({dml:1});
     this.get_list({csl:1});
+    this.emitter.on('csdb_restore-DML',this.get_list.bind(this,{dml:1}));
+    this.emitter.on('csdb_restore-CSL',this.get_list.bind(this,{csl:1}));
   },
 }
 </script>

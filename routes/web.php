@@ -79,16 +79,24 @@ Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth');
 Route::get('/route/{name}', [Controller::class, 'route']); // masih digunakan di xsl
 Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']); // berguna untuk vue
 
-Route::get("/api/info", function(Request $request){
-  $name = $request->get('name');
-  if($name){
-    $content = file_get_contents(resource_path("notes/info/{$name}.md"));
-    if($content){
-      $status = 200;
-      $contentType = "text/markdown";
-    }
+Route::get("/api/info/{filename}", function(Request $request, string $filename){
+  $content = file_get_contents(resource_path("notes/info/{$filename}.md"));
+  if($content){
+    $status = 200;
+    $contentType = "text/markdown";
   }
   return Response::make($content ?? '',$status ?? 400,[
     "Content-Type" => $contentType ?? "text/plain"
   ]);
 })->middleware('auth')->name('api.info');
+
+Route::get("/api/alert/{filename}", function(Request $request, string $filename){
+  $content = file_get_contents(resource_path("notes/alert/{$filename}.md"));
+  if($content){
+    $status = 200;
+    $contentType = "text/markdown";
+  }
+  return Response::make($content ?? '',$status ?? 400,[
+    "Content-Type" => $contentType ?? "text/plain"
+  ]);
+})->middleware('auth')->name('api.alert');
