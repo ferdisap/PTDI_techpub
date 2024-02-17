@@ -9,14 +9,16 @@ import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
-import alert from '../alert';
+import pick from '../pick';
+
+window.pick = pick;
 
 /**
  * @param {string} pattern 
  * @param {string} subject 
  * @returns [Array(match1, match2)] 
  */
-function find(pattern, subject ) {
+function find(pattern, subject) {
   let match = [];
   let m;
   while ((m = pattern.exec(subject)) !== null) {
@@ -57,15 +59,14 @@ const pinia = createPinia();
 
 csdb.use(pinia);
 csdb.use(router);
+csdb.config.globalProperties.References = References;
+csdb.config.globalProperties.emitter = mitt();
+csdb.config.globalProperties.findText = find;
 // csdb.use({
 //   install: (app) => {
 //     app.config.globalProperties.References = References;
 //   }
 // });
-csdb.config.globalProperties.References = References;
-csdb.config.globalProperties.emitter = mitt();
-csdb.config.globalProperties.alert = alert;
-csdb.config.globalProperties.findText = find;
 
 await axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)
@@ -77,20 +78,64 @@ await axios.get('/getAllRoutes')
   });
 
 
-csdb.mount('#body');
 
+/**
+ * cara menggunakan axios
+ * masukan 'data' (plain object) pada fungsi axios();
+ * the data contains 'route' (plain object). The route contains 'name' (string) and 'data' (plain object);
+ * the data also contains 'event' (plain Object or event object). 
+ * 
+ * If the response code is success:
+ * if the'event' contains 'name' (string) then it will be emitted an event named the 'event.name', else named the 'route.name'
+ * The emitted event will pass the parameter which is event combined with 'route.data'
+ */
+
+function createRandomString() {
+  return (Math.random() + 1).toString(36).substring(7);
+}
+// axios.id = {};
 axios.interceptors.request.use(
-  (request) => {
+  async (config) => {
+    window.config = config;
     useTechpubStore().showLoadingBar = true;
-    return request;
+    if (config.route) {
+      const route = useTechpubStore().getWebRoute(config.route.name, Object.assign({}, config.route.data));
+      config.url = route.url;
+      config.method = route.method[0];
+      config.data = route.params;
+    }
+    return config;
   },
 );
 axios.interceptors.response.use(
   (response) => {
+    // console.log(window.response = response);
     useTechpubStore().showLoadingBar = false;
+    if(response.config.event && response.config.event.name) {
+      csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
+    } else {
+      csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
+    }
+    csdb.config.globalProperties.emitter.emit('flash', {
+      isSuccess: true,
+      message: response.data.message
+    });
     return response;
   },
+  (axiosError) => {
+    window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
+    useTechpubStore().showLoadingBar = false;
+    csdb.config.globalProperties.emitter.emit('flash', {
+      isSuccess: false,
+      errors: axiosError.response.data.errors,
+      message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
+    });
+    return axiosError.response;
+  }
 );
+
+window.csdb = csdb;
+csdb.mount('#body');
 
 
 

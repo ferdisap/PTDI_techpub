@@ -247,6 +247,9 @@ class CsdbController extends Controller
     }
   }
 
+  /**
+   * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename
+   */
   public function update(Request $request, string $filename)
   {
     // #0. validasi schema
@@ -469,7 +472,7 @@ class CsdbController extends Controller
     $issueInfo->setAttribute("issueNumber", $issueNumber);
     $issueInfo->setAttribute("inWork", '00');
 
-    // validate XSI
+    // validate XSI dan BREX
     $validateXSI = CSDB::validate('XSI', $dom);
     if (!$validateXSI) return $this->ret2(400, CSDB::get_errors());
     $schema = CSDB::getSchemaUsed($dom, '');

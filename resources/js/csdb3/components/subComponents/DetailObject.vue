@@ -5,17 +5,17 @@ import Sort from '../../../techpub/components/Sort.vue';
 import Editor from './Editor.vue';
 
 export default {
-  data(){
-    return{
+  data() {
+    return {
       techpubStore: useTechpubStore(),
       show: 'stage',
       model: {},
-      
+
       transformed: undefined,
       raw: undefined,
       srcblob: '', // blob URL
       typeblob: '',
-      
+
     }
   },
   computed: {
@@ -27,14 +27,14 @@ export default {
             store: useTechpubStore(),
           }
         },
-        components:{Sort},
+        components: { Sort },
         methods: {
-          sort(){
-            const getCellValue = function(row, index){
+          sort() {
+            const getCellValue = function (row, index) {
               return $(row).children('td').eq(index).text();
             };
-            const comparer = function(index){
-              return function(a,b){
+            const comparer = function (index) {
+              return function (a, b) {
                 let valA = getCellValue(a, index), valB = getCellValue(b, index);
                 return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
               }
@@ -43,7 +43,7 @@ export default {
             let th = $(event.target).parents('th').eq(0);
             let rows = table.find('tr:gt(0)').toArray().sort(comparer(th.index()));
             this.asc = !this.asc;
-            if(!this.asc){
+            if (!this.asc) {
               rows = rows.reverse();
             }
             for (let i = 0; i < rows.length; i++) {
@@ -65,81 +65,81 @@ export default {
       }
     }
   },
-  components:{Editor},
-  methods:{
-    submit(commitOrIssue) {
+  components: { Editor },
+  methods: {
+    async submit(command) {
       let routename;
-      if (commitOrIssue == 'commit') {
+      if (command == 'commit') {
         routename = 'api.commit_object';
-      } else if (commitOrIssue == 'issue') {
+      } else if (command == 'issue') {
         routename = 'api.issue_object';
-      } else if (commitOrIssue == 'edit') {
+      } else if (command == 'edit') {
         routename = 'api.edit_object';
+      } else if (command == 'delete') {
+        if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: this.$route.params.filename }))) {
+          return;
+        }
+        routename = 'api.delete_object';
       }
-
-      this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute(routename, { filename: this.$route.params.filename });
       axios({
-        url: route.url,
-        method: route.method[0],
-        data: route.params,
+        route:{
+          name: routename,
+          data: {filename: this.$route.params.filename},
+        }
       })
-        .then(response => this.$root.success(response))
-        .catch(error => this.$root.error(error));
     },
+    getObjectModel() {
+      axios({
+        route:{
+          name: 'api.get_object',
+          data: { filename: this.$route.params.filename, output: 'model' },
+        }
+      })
+    },
+    async getObjectTransformed() {
+      if (['DML', 'CSL'].includes(this.$route.params.filename.substr(0, 3))) {
+        this.$router.push({ name: 'DetailDML', filename: this.$route.params.filename });
+        return;
+      }
+      else {
+        if (this.$route.params.filename.substr(0, 3) != 'ICN') {
+          let response = await axios({
+            route: {
+              name: 'api.transform_csdb',
+              data: { filename: this.$route.params.filename, ignoreError: 1 },
+            },
+          });
+          if (response.statusText === 'OK') {
+            let text = response.data.file;
+            text = text.replace("\\r", "\r");
+            text = text.replace("\\n", "\n");
+            this.transformed = text;
+          }
+        } else {
+          let response = await axios({
+            route: {
+              name: 'api.get_object',
+              data: { filename: this.$route.params.filename },
+            },
+          });
+          if (response.statusText === 'OK') {
+            this.typeblob = response.headers.getContentType();
+            if (this.typeblob.includes('xml')) {
+              this.raw = await response.data.text();
+            }
+            this.srcblob = URL.createObjectURL(await response.data);
+          }
+        }
+
+      }
+    }
   },
   created() {
-    const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output:'model'});
-    axios({
-      url: route.url,
-      method: route.method[0],
-      data: route.params,
-    })
-      .then(response => this.model = response.data)
-      .catch(error => this.$root.error(error));
+    this.getObjectModel();
   },
-  mounted(){
-    if(['DML', 'CSL'].includes(this.$route.params.filename.substr(0,3))){
-      this.$router.push({name: 'DetailDML',filename: this.$route.params.filename});
-      return;
-    } 
-    else {
-      let route;
-      if(this.$route.params.filename.substr(0,3) != 'ICN'){
-        route = this.techpubStore.getWebRoute('api.transform_csdb',{filename: this.$route.params.filename, ignoreError:1});
-        axios({
-          url: route.url,
-          method: route.method[0],
-          data: route.params,
-        })
-        .then(response => {
-          let text = response.data.file;
-          text = text.replace("\\r", "\r");
-          text = text.replace("\\n", "\n");
-          this.transformed = text;
-          if(response.data.messages){
-            this.$root.success(response,false);
-          }
-        })
-        .catch(error => this.$root.error(error));
-      }
-  
-      route = this.techpubStore.getWebRoute('api.get_object',{filename: this.$route.params.filename});
-      axios({
-        url: route.url,
-        method: route.method[0],
-        data: route.params,
-        responseType: 'blob'
-      })
-      .then(async (response) => {
-        this.typeblob = response.headers.getContentType();
-        if(this.typeblob.includes('xml')){
-          this.raw = await response.data.text();
-        }
-        this.srcblob = URL.createObjectURL(await response.data);
-      })
-      .catch(error => this.$root.error(error));
-    }
+  mounted() {
+    this.emitter.on('DetailObject', this.getObjectTransformed);
+    this.emitter.emit('DetailObject');
   },
 }
 </script>
@@ -151,16 +151,19 @@ export default {
     <button class="button-nav" @click="submit('commit')">Commit</button>
     <button class="button-nav" @click="show == 'editor' ? show = '' : show = 'editor'">Edit</button>
     <button class="button-nav" @click="submit('issue')">Issue</button>
+    <button class="button-nav" @click="submit('delete')">Delete</button>
   </div>
   <div class="w-full text-center mb-3 mt-3" v-else>
     <button class="button-nav" @click="submit('edit')">Open Edit</button>
+    <button class="button-nav" @click="submit('delete')">Delete</button>
   </div>
-  <br/>
-  
+  <br />
+
   <!-- EDITOR -->
-  <Editor v-if="show == 'editor'" :text="raw" :is-create="false"/>
+  <!-- <Editor v-if="show == 'editor'" :text="raw" :is-create="false"/> -->
+  <Editor v-if="show == 'editor'" :text="raw" />
 
   <a class="underline text-blue-600" :href="srcblob" :download="$route.params.filename">download here..</a>
   <component :is="dynamic" v-if="transformed" />
-  <embed v-else :type="typeblob" :src="srcblob" class="w-full"/>
+  <embed v-else :type="typeblob" :src="srcblob" class="w-full" />
 </template>

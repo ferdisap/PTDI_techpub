@@ -28,37 +28,48 @@ export default {
   methods: {
     // ini sesuai ret2(). Bedanya, yang fungsi ini ada pesan axiosError.message dan errors untuk input name
     // fungsi ini nanti bisa dihapus karena sekarang <info/> pakai emitt buz
-    async error(axiosError) {
-      let errors, message;
-      axiosError.response.data.errors ? (errors = axiosError.response.data.errors) : (errors = undefined);
-      axiosError.response.data.message ? (message = axiosError.message + ': ' + axiosError.response.data.message) : (message = axiosError.message);
-      this.emitter.emit('flash', {
-        isSuccess: false,
-        errors: errors,
-        message: message,
-      });
-      // this.techpubStore.showLoadingBar = false;
-      // this.showMessages = true;
-    },
+    // async error(axiosError) {
+    //   let errors, message;
+    //   console.log(axiosError);
+    //   axiosError.response.data.errors ? (errors = axiosError.response.data.errors) : (errors = undefined);
+    //   axiosError.response.data.message ? (message = axiosError.message + ': ' + axiosError.response.data.message) : (message = axiosError.message);
+    //   this.emitter.emit('flash', {
+    //     isSuccess: false,
+    //     errors: errors,
+    //     message: message,
+    //   });
+    //   // this.techpubStore.showLoadingBar = false;
+    //   // this.showMessages = true;
+    // },
     // ini sesuai ret2(). 
-    success(response, isSuccess = true) {
-      this.emitter.emit('flash', {
-        isSuccess: true,
-        message: response.data.message ? response.data.message : '',
-      });
-      // this.techpubStore.showLoadingBar = false;
-      // this.showMessages = true;
-    },
+    // success(response, isSuccess = true) {
+    //   this.emitter.emit('flash', {
+    //     isSuccess: true,
+    //     message: response.data.message ? response.data.message : '',
+    //   });
+    //   // this.techpubStore.showLoadingBar = false;
+    //   // this.showMessages = true;
+    // },
     /**
      * required data.filename 
      */
     async info(data = {}) {
-      const route = this.techpubStore.getWebRoute('api.info', { filename: data.filename });
-      let md = await axios({
-        url: route.url,
-        data: route.data,
-        responseType: "text"
-      });
+      // const route = this.techpubStore.getWebRoute('api.info', { name: data.name });
+      // let md = await axios({
+      //   url: route.url,
+      //   data: route.data,
+      //   responseType: "text",
+      //   routename: 'api.info'
+      // });
+      let config = {
+        route: {
+          name: 'api.info',
+          data: data,
+        },
+        responseType: 'text'
+      };
+      // const route = this.techpubStore.getWebRoute('api.info', { name: data.name });
+      let md = await axios(config);
       // membuat <div> dulu agar didalam MD bisa ada tag HTML. Ini dicontohkan dalam README.md punya laravel (basic);
       let text = md.data;
       let div = $('<div/>').html(text);
@@ -76,20 +87,21 @@ export default {
      * diutamakan request filename.md. Jika request error, maka akan pakai data.message
      */
     async alert(data = {}) {
-      const route = this.techpubStore.getWebRoute('api.alert', { filename: data.filename });
-      delete data.filename;
-      
       // get MD file
-      let md = await axios({
-        url: route.url,
-        data: route.data,
-        responseType: "text"
-      }).then(r => r).catch(e => e);
-      // set text
-      let text = md.data;
+      let response = await axios({
+        route: {
+          name: 'api.alert',
+          data: {name: data.name}
+        }
+      });
+      if(response.statusText !== 'OK'){
+        return;
+      }
+      let text = response.data;
       if(!text){
         text = data.message;
       }
+      delete data.name; // dihapus data.name agar tidak tertukar antara 'filename' dan 'name'. 'name' adalah nama alert
       delete data.message;
       // replace all variable in MD file with params 'data'
       this.$root.findText(/`\${([\S]+)}`/gm, text).forEach(v => {
@@ -113,6 +125,9 @@ export default {
   beforeCreate() {
     this.References.defaultStore = useTechpubStore();
   },
+  mounted(){
+    window.techpubStore = this.techpubStore;
+  }
 }
 </script>
 

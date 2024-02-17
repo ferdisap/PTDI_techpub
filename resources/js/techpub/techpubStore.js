@@ -55,6 +55,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
 
       /**
        * untuk DML app, csdb3
+       * kayaknya ini tidak dipakai karena nanti pakai DMLList di IndexDML.vue
        */
       DMLList:[],
 
@@ -91,6 +92,14 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         year: 'numeric', month: 'short', day: 'numeric'
       });
     },
+
+    /**
+     * @param {*} name 
+     * @param {*} params 
+     * @param {*} Plain Object which get same from this.WebRoute[`${name}`]
+     * @returns {Object} if route method is get then all params has attached to URL, otherwise is attached in route.params 
+     * returned Object will have params (plain Object) if the method is POST;
+     */
     getWebRoute(name, params = {}, route = undefined) {
       if (params instanceof FormData) {
         params.delete('http://www.w3.org/1999/xhtml');

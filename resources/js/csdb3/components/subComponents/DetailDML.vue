@@ -77,7 +77,7 @@ export default {
       } else if (command == 'edit') {
         routename = 'api.edit_dml';
       } else if (command == 'delete'){
-        if(!(await this.$root.alert({filename: 'beforeDeleteDML', name:this.$route.params.filename}))){
+        if(!(await this.$root.alert({name: 'beforeDeleteDML', filename:this.$route.params.filename}))){
           return;
         }
         routename = 'api.delete_object';
@@ -157,12 +157,14 @@ export default {
     <div class="w-full text-center mb-3 mt-3" v-if="model.filename.substr(0, 3) == 'DML' && ($route.params.filename && !$route.params.filename.match(/_\d{3}-00/g))">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="submit('commit')">Commit</button>
-      <button class="button-nav" v-if="model.remarks.crud != 'deleted'" @click="submit('delete')">Delete</button>
-      <button class="button-nav" v-else @click="submit('restore')">Restore</button>
+      <button class="button-nav" @click="submit('delete')">Delete</button>
+      <!-- <button class="button-nav" v-if="model.remarks.crud != 'deleted'" @click="submit('delete')">Delete</button> -->
+      <!-- <button class="button-nav" v-else @click="submit('restore')">Restore</button> -->
     </div>
     <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) == 'DML'">
       <button class="button-nav" v-if="!model.editable" @click="submit('edit')">Open Edit</button>
       <button class="button-nav" v-if="!model.editable" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
+      <button class="button-nav" @click="submit('delete')">Delete</button>
     </div>
 
     <!-- jika CSL -->

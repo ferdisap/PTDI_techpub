@@ -11,39 +11,32 @@ export default {
     }
   },
   methods: {
-    get_list(params = {}) {
-      let send;
+    async get_list(params = {}) {
       params = Object.assign(params, { filenameSearch: event.target.value || '' });
-      const route = this.techpubStore.getWebRoute('api.get_deletion_list', params);
-      send = axios({
-        url: route.url,
-        method: route.method[0],
-        data: params
-      });
-      send
-        .then(response => {
-          this.responsedata_get_deletion_list = response.data
-          this.$root.success(response);
-        })
-        .catch(error => this.$root.error(error));
+      const config = {
+        route: {
+          name: 'api.get_deletion_list',
+          data: params,
+        }
+      }
+      let response = await axios(config);
+      this.responsedata_get_deletion_list = response.data
     },
-    restoreDeletion(filename){
+    async restoreDeletion(filename){
       let eventTarget = event.target;
-      const route = this.techpubStore.getWebRoute('api.restore_object', {filename: filename});
-      axios({
-        url: route.url,
-        method: route.method[0],
+      let result = await axios({
+        route: {
+          name: 'api.restore_object',
+          data: {filename: filename}
+        },
       })
-      .then(rsp => {
-        this.$root.success(rsp);
+      if(result.statusText === 'OK'){
         $(eventTarget).parents('tr').eq(0).remove();
-        this.emitter.emit(`csdb_restore-${filename.substr(0,3)}`);
-      })
-      .catch(e => this.$root.error(e));
+      }
     },
     async permanentDelete(filename){
       let eventTarget = event.target;
-      if(!(await this.alert({message:`Are you sure to <b>PERMANENT DELETE</b> ${filename}? The csdb object will never be restored or get of its content.`}).result)){
+      if(!(await this.$root.alert({name:'beforePermanentDeleteCsdbObject', filename:filename}))){
         return;
       }
       const route = this.techpubStore.getWebRoute('api.permanentdelete_object', {filename: filename});
@@ -72,7 +65,12 @@ export default {
   },
   mounted(){
     this.get_list();
-    this.emitter.on('csdb_delete',this.get_list);
+    // this.emitter.on('csdb_delete',this.get_list);
+    // this.emitter.on('api.get_deletion_list',this.get_list);
+    this.emitter.on('api.delete_object',this.get_list);
+    // this.emitter.on('api.restore_object',(e) => {
+    //   console.log('object restored', window.e = e);
+    // });
   },
 }
 </script>
@@ -81,7 +79,7 @@ export default {
     <h1>Index Deleted Object</h1>
     <div class="flex">
       <input @change="get_list()" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({filename: 'searchCsdbObject'})">info</button>
+      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({name: 'searchCsdbObject'})">info</button>
     </div>
     <div class="flex">      
       <table class="w-full table-cell">

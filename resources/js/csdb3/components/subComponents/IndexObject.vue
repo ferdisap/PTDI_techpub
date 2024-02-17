@@ -8,7 +8,6 @@ export default {
       techpubStore: useTechpubStore(),
       page: ref(1),
       responsedata_get_objects_list: undefined, // {}
-      currentRouteName: '',
       filenameSearch: '',
 
 
@@ -18,8 +17,9 @@ export default {
     filter: String
   },
   methods: {
-    get_list(url = undefined, method = 'GET') {
+    async get_list(url = undefined, method = 'GET') {
       let send;
+      const config = {};
       if(!url){
         let params = {
           filenameSearch: this.filenameSearch
@@ -29,23 +29,18 @@ export default {
         } else {
           params.stage = 'staged';
         }
-        const route = this.techpubStore.getWebRoute('api.get_objects_list', params);
-        send = axios({
-          url: route.url,
-          method: route.method[0],
-        })
+        config.route = {
+          name: 'api.get_objects_list',
+          data: params,
+        }
       } else {
-        send = axios({
-          url: url,
-          method: method,
-        })
+        config.url = url;
+        config.method = method;
       }
-      send.then(response => {
-          // tidak melakukan ini karena jika ada ribuan object di database, maka request akan lama, dan ram makin berat
-          // this.techpubStore.OBJECTList = response.data.data
-          this.responsedata_get_objects_list = response.data;
-        })
-        .catch(error => this.$root.error(error));
+      let response = await axios(config);
+      if(response.statusText === 'OK'){
+        this.responsedata_get_objects_list = response.data;
+      }
     },
     goto(page = undefined){
       let url = new URL(this.responsedata_get_objects_list.path);
@@ -57,24 +52,52 @@ export default {
       axios.get(url)
       .then(response => this.responsedata_get_objects_list = response.data)
       .catch(error => this.$root.error(error));
+    },
+    async deleteObject(filename) {
+      let eventTarget = event.target;
+      if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: filename }))) {
+        return;
+      }
+      const config = {
+        route: {
+          name: 'api.delete_object',
+          data: {filename: filename}
+        }
+      }
+      let response = await axios(config)
+      if(response.statusText === 'OK'){
+        $(eventTarget).parents('tr').eq(0).remove();
+      }        
+    },
+    detailObject(filename){
+      this.$router.push({name: 'DetailObject',params:{filename: filename}});
+      setTimeout(() => {
+        this.emitter.emit('DetailObject', {filename: filename});
+      }, 0);
     }
   },
   mounted() {
-    this.currentRouteName = this.$route.fullPath;
     this.get_list();
+    this.emitter.on('api.restore_object', (data) => {
+      if(['DMC','ICN'].includes(data.filename.substr(0,3))){
+        this.get_list();
+      }
+    });
+    this.emitter.on('api.edit_object', (data) => {
+      if(['DMC','ICN'].includes(data.filename.substr(0,3))){
+        this.get_list();
+      }
+    });
   },
-  updated(){
-    if(this.currentRouteName != this.$route.fullPath){
-      this.get_list();
-      this.currentRouteName = this.$route.fullPath;
-    }
-  }
 }
 </script>
 <template>
   <div v-if="responsedata_get_objects_list" class="w-full">
     <h1 class="mb-2">Index Object</h1>
-    <input @change="get_list()" v-model="filenameSearch" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+    <div class="flex">
+      <input @change="get_list()" v-model="filenameSearch" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({name: 'searchCsdbObject'})">info</button>
+    </div>
     <br/>
     <table class="table-cell">
       <thead class="h-10">
@@ -92,7 +115,10 @@ export default {
           <td>
             {{ obj.remarks.stage }} | {{ obj.editable ? 'yes' : 'no' }}
           </td>
-          <td><a class="material-icons text-blue-600" :href="techpubStore.getWebRoute('', { filename: obj.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a></td>
+          <td>
+            <a @click.prevent="detailObject(obj.filename)" class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail" :href="techpubStore.getWebRoute('', { filename: obj.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a>
+            <button @click="deleteObject(obj.filename)" class="material-icons text-red-500 has-tooltip-arrow" data-tooltip="Delete">delete</button>
+          </td>
         </tr>
       </tbody>
     </table>

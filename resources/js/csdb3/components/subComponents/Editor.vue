@@ -37,9 +37,11 @@ export default {
       axios({
         url: route.url,
         method: route.method[0],
-        data: formData
+        data: formData,
+        routename: this.rn_create,
       })
       .then(response => this.$root.success(response))
+      // api.get_objects_list
       .catch(error => this.$root.error(error));
     },
     update(){
@@ -52,7 +54,10 @@ export default {
         method: route.method[0],
         data: formData
       })
-      .then(response => this.$root.success(response))
+      .then(response => {
+        this.$root.success(response);
+        this.$parent.getObjectTransformed ? this.$parent.getObjectTransformed() : null;
+      })
       .catch(error => this.$root.error(error));
     },
     submit(filename){
@@ -60,6 +65,7 @@ export default {
     }
   },
   mounted(){
+    window.editor = this;
     if(this.$props.routeNameCreate) {
       this.rn_create = this.$props.routeNameCreate;
     }

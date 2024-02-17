@@ -79,8 +79,8 @@ Route::get('/auth/check', [Controller::class, 'authcheck'])->middleware('auth');
 Route::get('/route/{name}', [Controller::class, 'route']); // masih digunakan di xsl
 Route::get('/getAllRoutes', [Controller::class, 'getAllRoutesNamed']); // berguna untuk vue
 
-Route::get("/api/info/{filename}", function(Request $request, string $filename){
-  $content = file_get_contents(resource_path("notes/info/{$filename}.md"));
+Route::get("/api/info/{name}", function(Request $request, string $name){
+  $content = file_get_contents(resource_path("notes/info/{$name}.md"));
   if($content){
     $status = 200;
     $contentType = "text/markdown";
@@ -90,8 +90,8 @@ Route::get("/api/info/{filename}", function(Request $request, string $filename){
   ]);
 })->middleware('auth')->name('api.info');
 
-Route::get("/api/alert/{filename}", function(Request $request, string $filename){
-  $content = file_get_contents(resource_path("notes/alert/{$filename}.md"));
+Route::get("/api/alert/{name}", function(Request $request, string $name){
+  $content = file_get_contents(resource_path("notes/alert/{$name}.md"));
   if($content){
     $status = 200;
     $contentType = "text/markdown";
@@ -100,3 +100,8 @@ Route::get("/api/alert/{filename}", function(Request $request, string $filename)
     "Content-Type" => $contentType ?? "text/plain"
   ]);
 })->middleware('auth')->name('api.alert');
+
+Route::get("/tes", function(Request $request){
+  return Response::make('',200);
+});
+

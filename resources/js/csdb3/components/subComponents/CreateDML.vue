@@ -21,10 +21,9 @@ export default {
         data: formData,
       })
       .then(response => {
-        window.res = response;
-        window.techpubStore = this.techpubStore;
         this.$root.success(response)
-        this.techpubStore.DMLList[Object.keys(this.techpubStore.DMLList).length] = response.data.dml;
+        // this.techpubStore.DMLList[Object.keys(this.techpubStore.DMLList).length] = response.data.dml;
+        this.emitter.emit('csdb_restore-DML');
       })
       .catch(error => this.$root.error(error));
     },
