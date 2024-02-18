@@ -60,12 +60,13 @@ export default {
     </div>
     <hr/>
 
-    <!-- Commit Staging Editor -->
+    <!-- Staged Staging Editting -->
     <div class="mt-3 mb-3">
       <details>
-        <summary @click="$router.push({name: 'IndexObject'})">
+        <!-- <summary @click="$router.push({name: 'IndexObject'})"> -->
+        <summary @click="$router.push({name: 'Stagged'})">
           <span class="material-icons text-4xl p-2">commit</span>
-          <span>Commit</span>
+          <span>Staged</span>
         </summary>
         <div class="pl-5">
           <a class="p-3" @click.prevent="$router.push({name:'Editing-PushToStage'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-PushToStage')))['path']">
@@ -74,15 +75,15 @@ export default {
         </div>
       </details>
       <details>
-        <summary @click="$router.push({name: 'Stage'})">
+        <summary @click="$router.push({name: 'Staging'})">
           <span class="material-icons text-4xl p-2">approval</span>
           <span>Staging</span>
         </summary>
       </details>
       <details>
-        <summary @click="$router.push({name:'InEditting-IndexObject'})">
+        <summary @click="$router.push({name:'Editting'})">
           <span class="material-icons text-4xl p-2">edit_square</span>
-          <span>Editor</span>
+          <span>Editting</span>
         </summary>
         <div class="pl-5">
           <a class="p-3" @click.prevent="$router.push({name:'Editing-Upload'})" :href="techpubStore.getWebRoute('',{},Object.assign({},$router.getRoutes().find(r => r.name =='Editing-Upload')))['path']">

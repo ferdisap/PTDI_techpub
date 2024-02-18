@@ -1,3 +1,4 @@
+<!-- ini natni dihapus karena diganti dengan IndexCSDB.vue -->
 <script>
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
@@ -9,8 +10,6 @@ export default {
       page: ref(1),
       responsedata_get_objects_list: undefined, // {}
       filenameSearch: '',
-
-
     }
   },
   props: {

@@ -88,13 +88,16 @@ export default {
         }
       })
     },
-    getObjectModel() {
-      axios({
+    async getObjectModel() {
+      let response = await axios({
         route:{
           name: 'api.get_object',
           data: { filename: this.$route.params.filename, output: 'model' },
         }
-      })
+      });
+      if (response.statusText === 'OK') {
+        this.model = response.data;
+      }
     },
     async getObjectTransformed() {
       if (['DML', 'CSL'].includes(this.$route.params.filename.substr(0, 3))) {

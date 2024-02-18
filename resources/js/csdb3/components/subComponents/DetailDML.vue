@@ -10,10 +10,10 @@ export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      transformed: undefined,
       showDML: undefined,
 
       model: undefined,
+      transformed: undefined,
     }
   },
   props: ['isInEditing'],
@@ -21,14 +21,14 @@ export default {
   computed: {
     dynamic() {
       return {
-        template: this.transformed,
+      template: this.transformed,
         data() {
           return {
             store: useTechpubStore(),
             dmlEntryOuterHTML: '',
           }
         },
-        components: { Sort, DmlEntryForm},
+        components: { Sort, DmlEntryForm },
         methods: {
           sort() {
             const getCellValue = function (row, index) {
@@ -76,28 +76,25 @@ export default {
         routename = 'api.issue_dml';
       } else if (command == 'edit') {
         routename = 'api.edit_dml';
-      } else if (command == 'delete'){
-        if(!(await this.$root.alert({name: 'beforeDeleteDML', filename:this.$route.params.filename}))){
+      } else if (command == 'delete') {
+        if (!(await this.$root.alert({ name: 'beforeDeleteDML', filename: this.$route.params.filename }))) {
           return;
         }
         routename = 'api.delete_object';
-      } else if (command == 'restore'){
+      } else if (command == 'restore') {
         routename = 'api.restore_object';
       }
 
-      this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute(routename, { filename: this.$route.params.filename });
       axios({
-        url: route.url,
-        method: route.method[0],
-        data: route.params,
+        route: {
+          name: routename,
+          data: { filename: this.$route.params.filename },
+        }
       })
-        .then(response => this.$root.success(response))
-        .catch(error => this.$root.error(error));
     },
     async update() {
       let form = event.target;
-      if(!(await this.alert({message: 'are you sure want to <b>UPDATE</b> this DML?'}).result)){
+      if (!(await this.alert({ message: 'are you sure want to <b>UPDATE</b> this DML?' }).result)) {
         return false;
       }
       const formData = new FormData(form);
@@ -110,36 +107,39 @@ export default {
       })
         .then(response => this.$root.success(response))
         .catch(error => this.$root.error(error))
-    }
-  },
-  async created() {
-    const route = this.techpubStore.getWebRoute('api.get_object', { filename: this.$route.params.filename, output: 'model' });
-    await axios({
-      url: route.url,
-      method: route.method[0],
-      data: route.params,
-    })
-      .then(response => this.model = response.data)
-      .catch(error => this.$root.error(error));
-    
-    if(this.model && this.model.remarks.crud == 'deleted'){
-      setTimeout(() => $('#dml, #dml input, #dml textarea').each((i,e) => e.style.backgroundColor = 'red'),1000);
-    }
-  },
-  mounted() {
-    window.th = this;
-    const route = this.techpubStore.getWebRoute('api.transform_csdb', { filename: this.$route.params.filename });
-    axios({
-      url: route.url,
-      method: route.method[0],
-      data: route.params,
-    })
-      .then(response => {
+    },
+    async getObjectModel() {
+      let response = await axios({
+        route: {
+          name: 'api.get_object',
+          data: { filename: this.$route.params.filename, output: 'model' },
+        }
+      });
+      if (response.statusText === 'OK') {
+        this.model = response.data;
+      }
+    },
+    async getObjectTransformed() {
+      let response = await axios({
+        route: {
+          name: 'api.transform_csdb',
+          data: { filename: this.$route.params.filename, ignoreError: 1 },
+        },
+      });
+      if (response.statusText === 'OK') {
         let text = response.data.file;
+        text = text.replace("\\r", "\r");
         text = text.replace("\\n", "\n");
         this.transformed = text;
-      })
-      .catch(error => this.$root.error(error));
+      }
+    }
+  },
+  created() {
+    this.getObjectModel();
+  },
+  mounted() {
+    this.emitter.on('DetailDML', this.getObjectTransformed);
+    this.emitter.emit('DetailDML');
   },
 }
 </script>
@@ -153,45 +153,26 @@ export default {
     <h1 class="text-center">Detail DML</h1>
     <div class="text-center">Editable: {{ model.editable ? 'yes' : 'no' }}</div>
 
+    <!-- {{ model.filename.substr(0,3) }} -->
+
     <!-- jika DML -->
-    <div class="w-full text-center mb-3 mt-3" v-if="model.filename.substr(0, 3) == 'DML' && ($route.params.filename && !$route.params.filename.match(/_\d{3}-00/g))">
+    <div class="w-full text-center mb-3 mt-3"
+      v-if="model.filename.substr(0, 3) === 'DML' && ($route.params.filename && !$route.params.filename.match(/_\d{3}-00/g))">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="submit('commit')">Commit</button>
       <button class="button-nav" @click="submit('delete')">Delete</button>
       <!-- <button class="button-nav" v-if="model.remarks.crud != 'deleted'" @click="submit('delete')">Delete</button> -->
       <!-- <button class="button-nav" v-else @click="submit('restore')">Restore</button> -->
     </div>
-    <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) == 'DML'">
+    <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) === 'DML'">
       <button class="button-nav" v-if="!model.editable" @click="submit('edit')">Open Edit</button>
-      <button class="button-nav" v-if="!model.editable" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
+      <button class="button-nav" v-if="!model.editable"
+        @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
       <button class="button-nav" @click="submit('delete')">Delete</button>
     </div>
 
-    <!-- jika CSL -->
-    <!-- <div class="w-full text-center mb-3 mt-3" v-if="model.filename.substr(0,3) == 'CSL'">
-      <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
-      <button class="button-nav" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
-    </div> -->
-
-
-    <!-- if is in COMMITING area (bukan CSL) -->
-    <!-- <div class="w-full text-center mb-3 mt-3" v-if="!$props.isInEditing && !model.editable && model.filename.substr(0,3) != 'CSL'">
-      <button :class="[showDML == 'addEntry' ? 'border-b-black border-b-4' : '', 'button-nav']"
-        @click="showDML != 'addEntry' ? (showDML = 'addEntry') : (showDML = '')">Add Entry</button>
-      <button class="button-nav" @click="submit('commit')">Commit</button>
-      <button class="button-nav" @click="submit('edit')">Open to Edit</button>
-    </div> -->
-
-    <!-- if is in EDITTING area (bukan CSL) -->
-    <!-- <div class="w-full text-center mb-3 mt-3" v-if="$props.isInEditing && !model.editable && model.filename.substr(0,3) != 'CSL'">
-      <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
-      <button class="button-nav" @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
-    </div> -->
-
-    <!-- <AddEntryDML v-if="(!model.editable) && (showDML == 'addEntry')" :dmlfilename="$route.params.filename" /> -->
     <PushToStage v-if="showDML == 'pushToStage'" />
     <br />
-
 
     <form id="dml" @submit.prevent="update">
       <input type="hidden" name="filename" :value="$route.params.filename" />

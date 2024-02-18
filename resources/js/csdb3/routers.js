@@ -1,4 +1,4 @@
-import Committing from './route/Committing.vue';
+import Stagged from './route/Stagged.vue';
 import Staging from './route/Staging.vue';
 import Editting from './route/Editting.vue';
 import Welcome from './route/Welcome.vue';
@@ -26,11 +26,16 @@ export default [
     component: IndexObject,
     props: {filter: ''}
   },
+  // {
+  //   name: 'InEditting-IndexObject',
+  //   path: '/csdb3/InEditting-IndexObject',
+  //   component: IndexObject,
+  //   props: {filter: 'inEditting'}
+  // },
   {
-    name: 'InEditting-IndexObject',
-    path: '/csdb3/InEditting-IndexObject',
-    component: IndexObject,
-    props: {filter: 'inEditting'}
+    name: 'Editting',
+    path: '/csdb3/editting',
+    component: Editting,
   },
   {
     name: 'DetailDML',
@@ -54,11 +59,11 @@ export default [
     component: CreateDML,
   },
 
-  // commit
+  // Staged
   {
-    name: 'Commit',
-    path: '/csdb3/commit',
-    component: Committing
+    name: 'Stagged',
+    path: '/csdb3/stagged',
+    component: Stagged
   },
   // {
   //   name: 'DetailBREX',
@@ -74,8 +79,8 @@ export default [
 
   // stage
   {
-    name: 'Stage',
-    path: '/csdb3/stage',
+    name: 'Staging',
+    path: '/csdb3/staging',
     component: Staging
   },
 

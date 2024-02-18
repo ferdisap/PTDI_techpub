@@ -54,13 +54,6 @@ export default {
      * required data.filename 
      */
     async info(data = {}) {
-      // const route = this.techpubStore.getWebRoute('api.info', { name: data.name });
-      // let md = await axios({
-      //   url: route.url,
-      //   data: route.data,
-      //   responseType: "text",
-      //   routename: 'api.info'
-      // });
       let config = {
         route: {
           name: 'api.info',
@@ -68,7 +61,6 @@ export default {
         },
         responseType: 'text'
       };
-      // const route = this.techpubStore.getWebRoute('api.info', { name: data.name });
       let md = await axios(config);
       // membuat <div> dulu agar didalam MD bisa ada tag HTML. Ini dicontohkan dalam README.md punya laravel (basic);
       let text = md.data;
@@ -133,9 +125,6 @@ export default {
 
 <template>
   <Topbar />
-  <!-- <Info :messages="messages" :showMessages="showMessages" :isSuccess="isSuccess"/> -->
-  <!-- <Info :isSuccess="isSuccess" :errors="errors" :message="message" /> -->
-  <!-- <Info :isSuccess="isSuccess" :errors="errors" :message="message" /> -->
   <Info />
 
   <div class="flex mx-auto">

@@ -5,37 +5,31 @@ export default {
     return {
       techpubStore: useTechpubStore(),
       fname: '',
-      dmlEntryList: [],
+      dmlEntryList: undefined,
       availableFile: '',
     }
   },
   props: ['filename'],
-  methods: {
-    getDmlEntries(name) {
-      if(this.fname == name){
-        return;
+  computed:{
+    async getDmlEntries(){
+      console.log(this.$props.filename);
+      let response = await axios({
+        route: {
+          name: 'api.get_dmlentry',
+          data: {filename: this.$props.filename}
+        }
+      });
+      if(response.statusText === 'OK'){
+        this.dmlEntryList = response.data;
       }
-      this.fname = name;
-      let filename = name ? name : this.fname;
-      const route = this.techpubStore.getWebRoute('api.get_entry', { filename: filename });
-      axios({
-        url: route.url,
-        method: route.method[0],
-      })
-        .then(response => this.dmlEntryList = response.data)
-        .catch(error => this.$root.error(error));
-    },
-  },
-  mounted() {
-    this.getDmlEntries(this.$props.filename);
-  },
-  updated(){
-    this.getDmlEntries(this.$props.filename);
+    }
   },
 }
 </script>
 <template>
-  <div>
+  <div v-show="false">{{ getDmlEntries }}</div>
+  
+  <div v-if="dmlEntryList">
     <h1>Detail</h1>
     <table>
       <thead>

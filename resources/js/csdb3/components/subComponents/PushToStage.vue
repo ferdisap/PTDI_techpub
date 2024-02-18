@@ -15,81 +15,104 @@ export default {
   },
   components:{Sort},
   methods: {
-    createCSL() {
-      this.$root.showMessages = false;
+    async createCSL() {
+      // this.$root.showMessages = false;
       const formData = new FormData(event.target);
       if(!formData.get('filename')){
-        formData.set('filename', filename);
+        formData.set('filename', this.filename);
       }
-      const route = this.techpubStore.getWebRoute('api.tostaging', formData);
-      axios({
-        url: route.url,
-        method: route.method[0],
-        data: formData,
-      })
-        .then(response => {
-          this.$root.success(response);
-          this.cslEntryList.push(response.data.csl);
-          window.cslEntryList = this.cslEntryList;
-        })
-        .catch(error => this.$root.error(error));
+      let response = await axios({
+        route: {
+          name: 'api.tostaging',
+          data: formData
+        }
+      });
+      if(response.statusText === 'OK'){
+        this.cslEntryList.push(response.data.csl);
+      }
+      // const route = this.techpubStore.getWebRoute('api.tostaging', formData);
+      // axios({
+      //   url: route.url,
+      //   method: route.method[0],
+      //   data: formData,
+      // })
+      //   .then(response => {
+      //     this.$root.success(response);
+      //     this.cslEntryList.push(response.data.csl);
+      //     window.cslEntryList = this.cslEntryList;
+      //   })
+      //   .catch(error => this.$root.error(error));
     },
-    getCSL_forstaging(){
-      const route = this.techpubStore.getWebRoute('api.get_csl_forstaging');
-      axios({
-        url: route.url,
-        method: route.method[0],
+    async getCSL_forstaging(){
+      let response = await axios({
+        route: {
+          name: 'api.get_csl_forstaging'
+        }
       })
-        .then(response => this.cslEntryList = response.data)
-        .catch(error => this.$root.error(error));
+      if(response.statusText === 'OK'){
+        this.cslEntryList = response.data;
+      }
     },
-    pushToStaging(filename){
-      this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute('api.push_csl_forstaging',{filename: filename});
-      axios({
-        url: route.url,
-        method: route.method[0],
+    async pushToStaging(filename){
+      console.log('pushToStaging');
+      let eventTarget = event.target;
+      let response = await axios({
+        route: {
+          name: 'api.push_csl_forstaging',
+          data: {filename: filename}
+        }
       })
-        .then(response => {
-          this.$root.success(response);
-          let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
-          this.cslEntryList.splice(index,1);
-          this.emitter.emit("csl_staging_pushed");
-        })
-        .catch(error => this.$root.error(error));
+      if(response.statusText === 'OK'){
+        $(eventTarget).parents('tr').eq(0).remove();
+      }
+      // this.$root.showMessages = false;
+      // const route = this.techpubStore.getWebRoute('api.push_csl_forstaging',{filename: filename});
+      // axios({
+      //   url: route.url,
+      //   method: route.method[0],
+      // })
+      //   .then(response => {
+      //     this.$root.success(response);
+      //     let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
+      //     this.cslEntryList.splice(index,1);
+      //     this.emitter.emit("csl_staging_pushed");
+      //   })
+      //   .catch(error => this.$root.error(error));
     },
-    deleteDML(filename){
-      this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute('api.delete_dml',{filename: filename});
-      axios({
-        url: route.url,
-        method: route.method[0],
-      })
-        .then(response => {
-          this.$root.success(response);
-          let index = this.cslEntryList.indexOf(this.cslEntryList.find(csl => csl.filename == filename))
-          this.cslEntryList.splice(index,1);
-        })
-        .catch(error => this.$root.error(error));
+    async deleteDML(filename) {
+      let eventTarget = event.target;
+      if (!(await this.$root.alert({ name: 'beforeDeleteDML', filename: filename }))) {
+        return;
+      }
+      let response = await axios({
+        route: {
+          name: 'api.delete_object',
+          data: { filename: filename },
+        }
+      });
+      if (response.statusText === 'OK') {
+        $(eventTarget).parents('tr').eq(0).remove();
+      }
     },
-    getDmlEntries() {
-      // let filename = this.$route.params.filename ? this.$route.params.filename : $('#dmlFilename').val();
+    async getDmlEntries() {
       let filename = this.$route.params.filename ? this.$route.params.filename : this.filename;
       if(!filename){
         this.techpubStore.Errors = [{filename: 'You should type the DML filename.'}]
         return;
       }
-      const route = this.techpubStore.getWebRoute('api.get_entry', { filename: filename });
-      axios({
-        url: route.url,
-        method: route.method[0],
-      })
-        .then(response => this.dmlEntryList = response.data)
-        .catch(error => this.$root.error(error));
+      let response = await axios({
+        route: {
+          name: 'api.get_dmlentry',
+          data: {filename: filename}
+        }
+      });
+      if(response.statusText === 'OK'){
+        this.dmlEntryList = response.data;
+      }
     }
   },
   mounted() {
-    this.emitter.on('decline_csl_forstaging', this.getCSL_forstaging);
+    this.emitter.on('api.decline_csl_forstaging', this.getCSL_forstaging);
     this.filename = this.$route.params.filename ? this.$route.params.filename : this.filename;
     this.getCSL_forstaging();
   }
@@ -111,7 +134,6 @@ export default {
           <td> {{ csl.filename }} </td>
           <td> 
             <button @click="pushToStaging(csl.filename)"><span class="material-icons text-green-400">check_circle</span>Push</button>
-            <!-- <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailCSLEDIT')))['path']"><span class="material-icons">edit</span>Edit</a> -->
             <a class="text-black" :href="techpubStore.getWebRoute('',{filename: csl.filename}, Object.assign({},$router.getRoutes().find(r => r.name =='DetailDML')))['path']"><span class="material-icons">edit</span>Edit</a>
             <button @click="deleteDML(csl.filename)"><span class="material-icons text-red-500">delete</span>Delete</button>
           </td>
@@ -120,18 +142,20 @@ export default {
     </table>
 
     <!-- push -->
-    <form @submit.prevent="createCSL()">
-      <div class="w-1/2">
-        <label for="dmlFilename" class="block mb-2 text-gray-900 dark:text-white text-lg font-bold">DML</label>
-        <span>The DML is required to be filled.</span>
+    <div class="w-1/2">
+      <label for="dmlFilename" class="block mb-2 text-gray-900 dark:text-white text-lg font-bold">DML</label>
+      <span>The DML is required to be filled.</span>
+      <form @submit.prevent="getDmlEntries">
         <input type="text" id="dmlFilename" name="filename" v-model="filename"
           placeholder="type the DML file.."
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         <div class="text-red-600" v-html="techpubStore.error('filename')"></div>
-      </div>
-      <div class="mt-3">
-        <h5>Choose Your Data Module <a @click="getDmlEntries()" class="font-normal underline hover:text-blue-500"
-            href="#">click to open list</a></h5>
+      </form>
+    </div>
+    <div class="mt-3">
+      <h5>Choose Your Data Module <a @click="getDmlEntries()" class="font-normal underline hover:text-blue-500"
+          href="#">click to open list</a></h5>
+      <form @submit.prevent="createCSL()">
         <table>
           <thead>
             <tr>
@@ -162,7 +186,7 @@ export default {
           </tbody>
         </table>
         <button class="button-violet mt-3">Create CSL</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </template>

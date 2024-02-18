@@ -99,10 +99,16 @@ axios.interceptors.request.use(
     window.config = config;
     useTechpubStore().showLoadingBar = true;
     if (config.route) {
-      const route = useTechpubStore().getWebRoute(config.route.name, Object.assign({}, config.route.data));
-      config.url = route.url;
-      config.method = route.method[0];
-      config.data = route.params;
+      try {
+        // const route = useTechpubStore().getWebRoute(config.route.name, Object.assign({}, config.route.data)); // tidak bisa convert formData to object.assign
+        const route = useTechpubStore().getWebRoute(config.route.name, config.route.data);
+        config.url = route.url;
+        config.method = route.method[0];
+        config.data = route.params;
+      } catch (error) {
+        config.url = '';
+        console.log(error);
+      }
     }
     return config;
   },

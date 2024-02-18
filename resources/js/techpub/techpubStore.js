@@ -57,13 +57,13 @@ export const useTechpubStore = defineStore('useTechpubStore', {
        * untuk DML app, csdb3
        * kayaknya ini tidak dipakai karena nanti pakai DMLList di IndexDML.vue
        */
-      DMLList:[],
+      DMLList:[], // tidak  digunakan lagi
 
       /**
        * untuk csdb3
        */
-      BREXList:[],
-      BRDPList:[],
+      BREXList:[], // tidak  digunakan lagi
+      BRDPList:[], // tidak  digunakan lagi
       // BRList:[],
 
       /**
@@ -84,6 +84,28 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     }
   },
   actions: {
+    /**
+     * 
+     * @param {string} type 'dml','csl', 'brex', 'brdp'
+     * @param {*} params 
+     */
+    async get_list(type, params = {}) {
+      params.filenameSearch = this[`${type}_filenameSearch`] ?? '';
+      let response = await axios({
+        route: {
+          name: `api.get_${type}_list`,
+          data: params
+        }
+      })
+      if(response.statusText === 'OK'){
+        this[`${type}_list`] = response.data;
+        this[`${type}_page`] = response.data.current_page;
+      }
+    },
+    async goto(type,page = undefined) {
+      this.get_list(type, {page: page});
+    },
+
     isEmpty(value) {
       return (value == null || value === '' || (typeof value === "string" && value.trim().length === 0));
     },
@@ -101,10 +123,13 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * returned Object will have params (plain Object) if the method is POST;
      */
     getWebRoute(name, params = {}, route = undefined) {
+      let formData;
       if (params instanceof FormData) {
+        formData = params;
         params.delete('http://www.w3.org/1999/xhtml');
         let a = {};
         for (const [key, value] of params) {
+          console.log(key, value)
           a[key] = value;
         }
         params = a;
@@ -120,7 +145,10 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         }
         else {
           route.path = route.path.replace(`:${p}`, params[p]);
-          delete params[p];
+          // delete params[p];
+          // if(formData){
+          //   formData.delete(p);
+          // }
         }
       }
       if (!route.method || route.method.includes('GET')) {
@@ -129,7 +157,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         route.url = url;
       }
       else if (route.method && route.method.includes('POST')) {
-        route.params = params;
+        route.params = formData ?? params;
         route.url = new URL(window.location.origin + route.path);
       }
       return route;
