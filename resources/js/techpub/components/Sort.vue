@@ -30,9 +30,11 @@ export default {
         this.emitter.emit(this.$props.emitname);
       }
     },
-  }
+  },
 }
 </script>
 <template>
-  <a href="javascript:void(0)" @click="$props.function ? $props.function : sort()"><span class="material-icons text-sm ">swap_vert</span></a>
+  <!-- <a href="javascript:void(0)" @click="$props.function ? $props.function : sort()"><span class="material-icons text-sm ">swap_vert</span></a> -->
+  <button v-if="$props.function" @click="$props.function" class="has-tooltip-arrow" data-tooltip="Sort"><span class="material-icons text-sm">swap_vert</span></button>
+  <button v-else @click="sort" class="has-tooltip-arrow" data-tooltip="Sort"><span class="material-icons text-sm ">swap_vert</span></button>
 </template>

@@ -94,19 +94,26 @@ export default {
     },
     async update() {
       let form = event.target;
-      if (!(await this.alert({ message: 'are you sure want to <b>UPDATE</b> this DML?' }).result)) {
+      // if (!(await this.alert({ message: 'are you sure want to <b>UPDATE</b> this DML?' }).result)) {
+      if (!(await this.$root.alert({name: 'beforeUpdateDML', filename: this.$route.params.filename}))) {
         return false;
       }
       const formData = new FormData(form);
-      this.$root.showMessages = false;
-      const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
-      await axios({
-        url: route.url,
-        method: route.method[0],
-        data: formData,
+      axios({
+        route: {
+          name: 'api.dmlupdate',
+          data: formData,
+        }
       })
-        .then(response => this.$root.success(response))
-        .catch(error => this.$root.error(error))
+      // this.$root.showMessages = false;
+      // const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
+      // await axios({
+      //   url: route.url,
+      //   method: route.method[0],
+      //   data: formData,
+      // })
+      //   .then(response => this.$root.success(response))
+      //   .catch(error => this.$root.error(error))
     },
     async getObjectModel() {
       let response = await axios({
@@ -131,6 +138,15 @@ export default {
         text = text.replace("\\r", "\r");
         text = text.replace("\\n", "\n");
         this.transformed = text;
+        if(!this.model.editable){
+          setTimeout(() => {
+            $('#dml *[name]').each((i,e) => {
+                e.setAttribute('disabled',true);
+                e.style.border = 'none'
+            })
+            $('.add-remove_button_container').remove()
+          }, 0);
+        }
       }
     }
   },

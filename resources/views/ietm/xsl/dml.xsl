@@ -56,7 +56,7 @@
         </td>
       </tr>
       <tr>
-        <td><b>Remarks</b>
+        <td><b>Remarks:</b>
         </td>
         <td>
           <textarea name="ident-remarks">
@@ -130,12 +130,12 @@
   <div class="text-red-600 text-sm error">
     <xsl:attribute name="v-html">store.error('entryIdent')</xsl:attribute>
   </div>
-  <div>
-    <xsl:variable name="number"><xsl:number/></xsl:variable>
+  <div class="add-remove_button_container">
+    <!-- <xsl:variable name="number"><xsl:number/></xsl:variable> -->
     <!-- <td><button class="material-icons" type="button" onclick="add_dmlEntry_row()">add</button></td>
     <td><button class="material-icons" type="button" onclick="delete_dmlEntry_row()">delete</button></td> -->
-    <td><button class="material-icons" type="button" v-on:click="emitter.emit('add_dmlEntry')">add</button></td>
-    <td><button class="material-icons" type="button" v-on:click="emitter.emit('remove_dmlEntry')">delete</button></td>
+    <button class="material-icons" type="button" v-on:click="emitter.emit('add_dmlEntry')">add</button>
+    <button class="material-icons" type="button" v-on:click="emitter.emit('remove_dmlEntry')">delete</button>
   </div>
 </xsl:template>
 

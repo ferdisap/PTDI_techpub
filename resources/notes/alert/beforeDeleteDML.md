@@ -1,1 +1,1 @@
-Are you sure want to delete this DML ``${filename}`` ?
+Are you sure want to DELETE this DML ``${filename}`` ?

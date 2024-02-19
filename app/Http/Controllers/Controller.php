@@ -119,7 +119,9 @@ class Controller extends BaseController
             if(is_array($value)){
               $fn($value, $fn);
             } else {
-              $data['message'] .= $value . \PHP_EOL;
+              if($value){
+                $data['message'] .= $value . \PHP_EOL;
+              }
             }
           }
           // jika array assoc
@@ -132,7 +134,9 @@ class Controller extends BaseController
           }
         }
       } else {
-        $data['message'] .= $message .\PHP_EOL;
+        if($message){
+          $data['message'] .= $message .\PHP_EOL;
+        }
       }
     };
 

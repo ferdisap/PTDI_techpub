@@ -23,12 +23,16 @@ export default {
 <template>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <aside class=" m-3 rounded-xl shadow-xl border-slate-300 bg-slate-50 text-black h-5/6 text-left py-3 md:w-1/4 2xl:max-w-[50%] ">
-    <div class="p-2 flex items-center space-x-3 mb-3">
-      <span class="material-symbols-outlined text-4xl bg-violet-800 text-white p-2 shadow-lg rounded-md">database</span>
+    <!-- <div class="bg-blue-500 py-3 px-2 text-white mb-3 border rounded-t-xl text-center">
+      <span class="text-2xl">Detail</span>
+      <button class="float-right mr-3 hover:scale-125" @click="delete this">X</button>
+    </div> -->
+    <div class="p-2 flex items-center space-x-3 mb-3 bg-blue-500 rounded-t-xl text-white">
+      <span class="material-symbols-outlined text-4xl bg-transparent text-white p-2 rounded-md">database</span>
       <div>
         <span class="font-bold text-2xl">CSDB</span>
         <br />
-        <span>powered by PTDI</span>
+        <span class="text-black italic font-light text-sm">powered by PTDI</span>
       </div>
     </div>
     <hr/>

@@ -129,7 +129,6 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         params.delete('http://www.w3.org/1999/xhtml');
         let a = {};
         for (const [key, value] of params) {
-          console.log(key, value)
           a[key] = value;
         }
         params = a;

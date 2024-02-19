@@ -134,6 +134,7 @@ class Dml extends ModelsCsdb
   }
 
   /**
+   * BARU (19Feb2024), entryIdent tidak akan di check apakah sudah tertulis di dml lainnya karena akan bermasalah jika DML yang sudah 'staged' dan akan di openEdit sementara ada entry yang sama
    * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
    * ada fitur check dmlEntry di setiap DML yang tersimpan, tapi hanya yang 'p' saja karena 's' itu adalah CSL yang digenerate setiap ada load/unload object ke CSDB
    * fitur ini tidak digunakan untuk check dmlEntry yang pakai issueType/dmlEntryType. Jika mau ubah dari 'new' ke 'changed', maka pakai fungsi cloneDmlEntry()
@@ -159,24 +160,29 @@ class Dml extends ModelsCsdb
 
     // #3. checking if duplicate dmlEntry (hanya dmltype='p' saja, tapi tidak dicheck jika entrynya ICN)
     // $xpath = function ($data, $codeType, $useIssueInfo = false ,$useLanguage = false) {};    
-    $check_to_alldmls = function () use ($ident, $entryIdent) {
-      $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
-      $modelIdentCode = $ident[$codeType]['modelIdentCode'];
-      $alldmls = ModelsCsdb::where('filename', 'not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
-      // $xpath = $xpath($ident, $codeType);
-      $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType);
-      // $results = [];
-      foreach ($alldmls as $dml) {
-        $dom = CSDB::importDocument(storage_path($dml->path), $dml->filename);
-        $domxpath = new \DOMXPath($dom);
-        // $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmCode/pmCode/dmlCode
-        $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmlEntry
-        if ($res->length > 0) {
-          return [false, "Entry Ident {$entryIdent} has been already listed in {$dml->filename}"];
-        }
-      }
-      return [true];
-    };
+    // $check_to_alldmls = function () use ($ident, $entryIdent, $dml_dom) {
+    //   $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
+    //   $modelIdentCode = $ident[$codeType]['modelIdentCode'];
+    //   $alldmls = ModelsCsdb::where('filename', 'not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
+    //   // $xpath = $xpath($ident, $codeType);
+    //   $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType);
+    //   // $results = [];
+    //   $codeThisDml = explode("_",$this->filename)[0];
+    //   foreach ($alldmls as $dml) {
+    //     // jika entryIdent ada pada DML lain yang 'dmlCode' nya sama, contoh jika DML di openEdit, maka itu diperbolehkan
+    //     if(str_contains($dml->filename, $codeThisDml)){
+    //       break;
+    //     }
+    //     $dom = CSDB::importDocument(storage_path($dml->path), $dml->filename);
+    //     $domxpath = new \DOMXPath($dom);
+    //     // $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmCode/pmCode/dmlCode
+    //     $res = $domxpath->evaluate($xpath); // expect output: DOMElement dmlEntry
+    //     if ($res->length > 0) {
+    //       return [false, "Entry Ident {$entryIdent} has been already listed in {$dml->filename}"];
+    //     }
+    //   }
+    //   return [true];
+    // };
     $check_to_currentdml = function () use ($ident, $entryIdent, $dml_dom) {
       $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
       // $xpath = $xpath($ident, $codeType, true, true);
@@ -189,9 +195,12 @@ class Dml extends ModelsCsdb
       }
       return [true];
     };
-    if ($dmlType == 'p' and ($ident['prefix'] != 'ICN-') and !($check = $check_to_alldmls())[0]) {
-      return [false, $check[1]];
-    } elseif ($dmlType == 's' and !($check = $check_to_currentdml())[0]) {
+    // if ($dmlType == 'p' and ($ident['prefix'] != 'ICN-') and !($check = $check_to_alldmls())[0]) {
+    //   return [false, $check[1]];
+    // } elseif ($dmlType == 's' and !($check = $check_to_currentdml())[0]) {
+    //   return [false, $check[1]];
+    // }
+    if ($dmlType === 's' and !($check = $check_to_currentdml())[0]) {
       return [false, $check[1]];
     }
 

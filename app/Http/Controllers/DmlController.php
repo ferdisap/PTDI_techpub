@@ -96,6 +96,9 @@ class DmlController extends Controller
         'editable' => 1,
         'initiator_id' => $csdb_model->initiator_id,
       ]);
+      if($csdb_model->remarks["securityClassification"]){
+        $new_csdb_model->setRemarks('securityClassification', $csdb_model->remarks["securityClassification"]);
+      }
       if ($new_csdb_model) {
         return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
       }

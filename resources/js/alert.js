@@ -1,10 +1,5 @@
 import $ from "jquery";
 
-let selector = undefined;
-let message = '';
-let alert;
-let show = true;
-
 /**
  * create an Alert Object
  * @returns javascript object, contains function for ok, not ok, and wait
@@ -18,16 +13,13 @@ function run(){
     reject = j;
   })
 
-  function ok(){
-    show = false;
+  let ok = function() {
     return resolve(1);
   }
-  function not_ok(){
-    show = false;
+  let not_ok = function() {
     return reject(0);
   }
-  function wait(){
-    show = true;
+  let wait = function() {
     return promise;
   }
 
@@ -47,18 +39,18 @@ function run(){
 function createAlert(conf = {}){
   let aa = function(){
     // selector = conf.selector ?? undefined;
-    message = conf.message ?? '';
-    alert = run();
+    let message = conf.message ?? '';
+    let alert = run();
     return {
-      show: show,
+      show: true,
       message: message,
       button: function(state){
         if(state){
           this.show = false;
-          return alert.ok();
+          return (alert.ok.bind(this))();
         } else {
           this.show = false;
-          return alert.not_ok();
+          return (alert.not_ok.bind(this))();
         }
       },
       result: alert.wait(),
