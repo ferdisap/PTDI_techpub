@@ -39,17 +39,15 @@ export default {
       if(!(await this.$root.alert({name:'beforePermanentDeleteCsdbObject', filename:filename}))){
         return;
       }
-      const route = this.techpubStore.getWebRoute('api.permanentdelete_object', {filename: filename});
-      axios({
-        url: route.url,
-        method: route.method[0],
-        data: route.params
-      })
-      .then(rsp => {
-        this.$root.success(rsp);
+      let result = await axios({
+        route: {
+          name: 'api.permanentdelete_object',
+          data: {filename: filename}
+        }
+      });
+      if(result.statusText === 'OK'){
         $(eventTarget).parents('tr').eq(0).remove();
-      })
-      .catch(e => this.$root.error(e));
+      }
     },
     goto(page = undefined){
       let url = new URL(this.responsedata_get_deletion_list.path);

@@ -12,20 +12,29 @@ export default {
   components:{Remarks},
   methods:{
     submit(){
-      this.techpubStore.Errors = [];
       const formData = new FormData(event.target);
-      const route = this.techpubStore.getWebRoute('api.create_dml',formData);      
+      this.techpubStore.Errors = [];
       axios({
-        url: route.url,
-        method: route.method[0],
-        data: formData,
+        route: {
+          name: 'api.create_dml',
+          data: formData
+        }
       })
-      .then(response => {
-        this.$root.success(response)
-        // this.techpubStore.DMLList[Object.keys(this.techpubStore.DMLList).length] = response.data.dml;
-        this.emitter.emit('csdb_restore-DML');
-      })
-      .catch(error => this.$root.error(error));
+
+      // this.techpubStore.Errors = [];
+      // const formData = new FormData(event.target);
+      // const route = this.techpubStore.getWebRoute('api.create_dml',formData);      
+      // axios({
+      //   url: route.url,
+      //   method: route.method[0],
+      //   data: formData,
+      // })
+      // .then(response => {
+      //   this.$root.success(response)
+      //   // this.techpubStore.DMLList[Object.keys(this.techpubStore.DMLList).length] = response.data.dml;
+      //   this.emitter.emit('csdb_restore-DML');
+      // })
+      // .catch(error => this.$root.error(error));
     },
   },
 }

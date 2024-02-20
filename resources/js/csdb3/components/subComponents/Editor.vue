@@ -33,32 +33,26 @@ export default {
     create(){
       const formData = new FormData(event.target);
       formData.append('xmleditor', this.editor.state.doc.toString());
-      const route = this.techpubStore.getWebRoute(this.rn_create, formData);
       axios({
-        url: route.url,
-        method: route.method[0],
-        data: formData,
-        routename: this.rn_create,
+        route: {
+          name: this.rn_create,
+          data: formData,
+        }
       })
-      .then(response => this.$root.success(response))
-      // api.get_objects_list
-      .catch(error => this.$root.error(error));
     },
-    update(){
+    async update(){
       const formData = new FormData(event.target);
       formData.append('xmleditor', this.editor.state.doc.toString());
       formData.append('filename', this.$route.params.filename);
-      const route = this.techpubStore.getWebRoute(this.rn_update, formData);
-      axios({
-        url: route.url,
-        method: route.method[0],
-        data: formData
+      let response = await axios({
+        route: {
+          name: this.rn_update,
+          data: formData
+        }
       })
-      .then(response => {
-        this.$root.success(response);
-        this.$parent.getObjectTransformed ? this.$parent.getObjectTransformed() : null;
-      })
-      .catch(error => this.$root.error(error));
+      if(response.statusText === 'OK'){
+        this.emitter.emit('DetailObject');
+      }
     },
     submit(filename){
       return filename ? this.update() : this.create();
@@ -99,7 +93,7 @@ export default {
               <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
             </div>
             <div class="block w-1/4">
-              <input type="checkbox" id="xsi_validate" name="xsi_validate" />
+              <input type="checkbox" id="xsi_validate" name="xsi_validate" checked/>
               <br />
               <input type="checkbox" id="brex_validate" name="brex_validate" />
             </div>

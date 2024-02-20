@@ -21,7 +21,7 @@ export default {
   computed: {
     dynamic() {
       return {
-      template: this.transformed,
+        template: this.transformed,
         data() {
           return {
             store: useTechpubStore(),
@@ -53,7 +53,6 @@ export default {
           },
         },
         mounted() {
-          window.th = this;
           $('.map').maphilight();
           $('area').each((k, area) => {
             $(area).click((e) => {
@@ -95,7 +94,7 @@ export default {
     async update() {
       let form = event.target;
       // if (!(await this.alert({ message: 'are you sure want to <b>UPDATE</b> this DML?' }).result)) {
-      if (!(await this.$root.alert({name: 'beforeUpdateDML', filename: this.$route.params.filename}))) {
+      if (!(await this.$root.alert({ name: 'beforeUpdateDML', filename: this.$route.params.filename }))) {
         return false;
       }
       const formData = new FormData(form);
@@ -138,17 +137,59 @@ export default {
         text = text.replace("\\r", "\r");
         text = text.replace("\\n", "\n");
         this.transformed = text;
-        if(!this.model.editable){
+        if (!this.model.editable) {
           setTimeout(() => {
-            $('#dml *[name]').each((i,e) => {
-                e.setAttribute('disabled',true);
-                e.style.border = 'none'
+            $('#dml *[name]').each((i, e) => {
+              e.setAttribute('disabled', true);
+              e.style.border = 'none'
             })
             $('.add-remove_button_container').remove()
           }, 0);
         }
       }
-    }
+    },
+    // async download() {
+    //   if (!this.srcblob) {
+    //     let response = await axios({
+    //       route: {
+    //         name: 'api.get_object',
+    //         data: { filename: this.$route.params.filename },
+    //       },
+    //       responseType: 'blob'
+    //     });
+    //     if (response.statusText === 'OK') {
+    //       this.typeblob = response.headers.getContentType();
+    //       if (this.typeblob.includes('xml')) {
+    //         this.raw = await response.data.text();
+    //       }
+    //       this.srcblob = URL.createObjectURL(await response.data);
+    //     }
+    //   }
+    //   let a = $('<a/>')
+    //   a.attr('download', this.$route.params.filename);
+    //   a.attr('href', this.srcblob);
+    //   a[0].click();
+    // },
+    // async download_all() {
+    //   let response = await axios({
+    //     route: {
+    //       name: 'api.get_export_file',
+    //       data: { filename: this.$route.params.filename },
+    //     },
+    //     responseType: 'blob'
+    //   });
+    //   if (response.statusText === 'OK') {
+    //     let srcblob = URL.createObjectURL(await response.data);
+    //     let filename = this.$route.params.filename;
+    //     if(response.headers['content-type'].includes('zip')){
+    //       filename = this.$route.params.filename.replace(/\.\w+$/,'.zip');
+    //     }
+    //     let a = $('<a/>')
+    //     a.attr('download', filename);
+    //     a.attr('href', srcblob);
+    //     a[0].click();
+    //   }
+    // }
   },
   created() {
     this.getObjectModel();
@@ -186,6 +227,10 @@ export default {
         @click="showDML = (showDML == 'pushToStage' ? '' : 'pushToStage')">Push to Stage</button>
       <button class="button-nav" @click="submit('delete')">Delete</button>
     </div>
+
+    <a class="underline text-blue-600" @click="$root.download" href="#">download here..</a>
+    <br />
+    <a class="underline text-blue-600" @click="$root.download_all" href="#">download all..</a>
 
     <PushToStage v-if="showDML == 'pushToStage'" />
     <br />

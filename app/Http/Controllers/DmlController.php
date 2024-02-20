@@ -454,21 +454,27 @@ class DmlController extends Controller
     $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan validasi
 
     // #1. remove all dmlEntry
-    $dmlContent = $dml_model->DOMDocument->getElementsByTagName("dmlContent")[0];
-    while ($dmlContent->firstElementChild) {
-      $dmlContent->firstElementChild->remove();
+    if($entryIdents){
+      $dmlContent = $dml_model->DOMDocument->getElementsByTagName("dmlContent")[0];
+      while ($dmlContent->firstElementChild) {
+        $dmlContent->firstElementChild->remove();
+      }
+      $dml_model->DOMDocument->saveXML();
+      foreach ($entryIdents as $pos => $entryIdent) {
+        $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
+        $otherOptions = [
+          'issueType' => $issueTypes[$pos],
+          'dmlEntryType' => $dmlEntryTypes[$pos],
+        ];
+        $add = $dml_model->add_dmlEntry($entryIdent, $securityClassifications[$pos], [$enterpriseNames[$pos], $enterpriseCodes[$pos]], $remarks, $otherOptions);
+        if (!$add[0]) return $this->ret2(400, [$add[1]]);
+      }
+      $dml_model->DOMDocument->saveXML();
     }
-    $dml_model->DOMDocument->saveXML();
-    foreach ($entryIdents as $pos => $entryIdent) {
-      $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
-      $otherOptions = [
-        'issueType' => $issueTypes[$pos],
-        'dmlEntryType' => $dmlEntryTypes[$pos],
-      ];
-      $add = $dml_model->add_dmlEntry($entryIdent, $securityClassifications[$pos], [$enterpriseNames[$pos], $enterpriseCodes[$pos]], $remarks, $otherOptions);
-      if (!$add[0]) return $this->ret2(400, [$add[1]]);
-    }
-    $dml_model->DOMDocument->saveXML();
+
+    // #2. tambkan save remarks berdasarkan identAndStatusSection/descendant::remarks/para
+    $dml_model->setRemarks('remarks');
+
     $dml_model->saveModelAndDOM();
     return $this->ret2(200, ['Update Success.']);
   }

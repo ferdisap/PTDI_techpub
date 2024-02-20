@@ -11,9 +11,11 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
+        "madnest/madzipper": "^1.4",
         "maennchen/zipstream-php": "^3.1",
         "nesbot/carbon": "^2.68",
         "ptdi/mpub": "^1.0",
+        "shanethehat/pretty-xml": "^1.0",
         "spipu/html2pdf": "^5.2",
         "tecnickcom/tcpdf": "^6.6"
     },

@@ -30,6 +30,7 @@ use Ptdi\Mpub\Validation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipStream\ZipStream;
 use Illuminate\Support\Facades\Process;
+use PrettyXml\Formatter;
 use Ptdi\Mpub\Helper;
 
 class CsdbController extends Controller
@@ -168,7 +169,7 @@ class CsdbController extends Controller
       }
     }
 
-    // #6. saving
+    // #6. saving dan menambahkan remarks stage dan remarks
     if ($dom instanceof \DOMDocument) {
       $save = $dom->C14NFile(storage_path($path) . DIRECTORY_SEPARATOR . $csdb_filename);
     } else {
@@ -183,6 +184,7 @@ class CsdbController extends Controller
       ]);
       if ($new_csdb_model) {
         $new_csdb_model->setRemarks('stage', 'unstaged');
+        $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
         return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
       }
     }
@@ -244,9 +246,18 @@ class CsdbController extends Controller
       $mime = $dom->getFileinfo()['mime_type'];
       return Response::make($dom->getFile(), 200, ['Content-Type' => $mime]);
     } else {
-      return Response::make($dom->C14N(), 200, ['Content-Type' => 'text/xml']);
+      // return Response::make($dom->C14N(), 200, ['Content-Type' => 'text/xml']);
+      $formatter = new Formatter();
+      return Response::make($formatter->format($dom->C14N()), 200, ['Content-Type' => 'text/xml']);
+      // $dm = new \DOMDocument();
+      // $dm->preserveWhiteSpace = true;
+      // $dm->formatOutput = true;
+      // $dm->loadXML($dom->C14N());
+      // return Response::make($dm->C14N(), 200, ['Content-Type' => 'text/xml']);
     }
   }
+
+  
 
   /**
    * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename
@@ -309,6 +320,7 @@ class CsdbController extends Controller
     if ($dom instanceof \DOMDocument) {
       $new_filename = CSDB::resolve_DocIdent($dom);
       if ($old_filename != $new_filename) {
+        return $this->ret2(400, ["You didn't allow to change element &lt;{$validateRootname[3]}Ident&gt;"]);
         $domXpath = new \DOMXPath($dom);
         $ident = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
         $old_domXpath = new \DOMXPath($old_dom);
@@ -329,7 +341,14 @@ class CsdbController extends Controller
       }
     }
 
-    // #6. saving
+    // #6. tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+    if($dom instanceof \DOMDocument){
+      $csdb_object->DOMDocument = $dom;
+      $csdb_object->setRemarks('remarks');
+      $dom = $csdb_object->DOMDocument;
+    }        
+
+    // #7. saving
     if ($dom instanceof \DOMDocument) {
       $save = $dom->C14NFile(storage_path($csdb_object->path) . DIRECTORY_SEPARATOR . $csdb_filename);
     } else {

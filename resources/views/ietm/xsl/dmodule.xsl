@@ -20,7 +20,7 @@
   </xsl:template>
 
   <xsl:template match="identAndStatusSection">
-    <div id="identAndStatusSection" v-show="store.showIdentSection">
+    <div class="identAndStatusSection" v-show="store.showIdentSection">
       <div class="schema">Schema: <xsl:value-of
           select="php:function('Ptdi\Mpub\CSDB::getSchemaUsed', /,'filename')" /></div>
 
@@ -144,6 +144,18 @@
                 <xsl:value-of select="child::*/@verificationType" />
               </span>
             </xsl:for-each>
+          </td>
+        </tr>
+        <tr>
+          <td><b>Remakrs:</b></td>
+          <td>
+            <xsl:variable name="remarks">
+              <xsl:for-each select="//dmStatus/remarks/simplePara">
+                <xsl:value-of select="string(.)"/>
+                <xsl:text>\r\n</xsl:text>
+              </xsl:for-each>
+            </xsl:variable>
+            <xsl:value-of select="php:function('trim', $remarks, '\n\r')"/>            
           </td>
         </tr>
       </table>

@@ -112,6 +112,48 @@ export default {
       // finish by creating Alert;
       this.alertData = createAlert(data);
       return this.alertData.result;
+    },
+    async download() {
+      if (!this.srcblob) {
+        let response = await axios({
+          route: {
+            name: 'api.get_object',
+            data: { filename: this.$route.params.filename },
+          },
+          responseType: 'blob'
+        });
+        if (response.statusText === 'OK') {
+          this.typeblob = response.headers.getContentType();
+          if (this.typeblob.includes('xml')) {
+            this.raw = await response.data.text();
+          }
+          this.srcblob = URL.createObjectURL(await response.data);
+        }
+      }
+      let a = $('<a/>')
+      a.attr('download', this.$route.params.filename);
+      a.attr('href', this.srcblob);
+      a[0].click();
+    },
+    async download_all() {
+      let response = await axios({
+        route: {
+          name: 'api.get_export_file',
+          data: { filename: this.$route.params.filename },
+        },
+        responseType: 'blob'
+      });
+      if (response.statusText === 'OK') {
+        let srcblob = URL.createObjectURL(await response.data);
+        let filename = this.$route.params.filename;
+        if(response.headers['content-type'].includes('zip')){
+          filename = this.$route.params.filename.replace(/\.\w+$/,'.zip');
+        }
+        let a = $('<a/>')
+        a.attr('download', filename);
+        a.attr('href', srcblob);
+        a[0].click();
+      }
     }
   },
   beforeCreate() {

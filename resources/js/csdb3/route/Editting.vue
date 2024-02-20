@@ -12,6 +12,23 @@ export default {
     }
   },
   components: {IndexCSDB, IndexObject},
+  methods: {
+    async deleteObject(filename){
+      let eventTarget = event.target;
+      if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: filename }))) {
+        return;
+      }
+      let response = await axios({
+        route: {
+          name: 'api.delete_object',
+          data: { filename: filename },
+        }
+      });
+      if (response.statusText === 'OK') {
+        $(eventTarget).parents('tr').eq(0).remove();
+      }
+    }
+  }
 }
 </script>
 <template>

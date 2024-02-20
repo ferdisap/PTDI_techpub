@@ -25,19 +25,18 @@
 
 
 <xsl:template match="content">
-  <xsl:apply-templates/>
+  <div class="content">
+    <xsl:apply-templates/>
+  </div>
 </xsl:template>
 
 <xsl:template match="brex">
-  <div>
-    <xsl:value-of select="commonInfo"/>
+  <div class="mt-5">
+    <h1>Common Info</h1>
+    <p><xsl:value-of select="//content/brex/commonInfo"/></p>
   </div>
-  <div>
-    <xsl:apply-templates select="snsRules"/>
-  </div>
-  <div>
-    <xsl:apply-templates select="contextRules"/>
-  </div>
+  <xsl:apply-templates select="snsRules"/>
+  <xsl:apply-templates select="contextRules"/>
 </xsl:template>
 
 </xsl:transform>

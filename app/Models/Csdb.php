@@ -204,6 +204,8 @@ class Csdb extends Model
         }
         $values = $value;
         break;
+      case 'remarks':
+        $value = $this->setRemarks_remarks($value);
       default:
         $values = $value;
         break;
@@ -214,6 +216,25 @@ class Csdb extends Model
     if ($this->direct_save) {
       $this->save();
     }
+  }
+
+  /** 
+   * @param mixed $value bisa berupa string, atau DOM Document
+   * @return string 
+   * */
+  private function setRemarks_remarks($value = ''){
+    $remarks_string = [];
+    if($value instanceof \DOMDocument){
+      $domXpath = new \DOMXPath($value);
+    } else {
+      $domXpath = new \DOMXPath($this->DOMDocument);
+    }
+    $simpleParas = $domXpath->evaluate('//identAndStatusSection/descendant::remarks/simplePara');
+    foreach ($simpleParas as $key => $simplePara) {
+      $remarks_string[] = $simplePara->textContent;
+    }
+    $remarks_string = join(PHP_EOL, $remarks_string);
+    return !empty($remarks_string) ? $remarks_string : '';
   }
 
   /**

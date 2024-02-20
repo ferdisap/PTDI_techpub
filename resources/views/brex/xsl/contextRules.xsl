@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl">
 
   <xsl:output method="xml" omit-xml-declaration="yes"/>
 
   <!-- <xsl:template match="/"> -->
   <xsl:template match="contextRules">
     <div>
-      <div class="d-flex justify-content-center flex-column container mt-3">
-        <p><xsl:value-of select="//commonInfo"/></p>
+      <xsl:attribute name="class">
+        <xsl:text>contextRules </xsl:text>
+        <xsl:value-of select="php:function('str_replace','.','-', string(@rulesContext))"/>
+      </xsl:attribute>
+      <!-- <div class="d-flex justify-content-center flex-column container mt-5"> -->
+      <div class="flex justify-center flex-col mt-5 overflow-auto">
         <table>
           <thead>
             <tr>

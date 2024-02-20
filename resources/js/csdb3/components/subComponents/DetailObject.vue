@@ -11,6 +11,8 @@ export default {
       show: 'stage',
       model: {},
 
+      showEditor: false,
+
       transformed: undefined,
       raw: undefined,
       srcblob: '', // blob URL
@@ -63,7 +65,7 @@ export default {
           });
         },
       }
-    }
+    },
   },
   components: { Editor },
   methods: {
@@ -82,15 +84,15 @@ export default {
         routename = 'api.delete_object';
       }
       axios({
-        route:{
+        route: {
           name: routename,
-          data: {filename: this.$route.params.filename},
+          data: { filename: this.$route.params.filename },
         }
       })
     },
     async getObjectModel() {
       let response = await axios({
-        route:{
+        route: {
           name: 'api.get_object',
           data: { filename: this.$route.params.filename, output: 'model' },
         }
@@ -135,12 +137,62 @@ export default {
         }
 
       }
-    }
+    },
+    async showEdit() {
+      if (!this.showEditor) {
+        if (!this.raw) {
+          let result = await axios({
+            route: {
+              name: 'api.get_object',
+              data: { filename: this.model.filename }
+            }
+          })
+          if (result.statusText === 'OK') {
+            this.raw = result.data;
+          }
+        }
+        this.showEditor = true;
+      } else {
+        this.showEditor = false;
+      }
+
+    },
+    // async download() {
+    //   if (!this.srcblob) {
+    //     let response = await axios({
+    //       route: {
+    //         name: 'api.get_object',
+    //         data: { filename: this.$route.params.filename },
+    //       },
+    //       responseType: 'blob'
+    //     });
+    //     if (response.statusText === 'OK') {
+    //       this.typeblob = response.headers.getContentType();
+    //       if (this.typeblob.includes('xml')) {
+    //         this.raw = await response.data.text();
+    //       }
+    //       this.srcblob = URL.createObjectURL(await response.data);
+    //     }
+    //   }
+    //   let a = $('<a/>')
+    //   a.attr('download', this.$route.params.filename);
+    //   a.attr('href', this.srcblob);
+    //   a[0].click();
+    // },
+    // async download_all() {
+    //   axios({
+    //     route: {
+    //       name: 'api.get_export_file',
+    //       data: { filename: this.$route.params.filename },
+    //     },
+    //   });
+    // }
   },
   created() {
     this.getObjectModel();
   },
   mounted() {
+    window.det = this;
     this.emitter.on('DetailObject', this.getObjectTransformed);
     this.emitter.emit('DetailObject');
   },
@@ -152,7 +204,7 @@ export default {
   <!-- jika inWork object tidak '00' maka bisa commit, edit, issue -->
   <div class="w-full text-center mb-3 mt-3" v-if="$route.params.filename && !$route.params.filename.match(/_\d{3}-00/g)">
     <button class="button-nav" @click="submit('commit')">Commit</button>
-    <button class="button-nav" @click="show == 'editor' ? show = '' : show = 'editor'">Edit</button>
+    <button class="button-nav" @click="showEdit" v-if="model.editable">Edit</button>
     <button class="button-nav" @click="submit('issue')">Issue</button>
     <button class="button-nav" @click="submit('delete')">Delete</button>
   </div>
@@ -164,9 +216,13 @@ export default {
 
   <!-- EDITOR -->
   <!-- <Editor v-if="show == 'editor'" :text="raw" :is-create="false"/> -->
-  <Editor v-if="show == 'editor'" :text="raw" />
+  <Editor v-if="showEditor" :text="raw" />
 
-  <a class="underline text-blue-600" :href="srcblob" :download="$route.params.filename">download here..</a>
+  <!-- <a class="underline text-blue-600" :href="srcblob" :download="$route.params.filename">download here..</a> -->
+  <a class="underline text-blue-600" @click="$root.download" href="#">download here..</a>
+  <br/>
+  <a class="underline text-blue-600" @click="$root.download_all" href="#">download all..</a>
+  <!-- <embed :src="srcblob" v-if="srcblob"/> -->
   <component :is="dynamic" v-if="transformed" />
   <embed v-else :type="typeblob" :src="srcblob" class="w-full" />
 </template>

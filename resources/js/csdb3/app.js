@@ -117,6 +117,7 @@ axios.interceptors.response.use(
   (response) => {
     // console.log(window.response = response);
     useTechpubStore().showLoadingBar = false;
+    useTechpubStore().Errors = [];
     if(response.config.event && response.config.event.name) {
       csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
     } else {

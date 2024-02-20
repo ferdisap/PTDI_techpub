@@ -21,7 +21,7 @@
 <xsl:template match="identAndStatusSection">
   <div class="identAndStatusSection">
     <h1>IDENTIFICATION AND STATUS SECTION</h1>
-    <div>Filename: <xsl:value-of select="$filename"/></div>
+    <!-- <div>Filename: <xsl:value-of select="$filename"/></div> -->
 
     <table>
       <!-- dmlAddress -->
@@ -59,11 +59,14 @@
         <td><b>Remarks:</b>
         </td>
         <td>
-          <textarea name="ident-remarks">
+          <xsl:variable name="remarks">
             <xsl:for-each select="//dmlStatus/remarks/simplePara">
-              <!-- <xsl:value-of select="string(.)"/> -->
-              <xsl:value-of select="php:function('nl2br',string(.))"/>
+              <xsl:value-of select="string(.)"/>
+              <xsl:text>\r\n</xsl:text>
             </xsl:for-each>
+          </xsl:variable>
+          <textarea name="ident-remarks">
+            <xsl:value-of select="php:function('trim', $remarks, '\n\r')"/>
           </textarea>
         </td>
       </tr>
@@ -78,9 +81,8 @@
 
   <table class="dmlContent">
     <tr>
-      <!-- <Sort v-bind:function="sort.bind(this)"/> -->
       <th> Ident Code <Sort emitname="dmlEntry_sorted"/> </th>
-      <th> DML <Sort emitname="dmlEntry_sorted"/> | Issue Type <Sort emitname="dmlEntry_sorted"/> </th>
+      <th> Type <Sort emitname="dmlEntry_sorted"/> | Issue Type <Sort emitname="dmlEntry_sorted"/> </th>
       <th> Security <Sort emitname="dmlEntry_sorted"/> </th>
       <th> Resposible Company <br/> (name <Sort emitname="dmlEntry_sorted"/> | code <Sort emitname="dmlEntry_sorted"/>)</th>
       <th> Answer <Sort emitname="dmlEntry_sorted"/> </th>
@@ -109,7 +111,7 @@
           </div>
         </td>
         <td class="responsibleCompany">
-          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/enterpriseCode}"/>
+          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="{responsiblePartnerCompany/enterpriseName}"/> | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="{responsiblePartnerCompany/@enterpriseCode}"/>
           <div class="text-red-600 text-sm error">
             <xsl:attribute name="v-html">store.error('enterpriseName.<xsl:value-of select="position()-1"/>', 'enterpriseCode.<xsl:value-of select="position()-1"/>')</xsl:attribute>
           </div>

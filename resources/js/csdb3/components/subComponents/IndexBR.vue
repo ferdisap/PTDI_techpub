@@ -69,7 +69,7 @@ export default {
 
   <!-- BRDP -->
   <IndexCSDB type="brdp">
-    <template #title>Index BREX</template>
+    <template #title>Index BRDP</template>
     <template #actionColumn="actionColumnProps">
       <a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail"
         :href="techpubStore.getWebRoute('', { filename: actionColumnProps.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a>

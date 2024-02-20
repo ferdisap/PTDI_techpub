@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
 use Ptdi\Mpub\Pdf2\Fonts;
@@ -27,6 +28,49 @@ class CsdbServiceController extends CsdbController
   use Applicability;
   
   ############### NEW for csdb3 ###############
+
+  public function export(Request $request, string $filename)
+  {
+    $model = Csdb::where('filename', $filename)->first();
+    if(!$model) return $this->ret2(400, "{$filename} is not found.");
+
+    $doc = MpubCSDB::importDocument(storage_path($model->path), $model->filename);
+    if($doc instanceof \DOMDocument){
+      $model->DOMDocument = $doc;
+      $scanned = Helper::scanObjectRef($model->DOMDocument);
+      $an = Helper::analyzeURI($model->DOMDocument->baseURI); 
+      
+      // ini untuk read zip file, jika kedepannya nanti kita perlu membaca repository
+      // $zipper = new \Madnest\Madzipper\Madzipper;
+      // $zipper->zip(storage_path('test.zip'))->getFilePath('test/DML-MALE-0001Z-P-2024-00002_000-01.xml');
+      // $zipper->zip(storage_path('test.zip'));
+      // $zipper->getFileContent('test/DML-MALE-0001Z-P-2024-00002_000-01.xml');
+      // $zipper->getFileContent(storage_path('test.zip'));
+      // dd($zipper);
+  
+      // $zipper->make('test.zip')->folder('test')->add('tes.txt');
+      // $zipper->make(storage_path('test.zip'))->folder('test')->add($an['path'] . DIRECTORY_SEPARATOR . $filename);
+      // $zipper->zip('test.zip')->folder('test')->add('tes2.txt','foo');
+      // return $zipper->close();    
+      $zip = new ZipStream(
+        outputName: (preg_replace("/\.\w+$/",'',$filename)) . '.zip',
+        sendHttpHeaders: true,
+      );      
+      foreach($scanned['found'] as $k => $name){
+        $zip->addFileFromPath(
+          fileName: $name, 
+          path: $an['path'] . DIRECTORY_SEPARATOR . $name
+        );
+      }  
+      return $zip->finish();
+    } 
+    else {
+      return Response::download($doc->getFile('SplFileInfo'), $doc->getFilename(), [
+        'content-type' => $doc->getFileinfo()['mime_type'],
+      ]);
+    }
+  }
+
   /**
    * $ignoreError=1 is needed when you want to send message if any error exist while transforming is success
    */

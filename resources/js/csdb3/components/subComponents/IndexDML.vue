@@ -39,14 +39,14 @@ export default {
   mounted() {
     // this.techpubStore.get_list('dml');
     // this.techpubStore.get_list('csl');
-    this.emitter.on('api.restore_object', (data) => {
-      if (data.filename.substr(0, 3) === 'DML') {
-        this.techpubStore.get_list('dml')
-      }
-      else if (data.filename.substr(0, 3) === 'CSL') {
-        this.techpubStore.get_list('csl')
-      }
-    });
+    // this.emitter.on('api.restore_object', (data) => {
+    //   if (data.filename.substr(0, 3) === 'DML') {
+    //     this.techpubStore.get_list('dml')
+    //   }
+    //   else if (data.filename.substr(0, 3) === 'CSL') {
+    //     this.techpubStore.get_list('csl')
+    //   }
+    // });
   },
 }
 </script>
