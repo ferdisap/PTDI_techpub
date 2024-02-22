@@ -56,25 +56,26 @@ export default {
       <!-- DML -->
       <IndexCSDB type="dml" :clickFilename="clickFilename">
         <template #title>Index DML</template>
-        <template #actionColumn="actionColumnProps">
+        <!-- <template #actionColumn="actionColumnProps">
           <a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail"
             :href="techpubStore.getWebRoute('', { filename: actionColumnProps.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a>
           <button @click="deleteDML(actionColumnProps.filename)" class="material-icons text-red-500 has-tooltip-arrow"
             data-tooltip="Delete">delete</button>
-        </template>
+        </template> -->
       </IndexCSDB>
     
       <!-- CSL -->
       <IndexCSDB type="csl" :clickFilename="clickFilename">
         <template #title>Index CSL</template>
-        <template #actionColumn="actionColumnProps">
+        <!-- <template #actionColumn="actionColumnProps">
           <a class="material-icons text-blue-600 has-tooltip-arrow" data-tooltip="Detail"
             :href="techpubStore.getWebRoute('', { filename: actionColumnProps.filename }, Object.assign({}, $router.getRoutes().find((route) => route.name == 'DetailObject'))).path">details</a>
           <button @click="deleteDML(actionColumnProps.filename)" class="material-icons text-red-500 has-tooltip-arrow"
             data-tooltip="Delete">delete</button>
-        </template>
+        </template> -->
       </IndexCSDB>
     </div>
+    
   
     <AnalyzeDML v-if="filenameAnalysis" :filename="filenameAnalysis" />
     

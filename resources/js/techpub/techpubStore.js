@@ -57,19 +57,19 @@ export const useTechpubStore = defineStore('useTechpubStore', {
        * untuk DML app, csdb3
        * kayaknya ini tidak dipakai karena nanti pakai DMLList di IndexDML.vue
        */
-      DMLList:[], // tidak  digunakan lagi
+      DMLList: [], // tidak  digunakan lagi
 
       /**
        * untuk csdb3
        */
-      BREXList:[], // tidak  digunakan lagi
-      BRDPList:[], // tidak  digunakan lagi
+      BREXList: [], // tidak  digunakan lagi
+      BRDPList: [], // tidak  digunakan lagi
       // BRList:[],
 
       /**
        * untuk csdb3
        */
-      OBJECTList:{},
+      OBJECTList: {},
 
       /**
        * digunakan saat Upload.vue ke Editor.vue
@@ -80,7 +80,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       isSuccess: true,
       errors: undefined,
       message: undefined,
-      
+
     }
   },
   actions: {
@@ -97,13 +97,163 @@ export const useTechpubStore = defineStore('useTechpubStore', {
           data: params
         }
       })
-      if(response.statusText === 'OK'){
-        this[`${type}_list`] = response.data;
-        this[`${type}_page`] = response.data.current_page;
+      if (response.statusText === 'OK') {
+        // this[`${type}_list`] = response.data;
+        // this[`${type}_page`] = response.data.current_page;
+
+        // ini jika ingin pakai nested path. Tapi servernya jangan di paginate. Jika di paginate, ganti 'response.data' menjadi 'response.data.data'
+        window.allobj = response.data;
+        response.data = Object.assign({}, response.data); // entah Array atau object, akan menjadi Object;
+        const sorter = function (container, asc = 1) {
+          let arr = Object.keys(container).sort(); // ascending;
+          if (!asc) {
+            arr = arr.sort(() => -1); // descending
+          }
+          arr = arr.sort((a, b) => {
+            if (b.substring(0, 2) === '__') {
+              return asc ? (b > a ? -1 : 1) : (b > a ? 1 : -1);
+            } else {
+              return asc ? (b > a ? 1 : -1) : (b > a ? -1 : 1)
+            }
+          });
+          arr.forEach((e, i) => {
+            if (e.substring(0, 2) === '__') {
+              arr = array_move(arr, i, 0);
+            }
+          });
+          return arr.reduce((obj, key) => {
+            obj[key] = container[key];
+            return obj;
+          }, {});
+        };
+
+        /**
+         * Untuk memindahkan index elemen array. Ini bisa dipakai oleh fungsi lain.
+         */
+        const array_move = function (arr, old_index, new_index) {
+          if (new_index >= arr.length) {
+            var k = new_index - arr.length + 1;
+            while (k--) {
+              arr.push(undefined);
+            }
+          }
+          arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+          return arr;
+        };
+
+        const append = function (container, path, csdbObject, callback) {
+          let exploded_path = path.split("/");
+          let loop = 0;
+          let maxloop = exploded_path.length;
+          let folder = "__" + exploded_path[loop];
+          while (loop < maxloop) {
+            container[folder] = container[folder] || {};
+            if (exploded_path[loop + 1]) {
+              exploded_path = exploded_path.slice(1);
+              let newpath = exploded_path.join("/");
+              container[folder] = callback(container[folder], newpath, csdbObject, callback);
+              return container;
+            }
+            loop++;
+          }
+          let containerLength = Object.keys(container[folder]).filter(e => parseInt(e.slice(0, -1)) || parseInt(e.slice(0, -1)) === 0 ? true : false).length;
+          container[folder][containerLength + "_"] = csdbObject;
+          container = sorter(container,0);
+          return container;
+        }
+        let newobj = {};
+        for (const i in response.data) {
+          let obj = response.data[i];
+          newobj = append(newobj, obj['path'], obj, append);
+          delete response.data[i];
+        }
+        this[`${type}_list`] = newobj;
+        // window.sorter = sorter;
+        // window.append = append;
+        // console.log(window.newobj = newobj);
+
+        // console.log(window.rsp = response.data);
+        // const append = function (arr, path, csdbObject, callback) {
+        //   arr = Object.assign({},arr);
+        //   let exploded_path = path.split("/");
+        //   let loop = 0;
+        //   let maxloop = exploded_path.length;
+        //   let folder = "__" + exploded_path[loop];
+        //   while (loop < maxloop) {
+        //     arr[folder] = arr[folder] || [];
+        //     if (exploded_path[loop + 1]) {
+        //       exploded_path = exploded_path.slice(1);
+        //       let newpath = exploded_path.join("/");
+        //       arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
+        //       return arr;
+        //       break;
+        //     }
+        //     loop++;
+        //   }
+        //   arr[folder] = Object.assign([], arr[folder]);
+        //   arr[folder].push(csdbObject);
+        //   arr[folder] = Object.assign({},arr[folder]);
+        //   return arr;
+        // }
+        // response.data.forEach((obj, k) => {
+        //   response.data = append(response.data, obj['path'], obj, append);
+        //   delete response.data[k];
+        // })
+        // response.data = [Object.assign({}, response.data)];
+        // this[`${type}_list`] = response.data;
+        // console.log(window.data = response.data);
+
+
+        // untuk dump di console.log
+        // obj1 = {filename: 'foo1', path: 'csdb'};
+        // obj11 = {filename: 'foo11', path: 'csdb/n219'};
+        // obj12 = {filename: 'foo12', path: 'csdb/n219'};
+        // obj111 = {filename: 'foo11', path: 'csdb/n219/amm'};
+        // allobj = [obj1, obj11, obj12, obj111];
+
+        // append = function(arr, path, csdbObject, callback){
+        //     let exploded_path = path.split("/");
+        //     let loop = 0;
+        //     let maxloop = exploded_path.length;
+        //     let folder = "__" + exploded_path[loop];
+        //     while (loop < maxloop) {
+        //         arr[folder] = arr[folder] || [];
+        //         if(exploded_path[loop+1]){
+        //             exploded_path = exploded_path.slice(1);
+        //             let newpath = exploded_path.join("/");
+        //             arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
+        //             return arr;
+        //             break;
+        //         }
+        //         loop++;
+        //     }
+        //     arr[folder].push(csdbObject);
+        //     return arr;
+        // }
+        // allobj.forEach((obj, k) => {
+        //     allobj = append(allobj, obj['path'], obj, append);
+        //     delete allobj[k];
+        // });
+        // allobj = Object.assign({},allobj)
+
+
+
+        // window.objs = response.data;
+        // let objs = response.data;
+        // let newobjs = {};
+        // for(const i in objs.data){
+        //   let obj = objs.data[i];
+        //   if(!newobjs[obj.path]){
+        //    newobjs[obj.path] = [];
+        //   }
+        //   newobjs[obj.path].push(obj);
+        // }
+        // this[`${type}_list`] = newobjs;
+        // return this[`${type}_list`];
       }
     },
-    async goto(type,page = undefined) {
-      this.get_list(type, {page: page});
+    async goto(type, page = undefined) {
+      this.get_list(type, { page: page });
     },
 
     isEmpty(value) {
@@ -268,9 +418,9 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      */
     error(name) {
       let err = [];
-      for(const [k,name] of Object.entries(arguments)){
+      for (const [k, name] of Object.entries(arguments)) {
         let e = this.Errors.find(o => o[name]);
-        if(e){
+        if (e) {
           err = err.concat(e[name]);
         }
       }
@@ -311,7 +461,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         return [output, await blob.text()];
       }
       else if (output == '') {
-        if(blob.type.includes('text') || blob.type.includes('xml')) {
+        if (blob.type.includes('text') || blob.type.includes('xml')) {
           return [blob.type, await blob.text()];
         } else {
           const url = URL.createObjectURL(blob);
@@ -363,8 +513,8 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * get one dml from DMLList
      * @param {string} filename 
      */
-    dml(filename){
-      if(filename){
+    dml(filename) {
+      if (filename) {
         return this.DMLList.find(v => v.filename == filename);
       }
     }

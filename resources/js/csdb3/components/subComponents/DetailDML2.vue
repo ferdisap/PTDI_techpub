@@ -14,20 +14,23 @@ export default {
       techpubStore: useTechpubStore(),
       showDML: undefined,
 
-      model: undefined,
-      transformed: undefined,
     }
   },
-  props: ['isInEditing'],
   components: { AddEntryDML, Sort, PushToStage },
+  props: {
+    transformed: {
+      type: String,
+      required: true,
+    },
+    model: Object
+  },
   computed: {
     dynamic() {
       return {
-        template: this.transformed,
+        template: this.$props.transformed,
         data() {
           return {
             store: useTechpubStore(),
-            dmlEntryOuterHTML: '',
           }
         },
         components: { Sort, DmlEntryForm },
@@ -95,7 +98,6 @@ export default {
     },
     async update() {
       let form = event.target;
-      // if (!(await this.alert({ message: 'are you sure want to <b>UPDATE</b> this DML?' }).result)) {
       if (!(await this.$root.alert({ name: 'beforeUpdateDML', filename: this.$route.params.filename }))) {
         return false;
       }
@@ -106,99 +108,7 @@ export default {
           data: formData,
         }
       })
-      // this.$root.showMessages = false;
-      // const route = this.techpubStore.getWebRoute('api.dmlupdate', formData);
-      // await axios({
-      //   url: route.url,
-      //   method: route.method[0],
-      //   data: formData,
-      // })
-      //   .then(response => this.$root.success(response))
-      //   .catch(error => this.$root.error(error))
     },
-    async getObjectModel() {
-      let response = await axios({
-        route: {
-          name: 'api.get_object',
-          data: { filename: this.$route.params.filename, output: 'model' },
-        }
-      });
-      if (response.statusText === 'OK') {
-        this.model = response.data;
-      }
-    },
-    async getObjectTransformed() {
-      let response = await axios({
-        route: {
-          name: 'api.transform_csdb',
-          data: { filename: this.$route.params.filename, ignoreError: 1 },
-        },
-      });
-      if (response.statusText === 'OK') {
-        let text = response.data.file;
-        text = text.replace("\\r", "\r");
-        text = text.replace("\\n", "\n");
-        this.transformed = text;
-        if (!this.model.editable) {
-          setTimeout(() => {
-            $('#dml *[name]').each((i, e) => {
-              e.setAttribute('disabled', true);
-              e.style.border = 'none'
-            })
-            $('.add-remove_button_container').remove()
-          }, 0);
-        }
-      }
-    },
-    // async download() {
-    //   if (!this.srcblob) {
-    //     let response = await axios({
-    //       route: {
-    //         name: 'api.get_object',
-    //         data: { filename: this.$route.params.filename },
-    //       },
-    //       responseType: 'blob'
-    //     });
-    //     if (response.statusText === 'OK') {
-    //       this.typeblob = response.headers.getContentType();
-    //       if (this.typeblob.includes('xml')) {
-    //         this.raw = await response.data.text();
-    //       }
-    //       this.srcblob = URL.createObjectURL(await response.data);
-    //     }
-    //   }
-    //   let a = $('<a/>')
-    //   a.attr('download', this.$route.params.filename);
-    //   a.attr('href', this.srcblob);
-    //   a[0].click();
-    // },
-    // async download_all() {
-    //   let response = await axios({
-    //     route: {
-    //       name: 'api.get_export_file',
-    //       data: { filename: this.$route.params.filename },
-    //     },
-    //     responseType: 'blob'
-    //   });
-    //   if (response.statusText === 'OK') {
-    //     let srcblob = URL.createObjectURL(await response.data);
-    //     let filename = this.$route.params.filename;
-    //     if(response.headers['content-type'].includes('zip')){
-    //       filename = this.$route.params.filename.replace(/\.\w+$/,'.zip');
-    //     }
-    //     let a = $('<a/>')
-    //     a.attr('download', filename);
-    //     a.attr('href', srcblob);
-    //     a[0].click();
-    //   }
-    // }
-  },
-  created() {
-    this.getObjectModel();
-  },
-  mounted() {
-    this.emitter.on('DetailDML', this.getObjectTransformed);
-    this.emitter.emit('DetailDML');
   },
 }
 </script>
@@ -208,20 +118,16 @@ export default {
 }
 </style>
 <template>
-  <div v-if="model">
+  <div v-if="model" class="detail-dml rounded-lg shadow-lg mb-3">
     <h1 class="text-center">Detail DML</h1>
     <div class="text-center">Editable: {{ model.editable ? 'yes' : 'no' }}</div>
 
-    <!-- {{ model.filename.substr(0,3) }} -->
-
-    <!-- jika DML -->
+    <!-- jika DMRL -->
     <div class="w-full text-center mb-3 mt-3"
       v-if="model.filename.substr(0, 3) === 'DML' && ($route.params.filename && !$route.params.filename.match(/_\d{3}-00/g))">
       <button class="button-nav" v-if="model.editable" @click="submit('issue')">Issue</button>
       <button class="button-nav" @click="submit('commit')">Commit</button>
       <button class="button-nav" @click="submit('delete')">Delete</button>
-      <!-- <button class="button-nav" v-if="model.remarks.crud != 'deleted'" @click="submit('delete')">Delete</button> -->
-      <!-- <button class="button-nav" v-else @click="submit('restore')">Restore</button> -->
     </div>
     <div class="w-full text-center mb-3 mt-3" v-else-if="model.filename.substr(0, 3) === 'DML'">
       <button class="button-nav" v-if="!model.editable" @click="submit('edit')">Open Edit</button>

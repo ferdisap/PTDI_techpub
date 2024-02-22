@@ -3,6 +3,10 @@ import { useTechpubStore } from '../../../techpub/techpubStore';
 import CreateDML from './CreateDML.vue';
 import AnalyzeDML from './AnalyzeDML.vue';
 import axios from 'axios';
+import ListObjectTree from './ListObjectTree.vue';
+// import createApp
+// import defineComponent
+// import { VueElement } from '@vue/test-utils/dist/types';
 
 export default {
   data() {
@@ -11,7 +15,7 @@ export default {
       filenameAnalysis: '',
     }
   },
-  components: { CreateDML, AnalyzeDML },
+  components: { CreateDML, AnalyzeDML, ListObjectTree },
   props: {
     type: {
       type: String,
@@ -23,8 +27,26 @@ export default {
       default: () => 1,
     }
   },
-  mounted() {
+  computed:{
+    hasPath(){
+      // const { __csdb } = this.techpubStore[`${this.$props.type}_list`];
+      // console.log(__csdb, this.techpubStore[`${this.$props.type}_list`]);
+      // return true;
+      // const { __n219 } = this.techpubStore[`${this.$props.type}_list`];
+      // console.log(__n219, this.techpubStore[`${this.$props.type}_list`]);
+      // return __n219;
+    }
+  },
+  methods:{
+    list(path = 'foo', data = []){
+      return this.dynamic;
+    },
+  },
+  async mounted() {
+    // console.log(window.v = VueElement);
     this.techpubStore.get_list(this.$props.type);
+    // let objs = await this.techpubStore.get_list(this.$props.type);
+    // console.log(window.objs = objs);
   },
 }
 </script>
@@ -35,6 +57,24 @@ export default {
 </style>
 <template>
   <div v-if="techpubStore[`${$props.type}_list`]" class="index-csdb overflow-auto mb-5">
+    <div class="bg-blue-500 py-3 px-2 text-white mb-3 border rounded-t-xl text-center">
+      <span class="text-2xl">
+        <slot name="title" />
+      </span>
+    </div>
+    <div class="flex justify-center mb-3">
+      <input @change="techpubStore.get_list($props.type)" v-model="techpubStore[`${$props.type}_filenameSearch`]"
+        placeholder="find filename" type="text"
+        class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info"
+        @click="$root.info({ name: 'searchCsdbObject' })">info</button>
+    </div>
+    <div class="mb-3">
+      <ListObjectTree :type="$props.type"/>
+    </div>
+  </div>
+  
+  <!-- <div v-if="techpubStore[`${$props.type}_list`]" class="index-csdb overflow-auto mb-5">
     <div class="bg-blue-500 py-3 px-2 text-white mb-3 border rounded-t-xl text-center">
       <span class="text-2xl">
         <slot name="title" />
@@ -89,5 +129,5 @@ export default {
         @click="techpubStore.goto($props.type, techpubStore[`${$props.type}_list`]['current_page'] < techpubStore[`${$props.type}_list`]['last_page'] ? techpubStore[`${$props.type}_list`]['current_page'] + 1 : techpubStore[`${$props.type}_list`]['last_page'])"
         class="material-symbols-outlined">navigate_next</button>
     </div>
-  </div>
+  </div> -->
 </template>

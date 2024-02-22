@@ -29,30 +29,29 @@ class Dml extends ModelsCsdb
   public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
     $identAndStatusSection = $this->create_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
-
-    $dom = new \DOMDocument('1.0', 'UTF-8');
-    $dml = $dom->createElement('dml');
+    
+    $this->DOMDocument = new \DOMDocument('1.0', 'UTF-8');
+    $dml = $this->DOMDocument->createElement('dml');
     $dml->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation', './dml.xsd');
-    $dom->appendChild($dml);
+    $this->DOMDocument->appendChild($dml);
 
-    $identAndStatusSection = $dom->importNode($identAndStatusSection->documentElement, true);
+    $identAndStatusSection = $this->DOMDocument->importNode($identAndStatusSection->documentElement, true);
     $dml->appendChild($identAndStatusSection);
 
-    $dmlContent = $dom->createElement('dmlContent');
-    $dom->documentElement->appendChild($dmlContent);
-    $dom->saveXML();
+    $dmlContent = $this->DOMDocument->createElement('dmlContent');
+    $this->DOMDocument->documentElement->appendChild($dmlContent);
+    $this->DOMDocument->saveXML();
 
-    $filename = CSDB::resolve_DocIdent($dom);
+    $filename = CSDB::resolve_DocIdent($this->DOMDocument);
     $this->filename = $filename;
     $this->path = "csdb";
     $this->editable = 1;
     $this->initiator_id = Auth::user()->id;
     if ($this->direct_save) {
-      if ($dom->C14NFile(storage_path("csdb/{$filename}"))) {
+      if ($this->DOMDocument->C14NFile(storage_path("csdb/{$filename}"))) {
         $this->save();
       }
     }
-    $this->DOMDocument = $dom;
     return $this;
   }
 

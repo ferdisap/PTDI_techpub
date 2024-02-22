@@ -31,21 +31,98 @@ class DmlController extends Controller
   // }
   public function get_dml_list(Request $request)
   {
+    $obj1 = [
+      "filename" => 'cfoo1',
+      'path' => 'csdb'
+    ];
+    $obj1_1 = [
+      "filename" => 'cfoo1_1',
+      'path' => 'csdb'
+    ];
+    $obj11 = [
+      "filename" => 'cfoo11',
+      'path' => 'csdb/n219'
+    ];
+    $obj12 = [
+      "filename" => 'cfoo12',
+      'path' => 'csdb/n219'
+    ];
+    $obj111 = [
+      "filename" => 'cfoo111',
+      'path' => 'csdb/n219/amm'
+    ];
+
+    $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male'];
+    $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male'];
+
+    $obj3 = ["filename" => 'xafoo1', "path" => 'xxx'];
+    $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
+    $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
+
+    $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
+    return Response::make($allobj,200,['content-type' => 'application/json']);
+
+    // $obj1 = [
+    //   "filename" => 'foo1',
+    //   'path' => 'csdb'
+    // ];
+    // $obj11 = [
+    //   "filename" => 'foo11',
+    //   'path' => 'csdb/n219'
+    // ];
+    // $obj12 = [
+    //   "filename" => 'foo12',
+    //   'path' => 'csdb/n219'
+    // ];
+    // $obj111 = [
+    //   "filename" => 'foo111',
+    //   'path' => 'csdb/n219/amm'
+    // ];
+    // $allobj = [$obj1, $obj11, $obj12 ,$obj111];
+    // $append = function($array, $path, $csdbObject, $callback){
+    //   $exploded_path = explode("/", $path);
+    //   $loop = 0;
+    //   $maxloop = count($exploded_path);
+
+    //   $folder = "__".$exploded_path[$loop];
+    //   while($loop < $maxloop){
+    //     $array[$folder] = $array[$folder] ?? [];
+    //     if(isset($exploded_path[$loop+1])){
+    //       unset($exploded_path[$loop]);
+    //       $newpath = join("/",$exploded_path); // new path
+    //       $array[$folder]  = $callback($array[$folder], $newpath, $csdbObject, $callback);
+    //       return $array;
+    //       break;
+    //     }
+    //     $loop++;
+    //   }
+    //   $array[$folder][] = $csdbObject;
+    //   return $array;
+    // };
+    // foreach($allobj as $k => $obj){
+    //   $allobj = $append($allobj, $obj['path'] ,$obj, $append);
+    //   unset($allobj[$k]);
+    // }
+    // dd($allobj);
     $this->model = Csdb::with('initiator');
     $this->search($request->get('filenameSearch'));
     $this->model->where('filename', 'like', "DML-%");
-    $ret = $this->model->paginate(15);
-    $ret->setPath($request->getUri());
-    return $ret;
+    // $ret = $this->model->paginate(15);
+    // $ret->setPath($request->getUri());
+    // return $ret;
+    // dd($this->model->get()->toJson());
+    return $this->model->get();
   }
 
   public function get_csl_list(Request $request)
   {
     $this->model = Csdb::with('initiator');
     $this->search($request->get('filenameSearch'));
-    $this->model->where('filename', 'like', "CSL-%");
-    $ret = $this->model->paginate(15);
-    $ret->setPath($request->getUri());
+    $this->model->where('filename', 'like', "D%");
+    // $this->model->where('filename', 'like', "CSL-%");
+    // $ret = $this->model->paginate(15);
+    // $ret->setPath($request->getUri());
+    $ret = $this->model->get();
     return $ret;
   }
 
@@ -219,6 +296,7 @@ class DmlController extends Controller
     $otherOptions = [];
     $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
     $dml_model->initiator; // supaya ada initiator saat return
+    
     $dml_model->saveModelAndDOM();
     return $this->ret2(200, ["{$dml_model->filename} has been created."], ['dml' => $dml_model]);
   }
@@ -227,32 +305,7 @@ class DmlController extends Controller
   {
     $validator = Validator::make($request->all(), [
       'filename' => 'required',
-      // 'issueType' => [function(string $attribute, mixed $value,  Closure $fail){
-      //   if(!in_array($value,[
-      //     "",
-      //     "new",
-      //     "changed",
-      //     "deleted",
-      //     "revised",
-      //     "status",
-      //     "rinstate-changed",
-      //     "rinstate-revised",
-      //     "rinstate-status",
-      //   ])){
-      //     $fail("The {$attribute} is invalid.");
-      //   }
-      // }],
       'issueType' => [new EntryIssueType],
-      // 'dmlEntryType' => [function(string $attribute, mixed $value,  Closure $fail){
-      //   if(!in_array($value,[
-      //     "",
-      //     "new",
-      //     "changed",
-      //     "deleted",
-      //   ])){
-      //     $fail("The {$attribute} is invalid.");
-      //   }
-      // }],
       'dmlEntryType' => [new EntryType],
       'entryIdent' => 'required',
       'securityClassification' => ['required', new SecurityClassification(true)],

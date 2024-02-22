@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PhpParser\Node\Stmt\TryCatch;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Pdf2\Applicability;
 
@@ -199,13 +201,14 @@ class Csdb extends Model
         $values = array_unique($values);
         break;
       case 'title':
-        if (!$value) {
-          $value = $this->setRemarks_title();
-        }
-        $values = $value;
+        $values = $this->setRemarks_title($value);
         break;
       case 'remarks':
-        $value = $this->setRemarks_remarks($value);
+        $values = $this->setRemarks_remarks($value);
+        break;
+      case 'ident':
+        $values = $this->setRemarks_ident($value);
+        break;
       default:
         $values = $value;
         break;
@@ -218,7 +221,18 @@ class Csdb extends Model
     }
   }
 
+  private function setRemarks_ident($filename = '')
+  {
+    if(!$filename){
+      $filename = $this->filename;
+    }
+    $ident = (Helper::decode_ident($filename));
+    unset($ident['xml_string']);
+    return $ident;
+  }
+
   /** 
+   * untuk set remarks sesuai xpath //identAndStatusSection/descendant::remarks/simplePara
    * @param mixed $value bisa berupa string, atau DOM Document
    * @return string 
    * */
@@ -240,16 +254,17 @@ class Csdb extends Model
   /**
    * @return string
    */
-  private function setRemarks_title()
+  private function setRemarks_title($dom = '')
   {
-    $dom = MpubCSDB::importDocument(storage_path("app/" . $this->path), $this->filename);
+    if(!$dom){
+      $dom = MpubCSDB::importDocument(storage_path('csdb'), $this->filename);
+    }
     if ($dom instanceof ICNDocument) {
-      $imfFilename = MpubCSDB::detectIMF(storage_path("app/" . $this->path), $dom->getFilename());
-      $dom = MpubCSDB::importDocument(storage_path("app/" . $this->path), $imfFilename);
+      $imfFilename = MpubCSDB::detectIMF(storage_path('csdb'), $dom->getFilename());
+      $dom = MpubCSDB::importDocument(storage_path('csdb'), $imfFilename);
       if (!$dom) return '';
     }
-    $value = MpubCSDB::resolve_DocTitle($dom);
-    return $value;
+    return MpubCSDB::resolve_DocTitle($dom);
   }
 
   public function saveModelAndDOM()
@@ -260,7 +275,9 @@ class Csdb extends Model
     // }
     // dd($this->DOMDocument);
 
-    if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
+    // if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
+    if (isset($this->DOMDocument) and Storage::disk('csdb')->put($this->filename, $this->DOMDocument->saveXML())) {
+      $this->setRemarks('ident');
       if ($this->save()) {
         return true;
       }
