@@ -19,6 +19,49 @@ use Ptdi\Mpub\Helper;
 
 class DmlController extends Controller
 {
+  #### csdb4 ####
+  public function get_dmrl_list(Request $request)
+  {
+    // $this->model = Csdb::with('initiator');
+    // $this->model->orderBy('path');
+    // $ret = $this->model->paginate(100);
+    // $ret->setPath($request->getUri());
+    // return $this->ret2(200, $ret->toArray());
+
+    $obj1 = [
+      "filename" => 'cfoo1asasscsascscasas',
+      'path' => 'csdb'
+    ];
+    $obj1_1 = [
+      "filename" => 'cfoo1_1asasscsascscasas',
+      'path' => 'csdb'
+    ];
+    $obj11 = [
+      "filename" => 'cfoo11asasscsascscasas',
+      'path' => 'csdb/n219'
+    ];
+    $obj12 = [
+      "filename" => 'cfoo12asasscsascscasas',
+      'path' => 'csdb/n219'
+    ];
+    $obj111 = [
+      "filename" => 'cfoo111asasscsascscasas',
+      'path' => 'csdb/n219/amm'
+    ];
+
+    $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male'];
+    $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male'];
+
+    $obj3 = ["filename" => 'xafoo1', "path" => 'xxx'];
+    $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
+    $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
+
+    $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
+    return $this->ret2(200, ['data' => $allobj]);
+  }
+
+  #### csdb3 ####
+
   public function app()
   {
     return view("dml.app");

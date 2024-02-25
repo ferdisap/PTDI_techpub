@@ -9,9 +9,9 @@ import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
-import pick from '../pick';
+// import pick from '../pick';
 
-window.pick = pick;
+// window.pick = pick;
 
 /**
  * @param {string} pattern 
@@ -100,14 +100,12 @@ axios.interceptors.request.use(
     useTechpubStore().showLoadingBar = true;
     if (config.route) {
       try {
-        // const route = useTechpubStore().getWebRoute(config.route.name, Object.assign({}, config.route.data)); // tidak bisa convert formData to object.assign
         const route = useTechpubStore().getWebRoute(config.route.name, config.route.data);
         config.url = route.url;
         config.method = route.method[0];
         config.data = route.params;
       } catch (error) {
-        config.url = '';
-        console.log(error);
+        throw new Error(error);        
       }
     }
     return config;
@@ -118,9 +116,11 @@ axios.interceptors.response.use(
     // console.log(window.response = response);
     useTechpubStore().showLoadingBar = false;
     useTechpubStore().Errors = [];
-    if(response.config.event && response.config.event.name) {
-      csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
-    } else {
+    // if(response.config.event && response.config.event.name) {
+    //   csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
+    // } else {
+    // }
+    if(config.route){
       csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
     }
     csdb.config.globalProperties.emitter.emit('flash', {
@@ -132,11 +132,16 @@ axios.interceptors.response.use(
   (axiosError) => {
     window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
     useTechpubStore().showLoadingBar = false;
-    csdb.config.globalProperties.emitter.emit('flash', {
-      isSuccess: false,
-      errors: axiosError.response.data.errors,
-      message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
-    });
+    // if (axiosError.code === 'ERR_BAD_REQUEST')
+    if (axiosError.code){
+      csdb.config.globalProperties.emitter.emit('flash', {
+        isSuccess: false,
+        errors: axiosError.response.data.errors,
+        message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
+      });
+    } else {
+      console.log(axiosError.stack);
+    }
     return axiosError.response;
   }
 );

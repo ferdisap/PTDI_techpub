@@ -34,11 +34,30 @@ class CsdbSeeder extends Seeder
     // foreach($icn as $file){
     //   $file->setRemarks('stage', 'unstaged');
     // }
-    for ($i = 1000; $i < 10000; $i++) {
+    // for ($i = 1000; $i < 10000; $i++) {
+    for ($i = 1; $i < 600; $i++) {
+      if($i < 100 ){
+        $path = "csdb/";
+      }
+      else if($i < 200 ){
+        $path = "csdb/n219/";
+      }
+      else if($i < 300){
+        $path = "csdb/male/";
+      }
+      else if($i < 400){
+        $path = "csdb/n219/amm/";
+      }
+      else if($i < 500){
+        $path = "csdb/male/amm/";
+      }
+      else {
+        $path = "csdb/";
+      }
       Csdb::create([
         'filename' => "DMC-{$i}_foo",
-        'path' => 'csdb',
-        'editable' => 1,
+        'path' => $path,
+        'editable' => rand(0,1),
         'initiator_id' => 1,
         'remarks' => json_encode([
           'aaaaaaaaaaa' => 'foooooooo',

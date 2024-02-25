@@ -1,6 +1,6 @@
 <script>
 import Topbar from '../techpub/components/Topbar.vue';
-import Info from '../techpub/components/Info.vue';
+import Flash from '../techpub/components/Flash.vue';
 import Aside from './components/Aside.vue';
 import Main from './components/Main.vue';
 import { useTechpubStore } from '../techpub/techpubStore';
@@ -24,32 +24,8 @@ export default {
       alertData: {}
     }
   },
-  components: { Topbar, Info, Aside, Main },
+  components: { Topbar, Flash, Aside, Main },
   methods: {
-    // ini sesuai ret2(). Bedanya, yang fungsi ini ada pesan axiosError.message dan errors untuk input name
-    // fungsi ini nanti bisa dihapus karena sekarang <info/> pakai emitt buz
-    // async error(axiosError) {
-    //   let errors, message;
-    //   console.log(axiosError);
-    //   axiosError.response.data.errors ? (errors = axiosError.response.data.errors) : (errors = undefined);
-    //   axiosError.response.data.message ? (message = axiosError.message + ': ' + axiosError.response.data.message) : (message = axiosError.message);
-    //   this.emitter.emit('flash', {
-    //     isSuccess: false,
-    //     errors: errors,
-    //     message: message,
-    //   });
-    //   // this.techpubStore.showLoadingBar = false;
-    //   // this.showMessages = true;
-    // },
-    // ini sesuai ret2(). 
-    // success(response, isSuccess = true) {
-    //   this.emitter.emit('flash', {
-    //     isSuccess: true,
-    //     message: response.data.message ? response.data.message : '',
-    //   });
-    //   // this.techpubStore.showLoadingBar = false;
-    //   // this.showMessages = true;
-    // },
     /**
      * required data.filename 
      */
@@ -113,48 +89,48 @@ export default {
       this.alertData = createAlert(data);
       return this.alertData.result;
     },
-    async download() {
-      if (!this.srcblob) {
-        let response = await axios({
-          route: {
-            name: 'api.get_object',
-            data: { filename: this.$route.params.filename },
-          },
-          responseType: 'blob'
-        });
-        if (response.statusText === 'OK') {
-          this.typeblob = response.headers.getContentType();
-          if (this.typeblob.includes('xml')) {
-            this.raw = await response.data.text();
-          }
-          this.srcblob = URL.createObjectURL(await response.data);
-        }
-      }
-      let a = $('<a/>')
-      a.attr('download', this.$route.params.filename);
-      a.attr('href', this.srcblob);
-      a[0].click();
-    },
-    async download_all() {
-      let response = await axios({
-        route: {
-          name: 'api.get_export_file',
-          data: { filename: this.$route.params.filename },
-        },
-        responseType: 'blob'
-      });
-      if (response.statusText === 'OK') {
-        let srcblob = URL.createObjectURL(await response.data);
-        let filename = this.$route.params.filename;
-        if(response.headers['content-type'].includes('zip')){
-          filename = this.$route.params.filename.replace(/\.\w+$/,'.zip');
-        }
-        let a = $('<a/>')
-        a.attr('download', filename);
-        a.attr('href', srcblob);
-        a[0].click();
-      }
-    }
+    // async download() {
+    //   if (!this.srcblob) {
+    //     let response = await axios({
+    //       route: {
+    //         name: 'api.get_object',
+    //         data: { filename: this.$route.params.filename },
+    //       },
+    //       responseType: 'blob'
+    //     });
+    //     if (response.statusText === 'OK') {
+    //       this.typeblob = response.headers.getContentType();
+    //       if (this.typeblob.includes('xml')) {
+    //         this.raw = await response.data.text();
+    //       }
+    //       this.srcblob = URL.createObjectURL(await response.data);
+    //     }
+    //   }
+    //   let a = $('<a/>')
+    //   a.attr('download', this.$route.params.filename);
+    //   a.attr('href', this.srcblob);
+    //   a[0].click();
+    // },
+    // async download_all() {
+    //   let response = await axios({
+    //     route: {
+    //       name: 'api.get_export_file',
+    //       data: { filename: this.$route.params.filename },
+    //     },
+    //     responseType: 'blob'
+    //   });
+    //   if (response.statusText === 'OK') {
+    //     let srcblob = URL.createObjectURL(await response.data);
+    //     let filename = this.$route.params.filename;
+    //     if(response.headers['content-type'].includes('zip')){
+    //       filename = this.$route.params.filename.replace(/\.\w+$/,'.zip');
+    //     }
+    //     let a = $('<a/>')
+    //     a.attr('download', filename);
+    //     a.attr('href', srcblob);
+    //     a[0].click();
+    //   }
+    // }
   },
   beforeCreate() {
     this.References.defaultStore = useTechpubStore();
@@ -165,16 +141,30 @@ export default {
 }
 </script>
 
-<template>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <Topbar />
-  <Info />
+<style>
+body {
+  background-color: rgb(192, 209, 220);
+  height: 100vh;
+}
+</style>
 
-  <div class="flex mx-auto">
-    <Aside />
-    <Main />
+<template>
+  <Flash />
+
+  <div class="topbar w-full 2xl:h-[16%] xl:h-[18%] lg:h-[24%] md:h-[30%] sm:h-[35%]">
+    <Topbar />
   </div>
 
+  <div class="content w-full relative flex mx-auto 2xl:h-[84%] xl:h-[82%] lg:h-[76%] md:h-[70%] sm:h-[65%]">
+    <div class="aside relative h-full 2xl:w-[4%] xl:w-[5%] lg:w-[6%] md:w-[8%] sm:w-[10%] w-[16%]">
+      <Aside />
+    </div>
+    <div class="main relative h-full 2xl:w-[96%] xl:w-[95%] lg:w-[94%] md:w-[92%] sm:w-[90%] w-[84%]">
+      <Main />
+    </div>
+  </div>
+
+  <!-- loading sign -->
   <div v-if="techpubStore.showLoadingBar" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50">
     <div style="
     width: 100%;
@@ -188,7 +178,7 @@ export default {
     </div>
   </div>
 
-
+  <!-- alert modal -->
   <div v-if="alertData.show" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
     width: 100%;
@@ -211,6 +201,7 @@ export default {
     </div>
   </div>
 
+  <!-- info modal -->
   <div v-if="infoData.show" id="info" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
     width: 100%;

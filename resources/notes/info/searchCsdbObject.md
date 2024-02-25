@@ -20,3 +20,6 @@ The SearchText will look for CSDB Object which the filename contains `MALE` and 
 1. editable | value = 1 or 0
 1. created_at | value = yyyy-mm-dd xx:xx:xx (24 hours format)
 1. updated_at | value = yyyy-mm-dd xx:xx:xx (24 hours format)
+
+### note
+kalau path sudah masuk kedalam pencarian, maka akan mencari spesifik path

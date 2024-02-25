@@ -101,6 +101,8 @@ class Controller extends BaseController
 
   /**
    * akan membuat output sama dengan $fail() pada $request->validate();
+   * jika ingin mengirim response berupa $model->get(), maka parameter adalah [data: $this->model->get()->toArray()];
+   * jika ingin mengirim response berupa $model->paginate(), maka parameter adalah $this->model->toArray();
    */
   public function ret2($code, $messages = [])
   {
@@ -206,6 +208,7 @@ class Controller extends BaseController
         }
       }
     }
+    return $keywords;
   }
   
 }

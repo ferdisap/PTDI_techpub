@@ -24,7 +24,7 @@ export default defineConfig({
         'resources/css/dmodule.css',
         'resources/js/csdb/CsdbReader.js',
         'resources/js/ietm/app.js',
-        'resources/views/**/*.vue',
+        // 'resources/views/**/*.vue',
         
         // 'resources/js/bootstrap.js',
         // 'resources/scss/style.scss',

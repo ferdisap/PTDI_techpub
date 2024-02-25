@@ -1,4 +1,3 @@
-<!-- ini nanti tidak dipakai karena diganti Flash.vue. Sama saja tapi beda nama -->
 <script>
 import { useTechpubStore } from '../techpubStore';
 
@@ -16,9 +15,14 @@ export default {
     'isSuccess', 'errors', 'message'], // tidak diperlukan lagi karena sekarang <info/> pakai emitbuz
   methods: {
     replaceFilenameWithURL(text) {
-      let forObject = this.techpubStore.getWebRoute('', { filename: '$1' }, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
-      text = text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a class="font-bold" href="${forObject}">$1$2</a>`);
-      return text;
+      try {
+        let forObject = this.techpubStore.getWebRoute('', { filename: '$1' }, Object.assign({}, this.$router.getRoutes().find(r => r.name == 'DetailObject')))['path'];
+        text = text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a class="font-bold" href="${forObject}">$1$2</a>`);
+        return text;
+      } catch (error) {
+        console.log(error)
+        return text;
+      }
     },
     addBag(data = {}) {
       if (data.message) {
@@ -48,12 +52,16 @@ export default {
         <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150"
             @click="popBag(info)" info-close-btn>X</button></span>
       </div>
+      {{ info.message }}
       <div v-html="replaceFilenameWithURL(info.message)" class="mb-1"></div>
       <div class="mb-2" v-for="(ms, i) in info.errors">
         <h5> {{ i }} </h5>
         <p style="line-break: anywhere" v-for="text in ms"
-          v-html="text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)" />
+          v-html="text.toString().replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)" />
       </div>
+        <!-- <p style="line-break: anywhere" v-for="text in ms"
+          v-html="text.replace(/([\S]+.xml)(\s|$|\.)/g, `<a href='/csdb/$1'>$1$2<a/>`)" />
+      </div> -->
     </div>
   </div>
 </template>

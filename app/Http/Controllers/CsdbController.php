@@ -43,11 +43,133 @@ class CsdbController extends Controller
    */
   // private mixed $model;
 
-  ################# NEW for csdb3 #################
+  ################# NEW for csdb4 #################
   public function app()
   {
-    return view('csdb3.app');
+    return view('csdb4.app');
   }
+
+  /**
+   * tidak bisa pakai fitur search dan tidak pakai pagination karena digunakan untuk ListTree.vue
+   * jika $request->('listtree'), return all with only filename and path column
+   * notApplicable: jika $request->get('path'), maka query where path like $request->get('path'); return all column
+   */
+  public function get_allobjects_list(Request $request)
+  {
+    if($request->get('listtree')){
+      // return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path'])->toArray()]);
+      return $this->ret2(200, ModelsCsdb::selectRaw("filename, path")->paginate(200)->toArray()); // hanya untuk dump karena database isinya ribuan rows
+    }
+    $this->model = ModelsCsdb::with('initiator');    
+    return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
+
+    // $this->model = ModelsCsdb::with('initiator');
+    // $this->model->orderBy('path');
+    // $ret = $this->model->paginate(100);
+    // $ret->setPath($request->getUri());
+    // return $this->ret2(200, $ret->toArray());
+
+    $obj1 = [
+      "filename" => 'cfoo1asasscsascscasas',
+      'path' => 'csdb/'
+    ];
+    $obj1_1 = [
+      "filename" => 'cfoo1_1asasscsascscasas',
+      'path' => 'csdb/'
+    ];
+    $obj11 = [
+      "filename" => 'n2foo11asasscsascscasas',
+      'path' => 'csdb/n219/'
+    ];
+    $obj12 = [
+      "filename" => 'n2foo12asasscsascscasas',
+      'path' => 'csdb/n219/'
+    ];
+    // $obj111 = [
+    //   "filename" => 'cfoo111asasscsascscasas',
+    //   'path' => 'csdb/n219/amm'
+    // ];
+    // $allobj = [$obj1, $obj11, $obj1_1, $obj12];
+    // return $this->ret2(200, ['data' => $allobj]);
+
+    $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male/'];
+    $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male/'];
+
+    $obj3 = ["filename" => 'xafoo1', "path" => 'xxx/'];
+    $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx/'];
+    $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219/'];
+    
+    // $obj41 = ["filename" => 'yfoo11', "path" => 'yyy/'];
+    // $obj42 = ["filename" => 'yfoo11', "path" => 'yyy/aaa/'];
+
+
+    // $allobj = [$obj111, $obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31];
+    $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31];
+    // $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31, $obj41, $obj42];
+    // $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22];
+    return $this->ret2(200, ['data' => $allobj]);
+  }
+
+  public function get_object_model(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
+    return $model ? $this->ret2(200, ["data" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
+  }
+
+  public function forfolder_get_allobjects_list(Request $request)
+  {
+    // dd($request->ajax());
+    // validasi. Jadi ketika tidak ada path ataupun filenameSearch, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
+    if(!$request->get('filenameSearch') 
+      AND (!$request->path OR $request->path === "/")
+      AND (!$request->get('filename'))
+    ){
+      // di XHR akan ditambah, tapi checknya di dd($request->request->get("path"));. 
+      // Kalau di URL, dapetnya bisa langsung di $request->get("path")
+      // jika mau dua duanya, checknya pakai $request->path
+      $request->merge(['path' => "csdb/"]); 
+    }
+
+    $this->model = ModelsCsdb::with('initiator');    
+    $keywords = $this->search($request->get('filenameSearch'));
+
+    // jika ada filename, maka akan menuju request path
+    if($request->get("filename")){
+      $path = ModelsCsdb::where('filename', $request->get('filename'))->first('path')->path;
+      $request->merge(["path" => $path]);
+    }
+    
+    // jika ada path, maka akan mendapatkan apth saja
+    if($request->path AND !isset($keywords['path'])){
+      $this->model->where('path', $request->path);
+      $current_path = ["current_path" => $request->path];
+    }
+
+    $path = $path ?? $request->path;
+    $path = "{$path}%";
+    $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);
+    $folder = $folder->toArray();
+    $folder = array_filter($folder, function($obj) use($request){
+      if($obj['path'] === $request->path){
+        return false;
+      } elseif(count(explode("/", $obj['path'])) - count(explode("/",$request->path)) > 1){
+        return false;
+      }
+      return $obj;
+    });
+    sort($folder); // supaya tidak ada keys nya (hanya value didalam array)
+    
+    $this->model->orderBy('filename');
+    $ret = $this->model->paginate(100);
+    $ret->setPath($request->getUri());
+    return $this->ret2(200, $ret->toArray(), ['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
+  }
+
+  ################# NEW for csdb3 #################
+  // public function app()
+  // {
+  //   return view('csdb3.app');
+  // }
 
   /**
    * akan membuat file baru dengan issueNumber largest dan inWork '01'
@@ -343,37 +465,37 @@ class CsdbController extends Controller
    * filter by stage
    * filter by filenameSearch
    */
-  public function get_objects_list(Request $request)
-  {
-    // $masterCSDB = true; // $request->user()->masterCSDB ?? false
-    // if($masterCSDB){
-    //   $all = ModelsCsdb::where('initiator_id','like','%');
-    // } else {
-    //   $all = ModelsCsdb::where('initiator_id',$request->user()->id);
-    // }
-    $all = ModelsCsdb::with('initiator');
-    if ($request->get('initiator_email')) {
-      $initiator = User::where('email', $request->get('initiator_email'))->first();
-      if ($initiator) {
-        $all->where('initiator_id', $initiator->id);
-      }
-    }
-    if ($request->get('stage')) {
-      $all->where('remarks', '"stage":"staged"');
-    }
-    if ($request->get('filenameSearch')) {
-      // $all->where('filename', 'like', "%" . $request->get('filenameSearch') . "%");
-      $filenameSearch = $request->get('filenameSearch');
-      $all->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
-    }
-    $ret = $all
-      ->where('filename', 'not like', 'DML%')
-      ->where('filename', 'not like', 'CSL%')
-      // ->where('remarks', 'not like', '"crud":"deleted"')
-      ->paginate(15);
-    $ret->setPath($request->getUri());
-    return $ret;
-  }
+  // public function get_objects_list(Request $request)
+  // {
+  //   // $masterCSDB = true; // $request->user()->masterCSDB ?? false
+  //   // if($masterCSDB){
+  //   //   $all = ModelsCsdb::where('initiator_id','like','%');
+  //   // } else {
+  //   //   $all = ModelsCsdb::where('initiator_id',$request->user()->id);
+  //   // }
+  //   $all = ModelsCsdb::with('initiator');
+  //   if ($request->get('initiator_email')) {
+  //     $initiator = User::where('email', $request->get('initiator_email'))->first();
+  //     if ($initiator) {
+  //       $all->where('initiator_id', $initiator->id);
+  //     }
+  //   }
+  //   if ($request->get('stage')) {
+  //     $all->where('remarks', '"stage":"staged"');
+  //   }
+  //   if ($request->get('filenameSearch')) {
+  //     // $all->where('filename', 'like', "%" . $request->get('filenameSearch') . "%");
+  //     $filenameSearch = $request->get('filenameSearch');
+  //     $all->whereRaw("filename LIKE '%{$filenameSearch}%' ESCAPE '\'");
+  //   }
+  //   $ret = $all
+  //     ->where('filename', 'not like', 'DML%')
+  //     ->where('filename', 'not like', 'CSL%')
+  //     // ->where('remarks', 'not like', '"crud":"deleted"')
+  //     ->paginate(15);
+  //   $ret->setPath($request->getUri());
+  //   return $ret;
+  // }
 
   /**
    * $request->get('output') = "'model'|default:''";

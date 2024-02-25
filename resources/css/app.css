@@ -57,6 +57,12 @@ th, td {
 .dump_red {
   border: 1px solid red;
 }
+.dump_blue {
+  border: 1px solid blue;
+}
+.dump_green {
+  border: 1px solid green;
+}
 
 h1 {
   font-weight: bold;
@@ -242,6 +248,18 @@ dialog a,
   }
 }
 
+@layer components {
+  .listtree summary {
+    @apply text-sm hover:bg-blue-500 hover:text-white pl-1
+  }
+  .listtree .obj {
+    @apply text-sm mx-3 hover:bg-blue-500 hover:text-white pl-1
+  }
+  .listtree a {
+    @apply text-sm
+  }
+}
+
 
 
 
@@ -259,3 +277,104 @@ dialog a,
   z-index: 1;
   border-radius: ;
 } */
+/* 
+.wf-1\% {width:1%}
+.wf-2\% {width:2%}
+.wf-3\% {width:3%}
+.wf-4\% {width:4%}
+.wf-5\% {width:5%}
+.wf-6\% {width:6%}
+.wf-7\% {width:7%}
+.wf-8\% {width:8%}
+.wf-9\% {width:9%}
+.wf-10\% {width:10%}
+.wf-11\% {width:11%}
+.wf-12\% {width:12%}
+.wf-13\% {width:13%}
+.wf-14\% {width:14%}
+.wf-15\% {width:15%}
+.wf-16\% {width:16%}
+.wf-17\% {width:17%}
+.wf-18\% {width:18%}
+.wf-19\% {width:19%}
+.wf-20\% {width:20%}
+.wf-21\% {width:21%}
+.wf-22\% {width:22%}
+.wf-23\% {width:23%}
+.wf-24\% {width:24%}
+.wf-25\% {width:25%}
+.wf-26\% {width:26%}
+.wf-27\% {width:27%}
+.wf-28\% {width:28%}
+.wf-29\% {width:29%}
+.wf-30\% {width:30%}
+.wf-31\% {width:31%}
+.wf-32\% {width:32%}
+.wf-33\% {width:33%}
+.wf-34\% {width:34%}
+.wf-35\% {width:35%}
+.wf-36\% {width:36%}
+.wf-37\% {width:37%}
+.wf-38\% {width:38%}
+.wf-39\% {width:39%}
+.wf-40\% {width:40%}
+.wf-41\% {width:41%}
+.wf-42\% {width:42%}
+.wf-43\% {width:43%}
+.wf-44\% {width:44%}
+.wf-45\% {width:45%}
+.wf-46\% {width:46%}
+.wf-47\% {width:47%}
+.wf-48\% {width:48%}
+.wf-49\% {width:49%}
+.wf-50\% {width:50%}
+.wf-51\% {width:51%}
+.wf-52\% {width:52%}
+.wf-53\% {width:53%}
+.wf-54\% {width:54%}
+.wf-55\% {width:55%}
+.wf-56\% {width:56%}
+.wf-57\% {width:57%}
+.wf-58\% {width:58%}
+.wf-59\% {width:59%}
+.wf-60\% {width:60%}
+.wf-61\% {width:61%}
+.wf-62\% {width:62%}
+.wf-63\% {width:63%}
+.wf-64\% {width:64%}
+.wf-65\% {width:65%}
+.wf-66\% {width:66%}
+.wf-67\% {width:67%}
+.wf-68\% {width:68%}
+.wf-69\% {width:69%}
+.wf-70\% {width:70%}
+.wf-71\% {width:71%}
+.wf-72\% {width:72%}
+.wf-73\% {width:73%}
+.wf-74\% {width:74%}
+.wf-75\% {width:75%}
+.wf-76\% {width:76%}
+.wf-77\% {width:77%}
+.wf-78\% {width:78%}
+.wf-79\% {width:79%}
+.wf-80\% {width:80%}
+.wf-81\% {width:81%}
+.wf-82\% {width:82%}
+.wf-83\% {width:83%}
+.wf-84\% {width:84%}
+.wf-85\% {width:85%}
+.wf-86\% {width:86%}
+.wf-87\% {width:87%}
+.wf-88\% {width:88%}
+.wf-89\% {width:89%}
+.wf-90\% {width:90%}
+.wf-91\% {width:91%}
+.wf-92\% {width:92%}
+.wf-93\% {width:93%}
+.wf-94\% {width:94%}
+.wf-95\% {width:95%}
+.wf-96\% {width:96%}
+.wf-97\% {width:97%}
+.wf-98\% {width:98%}
+.wf-99\% {width:99%}
+.wf-100\% {width:100%} */

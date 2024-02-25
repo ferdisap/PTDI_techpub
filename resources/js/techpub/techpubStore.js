@@ -84,174 +84,176 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     }
   },
   actions: {
-    /**
-     * 
-     * @param {string} type 'dml','csl', 'brex', 'brdp'
-     * @param {*} params 
-     */
-    async get_list(type, params = {}) {
-      params.filenameSearch = this[`${type}_filenameSearch`] ?? '';
-      let response = await axios({
-        route: {
-          name: `api.get_${type}_list`,
-          data: params
-        }
-      })
-      if (response.statusText === 'OK') {
-        // this[`${type}_list`] = response.data;
-        // this[`${type}_page`] = response.data.current_page;
+    // /**
+    //  * 
+    //  * @param {string} type 'dml','csl', 'brex', 'brdp'
+    //  * @param {*} params 
+    //  * dipindah ke ListTree.vue
+    //  */
+    // async get_list(type, params = {}) {
+    //   console.log(type);
+    //   params.filenameSearch = this[`${type}_filenameSearch`] ?? '';
+    //   let response = await axios({
+    //     route: {
+    //       name: `api.get_${type}_list`,
+    //       data: params
+    //     }
+    //   })
+    //   if (response.statusText === 'OK') {
+    //     // this[`${type}_list`] = response.data;
+    //     // this[`${type}_page`] = response.data.current_page;
 
-        // ini jika ingin pakai nested path. Tapi servernya jangan di paginate. Jika di paginate, ganti 'response.data' menjadi 'response.data.data'
-        window.allobj = response.data;
-        response.data = Object.assign({}, response.data); // entah Array atau object, akan menjadi Object;
-        const sorter = function (container, asc = 1) {
-          let arr = Object.keys(container).sort(); // ascending;
-          if (!asc) {
-            arr = arr.sort(() => -1); // descending
-          }
-          arr = arr.sort((a, b) => {
-            if (b.substring(0, 2) === '__') {
-              return asc ? (b > a ? -1 : 1) : (b > a ? 1 : -1);
-            } else {
-              return asc ? (b > a ? 1 : -1) : (b > a ? -1 : 1)
-            }
-          });
-          arr.forEach((e, i) => {
-            if (e.substring(0, 2) === '__') {
-              arr = array_move(arr, i, 0);
-            }
-          });
-          return arr.reduce((obj, key) => {
-            obj[key] = container[key];
-            return obj;
-          }, {});
-        };
+    //     // ini jika ingin pakai nested path. Tapi servernya jangan di paginate. Jika di paginate, ganti 'response.data' menjadi 'response.data.data'
+    //     // window.allobj = response.data.data;
+    //     response.data.data = Object.assign({}, response.data.data); // entah Array atau object, akan menjadi Object;
+    //     const sorter = function (container, asc = 1) {
+    //       let arr = Object.keys(container).sort(); // ascending;
+    //       if (!asc) {
+    //         arr = arr.sort(() => -1); // descending
+    //       }
+    //       arr = arr.sort((a, b) => {
+    //         if (b.substring(0, 2) === '__') {
+    //           return asc ? (b > a ? -1 : 1) : (b > a ? 1 : -1);
+    //         } else {
+    //           return asc ? (b > a ? 1 : -1) : (b > a ? -1 : 1)
+    //         }
+    //       });
+    //       arr.forEach((e, i) => {
+    //         if (e.substring(0, 2) === '__') {
+    //           arr = array_move(arr, i, 0);
+    //         }
+    //       });
+    //       return arr.reduce((obj, key) => {
+    //         obj[key] = container[key];
+    //         return obj;
+    //       }, {});
+    //     };
 
-        /**
-         * Untuk memindahkan index elemen array. Ini bisa dipakai oleh fungsi lain.
-         */
-        const array_move = function (arr, old_index, new_index) {
-          if (new_index >= arr.length) {
-            var k = new_index - arr.length + 1;
-            while (k--) {
-              arr.push(undefined);
-            }
-          }
-          arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-          return arr;
-        };
+    //     /**
+    //      * Untuk memindahkan index elemen array. Ini bisa dipakai oleh fungsi lain.
+    //      */
+    //     const array_move = function (arr, old_index, new_index) {
+    //       if (new_index >= arr.length) {
+    //         var k = new_index - arr.length + 1;
+    //         while (k--) {
+    //           arr.push(undefined);
+    //         }
+    //       }
+    //       arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    //       return arr;
+    //     };
 
-        const append = function (container, path, csdbObject, callback) {
-          let exploded_path = path.split("/");
-          let loop = 0;
-          let maxloop = exploded_path.length;
-          let folder = "__" + exploded_path[loop];
-          while (loop < maxloop) {
-            container[folder] = container[folder] || {};
-            if (exploded_path[loop + 1]) {
-              exploded_path = exploded_path.slice(1);
-              let newpath = exploded_path.join("/");
-              container[folder] = callback(container[folder], newpath, csdbObject, callback);
-              return container;
-            }
-            loop++;
-          }
-          let containerLength = Object.keys(container[folder]).filter(e => parseInt(e.slice(0, -1)) || parseInt(e.slice(0, -1)) === 0 ? true : false).length;
-          container[folder][containerLength + "_"] = csdbObject;
-          container = sorter(container,0);
-          return container;
-        }
-        let newobj = {};
-        for (const i in response.data) {
-          let obj = response.data[i];
-          newobj = append(newobj, obj['path'], obj, append);
-          delete response.data[i];
-        }
-        this[`${type}_list`] = newobj;
-        // window.sorter = sorter;
-        // window.append = append;
-        // console.log(window.newobj = newobj);
+    //     const append = function (container, path, csdbObject, callback) {
+    //       let exploded_path = path.split("/");
+    //       let loop = 0;
+    //       let maxloop = exploded_path.length;
+    //       let folder = "__" + exploded_path[loop];
+    //       while (loop < maxloop) {
+    //         container[folder] = container[folder] || {};
+    //         if (exploded_path[loop + 1]) {
+    //           exploded_path = exploded_path.slice(1);
+    //           let newpath = exploded_path.join("/");
+    //           container[folder] = callback(container[folder], newpath, csdbObject, callback);
+    //           return container;
+    //         }
+    //         loop++;
+    //       }
+    //       let containerLength = Object.keys(container[folder]).filter(e => parseInt(e.slice(0, -1)) || parseInt(e.slice(0, -1)) === 0 ? true : false).length;
+    //       container[folder][containerLength + "_"] = csdbObject;
+    //       container = sorter(container,0);
+    //       return container;
+    //     }
+    //     let newobj = {};
+    //     for (const i in response.data.data) {
+    //       let obj = response.data.data[i];
+    //       newobj = append(newobj, obj['path'], obj, append);
+    //       delete response.data.data[i];
+    //     }
+    //     this[`${type}_list`] = newobj;
+    //     // window.sorter = sorter;
+    //     // window.append = append;
+    //     // console.log(window.newobj = newobj);
 
-        // console.log(window.rsp = response.data);
-        // const append = function (arr, path, csdbObject, callback) {
-        //   arr = Object.assign({},arr);
-        //   let exploded_path = path.split("/");
-        //   let loop = 0;
-        //   let maxloop = exploded_path.length;
-        //   let folder = "__" + exploded_path[loop];
-        //   while (loop < maxloop) {
-        //     arr[folder] = arr[folder] || [];
-        //     if (exploded_path[loop + 1]) {
-        //       exploded_path = exploded_path.slice(1);
-        //       let newpath = exploded_path.join("/");
-        //       arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
-        //       return arr;
-        //       break;
-        //     }
-        //     loop++;
-        //   }
-        //   arr[folder] = Object.assign([], arr[folder]);
-        //   arr[folder].push(csdbObject);
-        //   arr[folder] = Object.assign({},arr[folder]);
-        //   return arr;
-        // }
-        // response.data.forEach((obj, k) => {
-        //   response.data = append(response.data, obj['path'], obj, append);
-        //   delete response.data[k];
-        // })
-        // response.data = [Object.assign({}, response.data)];
-        // this[`${type}_list`] = response.data;
-        // console.log(window.data = response.data);
-
-
-        // untuk dump di console.log
-        // obj1 = {filename: 'foo1', path: 'csdb'};
-        // obj11 = {filename: 'foo11', path: 'csdb/n219'};
-        // obj12 = {filename: 'foo12', path: 'csdb/n219'};
-        // obj111 = {filename: 'foo11', path: 'csdb/n219/amm'};
-        // allobj = [obj1, obj11, obj12, obj111];
-
-        // append = function(arr, path, csdbObject, callback){
-        //     let exploded_path = path.split("/");
-        //     let loop = 0;
-        //     let maxloop = exploded_path.length;
-        //     let folder = "__" + exploded_path[loop];
-        //     while (loop < maxloop) {
-        //         arr[folder] = arr[folder] || [];
-        //         if(exploded_path[loop+1]){
-        //             exploded_path = exploded_path.slice(1);
-        //             let newpath = exploded_path.join("/");
-        //             arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
-        //             return arr;
-        //             break;
-        //         }
-        //         loop++;
-        //     }
-        //     arr[folder].push(csdbObject);
-        //     return arr;
-        // }
-        // allobj.forEach((obj, k) => {
-        //     allobj = append(allobj, obj['path'], obj, append);
-        //     delete allobj[k];
-        // });
-        // allobj = Object.assign({},allobj)
+    //     // console.log(window.rsp = response.data.data);
+    //     // const append = function (arr, path, csdbObject, callback) {
+    //     //   arr = Object.assign({},arr);
+    //     //   let exploded_path = path.split("/");
+    //     //   let loop = 0;
+    //     //   let maxloop = exploded_path.length;
+    //     //   let folder = "__" + exploded_path[loop];
+    //     //   while (loop < maxloop) {
+    //     //     arr[folder] = arr[folder] || [];
+    //     //     if (exploded_path[loop + 1]) {
+    //     //       exploded_path = exploded_path.slice(1);
+    //     //       let newpath = exploded_path.join("/");
+    //     //       arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
+    //     //       return arr;
+    //     //       break;
+    //     //     }
+    //     //     loop++;
+    //     //   }
+    //     //   arr[folder] = Object.assign([], arr[folder]);
+    //     //   arr[folder].push(csdbObject);
+    //     //   arr[folder] = Object.assign({},arr[folder]);
+    //     //   return arr;
+    //     // }
+    //     // response.data.data.forEach((obj, k) => {
+    //     //   response.data.data = append(response.data.data, obj['path'], obj, append);
+    //     //   delete response.data.data[k];
+    //     // })
+    //     // response.data.data = [Object.assign({}, response.data.data)];
+    //     // this[`${type}_list`] = response.data.data;
+    //     // console.log(window.data = response.data.data);
 
 
+    //     // untuk dump di console.log
+    //     // obj1 = {filename: 'foo1', path: 'csdb'};
+    //     // obj11 = {filename: 'foo11', path: 'csdb/n219'};
+    //     // obj12 = {filename: 'foo12', path: 'csdb/n219'};
+    //     // obj111 = {filename: 'foo11', path: 'csdb/n219/amm'};
+    //     // allobj = [obj1, obj11, obj12, obj111];
 
-        // window.objs = response.data;
-        // let objs = response.data;
-        // let newobjs = {};
-        // for(const i in objs.data){
-        //   let obj = objs.data[i];
-        //   if(!newobjs[obj.path]){
-        //    newobjs[obj.path] = [];
-        //   }
-        //   newobjs[obj.path].push(obj);
-        // }
-        // this[`${type}_list`] = newobjs;
-        // return this[`${type}_list`];
-      }
-    },
+    //     // append = function(arr, path, csdbObject, callback){
+    //     //     let exploded_path = path.split("/");
+    //     //     let loop = 0;
+    //     //     let maxloop = exploded_path.length;
+    //     //     let folder = "__" + exploded_path[loop];
+    //     //     while (loop < maxloop) {
+    //     //         arr[folder] = arr[folder] || [];
+    //     //         if(exploded_path[loop+1]){
+    //     //             exploded_path = exploded_path.slice(1);
+    //     //             let newpath = exploded_path.join("/");
+    //     //             arr[folder] = callback(arr[folder], newpath, csdbObject, callback);
+    //     //             return arr;
+    //     //             break;
+    //     //         }
+    //     //         loop++;
+    //     //     }
+    //     //     arr[folder].push(csdbObject);
+    //     //     return arr;
+    //     // }
+    //     // allobj.forEach((obj, k) => {
+    //     //     allobj = append(allobj, obj['path'], obj, append);
+    //     //     delete allobj[k];
+    //     // });
+    //     // allobj = Object.assign({},allobj)
+
+
+
+    //     // window.objs = response.data.data;
+    //     // let objs = response.data.data;
+    //     // let newobjs = {};
+    //     // for(const i in objs.data){
+    //     //   let obj = objs.data[i];
+    //     //   if(!newobjs[obj.path]){
+    //     //    newobjs[obj.path] = [];
+    //     //   }
+    //     //   newobjs[obj.path].push(obj);
+    //     // }
+    //     // this[`${type}_list`] = newobjs;
+    //     // return this[`${type}_list`];
+    //   }
+    // },
     async goto(type, page = undefined) {
       this.get_list(type, { page: page });
     },
@@ -301,9 +303,13 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         }
       }
       if (!route.method || route.method.includes('GET')) {
-        let url = new URL(window.location.origin + route.path);
-        url.search = new URLSearchParams(params);
-        route.url = url;
+        if(route.path){
+          let url = new URL(window.location.origin + route.path);
+          url.search = new URLSearchParams(params);
+          route.url = url;
+        } else {
+          throw new Error("Invalid route path: " + route.path)
+        }
       }
       else if (route.method && route.method.includes('POST')) {
         route.params = formData ?? params;
