@@ -48,7 +48,9 @@ export default {
       colWidth: {
         satu: { isMaximize: true, portion: 0.1 },
         dua: { isMaximize: true, portion: 0.675 },
+        // dua: { isMaximize: true, portion: 0.45 },
         tiga: { isMaximize: false, portion: 0.225 },
+        // tiga: { isMaximize: false, portion: 0.45 },
       },
 
     }

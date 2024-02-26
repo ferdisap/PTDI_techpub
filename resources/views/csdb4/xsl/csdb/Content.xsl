@@ -10,6 +10,12 @@
 
   <xsl:template match="content[ancestor::dmodule]">
     <div class="csdbobjectcontent">
+      <div>
+        <xsl:attribute name="class">
+          <xsl:text>sc-</xsl:text>
+          <xsl:value-of select="//identAndStatusSection/descendant::security/@securityClassification"/>
+        </xsl:attribute>
+      </div>
       <xsl:apply-templates/>      
     </div>
   </xsl:template>

@@ -1,11 +1,51 @@
 @tailwind components;
 
+:root{
+  --csdb-sc-text-01: #49a8fabb;
+  --csdb-sc-text-02: #49faf4bb;
+  --csdb-sc-text-03: #49fa61bb;
+  --csdb-sc-text-04: #f1fa49bb;
+  --csdb-sc-text-05: #fa4949bd;
+}
+
 .dump_orange {
   border:1px solid orange;
 }
 
 .csdbobjectcontent{
   font-family: sans-serif;
+}
+
+.sc-01, .sc-02, .sc-03, .sc-04, .sc-05 {
+  position:absolute;
+  height: 100%;
+  width: .6cm;
+  right: -.6cm;
+}
+
+.sc-01 {
+  background-color: var(--csdb-sc-text-01);
+  background-image: url('http://127.0.0.1:8000/images/unclassified.png');
+}
+
+.sc-02 {
+  background-color: var(--csdb-sc-text-02);
+  background-image: url('http://127.0.0.1:8000/images/restricted.png');
+}
+
+.sc-03 {
+  background-color: var(--csdb-sc-text-03);
+  background-image: url('http://127.0.0.1:8000/images/confidential.png');
+}
+
+.sc-04 {
+  background-color: var(--csdb-sc-text-04);
+  background-image: url('http://127.0.0.1:8000/images/secret.png');
+}
+
+.sc-05 {
+  background-color: var(--csdb-sc-text-05);
+  background-image: url('http://127.0.0.1:8000/images/topsecret.png');
 }
 
 /* for Front Matter vue */
@@ -18,8 +58,48 @@
     relative
     border
     shadow-2xl
-    max-w-[800px]
-    max-h-[1120px]    
+    max-w-[800px] /* == 21 cm kertas A4*/
+    min-h-[1120px] /* == 29.7cm kertas A4 */
+  }
+  /* .sc-01{
+    @apply
+    right-[-30pt]
+    h-full
+    text-black
+    before:block
+    before:absolute 
+    before:-inset-1
+    rotate-90
+    before:bg-pink-500
+    relative inline-block
+  }, */
+  /* .sc-01, .sc-02, .sc-03, .sc-04, .sc-05 {
+    @apply
+    absolute
+    h-full
+    w-[.6cm]
+    right-[-.6cm]
+  } */
+
+
+  .security * {
+    @apply
+    text-[11pt]
+  }
+  .security .securityClassification-01 {
+    @apply text-[#49a8fabb]
+  }
+  .security .securityClassification-02 {
+    @apply text-[#49faf4bb]
+  }
+  .security .securityClassification-03 {
+    @apply text-[#49fa61bb]
+  }
+  .security .securityClassification-04 {
+    @apply text-[#f1fa49bb]
+  }
+  .security .securityClassification-05 {
+    @apply text-[--csdb-sc-text-05]
   }
   .frontMatter {
     @apply 
@@ -39,7 +119,7 @@
     /* border border-green-500 */
     text-center
     text-[30pt]
-    leading-[5rem] 
+    leading-[3.5rem] 
     px-[11pt]
   }
   .shortPmTitle{
@@ -49,41 +129,44 @@
     text-[20pt]
     leading-[3rem]
   }
-  .frontMatter .pmAddress{
+  .frontMatterTitlePage .pmAddress{
     @apply 
     /* border border-red-900 */
     mt-[24pt]
     mb-[14pt]
     mx-[1cm]
   }
-  .frontMatter .pmAddress *{
+  .frontMatterTitlePage .pmAddress *{
     @apply 
     text-[11pt]
+    leading-[14pt]
   }
-  .frontMatter .issueInfo{
+  .frontMatterTitlePage .issueInfo{
     @apply 
     /* border border-blue-500 */
     text-[11pt]
     
   }
-  .frontMatter .externalPubCode, .frontMatter .externalPubCode *{
+  .frontMatterTitlePage .externalPubCode, .frontMatterTitlePage .externalPubCode *{
     @apply 
     /* border border-yellow-100 */
     text-[11pt]
     mx-[1cm]
+    leading-[14pt]
   }
-  .frontMatter .productAndModel{
+  .frontMatterTitlePage .productAndModel{
     @apply 
     /* border border-pink-300 */
     mt-[11pt]
     mx-[1cm]
   }
-  .frontMatter .productAndModel *{
+  .frontMatterTitlePage .productAndModel *{
     @apply 
     /* border border-pink-500 */
     text-[11pt]
+    leading-[14pt]
   }
-  .frontMatter .security {
+  .frontMatterTitlePage .security {
     @apply 
     /* border border-pink-500 */
     text-[16pt]
@@ -92,19 +175,85 @@
     py-1
     font-bold
   }
-  .frontMatter .security .securityClassification {
-    @apply 
-    text-red-500
-    text-[11pt]   
-  }
 
   /* insert for dataRestriction element here */
   
-  .frontMatter .productIllustration {
+  .frontMatterTitlePage .productIllustration {
     @apply 
     border border-pink-500
     w-full
     h-[7cm]
     mb-[14pt]
   }
+
+
+  /* start Manufacturer */
+  .frontMatterTitlePage .manufacturer  {
+    @apply
+    py-[6pt]
+  }
+  .frontMatterTitlePage .manufacturer * {
+    @apply
+    text-[9pt]
+  }
+  .frontMatterTitlePage .enterprise {
+    @apply
+    flex space-x-4
+  }
+  .frontMatterTitlePage .enterpriseLogo {
+    @apply
+    border border-blue-500
+    min-w-[2cm]
+    max-h-[2cm]
+  }
+  .frontMatterTitlePage .enterpriseSpec {
+    @apply 
+    /* border border-yellow-500 */
+    w-full
+    grid
+    content-center
+  }
+  .frontMatterTitlePage .enterpriseSpec * {
+    @apply 
+    /* border border-yellow-500 */
+    text-[11pt]
+    leading-[11pt]
+  }
+  /* end of Manufacturer */
+
+  /* start Publisher */
+  .frontMatterTitlePage .publisher  {
+    @apply
+    py-[6pt]
+  }
+  .frontMatterTitlePage .publisher * {
+    @apply
+    text-[9pt]
+  }
+  .frontMatterTitlePage .publisherLogo {
+    @apply
+    border border-blue-500
+    /* max-h-[2cm] */
+    h-[2cm]
+    w-full
+  }
+  /* end of Publisher */
+
+  /* start responsible company*/
+  .frontMatterTitlePage .responsiblePartnerCompany{
+    @apply
+    /* border border-blue-500 */
+    w-full
+    text-center
+    text-[11pt]
+  }
+  /* end of responsible company */
+
+  .frontMatterTitlePage hr {
+    @apply
+    border-2 border-black my-5
+  }
+
+
+
 }

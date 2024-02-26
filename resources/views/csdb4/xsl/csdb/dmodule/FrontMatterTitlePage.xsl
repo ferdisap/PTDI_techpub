@@ -15,6 +15,7 @@
         <xsl:apply-templates select="pmCode"/>
         <xsl:apply-templates select="issueInfo"/>
         <xsl:apply-templates select="issueDate"/>
+        <span>Applicability to: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')"/></span>
       </div>
       <xsl:apply-templates select="productIllustration"/>
       <xsl:apply-templates select="dataRestrictions"/>
@@ -26,15 +27,24 @@
         </xsl:for-each>
       </div>
       <xsl:apply-templates select="productAndModel"/>
-      <xsl:apply-templates select="security"/>
       <!-- dervative classification here -->
-      <xsl:apply-templates select="enterpriseSpec"/>
-      <xsl:apply-templates select="enterpriseLogo"/>
-      <div class="responsiblePartnerCompany">
-        Responsible Company: <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
+      <div class="manufacturer">
+        <span>Manufacturer: </span>
+        <div class="enterprise">
+          <xsl:apply-templates select="enterpriseLogo"/>
+          <xsl:apply-templates select="enterpriseSpec"/>
+        </div>
       </div>
-      <xsl:apply-templates select="publisherLogo"/>
+      <div class="publisher">
+        <span>Publisher: </span>
+        <xsl:apply-templates select="publisherLogo"/>
+      </div>
+      <div class="responsiblePartnerCompany">
+        Responsibled by: <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
+      </div>
+      <xsl:apply-templates select="security"/>
       <xsl:apply-templates select="barCode"/>
+      <hr/>
       <xsl:for-each select="frontMatterInfo">
         <xsl:apply-templates/>
       </xsl:for-each>
@@ -104,13 +114,12 @@
   <xsl:template match="enterpriseSpec">
     <div class="enterpriseSpec">
       <div class="enterpriseName">
-        <xsl:attribute name="id">
+        <xsl:attribute name="code">
           <xsl:value-of select="enterpriseIdent/@manufacturerCodeValue"/>
         </xsl:attribute>
-        <xsl:apply-templates/>
+        <xsl:apply-templates select="enterpriseName"/>
       </div>
-      <xsl:apply-templates select="businessUnit"/>
-      
+      <xsl:apply-templates select="businessUnit"/>      
     </div>
   </xsl:template>
 
@@ -123,10 +132,7 @@
         <xsl:text> </xsl:text>
         <xsl:apply-templates select="businessUnitName"/>
       </div>
-      <div class="businessUnitAddress">
-        <xsl:text> </xsl:text>
-        <xsl:apply-templates select="businessUnitAddress"/>
-      </div>
+      <xsl:apply-templates select="businessUnitAddress"/>
       <div class="contactPerson">
         <xsl:for-each select="contactPerson">
           <xsl:text> </xsl:text>
@@ -151,6 +157,80 @@
           <xsl:text>.</xsl:text>
         </xsl:for-each>
       </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="businessUnitAddress">
+    <div class="businessUnitAddress">
+      <xsl:if test="department">
+        <xsl:text>Dept. </xsl:text><xsl:value-of select="department"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="street">
+        <xsl:text>St. </xsl:text><xsl:value-of select="street"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:value-of select="city"/>
+      <xsl:text>, </xsl:text>
+      <xsl:value-of select="country"/>
+      <xsl:text>, </xsl:text>
+      <xsl:if test="state">
+        <xsl:value-of select="state"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="province">
+        <xsl:value-of select="province"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="building">
+        <xsl:value-of select="building"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="room">
+        <xsl:value-of select="room"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="postOfficeBox">
+        <xsl:value-of select="postOfficeBox"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="postalZipCode">
+        <xsl:value-of select="postalZipCode"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:if test="phoneNumber">
+        <xsl:text>Phone: </xsl:text>
+        <xsl:for-each select="phoneNumber">
+          <xsl:value-of select="phoneNumber"/>
+          <xsl:text>, </xsl:text>
+        </xsl:for-each>
+      </xsl:if>
+      <xsl:if test="faxNumber">
+        <xsl:text>Fax: </xsl:text>
+        <xsl:for-each select="faxNumber">
+          <xsl:value-of select="faxNumber"/>
+          <xsl:text>, </xsl:text>
+        </xsl:for-each>
+      </xsl:if>
+      <xsl:if test="email">
+        <xsl:text>Email: </xsl:text>
+        <xsl:for-each select="email">
+          <xsl:value-of select="email"/>
+          <xsl:text>, </xsl:text>
+        </xsl:for-each>
+      </xsl:if>
+      <xsl:if test="internet">
+        <xsl:text>Web: </xsl:text>
+        <xsl:for-each select="internet">
+          <xsl:value-of select="internet"/>
+          <xsl:text>, </xsl:text>
+        </xsl:for-each>
+      </xsl:if>
+      <xsl:if test="SITA">
+        <xsl:value-of select="SITA"/>
+        <xsl:text>, </xsl:text>
+      </xsl:if>
+      <xsl:text>.</xsl:text>
     </div>
   </xsl:template>
 
