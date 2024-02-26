@@ -151,11 +151,13 @@ body {
 <template>
   <Flash />
 
-  <div class="topbar w-full 2xl:h-[16%] xl:h-[18%] lg:h-[24%] md:h-[30%] sm:h-[35%]">
+  <!-- <div class="topbar w-full 2xl:h-[16%] xl:h-[18%] lg:h-[24%] md:h-[30%] sm:h-[35%]"> -->
+  <div class="topbar w-full 2xl:h-[5%] xl:h-[6%] lg:h-[5%] md:h-[5%] sm:h-[5%]">
     <Topbar />
   </div>
 
-  <div class="content w-full relative flex mx-auto 2xl:h-[84%] xl:h-[82%] lg:h-[76%] md:h-[70%] sm:h-[65%]">
+  <!-- <div class="content w-full relative flex mx-auto 2xl:h-[95%] xl:h-[94%] lg:h-[93%] md:h-[91%] sm:h-[90%] h-[80%]"> -->
+  <div class="content w-full relative flex mx-auto 2xl:h-[95%] xl:h-[94%] lg:h-[95%] md:h-[95%] sm:h-[95%]">
     <div class="aside relative h-full 2xl:w-[4%] xl:w-[5%] lg:w-[6%] md:w-[8%] sm:w-[10%] w-[16%]">
       <Aside />
     </div>

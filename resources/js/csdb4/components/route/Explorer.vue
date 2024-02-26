@@ -4,8 +4,10 @@ import ButtonSizingWidth from '../subComponents/ButtonSizingWidth.vue';
 import LisTree from '../componentns/ListTree.vue'
 import Folder from '../componentns/Folder.vue';
 import { objectType } from '../../../helper.js';
+import Preview from '../componentns/Preview.vue';
+import IdentStatus from '../componentns/IdentStatus.vue';
 export default {
-  components: { BottomBar, ButtonSizingWidth, LisTree, Folder },
+  components: { BottomBar, ButtonSizingWidth, LisTree, Folder, Preview, IdentStatus },
   data() {
     return {
       bottomBarItems: {
@@ -16,10 +18,10 @@ export default {
           data: {},
           type: undefined,
         },
-        IdentAndStatusSection: {
+        IdentStatus: {
           iconName: 'badge',
           tooltipName: 'Ident-Status',
-          isShow: true,
+          isShow: false,
         },
         Analyzer: {
           iconName: 'pie_chart',
@@ -36,11 +38,17 @@ export default {
           tooltipName: 'History',
           isShow: true,
         },
+        Preview: {
+          iconName: 'preview',
+          tooltipName: 'Preview',
+          isShow: false,
+          data: {}
+        },
       },
       colWidth: {
         satu: { isMaximize: true, portion: 0.1 },
-        dua: { isMaximize: true, portion: 0.45 },
-        tiga: { isMaximize: true, portion: 0.45 },
+        dua: { isMaximize: true, portion: 0.675 },
+        tiga: { isMaximize: false, portion: 0.225 },
       },
 
     }
@@ -108,8 +116,17 @@ export default {
   },
   mounted(){
     this.emitter.on('clickFilenameFromListTree', (data) => {
+      // Folder
       this.bottomBarItems.Folder.data = data; // hanya ada filename dan path di data
       // this.bottomBarItems.Folder.isShow = true; // hanya dumping
+
+      // identStatus
+      this.bottomBarItems.IdentStatus.isShow = true;
+      this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
+
+      // Preview
+      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
     });
     this.emitter.on('clickFolderFromListTree', (data) => {
       this.bottomBarItems.Folder.isShow = true;
@@ -120,7 +137,8 @@ export default {
 </script>
 <template>
   <div class="explorer overflow-auto h-full">
-    <div class="bg-white px-3 py-3 2xl:h-[90%] xl:h-[85%] lg:h-[80%] md:h-[75%] sm:h-[70%]">
+    <!-- <div class="bg-white px-3 py-3 2xl:h-[90%] xl:h-[85%] lg:h-[80%] md:h-[75%] sm:h-[90%]"> -->
+    <div class="bg-white px-3 py-3 2xl:h-[92%] xl:h-[90%] lg:h-[88%] md:h-[90%] sm:h-[90%] h-full">
 
       <div class="h-[10%]">
         <h1 class="text-blue-500">EXPLORER</h1>
@@ -137,20 +155,18 @@ export default {
         <div :class="['border-r-2 px-2 border-blue-500 pr-2 overflow-auto text-wrap relative h-full',]" :style="[col2Width]">
           <ButtonSizingWidth :fn="sizing.bind(this, 'dua')" />
           <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data"/>
-
-          <!-- <Folder v-if="bottomBarItems.Folder.isShow" :path-folder="bottomBarItems.Folder.data.path"
-            :objects="bottomBarItems.Folder.data.objects"
-            :type="bottomBarItems.Folder.data.type"/> -->
+          <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data"/>
         </div>
         <!-- col 3 -->
         <div :class="['border-r-2 border-blue-500 pr-2 overflow-auto text-wrap relative h-full',]" :style="[col3Width]">
           <ButtonSizingWidth :fn="sizing.bind(this, 'tiga')" />
+          <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data"/>
         </div>
       </div>
 
     </div>
 
-    <div class="w-full relative flex justify-center 2xl:h-[10%] xl:h-[15%] lg:h-[20%] md:h-[25%] sm:h-[30%]">
+    <div class="w-full relative flex justify-center 2xl:h-[8%] xl:h-[10%] lg:h-[12%] md:h-[10%] sm:h-[10%]">
       <BottomBar :items="bottomBarItems" class="" />
     </div>
   </div>

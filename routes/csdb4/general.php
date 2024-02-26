@@ -49,5 +49,11 @@ Route::get("/api/model/{filename}",[CsdbController::class, 'get_object_model'])-
 // For Folder.vue get objects, get allobjects list
 Route::get("/api/byfolder-allobjects",[CsdbController::class, 'forfolder_get_allobjects_list'])->middleware('auth')->name('api.requestbyfolder.get_allobject_list');
 
+// transform Ident Status
+Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_transformed_identstatus'])->middleware('auth')->name('api.get_transformed_identstatus');
+// transform Content
+Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
+
+
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

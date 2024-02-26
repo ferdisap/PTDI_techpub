@@ -296,7 +296,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         }
         else {
           route.path = route.path.replace(`:${p}`, params[p]);
-          // delete params[p];
+          delete params[p]; // ini diperlukan agar params tidak dijadikan query data
           // if(formData){
           //   formData.delete(p);
           // }

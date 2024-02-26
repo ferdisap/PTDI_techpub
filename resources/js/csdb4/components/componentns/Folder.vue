@@ -165,7 +165,7 @@ export default {
 <template>
   <div v-show="false">{{ setObject }}</div>
   <div class="folder overflow-auto h-[93%] w-full">
-    <div class="h-[10%] flex mb-3">
+    <div class="h-[5%] flex mb-3">
       <div class="w-8">
         <button @click="back()" class="material-symbols-outlined">keyboard_backspace</button>
       </div>

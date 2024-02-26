@@ -57,8 +57,8 @@ class CsdbController extends Controller
   public function get_allobjects_list(Request $request)
   {
     if($request->get('listtree')){
-      // return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path'])->toArray()]);
-      return $this->ret2(200, ModelsCsdb::selectRaw("filename, path")->paginate(200)->toArray()); // hanya untuk dump karena database isinya ribuan rows
+      return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path'])->toArray()]);
+      // return $this->ret2(200, ModelsCsdb::selectRaw("filename, path")->paginate(200)->toArray()); // hanya untuk dump karena database isinya ribuan rows
     }
     $this->model = ModelsCsdb::with('initiator');    
     return $this->ret2(200, ['data' => $this->model->get()->toArray()]);

@@ -147,7 +147,7 @@ class Csdb extends Model
   public string $objectpath = '';
   public string $absolute_objectpath = '';
 
-  public function transform_to_xml($path_xsl, $filename_xsl = '')
+  public function transform_to_xml($path_xsl, $filename_xsl = '', $configuration = '')
   {
     if (!$filename_xsl) {
       $type = $this->DOMDocument->documentElement->nodeName;
@@ -166,6 +166,7 @@ class Csdb extends Model
     $xsltproc->setParameter('', 'repoName', $this->repoName);
     $xsltproc->setParameter('', 'objectpath', $this->objectpath);
     $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
+    $xsltproc->setParameter('', 'configuration', $configuration);
     // dd($path_xsl, $filename_xsl);
 
 

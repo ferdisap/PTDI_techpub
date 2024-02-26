@@ -118,7 +118,9 @@ h6 {
 dialog ol, 
 dialog ul, 
 #info ol, 
-#info ul
+#info ul,
+.IdentStatus ol,
+.IdentStatus ul
 {
   list-style: auto;
   margin: revert;
@@ -130,7 +132,9 @@ p a,
 dialog a,
 dialog a,
 #info a,
-#info a 
+#info a,
+.IdentStatus ol
+.IdentStatus ul
 {
   color: revert;
   text-decoration: revert;
@@ -260,6 +264,20 @@ dialog a,
   }
 }
 
+
+/* for IdentStatus Csdb4 vue */
+@layer components {
+  .identAndStatusSection {
+    @apply flex flex-wrap justify-center
+  }
+
+  .identAndStatusSection * {
+    @apply text-sm
+  }
+  .dmAddress, .dmStatus {
+    @apply inline-block max-w-[45%] border mx-3 p-2 text-wrap
+  }
+}
 
 
 

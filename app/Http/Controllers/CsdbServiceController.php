@@ -26,6 +26,52 @@ use function Tes\tes;
 class CsdbServiceController extends CsdbController
 {
   use Applicability;
+
+  ############### NEW for csdb4 ###############
+  public function get_transformed_identstatus(Request $request, string $filename)
+  {
+    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
+    $csdb_model = new Csdb();
+    $csdb_model->DOMDocument = $dom;
+    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
+    
+    if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
+      return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    }
+    return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    dd($transformed);
+
+    if(!($csdb_model = Csdb::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} cannot transformed."]);
+    $csdb_dom = MpubCSDB::importDocument(storage_path('csdb'),$filename);
+    if(!$csdb_dom) return $this->ret2(400, ["failed to transform {$filename}."]);
+    $csdb_model->DOMDocument = $csdb_dom;
+    $csdb_model->objectpath = "/api/csdb";
+    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
+    dd($transformed);
+  }
+
+  public function get_transformed_contentpreview(Request $request, string $filename)
+  {
+    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
+    $csdb_model = new Csdb();
+    $csdb_model->DOMDocument = $dom;
+    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
+    
+    if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
+      return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    }
+    return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    dd($transformed);
+
+    if(!($csdb_model = Csdb::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} cannot transformed."]);
+    $csdb_dom = MpubCSDB::importDocument(storage_path('csdb'),$filename);
+    if(!$csdb_dom) return $this->ret2(400, ["failed to transform {$filename}."]);
+    $csdb_model->DOMDocument = $csdb_dom;
+    $csdb_model->objectpath = "/api/csdb";
+    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
+    dd($transformed);
+  }
+
   
   ############### NEW for csdb3 ###############
 
