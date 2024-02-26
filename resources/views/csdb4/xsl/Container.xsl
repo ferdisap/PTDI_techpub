@@ -17,6 +17,7 @@
   <xsl:include href="./csdb/InternalRef.xsl" />
   <xsl:include href="./csdb/Para.xsl" />
   <xsl:include href="./csdb/PmRef.xsl" />
+  <xsl:include href="./csdb/Security.xsl" />
   <xsl:include href="./csdb/Symbol.xsl" />
   
   <xsl:include href="./csdb/dmodule/Caption.xsl" />
@@ -25,11 +26,14 @@
   <xsl:include href="./csdb/dmodule/FrontMatterTitlePage.xsl" />
 
   <xsl:include href="./group/textElemGroup.xsl" />
+  <xsl:include href="./group/reducedParaElemGroup.xsl" />
+  <xsl:include href="./group/listElemGroup.xsl" />
   
   <xsl:include href="./helper/controlAuthority.xsl" />
   <xsl:include href="./helper/cgmark.xsl" />
   <xsl:include href="./helper/id.xsl" />
   <xsl:include href="./helper/irtt.xsl" />
+  <xsl:include href="./helper/sc.xsl" />
 
   <xsl:param name="configuration" />
 

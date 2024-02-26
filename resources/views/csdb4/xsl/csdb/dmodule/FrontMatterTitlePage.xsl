@@ -4,40 +4,40 @@
   xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/bind"
   xmlns:v-on="https://vuejs.org/on">
 
-  <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes" />
-
-  
+  <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes" />  
 
   <xsl:template match="frontMatterTitlePage">
     <div class="frontMatterTitlePage">
       <xsl:apply-templates select="productIntroName"/>
       <xsl:apply-templates select="pmTitle"/>
       <xsl:apply-templates select="shortPmTitle"/>
-      <xsl:apply-templates select="pmCode"/>
-      <xsl:apply-templates select="issueInfo"/>
-      <xsl:apply-templates select="issueDate"/>
-      <xsl:apply-templates select="issueDate"/>
-      <div class="div-externalPubCode">
+      <div class="pmAddress">
+        <xsl:apply-templates select="pmCode"/>
+        <xsl:apply-templates select="issueInfo"/>
+        <xsl:apply-templates select="issueDate"/>
+      </div>
+      <xsl:apply-templates select="productIllustration"/>
+      <xsl:apply-templates select="dataRestrictions"/>
+      <div class="externalPubCode">
         External Publication required to read:
-        <ul>
-          <xsl:for-each select="externalPubCode">
-            <li><xsl:value-of select="@pubCodingScheme"/><xsl:text>:</xsl:text><xsl:apply-templates/></li>
-          </xsl:for-each>
-        </ul>
+        <br/>
+        <xsl:for-each select="externalPubCode">
+          <xsl:value-of select="@pubCodingScheme"/><xsl:text>:</xsl:text><xsl:apply-templates/> <xsl:text>   </xsl:text>
+        </xsl:for-each>
       </div>
       <xsl:apply-templates select="productAndModel"/>
-      <div class="securityClassification">
-        <xsl:apply-template select="security/@securityClassification"/>
-      </div>
+      <xsl:apply-templates select="security"/>
       <!-- dervative classification here -->
-      <xsl:apply-templates select="dataRestrictions"/>
-      <xsl:apply-templates select="productIllustration"/>
       <xsl:apply-templates select="enterpriseSpec"/>
       <xsl:apply-templates select="enterpriseLogo"/>
       <div class="responsiblePartnerCompany">
         Responsible Company: <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
       </div>
-      
+      <xsl:apply-templates select="publisherLogo"/>
+      <xsl:apply-templates select="barCode"/>
+      <xsl:for-each select="frontMatterInfo">
+        <xsl:apply-templates/>
+      </xsl:for-each>
     </div>
   </xsl:template>
   
@@ -54,15 +54,13 @@
   </xsl:template>
 
   <xsl:template match="shortPmTitle[parent::frontMatterTitlePage]">
-    <h2>
+    <h2 class="shortPmTitle">
       <xsl:apply-templates/>
     </h2>
   </xsl:template>
 
   <xsl:template match="pmCode[parent::frontMatterTitlePage]">
-    <div class="pmCode">
-      <h3><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', .)"/></h3>
-    </div>    
+    <h3 class="pmCode"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', .)"/></h3>
   </xsl:template>
 
   <xsl:template match="issueInfo[parent::frontMatterTitlePage]">
@@ -79,9 +77,9 @@
 
   <xsl:template match="productAndModel[parent::frontMatterTitlePage]">
     <div class="productAndModel">
-      <div class="productName">
-        <h3><xsl:apply-templates/></h3>
-      </div>
+      <xsl:if test="productName">
+        <h3 class="productName"><xsl:apply-templates class="productName"/></h3>
+      </xsl:if>
       <xsl:for-each select="productModel">
         <div class="productModel">
           <span>Model: <xsl:apply-templates select="modelName"/></span>
@@ -153,7 +151,6 @@
           <xsl:text>.</xsl:text>
         </xsl:for-each>
       </div>
-
     </div>
   </xsl:template>
 
@@ -161,6 +158,34 @@
     <div class="enterpriseLogo">
       <xsl:for-each select="symbol">
         <xsl:apply-templates/>
+      </xsl:for-each>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="publisherLogo">
+    <div class="publisherLogo">
+      <xsl:for-each select="symbol">
+        <xsl:apply-templates/>
+      </xsl:for-each>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="barCode">
+    <div class="barCode"><i>no barcode here.</i></div>
+  </xsl:template>
+
+  <xsl:template match="frontMatterInfo">
+    <div>
+      <xsl:attribute name="class">
+        <xsl:text>frontMatterInfo</xsl:text>
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="@frontMatterInfoType"/>
+      </xsl:attribute>
+      <xsl:if test="title">
+        <h1><xsl:value-of select="title"/></h1>
+      </xsl:if>
+      <xsl:for-each select="reducedPara">
+        <xsl:apply-templates select="reducedPara"/>
       </xsl:for-each>
     </div>
   </xsl:template>

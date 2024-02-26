@@ -14,6 +14,7 @@
   @vite('resources/css/loadingbar.css')
   @vite('resources/css/dmodule.css')
   @vite('resources/js/csdb4/app.js')
+  @vite('resources/css/csdb.css')
 
 
   {{-- ga bisa pakai tooltips dari bootstrap, karena vue component akan dirender dynamic, sementara tooltip harus di initialize setelah component di render. Merepotkan sehingga tidak cocok --}}

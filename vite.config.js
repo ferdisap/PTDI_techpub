@@ -30,6 +30,7 @@ export default defineConfig({
         // 'resources/scss/style.scss',
         // 'resources/css/app2.css',
         'resources/js/alert.js',
+        'resources/css/csdb.css',
       ],
       refresh: true
     }),

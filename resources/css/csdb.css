@@ -1,0 +1,110 @@
+@tailwind components;
+
+.dump_orange {
+  border:1px solid orange;
+}
+
+.csdbobjectcontent{
+  font-family: sans-serif;
+}
+
+/* for Front Matter vue */
+@layer components {
+  .csdbobjectcontent {
+    @apply
+    px-3
+    py-3
+    block
+    relative
+    border
+    shadow-2xl
+    max-w-[800px]
+    max-h-[1120px]    
+  }
+  .frontMatter {
+    @apply 
+    /* border border-red-500 */
+    mx-[1cm]
+  }
+  .productIntroName{
+    @apply
+    /* border border-green-300 */
+    text-center
+    text-[45pt]
+    leading-[7rem]
+    px-[11pt]
+  }
+  .pmTitle{
+    @apply 
+    /* border border-green-500 */
+    text-center
+    text-[30pt]
+    leading-[5rem] 
+    px-[11pt]
+  }
+  .shortPmTitle{
+    @apply 
+    /* border border-green-700 */
+    text-center
+    text-[20pt]
+    leading-[3rem]
+  }
+  .frontMatter .pmAddress{
+    @apply 
+    /* border border-red-900 */
+    mt-[24pt]
+    mb-[14pt]
+    mx-[1cm]
+  }
+  .frontMatter .pmAddress *{
+    @apply 
+    text-[11pt]
+  }
+  .frontMatter .issueInfo{
+    @apply 
+    /* border border-blue-500 */
+    text-[11pt]
+    
+  }
+  .frontMatter .externalPubCode, .frontMatter .externalPubCode *{
+    @apply 
+    /* border border-yellow-100 */
+    text-[11pt]
+    mx-[1cm]
+  }
+  .frontMatter .productAndModel{
+    @apply 
+    /* border border-pink-300 */
+    mt-[11pt]
+    mx-[1cm]
+  }
+  .frontMatter .productAndModel *{
+    @apply 
+    /* border border-pink-500 */
+    text-[11pt]
+  }
+  .frontMatter .security {
+    @apply 
+    /* border border-pink-500 */
+    text-[16pt]
+    w-full
+    text-center
+    py-1
+    font-bold
+  }
+  .frontMatter .security .securityClassification {
+    @apply 
+    text-red-500
+    text-[11pt]   
+  }
+
+  /* insert for dataRestriction element here */
+  
+  .frontMatter .productIllustration {
+    @apply 
+    border border-pink-500
+    w-full
+    h-[7cm]
+    mb-[14pt]
+  }
+}

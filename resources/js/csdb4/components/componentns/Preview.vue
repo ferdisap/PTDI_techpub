@@ -47,7 +47,7 @@ export default {
     <div class="h-[5%] flex mb-3">
       <h1 class="text-blue-500 w-full text-center">Preview</h1>
     </div>
-    <div class="">
+    <div class="flex justify-center">
       <component v-if="data.transformed" :is="transformed"/>
     </div>
   </div>

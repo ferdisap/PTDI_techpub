@@ -9,7 +9,7 @@
   <xsl:include href="./dmodule/FrontMatter.xsl" />
 
   <xsl:template match="content[ancestor::dmodule]">
-    <div class="content content-dmodule">
+    <div class="csdbobjectcontent">
       <xsl:apply-templates/>      
     </div>
   </xsl:template>

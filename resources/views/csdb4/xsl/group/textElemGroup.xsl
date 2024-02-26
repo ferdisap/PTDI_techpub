@@ -17,7 +17,7 @@
   <xsl:output method="xml"/>
   
   <xsl:template match="changeInline">
-    <span>
+    <span class="changeInline">
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates/>
     </span>
