@@ -7,6 +7,7 @@
   <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes" />
 
   <xsl:include href="./dmodule/FrontMatter.xsl" />
+  <xsl:param name="object_code"/>
 
   <xsl:template match="content[ancestor::dmodule]">
     <div class="csdbobjectcontent">
@@ -15,6 +16,9 @@
           <xsl:text>sc-</xsl:text>
           <xsl:value-of select="//identAndStatusSection/descendant::security/@securityClassification"/>
         </xsl:attribute>
+      </div>
+      <div class="object-code">
+        <xsl:value-of select="$object_code"/>
       </div>
       <xsl:apply-templates/>      
     </div>

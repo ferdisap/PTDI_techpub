@@ -35,7 +35,8 @@
   <xsl:include href="./helper/irtt.xsl" />
   <xsl:include href="./helper/sc.xsl" />
 
-  <xsl:param name="configuration" />
+  <xsl:param name="configuration"/>
+  <xsl:param name="object_code"/>
 
   <xsl:template match="dmodule | pm | dml">
     <xsl:if test="$configuration = 'ForIdentStatusVue'">

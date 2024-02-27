@@ -12,8 +12,20 @@
   border:1px solid orange;
 }
 
-.csdbobjectcontent{
-  font-family: sans-serif;
+.csdbobjectcontent *{
+  font-family:sans-serif;
+}
+
+.csdbobjectcontent ul, .csdbobjectcontent ol {
+  list-style: revert;
+  margin: revert;
+  padding: revert;
+}
+
+.csdbobjectcontent a {
+  color: revert;
+  text-decoration: revert;
+  -webkit-text-decoration: revert;
 }
 
 .sc-01, .sc-02, .sc-03, .sc-04, .sc-05 {
@@ -61,25 +73,9 @@
     max-w-[800px] /* == 21 cm kertas A4*/
     min-h-[1120px] /* == 29.7cm kertas A4 */
   }
-  /* .sc-01{
-    @apply
-    right-[-30pt]
-    h-full
-    text-black
-    before:block
-    before:absolute 
-    before:-inset-1
-    rotate-90
-    before:bg-pink-500
-    relative inline-block
-  }, */
-  /* .sc-01, .sc-02, .sc-03, .sc-04, .sc-05 {
-    @apply
-    absolute
-    h-full
-    w-[.6cm]
-    right-[-.6cm]
-  } */
+  .csdbobjectcontent .object-code {
+    @apply italic text-[10pt] fixed text-gray-400
+  }
 
 
   .security * {
@@ -194,9 +190,9 @@
   }
   .frontMatterTitlePage .manufacturer * {
     @apply
-    text-[9pt]
+    text-[8pt]
   }
-  .frontMatterTitlePage .enterprise {
+  .frontMatterTitlePage .manufacturer .enterprise {
     @apply
     flex space-x-4
   }
@@ -204,7 +200,7 @@
     @apply
     border border-blue-500
     min-w-[2cm]
-    max-h-[2cm]
+    h-[2cm]
   }
   .frontMatterTitlePage .enterpriseSpec {
     @apply 
@@ -228,31 +224,51 @@
   }
   .frontMatterTitlePage .publisher * {
     @apply
-    text-[9pt]
+    text-[8pt]
+  }
+  .frontMatterTitlePage .publisher .enterprise {
+    @apply
+    flex space-x-4
   }
   .frontMatterTitlePage .publisherLogo {
     @apply
     border border-blue-500
     /* max-h-[2cm] */
+    min-w-[2cm]
     h-[2cm]
-    w-full
   }
-  /* end of Publisher */
-
-  /* start responsible company*/
-  .frontMatterTitlePage .responsiblePartnerCompany{
-    @apply
-    /* border border-blue-500 */
+  .frontMatterTitlePage .publisher .responsiblePartnerCompany {
+    @apply 
+    /* border border-yellow-500 */
     w-full
-    text-center
+    grid
+    content-center
     text-[11pt]
   }
-  /* end of responsible company */
+  .frontMatterTitlePage .publisher .responsiblePartnerCompany * {
+    @apply 
+    /* border border-yellow-500 */
+    text-[11pt]
+    leading-[11pt]
+  }
+  /* end of Publisher */
 
   .frontMatterTitlePage hr {
     @apply
     border-2 border-black my-5
   }
+
+  /* start Front Matter Info */
+  .frontMatterTitlePage .frontMatterInfo{
+    @apply block relative
+  }
+  .frontMatterTitlePage .frontMatterInfo * {
+    @apply text-[8pt] leading-[11pt]
+  }
+  .frontMatterTitlePage .frontMatterInfo .title {
+    @apply font-bold 
+  }
+  /* end start Front Matter Info */
 
 
 

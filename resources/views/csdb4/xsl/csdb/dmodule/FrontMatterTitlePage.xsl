@@ -37,17 +37,17 @@
       </div>
       <div class="publisher">
         <span>Publisher: </span>
-        <xsl:apply-templates select="publisherLogo"/>
-      </div>
-      <div class="responsiblePartnerCompany">
-        Responsibled by: <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
+        <div class="enterprise">
+          <xsl:apply-templates select="publisherLogo"/>
+          <div class="responsiblePartnerCompany">
+            <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
+          </div>
+        </div>
       </div>
       <xsl:apply-templates select="security"/>
       <xsl:apply-templates select="barCode"/>
       <hr/>
-      <xsl:for-each select="frontMatterInfo">
-        <xsl:apply-templates/>
-      </xsl:for-each>
+      <xsl:apply-templates select="frontMatterInfo"/>
     </div>
   </xsl:template>
   
@@ -262,10 +262,10 @@
         <xsl:value-of select="@frontMatterInfoType"/>
       </xsl:attribute>
       <xsl:if test="title">
-        <h1><xsl:value-of select="title"/></h1>
+        <h1 class="title"><xsl:value-of select="title"/></h1>
       </xsl:if>
       <xsl:for-each select="reducedPara">
-        <xsl:apply-templates select="reducedPara"/>
+        <xsl:apply-templates select="."/>
       </xsl:for-each>
     </div>
   </xsl:template>

@@ -163,12 +163,19 @@ class Csdb extends Model
     // $xsltproc->registerPHPFunctions([self::class . "::getLastPositionCrewDrillStep", self::class . "::setLastPositionCrewDrillStep"]);
     $xsltproc->registerPHPFunctions();
 
-    $xsltproc->setParameter('', 'repoName', $this->repoName);
-    $xsltproc->setParameter('', 'objectpath', $this->objectpath);
-    $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
+    // $xsltproc->setParameter('', 'repoName', $this->repoName);
+    // $xsltproc->setParameter('', 'objectpath', $this->objectpath);
+    // $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
+    $schemaFilename = MpubCSDB::getSchemaUsed($this->DOMDocument,'filename');
+    $xsltproc->setParameter('', 'schema', $schemaFilename);
     $xsltproc->setParameter('', 'configuration', $configuration);
-    // dd($path_xsl, $filename_xsl);
-
+    if($this->filename){
+      $decode_ident = Helper::decode_ident($this->filename);
+      $object_code = $decode_ident[array_key_first($decode_ident)];
+      $object_code = array_filter($object_code, fn($v) => $v);
+      $object_code = join("-", $object_code);
+      $xsltproc->setParameter('', 'object_code', $object_code);
+    }
 
     if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));
