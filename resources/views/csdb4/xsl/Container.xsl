@@ -11,6 +11,7 @@
   <xsl:include href="./csdb/DmIdent.xsl" />
   <xsl:include href="./csdb/DmRef.xsl" />
   <xsl:include href="./csdb/DmStatus.xsl" />
+  <xsl:include href="./csdb/ExternalPub.xsl" />
   <xsl:include href="./csdb/Figure.xsl" />
   <xsl:include href="./csdb/Footnote.xsl" />
   <xsl:include href="./csdb/IdentAndStatusSection.xsl" />
@@ -24,11 +25,13 @@
   <xsl:include href="./csdb/dmodule/DataRestrictions.xsl" />
   <xsl:include href="./csdb/dmodule/FrontMatter.xsl" />
   <xsl:include href="./csdb/dmodule/FrontMatterTitlePage.xsl" />
+  <xsl:include href="./csdb/dmodule/FrontMatterList.xsl" />
 
   <xsl:include href="./group/textElemGroup.xsl" />
   <xsl:include href="./group/reducedParaElemGroup.xsl" />
   <xsl:include href="./group/listElemGroup.xsl" />
   
+  <xsl:include href="./helper/applic.xsl" />
   <xsl:include href="./helper/controlAuthority.xsl" />
   <xsl:include href="./helper/cgmark.xsl" />
   <xsl:include href="./helper/id.xsl" />

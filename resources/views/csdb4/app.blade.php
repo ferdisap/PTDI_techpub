@@ -12,7 +12,7 @@
   <script type="text/javascript" src="/js/jquery.maphilight.min.js"></script>
   @vite('resources/css/app.css')
   @vite('resources/css/loadingbar.css')
-  @vite('resources/css/dmodule.css')
+  {{-- @vite('resources/css/dmodule.css') --}}
   @vite('resources/js/csdb4/app.js')
   @vite('resources/css/csdb.css')
 

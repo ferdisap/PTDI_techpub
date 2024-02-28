@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-on="https://vuejs.org/on">
 
+  <xsl:template name="internalRefId">
+    <xsl:attribute name="internalRefId">
+      <xsl:value-of select="@internalRefId"/>
+    </xsl:attribute>
+  </xsl:template>
+
   <xsl:template match="internalRef">
     <a href="#">
       <xsl:attribute name="click" namespace="https://vuejs.org/on">

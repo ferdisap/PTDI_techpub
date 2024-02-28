@@ -4,8 +4,6 @@
   xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/bind"
   xmlns:v-on="https://vuejs.org/on">
 
-  <xsl:param name="filename" />
-
   <xsl:template match="dataRestrictions">
     <div class="dataRestriction">
       <xsl:call-template name="cgmark"/>
@@ -41,7 +39,7 @@
       <xsl:call-template name="cgmark"/>
       <xsl:call-template name="id"/>
       <xsl:call-template name="sc"/>
-      <xsl:apply-template/>
+      <xsl:apply-templates/>
     </p>
   </xsl:template>
 
@@ -50,7 +48,7 @@
       <xsl:call-template name="cgmark"/>
       <xsl:call-template name="id"/>
       <xsl:call-template name="sc"/>
-      <xsl:apply-template/>
+      <xsl:apply-templates/>
     </p>
   </xsl:template>
 

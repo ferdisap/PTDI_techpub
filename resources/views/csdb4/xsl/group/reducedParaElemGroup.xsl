@@ -13,13 +13,29 @@
   <xsl:template match="reducedRandomList">
     <ul>
       <xsl:call-template name="cgmark"/>
-      <xsl:for-each select="reducedRandomListItem">
-        <li>
-          <xsl:apply-templates/>
-        </li>
-      </xsl:for-each>
+      <xsl:call-template name="applicRefId"/>
+      <xsl:call-template name="controlAuthorityRefIds"/>
+      <xsl:call-template name="sc"/>
+      <xsl:attribute name="listItemPrefix">
+        <xsl:value-of select="@listItemPrefix"/>
+      </xsl:attribute>
+
+      <xsl:apply-templates select="reducedRandomListItem"/>
+      
     </ul>         
   </xsl:template> 
+
+  <xsl:template match="reducedRandomListItem">
+    <li class="reducedRandomListItem">
+      <xsl:apply-templates select="reducedListItemPara"/>
+    </li>
+  </xsl:template>
+
+  <xsl:template match="reducedListItemPara">
+    <p class="reducedListItemPara">
+      <xsl:apply-templates/>
+    </p>
+  </xsl:template>
 
 
 

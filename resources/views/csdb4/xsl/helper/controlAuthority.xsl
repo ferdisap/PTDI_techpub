@@ -8,6 +8,14 @@
       </xsl:attribute>
     </xsl:if>
   </xsl:template>
+
+  <xsl:template name="controlAuthorityRefIds">
+    <xsl:if test="@controlAuthorityRefIds">
+      <xsl:attribute name="controlAuthorityRefIds">
+        <xsl:value-of select="@controlAuthorityRefIds"/>
+      </xsl:attribute>
+    </xsl:if>
+  </xsl:template>
   
   <!-- 
     kurang lengkap. Disni belum dibuat untuk controlAuthorityGroup.

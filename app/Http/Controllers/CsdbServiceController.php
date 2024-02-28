@@ -30,7 +30,8 @@ class CsdbServiceController extends CsdbController
   ############### NEW for csdb4 ###############
   public function get_transformed_identstatus(Request $request, string $filename)
   {
-    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
+    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml');
     $csdb_model = new Csdb();
     $csdb_model->DOMDocument = $dom;
     $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
@@ -59,6 +60,7 @@ class CsdbServiceController extends CsdbController
     $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     $csdb_model->DOMDocument = $dom;
     $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
+    // dd($transformed);
     if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }

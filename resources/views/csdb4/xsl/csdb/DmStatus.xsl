@@ -19,8 +19,10 @@
                 select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', applicCrossRefTableRef/descendant::dmRefIdent, null, 'DMC-', '')" />
             </a>
           </li>
-          <li>Applicability for: <xsl:value-of
-              select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" /></li>
+          <li>Applicability for: 
+            <!-- <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" /> -->
+            FOOBAR
+          </li>
           <li>BREX Document: <a href="#">
               <xsl:value-of
                 select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', brexDmRef/descendant::dmRefIdent, null, 'DMC-', '')" />

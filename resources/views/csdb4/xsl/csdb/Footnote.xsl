@@ -3,13 +3,53 @@
 
   <xsl:output method="xml" omit-xml-declaration="yes" />
   
+  <!-- NOTE:
+    1. element <footnoteRemarks> ini seperti element <para> yang ada textContentnya dan bisa mengandung <footnoteRef> yang didalamnya hanya ada attribute target.
+    2. target nya <footnoteRef> adalah elemen <footnote>[@id].
+    3. Pada frontmatterList, ada elemen <footnote> untuk ditaruh di bawah page. 
+    4. di schema lain, element <footnote> juga bisa ditaruh didalam element <para>, tapi text nya tidak di render inline dengan para tapi tetap di render di bawah page
+  -->
+
   <!-- <xsl:param name="dmOwner"/> -->
   <!-- ganti dmOwner ini nanti menjadi fungsi php -->
 
   <xsl:template match="footnote">
-    <!-- syaratnya, jangan tambah line-height di footnote ini, karena akan berdampak ke text
-    selanjutnya yang bukan footnote -->
-    <!-- Footnote text tidak bisa melebihi page height -->
+    <div class="footnote">
+      <xsl:call-template name="id"/>
+      <xsl:call-template name="applicRefId"/>
+      <xsl:call-template name="cgmark"/>
+      <xsl:attribute name="footnoteMark">
+        <xsl:value-of select="@footnoteMark"/>
+      </xsl:attribute>
+      <xsl:call-template name="controlAuthorityRefs"/>
+      <xsl:call-template name="sc"/>
+
+      <xsl:apply-templates/>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="footnoteRemarks">
+    <div class="footnoteRemarks">
+      <xsl:call-template name="applicRefId"/>
+      <xsl:call-template name="controlAuthorityRefs"/>
+      <xsl:apply-templates/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="footnoteRef">
+    <span class="footnoteRef">
+      <xsl:call-template name="internalRefId"/>
+      <xsl:call-template name="cgmark"/>
+      <xsl:call-template name="controlAuthrotiyRefs"/>
+      <xsl:apply-templates/>
+    </span>
+  </xsl:template>
+
+  <!-- ini sepertinya untuk PDF -->
+  <!-- <xsl:template match="footnote">
+    syaratnya, jangan tambah line-height di footnote ini, karena akan berdampak ke text
+    selanjutnya yang bukan footnote
+    Footnote text tidak bisa melebihi page height
       <xsl:param name="usefootnote" select="'yes'"/>
       <xsl:choose>
         <xsl:when test="$usefootnote = 'no'">
@@ -58,6 +98,6 @@
       </xsl:variable>
       <sup>[<xsl:value-of select="$pos"/>]</sup>
     </a>
-  </xsl:template>
+  </xsl:template> -->
 
 </xsl:stylesheet>

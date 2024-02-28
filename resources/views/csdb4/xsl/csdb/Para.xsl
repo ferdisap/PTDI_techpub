@@ -4,9 +4,21 @@
   <xsl:output method="xml" omit-xml-declaration="yes"/>
   
   <xsl:template match="para">
+    <p class="para">
+      <xsl:call-template name="cgmark"/>
+      <xsl:call-template name="applicRefId"/>
+      <xsl:call-template name="controlAuthorityRefIds"/>
+      <xsl:call-template name="sc"/>
+
+      <xsl:apply-templates/>
+    </p>
+  </xsl:template>
+
+  <!-- ini bekas PDF -->
+  <!-- <xsl:template match="para">
     <xsl:param name="usefootnote" select="'yes'"/>
     <xsl:choose>
-      <!-- pakai entity #ln; jika ingin new line -->
+      pakai entity #ln; jika ingin new line
       <xsl:when test="parent::listItem or parent::listItemTerm or parent::listItemDefinition ">
         <span>
           <xsl:call-template name="id"/>
@@ -29,7 +41,7 @@
         </span>      
       </xsl:when>
       <xsl:when test="parent::entry">
-        <!-- karena div kan tidak ada vertical space -->
+        karena div kan tidak ada vertical space
         <div>
           <xsl:call-template name="id"/>
           <xsl:call-template name="cgmark"/>
@@ -46,8 +58,6 @@
         </span>      
       </xsl:when>
       <xsl:otherwise>
-        <!-- <p style="page-break-inside: avoid;border:1px solid red"> -->
-        <!-- <p style="page-break-inside: avoid;"> -->
         <p>
           <xsl:call-template name="id"/>
           <xsl:call-template name="cgmark"/>
@@ -57,6 +67,6 @@
         </p>        
       </xsl:otherwise>
     </xsl:choose>
-  </xsl:template>
+  </xsl:template> -->
   
 </xsl:stylesheet>
