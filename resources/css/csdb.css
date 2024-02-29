@@ -78,8 +78,8 @@ table tbody:before {
     block
     relative
     shadow-2xl
-    max-w-[800px] /* == 21 cm kertas A4*/
-    min-h-[1120px] /* == 29.7cm kertas A4 */
+    w-[21cm] /* == 21 cm kertas A4*/
+    min-h-[29cm] /* == 29.7cm kertas A4 */
   }
   .csdbobjectcontent h1, .csdbobjectcontent h2{
     @apply mb-[6pt]
@@ -302,6 +302,12 @@ table tbody:before {
   }
   /* end start Front Matter Info */
 
+  .frontMatterList {
+    @apply mt-[6pt] mb-[18pt]
+  }
+  .frontMatterList table {
+    @apply border-b-2 border-black
+  }
   
   /* frontMatterList type fm02 */
   .frontMatterList * {
@@ -312,16 +318,19 @@ table tbody:before {
     @apply table-auto
   }
 
-  .frontMatterList .title {
+  .frontMatter > .title {
     @apply 
     text-[16pt] leading-[28pt] text-center
   }
-  .frontMatterList .issueInfo {
+  .frontMatter > .issueInfo {
     @apply
     text-[16pt] leading-[17pt] text-center
   }
+  .frontMatterSubList {
+    @apply mt-[18pt] mb-[24pt]
+  }
   .frontMatterSubList .title {
-    @apply text-center text-[14pt]
+    @apply text-center text-[14pt] mb-[12pt]
   }
   table[class=frontMatterEntryList] {
     @apply table-auto text-center
@@ -329,26 +338,48 @@ table tbody:before {
   table[class=frontMatterEntryList] thead{
     @apply border-b-2 border-t-2 border-black
   }
-  table[class=frontMatterEntryList] .title{
-    @apply w-[5cm] leading-[16pt]
+  /* fm02 */
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .title{
+    @apply w-[5cm] leading-[16pt] text-[11pt]
   }
-  table[class=frontMatterEntryList] .code{
-    @apply w-[5cm] leading-[16pt] text-nowrap
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .code{
+    @apply w-[5cm] leading-[16pt] text-nowrap text-left
   }
-  table[class=frontMatterEntryList] .issueType{
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .issueType{
     @apply w-[1cm] leading-[16pt]
   }
-  table[class=frontMatterEntryList] .issueDate-issueNumber{
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .issueDate-issueNumber{
     @apply w-[3cm] leading-[16pt]
   }
-  table[class=frontMatterEntryList] .numberOfPages{
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .numberOfPages{
     @apply w-[1cm] leading-[16pt]
   }
-  table[class=frontMatterEntryList] .applicability{
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .applicability{
     @apply w-[5cm] leading-[16pt]
   }
-  table[class=frontMatterEntryList] .remarks{
+  div[frontMatterType=fm02] table[class=frontMatterEntryList] .remarks{
     @apply w-[5cm] leading-[16pt]
+  }
+  /* fm03 */
+  div[frontMatterType=fm03] table[class=frontMatterEntryList] .code{
+    @apply w-[8cm] leading-[16pt] text-nowrap text-left
+  }
+  div[frontMatterType=fm03] table[class=frontMatterEntryList] .reason-for-update{
+    @apply w-[10cm] leading-[16pt] text-start
+  }
+  /* fm04 */
+  div[frontMatterType=fm04] table[class=frontMatterEntryList] .title{
+    @apply w-[5cm] leading-[16pt] text-[11pt]
+  }
+  /* .frontMatterEntryList tr .code:nth-child(1) */
+  div[frontMatterType=fm04] .frontMatterEntryList:nth-child(odd) tr .code{
+    @apply w-[8cm] leading-[16pt] text-nowrap text-left
+  }
+  div[frontMatterType=fm04] .frontMatterEntryList:nth-child(even) tr .code:nth-child(1){
+    @apply w-[5cm] leading-[16pt] text-nowrap text-left
+  }
+  div[frontMatterType=fm04] table[class=frontMatterEntryList] .reason-for-update{
+    @apply w-[10cm] leading-[16pt] text-start
   }
   
   /* 
