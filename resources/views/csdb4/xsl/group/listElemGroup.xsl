@@ -31,16 +31,7 @@
       <xsl:apply-templates/>
     </li>
   </xsl:template>
-
-  <xsl:template match="note">
-    <div class="note">
-      <div class="note">
-        <div class="heading"><span>NOTE</span></div>
-        <xsl:apply-templates/>
-      </div>
-    </div>
-  </xsl:template>
-
+  
   <xsl:template match="definitionList">
     <br/>
     <dl class="definitionList">

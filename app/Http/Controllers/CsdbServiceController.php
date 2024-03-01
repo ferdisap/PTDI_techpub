@@ -33,7 +33,8 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003A-A_000-01_EN-EN.xml');
-    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003B-A_000-01_EN-EN.xml');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003B-A_000-01_EN-EN.xml');
+    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml');
     $csdb_model = new Csdb();
     $csdb_model->DOMDocument = $dom;
     $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
@@ -58,7 +59,8 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003A-A_000-01_EN-EN.xml');
-    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003B-A_000-01_EN-EN.xml');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003B-A_000-01_EN-EN.xml');
+    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml');
     $csdb_model = new Csdb(); // model dari Csdb.php
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object

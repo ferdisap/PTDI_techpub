@@ -166,8 +166,8 @@ class Csdb extends Model
     // $xsltproc->setParameter('', 'repoName', $this->repoName);
     // $xsltproc->setParameter('', 'objectpath', $this->objectpath);
     // $xsltproc->setParameter('', 'absolute_objectpath', $this->absolute_objectpath);
-    $schemaFilename = MpubCSDB::getSchemaUsed($this->DOMDocument,'filename');
-    $xsltproc->setParameter('', 'schema', $schemaFilename);
+    // $schemaFilename = MpubCSDB::getSchemaUsed($this->DOMDocument,'filename');
+    // $xsltproc->setParameter('', 'schema', $schemaFilename);
     $xsltproc->setParameter('', 'configuration', $configuration);
     if($this->filename){
       $decode_ident = Helper::decode_ident($this->filename);
@@ -176,6 +176,7 @@ class Csdb extends Model
       $object_code = join("-", $object_code);
       $xsltproc->setParameter('', 'object_code', $object_code);
     }
+    $xsltproc->setParameter('', 'icnPath', '/foo');
 
     if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));

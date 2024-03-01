@@ -19,7 +19,7 @@
       </div>      
       <div class="header">
         <div class="logo">
-
+          <xsl:apply-templates select="//identAndStatusSection/descendant::logo/symbol"/>
         </div>
         <div class="sc">
           <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_securityClassification', //identAndStatusSection/descendant::security)"/>

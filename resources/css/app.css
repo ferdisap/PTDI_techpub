@@ -254,13 +254,13 @@ dialog a,
 
 @layer components {
   .listtree summary {
-    @apply text-sm hover:bg-blue-500 hover:text-white pl-1
+    @apply text-base hover:bg-blue-500 hover:text-white pl-1
   }
   .listtree .obj {
-    @apply text-sm mx-3 hover:bg-blue-500 hover:text-white pl-1
+    @apply text-base mx-3 hover:bg-blue-500 hover:text-white pl-1
   }
   .listtree a {
-    @apply text-sm
+    @apply text-base
   }
 }
 

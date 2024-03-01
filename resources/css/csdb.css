@@ -25,6 +25,12 @@ table tbody:before {
   font-family:sans-serif;
 }
 
+.csdbobjectcontent{
+  text-wrap: wrap;
+  text-align: justify;
+  word-wrap:break-word;
+}
+
 .csdbobjectcontent ul, .csdbobjectcontent ol {
   list-style: revert;
   margin: revert;
@@ -91,7 +97,10 @@ table tbody:before {
     @apply text-[14pt] font-bold
   }
   .csdbobjectcontent .logo{
-    @apply h-[2cm] w-[30%] border
+    @apply h-[2cm] w-[30%]
+  }
+  .csdbobjectcontent .logo > img{
+    @apply max-h-[2cm]
   }
   .csdbobjectcontent .sc{
     @apply h-[2cm] w-[30%] text-center 
@@ -99,9 +108,20 @@ table tbody:before {
   .csdbobjectcontent .object-code{
     @apply h-[2cm] w-[40%] text-[12pt] text-end
   }
-
   .csdbobjectcontent p {
     @apply text-[11pt] leading-[20pt]
+  }
+  .csdbobjectcontent .note, .csdbobjectcontent .warning, .csdbobjectcontent .caution {
+    @apply mt-[12pt] mb-[16pt] flex justify-center
+  }
+  .csdbobjectcontent .note .symbol, .csdbobjectcontent .warning .symbol, .csdbobjectcontent .caution .symbol {
+    @apply w-full flex justify-center mb-[6pt]
+  }
+  .csdbobjectcontent .note .symbol > img, .csdbobjectcontent .warning .symbol > img, .csdbobjectcontent .caution .symbol > img {
+    @apply max-h-[24pt]
+  }
+  .csdbobjectcontent .note .container, .csdbobjectcontent .warning .container, .csdbobjectcontent .caution .container {
+    @apply w-[70%]
   }
 
 
@@ -127,7 +147,7 @@ table tbody:before {
 }
 
 
-/* for Front Matter vue */
+/* for Front Matter */
 @layer components {
   .frontMatter {
     @apply 
@@ -396,4 +416,34 @@ table tbody:before {
     @apply w-[6cm] border
   } */
 
+}
+
+/* for Description */
+@layer components {
+  .description {
+    @apply 
+    /* border border-red-500 */
+    mx-[1cm]
+  }
+  .description * {
+    @apply text-[11pt]
+  }
+  .description > .title {
+    @apply text-[16pt] text-center mb-[10pt]
+  }
+  .description .levelledPara {
+    @apply mb-[16pt]
+  }
+  .description .levelledPara * {
+    @apply text-[11pt]
+  }
+  .description .levelledPara[level='1'] .title {
+    @apply text-[14pt]
+  }
+  .description .levelledPara[level='2'] .title {
+    @apply text-[12pt]
+  }
+  .description .levelledPara[level='3'] .title, .description .levelledPara[level='4'] .title, .description .levelledPara[level='5'] .title {
+    @apply text-[12pt]
+  }
 }

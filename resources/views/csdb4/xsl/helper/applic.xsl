@@ -5,9 +5,11 @@
   xmlns:v-on="https://vuejs.org/on">
 
   <xsl:template name="applicRefId">
-    <xsl:attribute name="applicRefId">
-      <xsl:value-of select="@applicRefId"/>
-    </xsl:attribute>
+    <xsl:if test="@applicRefId">
+      <xsl:attribute name="applicRefId">
+        <xsl:value-of select="@applicRefId"/>
+      </xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <!-- ini mungkin nanti harus dibuat. Saat ini belum diperlukan -->
