@@ -106,8 +106,8 @@ export default {
         this.back(path);
       }
     },
-    clickFile(){
-      // run the event
+    clickFilename(data){
+      this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
     },
     sortTable(){
       const getCellValue = function (row, index) {
@@ -162,12 +162,17 @@ export default {
   },
 }
 </script>
+<style>
+.folder th, .folder td {
+  white-space: nowrap;
+}
+</style>
 <template>
   <div v-show="false">{{ setObject }}</div>
   <div class="folder overflow-auto h-[93%] w-full">
     <div class="h-[5%] flex mb-3">
-      <div class="w-8">
-        <button @click="back()" class="material-symbols-outlined">keyboard_backspace</button>
+      <div class="w-8 mb-5">
+        <button @click="back()" class="material-symbols-outlined has-tooltip-right" data-tooltip="back">keyboard_backspace</button>
       </div>
       <h1 class="text-blue-500 w-full text-center">Folder:/{{ currentPath }}</h1>
     </div>
@@ -177,38 +182,40 @@ export default {
       <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({ name: 'searchCsdbObject' })">info</button>
     </div>
 
-    <table class="text-left">
-      <thead class="text-sm">
-        <tr class="leading-3 text-sm">
-          <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
-          <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
-          <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
-          <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
-          <th class="text-sm">Initiator <Sort :function="sortTable"></Sort></th>
-          <th class="text-sm">Editable <Sort :function="sortTable"></Sort></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
-          <td class="leading-3 text-sm" colspan="5">
-            <span class="material-symbols-outlined text-sm mr-1">folder</span>
-            <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-2) }} </a> 
-            <!-- min -2 karena diujung folder ada '/' -->
-          </td>
-        </tr>
-        <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
-          <td class="leading-3 text-sm">
-            <span class="material-symbols-outlined text-sm mr-1">description</span>
-            <a href="#" class="text-sm"> {{ obj.filename }} </a>
-          </td>
-          <td class="leading-3 text-sm"> {{ obj.path }} </td>
-          <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
-          <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
-          <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
-          <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
-        </tr>        
-      </tbody>
-    </table>
+    <div class="flex justify-center flex-col px-3">
+      <table class="text-left">
+        <thead class="text-sm">
+          <tr class="leading-3 text-sm">
+            <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
+            <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
+            <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
+            <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
+            <th class="text-sm">Initiator <Sort :function="sortTable"></Sort></th>
+            <th class="text-sm">Editable <Sort :function="sortTable"></Sort></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
+            <td class="leading-3 text-sm" colspan="5">
+              <span class="material-symbols-outlined text-sm mr-1">folder</span>
+              <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-2) }} </a> 
+              <!-- min -2 karena diujung folder ada '/' -->
+            </td>
+          </tr>
+          <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
+            <td class="leading-3 text-sm">
+              <span class="material-symbols-outlined text-sm mr-1">description</span>
+              <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
+            </td>
+            <td class="leading-3 text-sm"> {{ obj.path }} </td>
+            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
+            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
+            <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
+            <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
+          </tr>        
+        </tbody>
+      </table>
+    </div>
 
 
   </div>

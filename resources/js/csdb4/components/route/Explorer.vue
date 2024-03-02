@@ -46,11 +46,9 @@ export default {
         },
       },
       colWidth: {
-        satu: { isMaximize: true, portion: 0.15 },
-        dua: { isMaximize: true, portion: 0.425 },
-        // dua: { isMaximize: true, portion: 0.45 },
-        tiga: { isMaximize: false, portion: 0.425 },
-        // tiga: { isMaximize: false, portion: 0.45 },
+        satu: { portion: 0.15 },
+        dua: { portion: 0.5 }, // 0.5 karena col2 dan col3 ada pada satu div yang sama biar memudahkan resizing
+        tiga: { portion: 0.5 }, // 0.5 karena col2 dan col3 ada pada satu div yang sama biar memudahkan resizing
       },
 
     }
@@ -75,115 +73,39 @@ export default {
     }
   },
   methods: {
-    sizing(colnum) {
-      console.log(colnum, this.colWidth[colnum].isMaximize);
-      if(this.colWidth[colnum].isMaximize){
-        if(colnum === 'satu'){
-          this.colWidth[colnum]['portion'] = this.colWidth[colnum]['portion']/2;
-        } else if(colnum === 'dua'){
-          this.colWidth[colnum]['portion'] = (1 - (this.colWidth['tiga']['portion']*2) - this.colWidth['satu']['portion']);
-        } else if(colnum === 'tiga'){
-          this.colWidth[colnum]['portion'] = (1 - (this.colWidth['dua']['portion']*2) - this.colWidth['satu']['portion']);
-        }
-      } 
-      else {
-        if(colnum === 'satu'){
-          this.colWidth[colnum]['portion'] = this.colWidth[colnum]['portion']*2;
-        } else if(colnum === 'dua'){
-          this.colWidth[colnum]['portion'] = (1 - (this.colWidth['tiga']['portion']/2) - this.colWidth['satu']['portion']);
-        } else if(colnum === 'tiga'){
-          this.colWidth[colnum]['portion'] = (1 - (this.colWidth['dua']['portion']/2) - this.colWidth['satu']['portion']);
-        }
-      }
-      // if(colnum === 'satu'){
-      //   if(this.colWidth[colnum].isMaximize){
-      //     this.colWidth[colnum]['portion'] = this.colWidth[colnum]['portion']/2;
-      //   } else {
-      //     this.colWidth[colnum]['portion'] = this.colWidth[colnum]['portion']*2;
-      //   }
-      // } else if (colnum === 'dua'){
-      //   if(this.colWidth[colnum].isMaximize){
-
-      //   } else {
-          
-      //   }
-      //   this.colWidth[colnum]['portion'] = (1 - (this.colWidth['tiga']['portion']/2) - this.colWidth['satu']['portion']);
-      // } else if(colnum === 'tiga'){
-      //   this.colWidth[colnum]['portion'] = (1 - (this.colWidth['dua']['portion']/2) - this.colWidth['satu']['portion'])
-      // }
-      this.colWidth[colnum].isMaximize = !this.colWidth[colnum].isMaximize;
-      console.log(this.colWidth['satu']);
-      console.log(this.colWidth['dua']);
-      console.log(this.colWidth[colnum]);
-      // this.colWidth[colnum]['isMaximize'] = !this.colWidth[colnum]['isMaximize'];
-      // let p1 = this.colWidth['satu']['portion'];
-      // let p2 = this.colWidth['dua']['portion'];
-      // let p3 = this.colWidth['tiga']['portion'];
-      // const minimize = function (colnum = '') {
-      //   if (colnum === 'satu') {
-      //     let p1_n = p1 / 2;
-      //     let terkurang = p1 - p1_n;
-      //     p2 = p2 + (terkurang / 2);
-      //     p3 = p3 + (terkurang / 2);
-      //     return [p1_n, p2, p3]
-      //   }
-      //   else if (colnum === 'dua') {
-      //     let p2_n = p2 / 2;
-      //     p3 = 1 - p1 - p2_n
-      //     return [p1, p2_n, p3]
-      //   }
-      //   else if (colnum === 'tiga') {
-      //     let p3_n = p3 / 2;
-      //     p2 = 1 - p1 - p3_n
-      //     return [p1, p2, p3_n]
-      //   }
-      // };
-      // const maximize = function (colnum = '') {
-      //   if (colnum === 'satu') {
-      //     let p1_n = p1 * 2;
-      //     let tertambah = p1_n - p1;
-      //     p2 = p2 - (tertambah / 2);
-      //     p3 = p3 - (tertambah / 2);
-      //     return [p1_n, p2, p3];
-      //   }
-      //   else if (colnum === 'dua') {
-      //     let p2_n = p2 * 2;
-      //     p3 = 1 - p1 - p2_n
-      //     return [p1, p2_n, p3]
-      //   }
-      //   else if (colnum === 'tiga') {
-      //     let p3_n = p3 * 2;
-      //     p2 = 1 - p1 - p3_n
-      //     return [p1, p2, p3_n]
-      //   }
-      // }
-      // let portions = this.colWidth[colnum]['isMaximize'] ? (maximize.bind(this, colnum))() : (minimize.bind(this, colnum))();
-      // this.colWidth['satu']['portion'] = portions[0];
-      // this.colWidth['dua']['portion'] = portions[1];
-      // this.colWidth['tiga']['portion'] = portions[2];
-    },
     /*
      * double click if you want to terminate resizing, or keep quiet for one second
     */
     sizing2(event, colnum) {
-      let htmlWidth = parseFloat(window.getComputedStyle(document.firstElementChild).width);
-      let startEventXPortion = event.clientX / htmlWidth;
+      // let ex = event.target.getBoundingClientRect().left; // 272.466
+      // let ewidth = event.target.getBoundingClientRect().width; // 3.5714
+      let parentLeft = event.target.parentElement.getBoundingClientRect().left; //86.741
+      let parentWidth = event.target.parentElement.getBoundingClientRect().width; // 189.296
+      let acuanWidth = document.querySelector('.explorer-content').getBoundingClientRect().width // 1261.997802734375
+      // parentLeft + parentWidth - ex - ewidth // -0.000002384185791015625
+      let startEventXPortion = parentWidth / acuanWidth // 0.1499977849326281
       this.dt = 1000;
-
       const resize = (e) => {
-        if(this.dt){
+        if (this.dt) {
           clearTimeout(this.to);
-          let endEventXPortion = e.clientX / htmlWidth;
-          let totalMovement = endEventXPortion - startEventXPortion;
-          this.colWidth[colnum].portion = startEventXPortion + totalMovement;
+          let endEventXPortion = (e.clientX - parentLeft - parentWidth) / acuanWidth;
+          this.colWidth[colnum].portion = startEventXPortion + endEventXPortion;
           this.to = setTimeout(() => document.removeEventListener('mousemove', resize, false), this.dt);
+          if (colnum === 'dua') {
+            this.colWidth['tiga']['portion'] = 1 - this.colWidth['dua']['portion'];
+          }
         }
+        window.localStorage.setItem('colWidthExplorer', JSON.stringify(this.colWidth));
       }
       document.addEventListener('mousemove', resize, false);
     }
   },
   mounted() {
     document.addEventListener('dblclick', () => this.dt = 0);
+    if(window.localStorage.colWidthExplorer){
+      this.colWidth = JSON.parse(window.localStorage.colWidthExplorer);
+    }
+
     this.emitter.on('clickFilenameFromListTree', (data) => {
       // Folder
       this.bottomBarItems.Folder.data = data; // hanya ada filename dan path di data
@@ -197,9 +119,19 @@ export default {
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
     });
+
     this.emitter.on('clickFolderFromListTree', (data) => {
       this.bottomBarItems.Folder.isShow = true;
       this.bottomBarItems.Folder.data = data; // hanya ada path saja di data
+    });
+
+    this.emitter.on('clickFilenameFromFolder', (data) => {
+      // identStatus
+      this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
+
+      // Preview
+      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
     });
   }
 }
@@ -216,25 +148,37 @@ export default {
 
       <div class="explorer-content flex h-[90%]">
         <!-- col 1 -->
-        <div class="flex border-r-2 border-blue-500 pr-2" :style="[col1Width]">
+        <div class="flex" :style="[col1Width]">
           <div class="overflow-auto text-nowrap relative h-full w-full">
-            <ButtonSizingWidth :fn="sizing.bind(this, 'satu')" />
+            <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'satu')" /> -->
             <LisTree type="allobjects" />
           </div>
-          <!-- <div class="v-line h-full border-l-4 border-black cursor-ew-resize" @mousedown.prevent="sizing2($event, 'satu')" -->
-          <div class="v-line h-full border-l-4 border-black cursor-ew-resize" @mousedown.prevent="sizing2($event, 'satu')">foo</div>
+          <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
+            @mousedown.prevent="sizing2($event, 'satu')"></div>
         </div>
-        <!-- col 2 -->
-        <div :class="['border-r-2 px-2 border-blue-500 pr-2 overflow-auto text-wrap relative h-full',]"
-          :style="[col2Width]">
-          <ButtonSizingWidth :fn="sizing.bind(this, 'dua')" />
-          <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" />
-          <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
-        </div>
-        <!-- col 3 -->
-        <div :class="['border-r-2 border-blue-500 pr-2 overflow-auto text-wrap relative h-full',]" :style="[col3Width]">
-          <ButtonSizingWidth :fn="sizing.bind(this, 'tiga')" />
-          <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
+
+        <div class="flex w-full">
+          <!-- col 2 -->
+          <div class="flex" :style="[col2Width]">
+            <div class="overflow-auto text-wrap relative h-full w-full">
+              <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'dua')" /> -->
+              <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" />
+              <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
+            </div>
+          </div>
+
+          <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
+            @mousedown.prevent="sizing2($event, 'dua')"></div>
+
+          <!-- col 3 -->
+          <div class="flex" :style="[col3Width]">
+            <div class="overflow-auto text-wrap relative h-full w-full">
+              <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'tiga')" /> -->
+              <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
+            </div>
+          </div>
+
+          <div class="v-line h-full border-l-4 border-blue-500 w-0"></div>
         </div>
       </div>
 

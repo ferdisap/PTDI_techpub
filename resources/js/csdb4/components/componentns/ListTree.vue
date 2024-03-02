@@ -42,7 +42,7 @@ export default {
         }
         this.data[`${type}_list`] = obj;
         this.data[`${type}_list_level`] = levels;
-        console.log(window.obj = obj, window.lvl = levels);
+        // console.log(window.obj = obj, window.lvl = levels);
       }
     },
     async goto(type, page = undefined) {
@@ -54,7 +54,7 @@ export default {
     },
     clickFilename(data) {
       // this.$parent.$emit('clickFilename', data)
-      this.emitter.emit('clickFilenameFromListTree', data);
+      this.emitter.emit('clickFilenameFromListTree', data); // key path dan filename
     },
   },
   mounted() {
