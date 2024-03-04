@@ -10,8 +10,8 @@
       <!-- <xsl:copy-of select="php:function('preg_replace','/[\s\S]+(?=\/ICN)/', '', unparsed-entity-uri(@infoEntityIdent))"/> -->
     <!-- </div> -->
     <xsl:variable name="infoEntityIdent">
-      <!-- <xsl:value-of select="$icnPath"/> -->
-      <xsl:text>/images/</xsl:text>
+      <xsl:value-of select="$icnPath"/>
+      <!-- <xsl:text>/images/</xsl:text> -->
       <xsl:value-of select="php:function('preg_replace','/[\s\S]+(?=\/ICN)/', '', unparsed-entity-uri(@infoEntityIdent))"/>
     </xsl:variable>
     <img src="{$infoEntityIdent}">

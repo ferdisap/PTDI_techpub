@@ -21,6 +21,7 @@
   <xsl:include href="./csdb/PmRef.xsl" />
   <xsl:include href="./csdb/Security.xsl" />
   <xsl:include href="./csdb/Symbol.xsl" />
+  <xsl:include href="./csdb/Table.xsl" />
   <xsl:include href="./csdb/Title.xsl" />
   
   <xsl:include href="./csdb/dmodule/Caption.xsl" />
@@ -29,6 +30,7 @@
   <xsl:include href="./csdb/dmodule/FrontMatterTitlePage.xsl" />
   <xsl:include href="./csdb/dmodule/FrontMatterList.xsl" />
   <xsl:include href="./csdb/dmodule/Description.xsl" />
+  <xsl:include href="./csdb/dmodule/Crew.xsl" />
 
   <xsl:include href="./group/textElemGroup.xsl" />
   <xsl:include href="./group/reducedParaElemGroup.xsl" />
@@ -45,7 +47,7 @@
 
   <xsl:param name="configuration"/>
   <xsl:param name="object_code"/>
-  <xsl:param name="icnPath" select="/"/>
+  <xsl:param name="icnPath" select="'/images/'"/> <!-- defaultnya nanti ditentukan oleh controller -->
 
   <xsl:template match="dmodule | pm | dml">
     <xsl:if test="$configuration = 'ForIdentStatusVue'">

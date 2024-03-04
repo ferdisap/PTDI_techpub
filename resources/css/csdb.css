@@ -75,6 +75,31 @@ table tbody:before {
   background-image: url('http://127.0.0.1:8000/images/topsecret.png');
 }
 
+.csdbobjectcontent .table{
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.csdbobjectcontent td {
+  vertical-align: top;
+}
+
+.footnote, .footnote * {
+  font-size: 8pt !important;
+}
+.footnote-table * {
+  font-size: 8pt !important;
+}
+.footnote-tfoot tr {
+  border-collapse: collapse;
+}
+.footnote-tfoot tr *{
+  font-size: 8pt !important;
+}
+.footnote-tfoot tr td {
+  padding-top: 0;
+}
+
 /* for General  */
 @layer components {
   .csdbobjectcontent {
@@ -121,7 +146,7 @@ table tbody:before {
     @apply max-h-[24pt]
   }
   .csdbobjectcontent .note .container, .csdbobjectcontent .warning .container, .csdbobjectcontent .caution .container {
-    @apply w-[70%]
+    @apply w-[70%] border-2 border-gray-400 p-[3pt]
   }
 
 
@@ -444,6 +469,36 @@ table tbody:before {
     @apply text-[12pt]
   }
   .description .levelledPara[level='3'] .title, .description .levelledPara[level='4'] .title, .description .levelledPara[level='5'] .title {
+    @apply text-[12pt]
+  }
+}
+
+/* for Description Crew */
+@layer components {
+  .crew > .title {
+    @apply text-[16pt] text-center mb-[10pt]
+  }
+  .descrCrew {
+    @apply 
+    /* border border-red-500 */
+    mx-[1cm]
+  }
+  .descrCrew * {
+    @apply text-[11pt]
+  }
+  .descrCrew .levelledPara {
+    @apply mb-[16pt]
+  }
+  .descrCrew .levelledPara * {
+    @apply text-[11pt]
+  }
+  .descrCrew .levelledPara[level='1'] .title {
+    @apply text-[14pt]
+  }
+  .descrCrew .levelledPara[level='2'] .title {
+    @apply text-[12pt]
+  }
+  .descrCrew .levelledPara[level='3'] .title, .descrCrew .levelledPara[level='4'] .title, .descrCrew .levelledPara[level='5'] .title {
     @apply text-[12pt]
   }
 }

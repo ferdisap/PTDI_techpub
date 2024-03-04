@@ -21,36 +21,28 @@
         </xsl:if>
       </xsl:for-each>
     </xsl:variable>
-    <xsl:variable
-      name="figId">
+    <xsl:variable name="figId">
       <xsl:value-of select="@id" />
     </xsl:variable>
 
-    <div
-      style="text-align:center;page-break-inside: avoid;" id="{$figId}">
+    <div style="text-align:center;page-break-inside: avoid;" id="{$figId}">
       <xsl:call-template name="id" />
       <xsl:call-template name="cgmark" />
 
 
       <xsl:for-each select="graphic">
         <xsl:variable name="graIndex"><xsl:number /></xsl:variable>
-        <xsl:variable
-          name="infoEntityIdent">
-          <xsl:text>/route/api.get_transform_csdb/?filename=</xsl:text>
-          <xsl:value-of select="@infoEntityIdent" />
-          <xsl:text>&#38;project_name=</xsl:text>
-          <xsl:value-of
-            select="$repoName" />
+        <xsl:variable name="infoEntityIdent">
+          <xsl:value-of select="$icnPath"/>
+          <xsl:value-of select="php:function('preg_replace','/[\s\S]+(?=\/ICN)/', '', unparsed-entity-uri(@infoEntityIdent))"/>
         </xsl:variable>
         
-        <table
-          style="text-align:center;">
+        <table style="text-align:center;margin-top:11pt">
           <tr>
             <td>
               <div class="flex justify-center">
-                <img src="{$infoEntityIdent}" class="map" style="max-height:200px">
-                  <xsl:attribute name="v-on_click">References.icnDetail('<xsl:value-of
-                      select="$infoEntityIdent" />')</xsl:attribute>
+                <img src="{$infoEntityIdent}" class="map">
+                  <xsl:attribute name="v-on_click">References.icnDetail('<xsl:value-of select="$infoEntityIdent" />')</xsl:attribute>
                   <xsl:attribute name="id"><xsl:value-of select="@id" /></xsl:attribute>
                   <xsl:call-template name="cgmark" />
                 </img>

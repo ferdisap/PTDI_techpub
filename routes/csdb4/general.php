@@ -54,6 +54,7 @@ Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_tra
 // transform Content
 Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
 
+Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth');
 
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

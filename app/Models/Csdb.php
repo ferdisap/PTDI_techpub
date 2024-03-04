@@ -176,7 +176,8 @@ class Csdb extends Model
       $object_code = join("-", $object_code);
       $xsltproc->setParameter('', 'object_code', $object_code);
     }
-    $xsltproc->setParameter('', 'icnPath', '/foo');
+    // $xsltproc->setParameter('', 'icnPath', '/images/'); // nanti diganti '/csdb/'
+    $xsltproc->setParameter('', 'icnPath', '/csdb/icn'); // nanti diganti '/csdb/'
 
     if ($this->output == 'html') {
       $transformed = str_replace("#ln;", '<br/>', $xsltproc->transformToXml($this->DOMDocument));

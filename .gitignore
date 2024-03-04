@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /storage/csdb/*
+/storage/csdb_tes/*
 /storage/csdb_deleted/*
 /resources/notes/info/README.md
 /vendor
