@@ -18,7 +18,7 @@ Route::get("/api/deletion/all",[CsdbController::class, 'get_deletion_list'])->mi
 Route::post("/api/updateobject/{filename}", [CsdbController::class, 'update'])->middleware('auth')->name('api.update_object');
 Route::post("/api/uploadICN", [CsdbController::class, 'uploadICN'])->middleware('auth')->name('api.upload_ICN');
 
-Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object');
+Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object'); // dipindah ke CsdbServiceController@request_csdb_bject
 Route::get('/api/getdmcstaged/all', [CsdbController::class, 'get_dmc_staged_list'])->middleware('auth')->name('api.get_dmc_staged_list');
 Route::get('/api/geticnstaged/all', [CsdbController::class, 'get_icn_staged_list'])->middleware('auth')->name('api.get_icn_staged_list');
 Route::get('/api/export/{filename}', [CsdbServiceController::class, 'export'])->middleware('auth')->name('api.get_export_file');
@@ -54,7 +54,11 @@ Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_tra
 // transform Content
 Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
 
+// request ICN object
 Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth');
+
+// request XML CSDB Object
+Route::get('/api/object/{filename}', [CsdbServiceController::class, 'request_csdb_object'])->middleware('auth')->name('api.request_csdb_object');
 
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

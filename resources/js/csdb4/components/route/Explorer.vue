@@ -1,13 +1,13 @@
 <script>
 import BottomBar from '../subComponents/BottomBar.vue';
-import ButtonSizingWidth from '../subComponents/ButtonSizingWidth.vue';
 import LisTree from '../componentns/ListTree.vue'
 import Folder from '../componentns/Folder.vue';
 import { objectType } from '../../../helper.js';
 import Preview from '../componentns/Preview.vue';
 import IdentStatus from '../componentns/IdentStatus.vue';
+import Editor from '../componentns/Editor.vue';
 export default {
-  components: { BottomBar, ButtonSizingWidth, LisTree, Folder, Preview, IdentStatus },
+  components: { BottomBar, LisTree, Folder, Preview, IdentStatus, Editor },
   data() {
     return {
       bottomBarItems: {
@@ -31,7 +31,7 @@ export default {
         Editor: {
           iconName: 'ink_pen',
           tooltipName: 'Editor',
-          isShow: true,
+          isShow: false,
         },
         History: {
           iconName: 'history_edu',
@@ -118,9 +118,14 @@ export default {
       // Preview
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
+
+      // Editor
+      this.bottomBarItems.Editor.data = data; // hanya ada path saja di data
+      // console.log(data);
     });
 
     this.emitter.on('clickFolderFromListTree', (data) => {
+      // Folder
       this.bottomBarItems.Folder.isShow = true;
       this.bottomBarItems.Folder.data = data; // hanya ada path saja di data
     });
@@ -132,6 +137,10 @@ export default {
       // Preview
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
+
+      // Editor
+      this.bottomBarItems.Editor.data = data; // hanya ada filename dan path di data
+      // console.log(data);
     });
   }
 }
@@ -150,7 +159,6 @@ export default {
         <!-- col 1 -->
         <div class="flex" :style="[col1Width]">
           <div class="overflow-auto text-nowrap relative h-full w-full">
-            <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'satu')" /> -->
             <LisTree type="allobjects" />
           </div>
           <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
@@ -161,19 +169,16 @@ export default {
           <!-- col 2 -->
           <div class="flex" :style="[col2Width]">
             <div class="overflow-auto text-wrap relative h-full w-full">
-              <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'dua')" /> -->
               <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" />
               <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
+              <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data.filename" text="" />
             </div>
           </div>
-
-          <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
-            @mousedown.prevent="sizing2($event, 'dua')"></div>
+          <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"@mousedown.prevent="sizing2($event, 'dua')"></div>
 
           <!-- col 3 -->
           <div class="flex" :style="[col3Width]">
             <div class="overflow-auto text-wrap relative h-full w-full">
-              <!-- <ButtonSizingWidth :fn="sizing.bind(this, 'tiga')" /> -->
               <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
             </div>
           </div>

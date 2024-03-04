@@ -40,7 +40,7 @@ export default {
     },
   },
   mounted() {
-    this.emitter.on('flash', (data) => this.addBag(data));
+    this.emitter.on('flash', ((data) => this.addBag(data)).bind(this));
   },
 }
 </script>
@@ -52,7 +52,7 @@ export default {
         <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150"
             @click="popBag(info)" info-close-btn>X</button></span>
       </div>
-      {{ info.message }}
+      <!-- {{ info.message }} -->
       <div v-html="replaceFilenameWithURL(info.message)" class="mb-1"></div>
       <div class="mb-2" v-for="(ms, i) in info.errors">
         <h5> {{ i }} </h5>

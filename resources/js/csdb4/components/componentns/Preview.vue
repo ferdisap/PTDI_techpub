@@ -23,7 +23,6 @@ export default {
         }
       })
       this.storingResponse(response);
-      // return this.$props.dataProps.filename;
     },
     transformed(){
       return {
@@ -38,6 +37,17 @@ export default {
       }
     }
   },
+  mounted(){
+    this.emitter.on('updateObjectFromEditor', async (data) => {
+      let response = await axios({
+        route: {
+          name: 'api.get_transformed_contentpreview',
+          data: {filename: this.$props.dataProps.filename}
+        }
+      });
+      this.storingResponse(response);
+    });
+  }
 }
 </script>
 <template>

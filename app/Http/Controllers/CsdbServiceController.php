@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use PrettyXml\Formatter;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
@@ -100,6 +101,22 @@ class CsdbServiceController extends CsdbController
       return Response::make($icn->getFile(),200, [
         'Content-Type' => $icn->getFileinfo()['mime_type'],
       ]);
+    }
+  }
+
+  /**
+   * $request->get('output') = "'model'|default:''";
+   * @return Illuminate\Support\Facades\Response;
+   */
+  public function request_csdb_object(Request $request, string $filename)
+  {
+    // $model = Csdb::where('filename', $filename)->first();
+    $model = true;
+    if($model){
+      $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
+      // $dom = CSDB::importDocument(storage_path('csdb'), $filename);
+      $formatter = new Formatter();
+      return Response::make($formatter->format($dom->saveXML()), 200, ['Content-Type' => 'text/xml']);
     }
   }
 

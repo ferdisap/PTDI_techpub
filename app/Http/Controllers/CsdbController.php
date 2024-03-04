@@ -498,6 +498,7 @@ class CsdbController extends Controller
   // }
 
   /**
+   * DEPRECIATED. dipindah ke CsdbServiceController@request_csdb_object
    * $request->get('output') = "'model'|default:''";
    * @return Illuminate\Support\Facades\Response;
    */
