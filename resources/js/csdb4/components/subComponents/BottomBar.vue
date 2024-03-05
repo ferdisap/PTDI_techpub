@@ -25,7 +25,7 @@ export default {
 </script>
 
 <template>
-  <div :class="['absolute flex h-max w-max  space-x-2 px-2 py-1 border-4 border-blue-500 bg-white rounded-xl', $props.class]">
+  <div :class="['mt-2 absolute flex h-max w-max  space-x-2 px-2 py-1 border-4 border-blue-500 bg-white rounded-xl', $props.class]">
     <div v-for="(item, componentName) in $props.items" :class="['relative h-max w-max flex items-center rounded-lg', item.isShow ? 'bg-blue-500' : 'bg-white']">
       <a @click="click(componentName)" href="#" :class="['material-symbols-outlined bg-transparent  p-2 rounded-md has-tooltip-arrow', item.isShow ? 'text-white': 'text-blue-500']"
         :data-tooltip="item.tooltipName">{{ item.iconName }}</a>

@@ -268,14 +268,14 @@ dialog a,
 /* for IdentStatus Csdb4 vue */
 @layer components {
   .identAndStatusSection {
-    @apply flex flex-wrap justify-center
+    @apply block
   }
 
   .identAndStatusSection * {
     @apply text-sm
   }
   .dmAddress, .dmStatus {
-    @apply inline-block max-w-[45%] border mx-3 p-2 text-wrap
+    @apply inline-block mx-3 p-2 text-wrap
   }
 }
 

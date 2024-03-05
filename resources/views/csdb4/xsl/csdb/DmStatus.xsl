@@ -8,35 +8,60 @@
 
   <xsl:template match="dmStatus">
     <div class="dmStatus">
-      <p>Below the status document: <br />
-        <ul>
-          <li>Security: <xsl:value-of select="security/@securityClassification" /></li>
-          <li>Responsible Company: <xsl:value-of select="responsiblePartnerCompany/enterpriseName" />-<xsl:value-of select="responsiblePartnerCompany/@enterpriseCode" /></li>
-          <li>Originator Company: <xsl:value-of select="originator/enterpriseName" />-<xsl:value-of
-              select="originator/@enterpriseCode" /></li>
-          <li>Applicability Document: <a href="#">
-              <xsl:value-of
-                select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', applicCrossRefTableRef/descendant::dmRefIdent, null, 'DMC-', '')" />
-            </a>
-          </li>
-          <li>Applicability for: 
-            <!-- <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" /> -->
-            FOOBAR
-          </li>
-          <li>BREX Document: <a href="#">
-              <xsl:value-of
-                select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', brexDmRef/descendant::dmRefIdent, null, 'DMC-', '')" />
-            </a>
-          </li>
-          <li>
-            Quality Assurance: <xsl:call-template name="getQualityAssurance" select="/"/>
-          </li>
-          <li>
-            Remarks: <xsl:call-template name="getRemarks" select="/"/>
-          </li>
-        </ul>
-      </p>
+      <p>Below the status document: </p>
+      <div class="flex space-x-2">
+        <div class="border p-2">
+          <b>Status</b>
+          <ul>
+            <li>Security: <xsl:value-of select="security/@securityClassification" /></li>
+            <li>Responsible Company: <xsl:value-of select="responsiblePartnerCompany/enterpriseName" />-<xsl:value-of select="responsiblePartnerCompany/@enterpriseCode" /></li>
+            <li>Originator Company: <xsl:value-of select="originator/enterpriseName" />-<xsl:value-of
+                select="originator/@enterpriseCode" /></li>
+            <li>Applicability Document: <a href="#">
+                <xsl:value-of
+                  select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', applicCrossRefTableRef/descendant::dmRefIdent, null, 'DMC-', '')" />
+              </a>
+            </li>
+            <li>Applicability for: 
+              <!-- <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')" /> -->
+              FOOBAR
+            </li>
+            <li>BREX Document: <a href="#">
+                <xsl:value-of
+                  select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', brexDmRef/descendant::dmRefIdent, null, 'DMC-', '')" />
+              </a>
+            </li>
+            <li>
+              Quality Assurance: <xsl:call-template name="getQualityAssurance" select="/"/>
+            </li>
+            <li>
+              Remarks: <xsl:call-template name="getRemarks" select="/"/>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+    <!-- <div class="dmAddressItems"> 
+      <p>Below is Address document: </p>
+      <div class="flex space-x-2">
+        <div class="border p-2">
+          <b>Issue Date</b>
+          <ul>
+            <li>day: <xsl:value-of select="issueDate/@day"/></li>
+            <li>month: <xsl:value-of select="issueDate/@month"/></li>
+            <li>year: <xsl:value-of select="issueDate/@year"/></li>
+          </ul>  
+        </div>
+        <div class="border p-2">
+          <b>Title</b>
+          <ul>
+            <li>Tech Name: <xsl:value-of select="dmTitle/techName"/></li>
+            <li>Info Name: <xsl:value-of select="dmTitle/infoName"/></li>
+            <li>Info Name Variant: <xsl:value-of select="dmTitle/infoNameVariant"/></li>
+          </ul>
+        </div>
+      </div>
+    </div> -->
   </xsl:template>
 
   <xsl:template name="getQualityAssurance">

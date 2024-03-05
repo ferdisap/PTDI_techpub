@@ -58,7 +58,7 @@ export default {
     },
   },
   mounted() {
-    window.lt = this;
+    // window.lt = this;
     this.get_list(this.$props.type);
     // this.$props.objects agar object bisa di kirim ke Folder.vue.
     // this.$props.isRoot agar pagination tidak di render untuk anakn2nya
