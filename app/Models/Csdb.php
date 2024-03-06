@@ -90,6 +90,19 @@ class Csdb extends Model
     );
   }
 
+  /**
+   * Set path tanpa slash "/" di end string
+   * Get path dengan slash "/" di end string
+   */
+  protected function path(): Attribute
+  {
+    return Attribute::make(
+      set: fn(string $v) => substr($v,-1,1) === '/' ? rtrim($v, "/") : $v,
+      get: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
+    );
+    // dd(substr($str,-1,1 ));
+  }
+
   public function hide(mixed $column)
   {
     if (is_array($column)) {
@@ -219,6 +232,9 @@ class Csdb extends Model
       case 'ident':
         $values = $this->setRemarks_ident($value);
         break;
+      case 'history':
+        $values = $this->setRemarks_history($value);
+        break;
       default:
         $values = $value;
         break;
@@ -229,6 +245,14 @@ class Csdb extends Model
     if ($this->direct_save) {
       $this->save();
     }
+  }
+
+  private function setRemarks_history($value)
+  {
+    $history = $this->remarks['history'] ?? [];
+    if(!$value) return $history;
+    array_push($history, $value);
+    return $history;
   }
 
   private function setRemarks_ident($filename = '')
@@ -260,6 +284,7 @@ class Csdb extends Model
     $remarks_string = join(PHP_EOL, $remarks_string);
     return !empty($remarks_string) ? $remarks_string : '';
   }
+  
 
   /**
    * @return string

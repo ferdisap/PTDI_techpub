@@ -165,6 +165,109 @@ class CsdbController extends Controller
     return $this->ret2(200, $ret->toArray(), ['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
   }
 
+  /**
+   * Tidak untuk ICN. 
+   * Saat ini tidak ada fitur upload file
+   * history code = CRBT
+   * @return Response JSON contain SQL object model with initiator data
+   */
+  public function create(Request $request)
+  {
+    // #1. create dom
+    $proccessid = CSDB::$processid = self::class . "::create";
+    $xmlstring = $request->get('xmleditor');
+    $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
+    if (!$dom) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+    CSDB::$processid = '';
+
+    // #2. validasi filename,rootname dom
+    if ($dom instanceof \DOMDocument) {
+      if (!($validateRootname = CSDB::validateRootname($dom))) {
+        return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+      }
+      $csdb_filename = $validateRootname[1];
+      $ident = $validateRootname[2];
+      if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
+    } else {
+      return $this->ret2(400, ['Failed to create csdb Object.']);
+    }
+
+    // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
+    // if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
+    //   CSDB::validate('XSI', $dom);
+    //   if (CSDB::get_errors(false, 'validateBySchema')) {
+    //     return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
+    //   }
+    // }
+
+    // #4. assign inWork into '01' and issueNumber to the highest+1
+    $domXpath = new \DOMXPath($dom);
+    $code = preg_replace("/_.+/", '', $csdb_filename);
+    $collection = scandir(storage_path('csdb'));
+    $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
+    if (empty($collection)) {
+      $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
+      $issueInfo->setAttribute('issueNumber', '000');
+      $issueInfo->setAttribute('inWork', '01');
+    } else {
+      $collection_issueNumber = [];
+      $collection_inWork = [];
+      array_walk($collection, function ($file, $i) use (&$collection_issueNumber, &$collection_inWork) {
+        $file = explode('_', $file);
+        if (isset($file[1])) {
+          $issueInfo = explode("-", $file[1]);
+          $collection_issueNumber[$i] = $issueInfo[0];
+          $collection_inWork[$i] = $issueInfo[1];
+        }
+      });
+
+      $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
+      $max_in = max($collection_issueNumber);
+      $max_in = array_keys(array_filter($collection_issueNumber, fn ($v) => $v == $max_in))[0]; // output key. bukan value array
+      $max_in = $collection_issueNumber[$max_in];
+      $max_iw = max($collection_inWork);
+      $max_iw = array_keys(array_filter($collection_inWork, fn ($v) => $v == $max_iw))[0]; // output key. bukan value array
+      $max_iw = $collection_inWork[$max_iw];
+      $max_iw++;
+
+      $issueInfo->setAttribute('issueNumber', str_pad($max_in, 3, '0', STR_PAD_LEFT));
+      $issueInfo->setAttribute('inWork', str_pad($max_iw, 2, '0', STR_PAD_LEFT));
+    }
+    $csdb_filename = CSDB::resolve_DocIdent($dom);
+
+    // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
+    // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
+    // sementara ini ICNDocument tidak di validasi oleh brex saat upload
+    if (($ident != 'dml') AND $request->get('brex_validate') == 'on') {
+      CSDB::validate('BREX', $dom, null, storage_path("csdb"));
+      if (CSDB::get_errors(false, 'validateByBrex')) {
+        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
+      }
+    }
+
+    // #6. saving dan menambahkan remarks stage dan remarks
+    $save = Storage::disk('csdb')->put($csdb_filename, $dom->saveXML());
+    if ($save) {
+      $new_csdb_model = ModelsCsdb::create([
+        'filename' => $csdb_filename,
+        'path' => 'csdb',
+        'editable' => 1,
+        'initiator_id' => $request->user()->id,
+      ]);
+      if ($new_csdb_model) {
+        $new_csdb_model->setRemarks('stage', 'unstaged');
+        $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$csdb_filename}.");
+        $new_csdb_model->initiator = [
+          'name' => $request->user()->name,
+          'email' => $request->user()->email,
+        ];
+        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["data" => $new_csdb_model]);
+      }
+    }
+    return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
+  }
+
   ################# NEW for csdb3 #################
   // public function app()
   // {
@@ -176,119 +279,119 @@ class CsdbController extends Controller
    * jika filename code ada yang sama di directory, maka issueNumber tetap(largest) dan inWork largest+1. Ini sama seperti fitur commit
    * issueNumber++ adalah sebuah fitur yang hanya bisa digunakan jika reviewer sudah memvalidasi dan akan di-load ke csdb
    */
-  public function create(Request $request)
-  {
-    // #1. create dom
-    $proccessid = CSDB::$processid = self::class . "::create";
-    $file = $request->file('entity');
-    if ($file) {
-      $dom = new ICNDocument();
-      $dom->load($file->getPath(), $file->getFilename()); // nama, path, dll masih merefer ke tmp file
-    } else {
-      $xmlstring = $request->get('xmleditor');
-      $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
-    }
-    if (!$dom) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
-    CSDB::$processid = '';
+  // public function create(Request $request)
+  // {
+  //   // #1. create dom
+  //   $proccessid = CSDB::$processid = self::class . "::create";
+  //   $file = $request->file('entity');
+  //   if ($file) {
+  //     $dom = new ICNDocument();
+  //     $dom->load($file->getPath(), $file->getFilename()); // nama, path, dll masih merefer ke tmp file
+  //   } else {
+  //     $xmlstring = $request->get('xmleditor');
+  //     $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
+  //   }
+  //   if (!$dom) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+  //   CSDB::$processid = '';
 
-    // #2. validasi filename,rootname dom
-    if ($dom instanceof \DOMDocument) {
-      if (!($validateRootname = CSDB::validateRootname($dom))) {
-        return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
-      }
-      $csdb_filename = $validateRootname[1];
-      $ident = $validateRootname[2];
-      $path = "csdb";
-      if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
-    } elseif ($dom instanceof ICNDocument) {
-      $csdb_filename = $request->file('entity')->getClientOriginalName();
-      if (substr($csdb_filename, 0, 3) != 'ICN') return $this->ret2(400, ["The name of {$csdb_filename} is not accepted."]);
-      $ident = 'infoEntity';
-      $path = "csdb";
-      preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
-      if (empty($matches)) {
-        return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
-      }
-    } else {
-      return $this->ret2(400, ['Failed to create csdb Object.']);
-    }
+  //   // #2. validasi filename,rootname dom
+  //   if ($dom instanceof \DOMDocument) {
+  //     if (!($validateRootname = CSDB::validateRootname($dom))) {
+  //       return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+  //     }
+  //     $csdb_filename = $validateRootname[1];
+  //     $ident = $validateRootname[2];
+  //     $path = "csdb";
+  //     if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
+  //   } elseif ($dom instanceof ICNDocument) {
+  //     $csdb_filename = $request->file('entity')->getClientOriginalName();
+  //     if (substr($csdb_filename, 0, 3) != 'ICN') return $this->ret2(400, ["The name of {$csdb_filename} is not accepted."]);
+  //     $ident = 'infoEntity';
+  //     $path = "csdb";
+  //     preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
+  //     if (empty($matches)) {
+  //       return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
+  //     }
+  //   } else {
+  //     return $this->ret2(400, ['Failed to create csdb Object.']);
+  //   }
 
-    // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
-    if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
-      CSDB::validate('XSI', $dom);
-      if (CSDB::get_errors(false, 'validateBySchema')) {
-        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
-      }
-    }
+  //   // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
+  //   if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
+  //     CSDB::validate('XSI', $dom);
+  //     if (CSDB::get_errors(false, 'validateBySchema')) {
+  //       return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
+  //     }
+  //   }
 
-    // #4. assign inWork into '01' and issueNumber to the highest+1
-    if (($dom instanceof \DOMDocument)) {
-      $domXpath = new \DOMXPath($dom);
-      $code = preg_replace("/_.+/", '', $csdb_filename);
-      $collection = array_diff(scandir(storage_path($path))); // harusnya ga usa pakai array_dif. Nanti di cek lagi
-      $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
-      if (empty($collection)) {
-        $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
-        $issueInfo->setAttribute('issueNumber', '000');
-        $issueInfo->setAttribute('inWork', '01');
-      } else {
-        $collection_issueNumber = [];
-        $collection_inWork = [];
-        array_walk($collection, function ($file, $i) use (&$collection_issueNumber, &$collection_inWork) {
-          $file = explode('_', $file);
-          if (isset($file[1])) {
-            $issueInfo = explode("-", $file[1]);
-            $collection_issueNumber[$i] = $issueInfo[0];
-            $collection_inWork[$i] = $issueInfo[1];
-          }
-        });
+  //   // #4. assign inWork into '01' and issueNumber to the highest+1
+  //   if (($dom instanceof \DOMDocument)) {
+  //     $domXpath = new \DOMXPath($dom);
+  //     $code = preg_replace("/_.+/", '', $csdb_filename);
+  //     $collection = array_diff(scandir(storage_path($path))); // harusnya ga usa pakai array_dif. Nanti di cek lagi
+  //     $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
+  //     if (empty($collection)) {
+  //       $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
+  //       $issueInfo->setAttribute('issueNumber', '000');
+  //       $issueInfo->setAttribute('inWork', '01');
+  //     } else {
+  //       $collection_issueNumber = [];
+  //       $collection_inWork = [];
+  //       array_walk($collection, function ($file, $i) use (&$collection_issueNumber, &$collection_inWork) {
+  //         $file = explode('_', $file);
+  //         if (isset($file[1])) {
+  //           $issueInfo = explode("-", $file[1]);
+  //           $collection_issueNumber[$i] = $issueInfo[0];
+  //           $collection_inWork[$i] = $issueInfo[1];
+  //         }
+  //       });
 
-        $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
-        $max_in = max($collection_issueNumber);
-        $max_in = array_keys(array_filter($collection_issueNumber, fn ($v) => $v == $max_in))[0]; // output key. bukan value array
-        $max_in = $collection_issueNumber[$max_in];
-        $max_iw = max($collection_inWork);
-        $max_iw = array_keys(array_filter($collection_inWork, fn ($v) => $v == $max_iw))[0]; // output key. bukan value array
-        $max_iw = $collection_inWork[$max_iw];
-        $max_iw++;
+  //       $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident/issueInfo")[0];
+  //       $max_in = max($collection_issueNumber);
+  //       $max_in = array_keys(array_filter($collection_issueNumber, fn ($v) => $v == $max_in))[0]; // output key. bukan value array
+  //       $max_in = $collection_issueNumber[$max_in];
+  //       $max_iw = max($collection_inWork);
+  //       $max_iw = array_keys(array_filter($collection_inWork, fn ($v) => $v == $max_iw))[0]; // output key. bukan value array
+  //       $max_iw = $collection_inWork[$max_iw];
+  //       $max_iw++;
 
-        $issueInfo->setAttribute('issueNumber', str_pad($max_in, 3, '0', STR_PAD_LEFT));
-        $issueInfo->setAttribute('inWork', str_pad($max_iw, 2, '0', STR_PAD_LEFT));
-      }
-      $csdb_filename = CSDB::resolve_DocIdent($dom);
-    }
+  //       $issueInfo->setAttribute('issueNumber', str_pad($max_in, 3, '0', STR_PAD_LEFT));
+  //       $issueInfo->setAttribute('inWork', str_pad($max_iw, 2, '0', STR_PAD_LEFT));
+  //     }
+  //     $csdb_filename = CSDB::resolve_DocIdent($dom);
+  //   }
 
-    // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
-    // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
-    // sementara ini ICNDocument tidak di validasi oleh brex saat upload
-    if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
-      CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
-      if (CSDB::get_errors(false, 'validateByBrex')) {
-        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
-      }
-    }
+  //   // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
+  //   // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
+  //   // sementara ini ICNDocument tidak di validasi oleh brex saat upload
+  //   if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
+  //     CSDB::validate('BREX', $dom, null, storage_path("app/{$path}"));
+  //     if (CSDB::get_errors(false, 'validateByBrex')) {
+  //       return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateByBrex')]]);
+  //     }
+  //   }
 
-    // #6. saving dan menambahkan remarks stage dan remarks
-    if ($dom instanceof \DOMDocument) {
-      $save = $dom->C14NFile(storage_path($path) . DIRECTORY_SEPARATOR . $csdb_filename);
-    } else {
-      $save = $file->storeAs("../{$path}", $csdb_filename);
-    }
-    if ($save) {
-      $new_csdb_model = ModelsCsdb::create([
-        'filename' => $csdb_filename,
-        'path' => $path,
-        'editable' => 1,
-        'initiator_id' => $request->user()->id,
-      ]);
-      if ($new_csdb_model) {
-        $new_csdb_model->setRemarks('stage', 'unstaged');
-        $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
-        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
-      }
-    }
-    return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
-  }
+  //   // #6. saving dan menambahkan remarks stage dan remarks
+  //   if ($dom instanceof \DOMDocument) {
+  //     $save = $dom->C14NFile(storage_path($path) . DIRECTORY_SEPARATOR . $csdb_filename);
+  //   } else {
+  //     $save = $file->storeAs("../{$path}", $csdb_filename);
+  //   }
+  //   if ($save) {
+  //     $new_csdb_model = ModelsCsdb::create([
+  //       'filename' => $csdb_filename,
+  //       'path' => $path,
+  //       'editable' => 1,
+  //       'initiator_id' => $request->user()->id,
+  //     ]);
+  //     if ($new_csdb_model) {
+  //       $new_csdb_model->setRemarks('stage', 'unstaged');
+  //       $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+  //       return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
+  //     }
+  //   }
+  //   return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
+  // }
 
   
   /**
@@ -794,6 +897,9 @@ class CsdbController extends Controller
    */
   public function harddelete(Request $request, string $filename)
   {
+    // $str = "aaa/bbb/c";
+    // dd(rtrim($str,'c'));
+    // dd(substr($str,-1,1 ));
     $model = ModelsCsdb::where('filename', $filename)->first();
     $delete = Storage::disk('csdb')->delete($filename);
     if ($delete) {

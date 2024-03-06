@@ -36,9 +36,6 @@ export default {
     setCreate(){
       this.isUpdate = false;
       this.changeText('');
-      
-      console.log(this.$props.filename);
-      console.log(this.isCreate, !this.$props.filename, this.isUpdate);
     },
     async getRaw(filename){
       let response = await axios({
@@ -63,14 +60,8 @@ export default {
         }
       })
       if(response.statusText === 'OK'){
+        this.emitter.emit('createObjectFromEditor', { model: response.data.data });
         // response harus ada SQL object model. 
-        // akan emit event ke Explorer dengan data berupa model, 
-        // kemudian model di push ke Listtree object untuk di update listtree nya
-        // kemudian preview akan reload sesuai dengan model tersebut
-        // kemudian history di reload sesuai model
-        // kemudian Ident status di reload sesuai model
-        // kemudian Folder di reload sesuai path model
-        // item bottomBar yang lain di set false (hide)
       }
     },
     async update() {
@@ -85,7 +76,6 @@ export default {
       })
       if (response.statusText === 'OK') {
         this.emitter.emit('updateObjectFromEditor', { filename: this.$props.filename });
-        // kemudian history, identStatus di set false (hide) agar tidak memberatkan saat live preview
       }
     },
     submit() {
@@ -119,7 +109,7 @@ export default {
   background-color: rgba(0, 0, 0, 0); 
 }
 .cm-editor {
-  height: 700px;
+  height: 600px;
 }
 </style>
 <template>

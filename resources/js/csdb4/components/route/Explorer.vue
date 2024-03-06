@@ -1,13 +1,13 @@
 <script>
 import BottomBar from '../subComponents/BottomBar.vue';
-import LisTree from '../componentns/ListTree.vue'
+import ListTree from '../componentns/ListTree.vue'
 import Folder from '../componentns/Folder.vue';
 import { objectType } from '../../../helper.js';
 import Preview from '../componentns/Preview.vue';
 import IdentStatus from '../componentns/IdentStatus.vue';
 import Editor from '../componentns/Editor.vue';
 export default {
-  components: { BottomBar, LisTree, Folder, Preview, IdentStatus, Editor },
+  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor },
   data() {
     return {
       bottomBarItems: {
@@ -147,6 +147,25 @@ export default {
       this.bottomBarItems.Editor.data = data; // hanya ada filename dan path di data
       // console.log(data);
     });
+
+    this.emitter.on('createObjectFromEditor', (data) => { 
+      // data hanya mengandung model. data.model = {}
+      // kemudian model di push ke Listtree object untuk di update listtree nya
+      // kemudian preview akan reload sesuai dengan model tersebut
+      // kemudian history di reload sesuai model
+      // kemudian Ident status di reload sesuai model
+      // kemudian Folder di reload sesuai path model
+      // item bottomBar yang lain di set false (hide)
+      // alert('emitting to refresh list tree');
+      this.emitter.emit('ListTree-refresh', data);
+    })
+
+    this.emitter.on('updateObjectFromEditor', (data) => {
+      // data berupa filename saja
+      // history, identStatus di set false (hide) agar tidak memberatkan saat live preview
+      // preview refresh view
+      this.emitter.on('Preview-refresh', data);
+    });
   }
 }
 </script>
@@ -165,7 +184,7 @@ export default {
         <!-- col 1 -->
         <div class="flex" :style="[col1Width]">
           <div class="overflow-auto text-nowrap relative h-full w-full">
-            <LisTree type="allobjects" />
+            <ListTree type="allobjects" />
           </div>
           <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
             @mousedown.prevent="sizing2($event, 'satu')"></div>

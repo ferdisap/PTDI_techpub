@@ -38,11 +38,12 @@ export default {
     }
   },
   mounted(){
-    this.emitter.on('updateObjectFromEditor', async (data) => {
+    this.emitter.on('Preview-refresh', async (data) => {
       let response = await axios({
         route: {
           name: 'api.get_transformed_contentpreview',
-          data: {filename: this.$props.dataProps.filename}
+          // data: {filename: this.$props.dataProps.filename}
+          data: {filename: data.filename}
         }
       });
       this.storingResponse(response);
