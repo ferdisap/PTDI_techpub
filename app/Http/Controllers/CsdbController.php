@@ -193,12 +193,12 @@ class CsdbController extends Controller
     }
 
     // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
-    // if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
-    //   CSDB::validate('XSI', $dom);
-    //   if (CSDB::get_errors(false, 'validateBySchema')) {
-    //     return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
-    //   }
-    // }
+    if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
+      CSDB::validate('XSI', $dom);
+      if (CSDB::get_errors(false, 'validateBySchema')) {
+        return $this->ret2(400, [['xmleditor' => CSDB::get_errors(true, 'validateBySchema')]]);
+      }
+    }
 
     // #4. assign inWork into '01' and issueNumber to the highest+1
     $domXpath = new \DOMXPath($dom);

@@ -42,7 +42,6 @@ export default {
       let response = await axios({
         route: {
           name: 'api.get_transformed_contentpreview',
-          // data: {filename: this.$props.dataProps.filename}
           data: {filename: data.filename}
         }
       });

@@ -154,17 +154,23 @@ export default {
       // kemudian preview akan reload sesuai dengan model tersebut
       // kemudian history di reload sesuai model
       // kemudian Ident status di reload sesuai model
-      // kemudian Folder di reload sesuai path model
+      // kemudian Folder di reload sesuai path model. Tapi ini kayaknya tidak perlu. Bikin ribet saja
       // item bottomBar yang lain di set false (hide)
       // alert('emitting to refresh list tree');
-      this.emitter.emit('ListTree-refresh', data);
+      this.emitter.emit('ListTree-refresh', data.model);
+      this.bottomBarItems.IdentStatus.data = data.model;
+      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.data = data.model;
+      this.bottomBarItems.IdentStatus.data = data.model;
+
     })
 
     this.emitter.on('updateObjectFromEditor', (data) => {
       // data berupa filename saja
       // history, identStatus di set false (hide) agar tidak memberatkan saat live preview
       // preview refresh view
-      this.emitter.on('Preview-refresh', data);
+      this.emitter.on('Preview-refresh', data.model);
+      this.emitter.on('IdentStatus-refresh', data.model);
     });
   }
 }

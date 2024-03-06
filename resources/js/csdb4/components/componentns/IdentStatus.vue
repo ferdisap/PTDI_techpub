@@ -19,12 +19,10 @@ export default {
       let response = await axios({
         route: {
           name: 'api.get_transformed_identstatus',
-          // data: {filename: this.$props.dataProps.filename}
-          data: {filename: 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml'}
+          data: {filename: this.$props.dataProps.filename}
         }
       })
       this.storingResponse(response);
-      // return this.$props.dataProps.filename;
     },
     transformed(){
       return {
@@ -38,6 +36,17 @@ export default {
         this.data.transformed = response.data.transformed;
       }
     }
+  },
+  mounted(){
+    this.emitter.on('IdentStatus-refresh', async (data) => {
+      let response = await axios({
+        route: {
+          name: 'api.get_transformed_identstatus',
+          data: {filename: data.filename}
+        }
+      });
+      this.storingResponse(response);
+    });
   },
 }
 </script>

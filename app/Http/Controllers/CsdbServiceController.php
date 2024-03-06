@@ -82,10 +82,12 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-06-00A-141A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
     $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), $filename);
     $csdb_model = new Csdb(); // model dari Csdb.php
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
+    // $csdb_model->filename = $filename; // nanti filename dari csdb.php SQL object
     $csdb_model->DOMDocument = $dom;
     $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
     // dd($transformed);

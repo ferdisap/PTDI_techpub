@@ -120,9 +120,10 @@ export default {
   async mounted() {
     window.lt = this;
     this.emitter.on('ListTree-refresh', (data) => {
-      if (data) { //data berisi model
-        let path = data.model.path;
-        this.data[`${this.$props.type}_list`][path].push(data.model);
+      if (data) { //data adalah model SQL Csdb Object
+        let path = data.path;
+
+        this.data[`${this.$props.type}_list`][path].push(data);
       } else {
         this.get_list(this.$props.type);
       }
@@ -156,14 +157,9 @@ export default {
         methods: {
           clickDetails(element) {
             setTimeout(() => {
-              // window.el = element;
               let path = element.getAttribute('path');
-              console.log(element, path);
               this.$parent.data.open = this.$parent.data.open ?? {};
               this.$parent.data.open[path] = element.open;
-              console.log(this.$parent.data.open);
-              // this.$parent.data.open[el.path]
-              // Object.values(this.$parent.data[`${type}_list_level`]).find(v => v[0] == 'csdb/')['open'] = element.open;
             }, 0);
           }
         },
