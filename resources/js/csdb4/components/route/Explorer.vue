@@ -6,8 +6,9 @@ import { objectType } from '../../../helper.js';
 import Preview from '../componentns/Preview.vue';
 import IdentStatus from '../componentns/IdentStatus.vue';
 import Editor from '../componentns/Editor.vue';
+import History from '../componentns/History.vue';
 export default {
-  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor },
+  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor, History},
   data() {
     return {
       bottomBarItems: {
@@ -26,17 +27,19 @@ export default {
         Analyzer: {
           iconName: 'pie_chart',
           tooltipName: 'Anlayzer',
-          isShow: true,
+          isShow: false,
         },
         Editor: {
           iconName: 'ink_pen',
           tooltipName: 'Editor',
           isShow: false,
+          data: {}
         },
         History: {
           iconName: 'history_edu',
           tooltipName: 'History',
-          isShow: true,
+          isShow: false,
+          data: {},
         },
         Preview: {
           iconName: 'preview',
@@ -125,8 +128,10 @@ export default {
       this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
 
       // Editor
-      this.bottomBarItems.Editor.data = data; // hanya ada path saja di data
-      // console.log(data);
+      this.bottomBarItems.Editor.data = data; // hanya ada filename dan path saja di data
+      
+      // History
+      this.bottomBarItems.History.data = data; // hanya ada filename dan path saja di data
     });
 
     this.emitter.on('clickFolderFromListTree', (data) => {
@@ -145,7 +150,9 @@ export default {
 
       // Editor
       this.bottomBarItems.Editor.data = data; // hanya ada filename dan path di data
-      // console.log(data);
+      
+      // History
+      this.bottomBarItems.History.data = data; // hanya ada filename dan path di data
     });
 
     this.emitter.on('createObjectFromEditor', (data) => { 
@@ -162,15 +169,17 @@ export default {
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data.model;
       this.bottomBarItems.IdentStatus.data = data.model;
+      this.bottomBarItems.History.data = data.model;
 
     })
 
     this.emitter.on('updateObjectFromEditor', (data) => {
-      // data berupa filename saja
+      // data berupa model
       // history, identStatus di set false (hide) agar tidak memberatkan saat live preview
       // preview refresh view
-      this.emitter.on('Preview-refresh', data.model);
-      this.emitter.on('IdentStatus-refresh', data.model);
+      this.emitter.emit('Preview-refresh', data.model);
+      this.emitter.emit('IdentStatus-refresh', data.model);
+      // this.emitter.on('History-refresh', data.model); // sepertinya ini tidak usah. Biar ga kebanyakan request
     });
   }
 }
@@ -202,7 +211,8 @@ export default {
             <div class="overflow-auto text-wrap relative h-full w-full">
               <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" />
               <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
-              <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data ? bottomBarItems.Editor.data.filename : ''" text="" />
+              <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data.filename" text="" />
+              <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename"/>
             </div>
           </div>
           <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"@mousedown.prevent="sizing2($event, 'dua')"></div>

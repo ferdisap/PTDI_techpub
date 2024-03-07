@@ -45,24 +45,18 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-05-00A-141A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-06-00A-141A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
-    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
-    $csdb_model = new Csdb();
-    $csdb_model->DOMDocument = $dom;
-    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+    $model = Csdb::where('filename', $filename)->first();
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
+    // $csdb_model = new Csdb();
+    // $model->DOMDocument = $dom;
+    $model->DOMDocument = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
+    $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
     
     if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
-    dd($transformed);
-
-    if(!($csdb_model = Csdb::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} cannot transformed."]);
-    $csdb_dom = MpubCSDB::importDocument(storage_path('csdb'),$filename);
-    if(!$csdb_dom) return $this->ret2(400, ["failed to transform {$filename}."]);
-    $csdb_model->DOMDocument = $csdb_dom;
-    $csdb_model->objectpath = "/api/csdb";
-    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
-    dd($transformed);
   }
 
   public function get_transformed_contentpreview(Request $request, string $filename)
@@ -81,16 +75,17 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-05-00A-141A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-06-00A-141A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
-    $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+    $model = Csdb::where('filename', $filename)->first();
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), $filename);
-    $csdb_model = new Csdb(); // model dari Csdb.php
+    // $csdb_model = new Csdb(); // model dari Csdb.php
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
-    $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
+    // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     // $csdb_model->filename = $filename; // nanti filename dari csdb.php SQL object
-    $csdb_model->DOMDocument = $dom;
-    $transformed = $csdb_model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
-    // dd($transformed);
+    // $csdb_model->DOMDocument = $dom;
+    $model->DOMDocument = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
+    $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
     if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
@@ -115,11 +110,12 @@ class CsdbServiceController extends CsdbController
    */
   public function request_csdb_object(Request $request, string $filename)
   {
-    // $model = Csdb::where('filename', $filename)->first();
-    $model = true;
+    $model = Csdb::where('filename', $filename)->first();
+    // $model = true;
     if($model){
       // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
-      $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+      // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
+      $dom = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
       // $dom = CSDB::importDocument(storage_path('csdb'), $filename);
       $formatter = new Formatter();
       return Response::make($formatter->format($dom->saveXML()), 200, ['Content-Type' => 'text/xml']);

@@ -75,7 +75,7 @@ export default {
         }
       })
       if (response.statusText === 'OK') {
-        this.emitter.emit('updateObjectFromEditor', { filename: this.$props.filename });
+        this.emitter.emit('updateObjectFromEditor', { model: response.data.data });
       }
     },
     submit() {
@@ -143,6 +143,6 @@ export default {
       <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
       <br />
     </div>
-    <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">Submit</button>
+    <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
   </form>
 </template>

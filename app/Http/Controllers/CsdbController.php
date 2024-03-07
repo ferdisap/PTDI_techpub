@@ -268,6 +268,74 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
   }
 
+  /**
+   * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename
+   * @return Response JSON contain SQL object model with initiator data
+   */
+  public function update(Request $request, string $filename)
+  {
+    // #0. validasi schema
+    $old_filename = $filename;
+    $csdb_object = ModelsCsdb::where('filename', $old_filename)->first();
+    $old_dom = CSDB::importDocument(storage_path('csdb'), $csdb_object->filename);
+    $schema = $old_dom->documentElement->getAttribute('xsi:noNamespaceSchemaLocation');
+    if (str_contains($schema, 'dml.xsd')) {
+      return $this->ret2(400, ["You cannot update object with schema {$schema} here."]);
+    }
+    if (!$csdb_object->editable) {
+      return $this->ret2(400, ["You cannot update object with the editable status is false."]);
+    }
+
+    // #1. create dom
+    $proccessid = CSDB::$processid = self::class . "::update";
+    $xmlstring = $request->get('xmleditor');
+    $csdb_object->DOMDocument = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
+    if (!$csdb_object->DOMDocument) return $this->ret2(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+    
+    // #2. validasi filename,rootname dom
+    CSDB::$processid = '';
+    if (!($validateRootname = CSDB::validateRootname($csdb_object->DOMDocument))) return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+    $new_filename = $validateRootname[1];
+    $ident = $validateRootname[2];
+    if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
+
+    // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
+    if ($request->get('xsi_validate')) {
+      CSDB::validate('XSI', $csdb_object->DOMDocument);
+      if ($error = CSDB::get_errors(false, 'validateBySchema')) {
+        return $this->ret2(400, [['xmleditor' => $error]]);
+      }
+    }
+
+    // #4. tidak bisa mengganti filename. Filename hanya bisa diganti dengan create new, commit or releasing
+    if ($old_filename != $new_filename) {
+      return $this->ret2(400, ["You didn't allow to change element &lt;{$validateRootname[3]}Ident&gt;"]);
+    }
+
+    // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
+    // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
+    // sementara ini ICNDocument tidak di validasi oleh brex saat upload
+    if (($ident != 'dml') AND $request->get('brex_validate') == 'on') {
+      CSDB::validate('BREX', $csdb_object->DOMDocument, null, storage_path('csdb'));
+      if ($error = CSDB::get_errors(true, 'validateByBrex')) {
+        return $this->ret2(400, [['xmleditor' => $error]]);
+      }
+    }
+
+    // #6. tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+    $csdb_object->setRemarks('remarks');
+
+    // #7. saving
+    $save = Storage::disk('csdb')->put($new_filename, $csdb_object->DOMDocument->saveXML());
+    if ($save) {
+      $csdb_object->updated_at = now();
+      $csdb_object->save();
+      $csdb_object->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.");
+      return $this->ret2(200, ["{$new_filename} has been saved."], ["data" => $csdb_object]);
+    }
+    return $this->ret2(400, ["{$new_filename} failed to issue."]);
+  }
+
   ################# NEW for csdb3 #################
   // public function app()
   // {
@@ -458,108 +526,108 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$filename} failed to issue."]);
   }
   
-  /**
-   * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename
-   */
-  public function update(Request $request, string $filename)
-  {
-    // #0. validasi schema
-    $old_filename = $filename;
-    $csdb_object = ModelsCsdb::where('filename', $old_filename)->first();
-    $old_dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
-    $schema = $old_dom->documentElement->getAttribute('xsi:noNamespaceSchemaLocation');
-    if (str_contains($schema, 'dml.xsd')) {
-      return $this->ret2(400, ["You cannot update object with schema {$schema} here."]);
-    }
-    if (!$csdb_object->editable) {
-      return $this->ret2(400, ["You cannot update object with the editable status is false."]);
-    }
+  // /**
+  //  * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename
+  //  */
+  // public function update(Request $request, string $filename)
+  // {
+  //   // #0. validasi schema
+  //   $old_filename = $filename;
+  //   $csdb_object = ModelsCsdb::where('filename', $old_filename)->first();
+  //   $old_dom = CSDB::importDocument(storage_path($csdb_object->path), $csdb_object->filename);
+  //   $schema = $old_dom->documentElement->getAttribute('xsi:noNamespaceSchemaLocation');
+  //   if (str_contains($schema, 'dml.xsd')) {
+  //     return $this->ret2(400, ["You cannot update object with schema {$schema} here."]);
+  //   }
+  //   if (!$csdb_object->editable) {
+  //     return $this->ret2(400, ["You cannot update object with the editable status is false."]);
+  //   }
 
-    // #1. create dom
-    $proccessid = CSDB::$processid = self::class . "::update";
-    $file = $request->file('entity');
-    if ($file) {
-      $dom = new ICNDocument();
-      $dom->load($file->getPath(), $file->getFilename()); // nama, path, dll masih merefer ke tmp file
-    } else {
-      $xmlstring = $request->get('xmleditor');
-      $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
-    }
-    if (!$dom) return $this->ret2(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
-    CSDB::$processid = '';
+  //   // #1. create dom
+  //   $proccessid = CSDB::$processid = self::class . "::update";
+  //   $file = $request->file('entity');
+  //   if ($file) {
+  //     $dom = new ICNDocument();
+  //     $dom->load($file->getPath(), $file->getFilename()); // nama, path, dll masih merefer ke tmp file
+  //   } else {
+  //     $xmlstring = $request->get('xmleditor');
+  //     $dom = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
+  //   }
+  //   if (!$dom) return $this->ret2(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
+  //   CSDB::$processid = '';
 
-    // #2. validasi filename,rootname dom
-    if ($dom instanceof \DOMDocument) {
-      if (!($validateRootname = CSDB::validateRootname($dom))) return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
-      $csdb_filename = $validateRootname[1];
-      $ident = $validateRootname[2];
-      $path = "csdb";
-      if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
-    } elseif ($dom instanceof ICNDocument) {
-      $csdb_filename = $request->file('entity')->getClientOriginalName();
-      $ident = 'infoEntity';
-      $path = "csdb";
-      preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
-      if (empty($matches)) {
-        return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
-      }
-    } else {
-      return $this->ret2(400, ['Failed to create csdb Object.']);
-    }
+  //   // #2. validasi filename,rootname dom
+  //   if ($dom instanceof \DOMDocument) {
+  //     if (!($validateRootname = CSDB::validateRootname($dom))) return $this->ret2(400, [["xmleditor" => CSDB::get_errors(true, 'validateRootname')]]);
+  //     $csdb_filename = $validateRootname[1];
+  //     $ident = $validateRootname[2];
+  //     $path = "csdb";
+  //     if ($ident == 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot update DML here.']]]);
+  //   } elseif ($dom instanceof ICNDocument) {
+  //     $csdb_filename = $request->file('entity')->getClientOriginalName();
+  //     $ident = 'infoEntity';
+  //     $path = "csdb";
+  //     preg_match("/ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+/", $csdb_filename, $matches);
+  //     if (empty($matches)) {
+  //       return $this->ret2(400, ["{$csdb_filename} is not match with pattern: ICN\-[A-Z0-9]{5}\-[A-Z0-9]{5,10}\-[0-9]{3}\-[0-9]{2}.[a-z]+"]);
+  //     }
+  //   } else {
+  //     return $this->ret2(400, ['Failed to create csdb Object.']);
+  //   }
 
-    // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
-    if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
-      CSDB::validate('XSI', $dom);
-      if ($error = CSDB::get_errors(false, 'validateBySchema')) {
-        return $this->ret2(400, [['xmleditor' => $error]]);
-      }
-    }
+  //   // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
+  //   if (($dom instanceof \DOMDocument) and $request->get('xsi_validate')) {
+  //     CSDB::validate('XSI', $dom);
+  //     if ($error = CSDB::get_errors(false, 'validateBySchema')) {
+  //       return $this->ret2(400, [['xmleditor' => $error]]);
+  //     }
+  //   }
 
-    // #4. change new filename (if user change) with old filename
-    if ($dom instanceof \DOMDocument) {
-      $new_filename = CSDB::resolve_DocIdent($dom);
-      if ($old_filename != $new_filename) {
-        return $this->ret2(400, ["You didn't allow to change element &lt;{$validateRootname[3]}Ident&gt;"]);
-        $domXpath = new \DOMXPath($dom);
-        $ident = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
-        $old_domXpath = new \DOMXPath($old_dom);
-        $old_ident = $old_domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
+  //   // #4. change new filename (if user change) with old filename
+  //   if ($dom instanceof \DOMDocument) {
+  //     $new_filename = CSDB::resolve_DocIdent($dom);
+  //     if ($old_filename != $new_filename) {
+  //       return $this->ret2(400, ["You didn't allow to change element &lt;{$validateRootname[3]}Ident&gt;"]);
+  //       $domXpath = new \DOMXPath($dom);
+  //       $ident = $domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
+  //       $old_domXpath = new \DOMXPath($old_dom);
+  //       $old_ident = $old_domXpath->evaluate("//identAndStatusSection/{$validateRootname[3]}Address/{$validateRootname[3]}Ident")[0];
 
-        $ident->replaceWith($dom->importNode($old_ident, true));
-        $dom->saveXML();
-      }
-    }
+  //       $ident->replaceWith($dom->importNode($old_ident, true));
+  //       $dom->saveXML();
+  //     }
+  //   }
 
-    // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
-    // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
-    // sementara ini ICNDocument tidak di validasi oleh brex saat upload
-    if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
-      CSDB::validate('BREX', $dom, null, storage_path($csdb_object->path));
-      if ($error = CSDB::get_errors(true, 'validateByBrex')) {
-        return $this->ret2(400, [['xmleditor' => $error]]);
-      }
-    }
+  //   // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
+  //   // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
+  //   // sementara ini ICNDocument tidak di validasi oleh brex saat upload
+  //   if (($ident != 'dml') and ($dom instanceof \DOMDocument) and $request->get('brex_validate') == 'on') {
+  //     CSDB::validate('BREX', $dom, null, storage_path($csdb_object->path));
+  //     if ($error = CSDB::get_errors(true, 'validateByBrex')) {
+  //       return $this->ret2(400, [['xmleditor' => $error]]);
+  //     }
+  //   }
 
-    // #6. tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
-    if($dom instanceof \DOMDocument){
-      $csdb_object->DOMDocument = $dom;
-      $csdb_object->setRemarks('remarks');
-      $dom = $csdb_object->DOMDocument;
-    }        
+  //   // #6. tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+  //   if($dom instanceof \DOMDocument){
+  //     $csdb_object->DOMDocument = $dom;
+  //     $csdb_object->setRemarks('remarks');
+  //     $dom = $csdb_object->DOMDocument;
+  //   }        
 
-    // #7. saving
-    if ($dom instanceof \DOMDocument) {
-      $save = $dom->C14NFile(storage_path($csdb_object->path) . DIRECTORY_SEPARATOR . $csdb_filename);
-    } else {
-      $save = $file->storeAs("../{$csdb_object->path}", $csdb_filename);
-    }
-    if ($save) {
-      $csdb_object->updated_at = now();
-      $csdb_object->save();
-      return $this->ret2(200, ["{$csdb_filename} has been saved."]);
-    }
-    return $this->ret2(400, ["{$csdb_filename} failed to issue."]);
-  }
+  //   // #7. saving
+  //   if ($dom instanceof \DOMDocument) {
+  //     $save = $dom->C14NFile(storage_path($csdb_object->path) . DIRECTORY_SEPARATOR . $csdb_filename);
+  //   } else {
+  //     $save = $file->storeAs("../{$csdb_object->path}", $csdb_filename);
+  //   }
+  //   if ($save) {
+  //     $csdb_object->updated_at = now();
+  //     $csdb_object->save();
+  //     return $this->ret2(200, ["{$csdb_filename} has been saved."]);
+  //   }
+  //   return $this->ret2(400, ["{$csdb_filename} failed to issue."]);
+  // }
   
 
   /**

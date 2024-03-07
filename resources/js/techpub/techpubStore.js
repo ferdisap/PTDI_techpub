@@ -262,6 +262,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       return (value == null || value === '' || (typeof value === "string" && value.trim().length === 0));
     },
     date(str) {
+      console.log(str);
       return (new Date(str)).toLocaleDateString('en-EN', {
         year: 'numeric', month: 'short', day: 'numeric'
       });

@@ -119,8 +119,8 @@ dialog ol,
 dialog ul, 
 #info ol, 
 #info ul,
-.IdentStatus ol,
-.IdentStatus ul
+.explorer ol,
+.explorer ul
 {
   list-style: auto;
   margin: revert;
@@ -133,8 +133,8 @@ dialog a,
 dialog a,
 #info a,
 #info a,
-.IdentStatus ol
-.IdentStatus ul
+.explorer ol
+.explorer ul
 {
   color: revert;
   text-decoration: revert;
