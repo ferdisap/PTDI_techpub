@@ -181,6 +181,23 @@ export default {
       this.emitter.emit('IdentStatus-refresh', data.model);
       // this.emitter.on('History-refresh', data.model); // sepertinya ini tidak usah. Biar ga kebanyakan request
     });
+
+    this.emitter.on('readFileURLFromEditor', (data) => { // data berisi mime, source, sourceType
+      this.bottomBarItems.Preview.isShow = true;
+      setTimeout(() => {
+        this.emitter.emit('Preview-refresh', data);
+      },0);
+      this.bottomBarItems.IdentStatus.isShow = false;
+      this.bottomBarItems.History.isShow = false;
+      this.bottomBarItems.Analyzer.isShow = false;
+    });
+
+    this.emitter.on('readTextFileFromEditor', () => {
+      this.bottomBarItems.Preview.isShow = false;
+      this.bottomBarItems.IdentStatus.isShow = false;
+      this.bottomBarItems.History.isShow = false;
+      this.bottomBarItems.Analyzer.isShow = false;
+    });
   }
 }
 </script>

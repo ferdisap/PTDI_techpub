@@ -336,6 +336,55 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$new_filename} failed to issue."]);
   }
 
+  /**
+   * untuk ICN. 
+   * Filename = auto generated, based CAGE Codes // ini catatan lama
+   * prefix-cagecode-uniqueIdentifier-issueNumber-sc // ini catatan lama
+   * mungkin filename tidak perlu auto generate, termasuk sequential numbernya agar lebih mudah di maintain
+   * @return Response JSON contain SQL object model with initiator data
+   */
+  public function uploadICN(Request $request)
+  {
+    $request->validate([
+      // "filename" => '', // lakukan validasi ICN filename berdasarkan aturan S1000D dan atau aturan kita
+      'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+        $value = (int)$value;
+        if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
+      }],
+      "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+        $ext = strtolower($value->getClientOriginalExtension());
+        $mime = strtolower($value->getMimeType());
+        if ($ext == 'xml' or str_contains($mime, 'text')) {
+          $fail("You should put the non-text file in {$attribute}.");
+        }
+      }],
+    ]);
+
+    $file = $request->file('entity');
+    // Filename harus sudah tervalidasi, termasuk issueNumber dan sequential Numbernya.
+    $filename = $request->filename; 
+
+    $save = Storage::disk('csdb')->put($filename, $file->getContent());
+    if ($save) {
+      $new_csdb_model = ModelsCsdb::create([
+        'filename' => $filename,
+        'path' => 'csdb',
+        'editable' => '1',
+        'initiator_id' => $request->user()->id,
+      ]);
+      if ($new_csdb_model) {
+        $new_csdb_model->setRemarks('stage', 'unstaged');
+        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$filename}.");
+        $new_csdb_model->initiator = [
+          'name' => $request->user()->name,
+          'email' => $request->user()->email,
+        ];
+        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["data" => $new_csdb_model]);
+      }
+    }
+    return $this->ret2(400, ["{$filename} failed to issue."]);
+  }
+
   ################# NEW for csdb3 #################
   // public function app()
   // {
@@ -462,69 +511,69 @@ class CsdbController extends Controller
   // }
 
   
-  /**
-   * untuk ICN. 
-   * Filename = auto generated, based CAGE Codes
-   * prefix-cagecode-uniqueIdentifier-issueNumber-sc
-   */
-  public function uploadICN(Request $request)
-  {
-    $request->validate([
-      // "cagecode" => 'required',// akan memakai latest cagecode
-      'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-        $value = (int)$value;
-        if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
-      }],
-      "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-        $ext = strtolower($value->getClientOriginalExtension());
-        $mime = strtolower($value->getMimeType());
-        if ($ext == 'xml' or str_contains($mime, 'text')) {
-          $fail("You should put the non-text file in {$attribute}.");
-        }
-      }],
-    ]);
+  // /**
+  //  * untuk ICN. 
+  //  * Filename = auto generated, based CAGE Codes
+  //  * prefix-cagecode-uniqueIdentifier-issueNumber-sc
+  //  */
+  // public function uploadICN(Request $request)
+  // {
+  //   $request->validate([
+  //     // "cagecode" => 'required',// akan memakai latest cagecode
+  //     'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+  //       $value = (int)$value;
+  //       if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
+  //     }],
+  //     "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+  //       $ext = strtolower($value->getClientOriginalExtension());
+  //       $mime = strtolower($value->getMimeType());
+  //       if ($ext == 'xml' or str_contains($mime, 'text')) {
+  //         $fail("You should put the non-text file in {$attribute}.");
+  //       }
+  //     }],
+  //   ]);
 
-    $file = $request->file('entity');
-    $extension = $file->getClientOriginalExtension();
+  //   $file = $request->file('entity');
+  //   $extension = $file->getClientOriginalExtension();
 
-    $prefix = "ICN";
+  //   $prefix = "ICN";
 
-    // mencari nilai uniqueIdentifier terbesar +1;
-    $latestFileName = CSDB::getLatestICNFile(storage_path("csdb"), '0001Z');
-    $latestFileName_array = empty($latestFileName) ? [] : explode("-", $latestFileName);
+  //   // mencari nilai uniqueIdentifier terbesar +1;
+  //   $latestFileName = CSDB::getLatestICNFile(storage_path("csdb"), '0001Z');
+  //   $latestFileName_array = empty($latestFileName) ? [] : explode("-", $latestFileName);
 
-    $cagecode = $request->get('cagecode') ?? $latestFileName_array[1] ?? '';
-    if (preg_replace("/[A-Z0-9]{5}/", '', $cagecode) != '') return $this->ret2(400, ['cagecode' => ['Cage code company must contain capital alphabetical or numerical in five length.']]);
-    if (!$cagecode) return $this->ret2(400, ['cagecode' => ["Cage Code company is required for naming object."]]);
+  //   $cagecode = $request->get('cagecode') ?? $latestFileName_array[1] ?? '';
+  //   if (preg_replace("/[A-Z0-9]{5}/", '', $cagecode) != '') return $this->ret2(400, ['cagecode' => ['Cage code company must contain capital alphabetical or numerical in five length.']]);
+  //   if (!$cagecode) return $this->ret2(400, ['cagecode' => ["Cage Code company is required for naming object."]]);
 
-    $uniqueIdentifier = $latestFileName_array[2] ?? 0;
-    $uniqueIdentifier++;
-    $uniqueIdentifier = str_pad((int) $uniqueIdentifier, 5, '0', STR_PAD_LEFT);
+  //   $uniqueIdentifier = $latestFileName_array[2] ?? 0;
+  //   $uniqueIdentifier++;
+  //   $uniqueIdentifier = str_pad((int) $uniqueIdentifier, 5, '0', STR_PAD_LEFT);
 
-    $issueNumber = $latestFileName_array[3] ?? 0;
-    $issueNumber++;
-    $issueNumber = str_pad((int) $issueNumber, 3, '0', STR_PAD_LEFT);
+  //   $issueNumber = $latestFileName_array[3] ?? 0;
+  //   $issueNumber++;
+  //   $issueNumber = str_pad((int) $issueNumber, 3, '0', STR_PAD_LEFT);
 
-    $securityClassification = str_pad((int) $request->get('securityClassification'), 2, '0', STR_PAD_LEFT);
+  //   $securityClassification = str_pad((int) $request->get('securityClassification'), 2, '0', STR_PAD_LEFT);
 
-    $cagecode = '0001Z';
-    $filename = "{$prefix}-{$cagecode}-{$uniqueIdentifier}-{$issueNumber}-{$securityClassification}.{$extension}";
+  //   $cagecode = '0001Z';
+  //   $filename = "{$prefix}-{$cagecode}-{$uniqueIdentifier}-{$issueNumber}-{$securityClassification}.{$extension}";
 
-    $save = Storage::disk('csdb')->put($filename, $file->getContent());
-    if ($save) {
-      $new_csdb_model = ModelsCsdb::create([
-        'filename' => $filename,
-        'path' => 'csdb',
-        'editable' => '1',
-        'initiator_id' => $request->user()->id,
-      ]);
-      if ($new_csdb_model) {
-        $new_csdb_model->setRemarks('stage', 'unstaged');
-        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
-      }
-    }
-    return $this->ret2(400, ["{$filename} failed to issue."]);
-  }
+  //   $save = Storage::disk('csdb')->put($filename, $file->getContent());
+  //   if ($save) {
+  //     $new_csdb_model = ModelsCsdb::create([
+  //       'filename' => $filename,
+  //       'path' => 'csdb',
+  //       'editable' => '1',
+  //       'initiator_id' => $request->user()->id,
+  //     ]);
+  //     if ($new_csdb_model) {
+  //       $new_csdb_model->setRemarks('stage', 'unstaged');
+  //       return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
+  //     }
+  //   }
+  //   return $this->ret2(400, ["{$filename} failed to issue."]);
+  // }
   
   // /**
   //  * jika user mengubah filename, filename akan kembali seperti asalnya karena update akan mengubah seluruhnya selain filename

@@ -77,6 +77,9 @@ export default {
 </style>
 <template>
   <h1>{{ $props.title }}</h1>
+  <form class="mb-3" enctype="multipart/form-data" @submit.prevent="uploadICN()">
+    <h1>Upload File</h1>
+  </form>
   <form @submit.prevent="submit($route.params.filename)">
     <h1>XML Editor</h1>
     <div v-show="showEditor" class="h-max mt-3">

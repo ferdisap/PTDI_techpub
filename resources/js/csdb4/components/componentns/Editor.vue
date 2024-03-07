@@ -9,6 +9,7 @@ export default {
       techpubStore: useTechpubStore(),
       editor: undefined, // editor.state.doc.toString() // untuk ngambil isi text nya
       isUpdate: false,
+      isFile: false,
       rn_update: 'api.update_object',
       rn_create: 'api.create_object',
     }
@@ -18,6 +19,18 @@ export default {
     getEditor(){
       if(this.editor){
         return this.editor.dom.outerHTML;
+      }
+    },
+    isFileUpload(){
+      if( this.isFile 
+          && (
+            (this.$props.filename && this.$props.filename.slice(0,3) === 'ICN')
+            || !this.isUpdate
+          )
+      ){
+      // if(!this.$props.filename || (this.isFile && this.$props.filename.slice(0,3) === 'ICN')){
+      // if(this.isFile && this.$props.filename.slice(0,3) === 'ICN'){
+        return true;
       }
     },
   },
@@ -51,17 +64,30 @@ export default {
       }
     },
     async create() {
-      const formData = new FormData(event.target);
-      formData.append('xmleditor', this.editor.state.doc.toString());
-      let response = await axios({
-        route: {
-          name: this.rn_create,
-          data: formData,
+      if(!this.isFileUpload){
+        const formData = new FormData(event.target);
+        formData.append('xmleditor', this.editor.state.doc.toString());
+        let response = await axios({
+          route: {
+            name: this.rn_create,
+            data: formData,
+          }
+        })
+        if(response.statusText === 'OK'){
+          this.emitter.emit('createObjectFromEditor', { model: response.data.data });
+          // response harus ada SQL object model. 
         }
-      })
-      if(response.statusText === 'OK'){
-        this.emitter.emit('createObjectFromEditor', { model: response.data.data });
-        // response harus ada SQL object model. 
+      } else {
+        const formData = new FormData(event.target);
+        let response = await axios({
+          route: {
+            name: 'api.upload_ICN',
+            data: formData
+          }
+        });
+        if(response.statusText === 'OK'){
+          // tidak perlu refresh preview karena sudah di readURL
+        }
       }
     },
     async update() {
@@ -80,7 +106,45 @@ export default {
     },
     submit() {
       return !this.isUpdate ? this.create() : this.update();
-    } 
+    },
+    switchTo(name){
+      switch (name) {
+        case 'editor':
+          this.isFile = false; 
+          setTimeout(() => {
+            document.querySelector('#xml-editor-container').innerHTML = this.editor.dom.outerHTML;
+          });
+          break;
+        case 'file-upload':
+          this.isFile = true
+          break;
+        default:
+          break;
+      }
+    },
+    readURL(evt) {
+      let file = evt.target.files[0];
+      if (file) {
+        if (file.type == 'text/xml') {
+          alert('you will be moved to xml editor.');
+          // push route to editor page here
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.switchTo('editor');
+            this.changeText(reader.result);
+            this.emitter.emit('readTextFileFromEditor');
+          }
+          reader.readAsText(file);
+        }
+        else {
+          this.emitter.emit('readFileURLFromEditor', {
+              mime: file.type,
+              sourceType: 'url',
+              source: URL.createObjectURL(file),
+            });
+        }
+      }
+    },
   },
   async mounted() {
     this.editor = new EditorView({
@@ -113,36 +177,68 @@ export default {
 }
 </style>
 <template>
-  <form @submit.prevent="submit">
-    <h1 class="px-3">XML Editor</h1>
-    <a href="#" v-if="!isUpdate" @click.prevent="setUpdate()" class="mx-3 underline text-blue-600">Change to Update</a>
-    <a href="#" v-else @click.prevent="setCreate()" class="mx-3 underline text-blue-600">Change to Create</a>
-    <div class="h-max mt-3">
-      <div class="mb-2 px-3 flex space-x-3">
-        <!-- validation -->
-        <div class="w-1/2">
-          <span class="text-gray-900 dark:text-white text-xl font-bold">Validation</span>
-          <span> Optional.</span>
-          <br />
-          <div class="flex px-3">
-            <div class="block w-2/4">
-              <label for="xsi_validate" class="text-gray-900 dark:text-white text-sm font-light">XSI Validate</label>
-              <br />
-              <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
-            </div>
-            <div class="block w-1/4">
-              <input type="checkbox" id="xsi_validate" name="xsi_validate" checked />
-              <br />
-              <input type="checkbox" id="brex_validate" name="brex_validate" />
+  <div class="editor px-3">
+    <div class="h-[5%] mb-3">
+      <h1 class="text-blue-500 w-full text-center">Editor</h1>
+      <a href="#" v-if="!isUpdate" @click.prevent="setUpdate()" class="block text-center text-sm underline text-blue-600">Switch to Update</a>
+      <a href="#" v-else @click.prevent="setCreate()" class="block text-center text-sm underline text-blue-600">Switch to Create</a>
+    </div>
+
+    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="uploadICN()">
+      <h1>File Upload
+        <a @click="switchTo('editor')" href="#" class="font-normal text-sm underline text-blue-600">Switch to XML editor</a><br/>
+      </h1>
+      <span class="text-sm">The file can be anything as csdb object.</span>
+      <div class="mb-5">
+        <div class="flex space-x-3">
+          <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
+          <input type="checkbox" id="brex_validate" name="brex_validate" />
+        </div>
+        <div class="flex space-x-3 w-full mb-2">
+          <div class="block w-[70%]">
+            <label for="icn-filename" class="text-sm">Filename</label><br/>
+            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
+            <div class="text-red-600" v-html="techpubStore.error('filename')"></div>
+          </div>
+          <div class="block w-auto">
+            <label for="securityClassification" class="text-sm">Security Classification</label><br/>
+            <input type="text" name="securityClassification" placeholder="type the SC code" class="py-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
+            <div class="text-red-600" v-html="techpubStore.error('securityClassification')"></div>
+          </div>
+        </div>
+        <input type="file" id="entity" name="entity" @change="readURL($event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+        <div class="text-red-600" v-html="techpubStore.error('entity')"></div>
+      </div>
+      <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
+    </form>
+    <form v-else @submit.prevent="submit">
+      <h1 class="">XML Editor
+        <a @click="switchTo('file-upload')" href="#" class="font-normal text-sm underline text-blue-600">Switch to file upload</a><br/>
+      </h1>
+      <span class="text-sm">Only text in XML form can be processed.</span>
+      <div class="h-max">
+        <div class="mb-2 flex space-x-3">
+          <div class="w-1/2">
+            <div class="flex px-3">
+              <div class="block w-2/4">
+                <label for="xsi_validate" class="text-gray-900 dark:text-white text-sm font-light">XSI Validate</label>
+                <br />
+                <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
+              </div>
+              <div class="block w-1/4">
+                <input type="checkbox" id="xsi_validate" name="xsi_validate" checked />
+                <br />
+                <input type="checkbox" id="brex_validate" name="brex_validate" />
+              </div>
             </div>
           </div>
         </div>
+        <!-- editor -->
+        <div id="xml-editor-container" class="text-xl mb-2"></div>
+        <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
+        <br />
       </div>
-      <!-- editor -->
-      <div id="xml-editor-container" class="text-xl mb-2"></div>
-      <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
-      <br />
-    </div>
-    <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
-  </form>
+      <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
+    </form>
+  </div>
 </template>

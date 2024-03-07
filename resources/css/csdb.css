@@ -171,6 +171,20 @@ table tbody:before {
   }
 }
 
+/* for IdentStatus Csdb4 vue */
+@layer components {
+  .identAndStatusSection {
+    @apply block
+  }
+
+  .identAndStatusSection * {
+    @apply text-sm
+  }
+  .dmAddress, .dmStatus {
+    @apply inline-block mx-3 p-2 text-wrap
+  }
+}
+
 
 /* for Front Matter */
 @layer components {
