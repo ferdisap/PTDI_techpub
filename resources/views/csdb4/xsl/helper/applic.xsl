@@ -20,6 +20,6 @@
     <xsl:param name="useDisplayName" select="boolean(1)"/>
     <xsl:param name="useDisplayText" select="number(2)"/>
     <xsl:variable name="applicRefId"><xsl:value-of select="@applicRefId"/></xsl:variable>
-    <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_applic', //applic[@id = $applicRefId], $keepOneByOne, $useDisplayName, $useDisplayText)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getApplicability', //applic[@id = $applicRefId], $keepOneByOne, $useDisplayName, $useDisplayText)"/>
   </xsl:template>
 </xsl:transform>

@@ -16,6 +16,7 @@ use PhpParser\Node\Stmt\TryCatch;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
+use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Pdf2\Applicability;
 
 /**
@@ -134,7 +135,15 @@ class Csdb extends Model
   }
 
   ###### CUSTOM #######
+  public CSDBObject $CSDBObject;
+
+  public function __construct(){
+    $this->usesUniqueIds = true; // agar sama jika pakai/tanpa __construct
+    $this->CSDBObject = new CSDBObject("5.0");
+  }
+  
   /**
+   * DEPRECIATED. Dipindah ke Mpub CSDBObject class
    * helper function untuk crew.xsl
    * ini tidak bisa di pindah karena bukan static method
    * * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
@@ -145,6 +154,7 @@ class Csdb extends Model
   }
 
   /**
+   * DEPRECIATED. Dipindah ke Mpub CSDBObject class
    * helper function untuk crew.xsl
    * ini tidak bisa di pindah karena bukan static method
    * sepertinya bisa dijadikan static, sehingga fungsinya lebih baik ditaruh di CsdbModel saja
@@ -154,12 +164,34 @@ class Csdb extends Model
     return $this->lastPositionCrewDrillStep ?? 0;
   }
 
+  /**
+   * DEPRECIATED. diganti oleh $CSDBObject
+   */
   public \DOMDocument $DOMDocument;
+  
+  /**
+   * DEPRECIATED. karena fungsi transform_to_xml dipindah ke Mpub CSDBObject class
+   */
   public string $output = 'html';
+
+  /**
+   * DEPRECIATED. Tidak akan dipakai lagi
+   */
   public string $repoName = '';
+
+  /**
+   * DEPRECIATED. Tidak akan dipakai lagi
+   */
   public string $objectpath = '';
+
+  /**
+   * DEPRECIATED. TIdak akan dipakai lagi
+   */
   public string $absolute_objectpath = '';
 
+  /**
+   * DEPRECIATED. Akan ditaruh di Mpub CSDBObject class
+   */
   public function transform_to_xml($path_xsl, $filename_xsl = '', $configuration = '')
   {
     if (!$filename_xsl) {
@@ -275,7 +307,7 @@ class Csdb extends Model
     if($value instanceof \DOMDocument){
       $domXpath = new \DOMXPath($value);
     } else {
-      $domXpath = new \DOMXPath($this->DOMDocument);
+      $domXpath = new \DOMXPath($this->CSDBObject->document);
     }
     $simpleParas = $domXpath->evaluate('//identAndStatusSection/descendant::remarks/simplePara');
     foreach ($simpleParas as $key => $simplePara) {
@@ -311,7 +343,7 @@ class Csdb extends Model
     // dd($this->DOMDocument);
 
     // if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
-    if (isset($this->DOMDocument) and Storage::disk('csdb')->put($this->filename, $this->DOMDocument->saveXML())) {
+    if (isset($this->CSDBObject->document) and Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML())) {
       $this->setRemarks('ident');
       if ($this->save()) {
         return true;

@@ -8,7 +8,7 @@
     <div class="description">
       <h1 class="title">
         <xsl:value-of
-          select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/dmAddress/descendant::dmTitle)" />
+          select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmTitle', //identAndStatusSection/dmAddress/descendant::dmTitle)" />
       </h1>
       <xsl:apply-templates/>
       <!-- <xsl:apply-templates select="levelledPara"/> -->

@@ -7,8 +7,7 @@
   <xsl:template match="crew">
     <div class="crew">
       <h1 class="title">
-        <xsl:value-of
-          select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', //identAndStatusSection/dmAddress/descendant::dmTitle)" />
+        <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmTitle', //identAndStatusSection/dmAddress/descendant::dmTitle)" />
       </h1>
       <xsl:apply-templates/>
     </div>
@@ -22,7 +21,7 @@
   </xsl:template>
   
   <xsl:template match="crewDrill">
-    <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', 0)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', 0)"/>
     <div>
       <xsl:call-template name="id"/>
       <xsl:call-template name="cgmark"/>
@@ -37,15 +36,15 @@
   <!-- saat ini sama dengan <case> -->
   <xsl:template match="subCrewDrill">
   <xsl:variable name="lastCrewDrillStepNumber">
-    <xsl:value-of select="php:function('App\Models\Csdb::getLastPositionCrewDrillStep')"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getLastPositionCrewDrillStep')"/>
     </xsl:variable>
-    <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', 0)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', 0)"/>
     <div>
       <xsl:call-template name="id"/>
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates/>
     </div>
-    <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', $lastCrewDrillStepNumber)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', $lastCrewDrillStepNumber)"/>
   </xsl:template>
   
   <!-- jika ada if dan else, step selanjutnya akan dinomori sesuai jumlah step terakhir di if atau else -->
@@ -108,11 +107,11 @@
               <xsl:number format="{$format}" value="$qtyPrev + $pos"/>
             </xsl:when>
             <xsl:otherwise>
-              <xsl:number format="{$format}" value="php:function('App\Models\Csdb::getLastPositionCrewDrillStep') + 1"/>
+              <xsl:number format="{$format}" value="php:function('Ptdi\Mpub\Main\CSDBObject::getLastPositionCrewDrillStep') + 1"/>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
-        <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', $position)"/>
+        <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', $position)"/>
   
         <!-- return -->
         <xsl:value-of select="$position"/>
@@ -182,15 +181,15 @@
   
   <xsl:template match="case">
     <xsl:variable name="lastCrewDrillStepNumber">
-      <xsl:value-of select="php:function('App\Models\Csdb::getLastPositionCrewDrillStep')"/>
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getLastPositionCrewDrillStep')"/>
     </xsl:variable>
-    <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', 0)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', 0)"/>
     <div>
       <xsl:call-template name="id"/>
       <xsl:call-template name="cgmark"/>
       <xsl:apply-templates/>
     </div>
-    <xsl:value-of select="php:function('App\Models\Csdb::setLastPositionCrewDrillStep', $lastCrewDrillStepNumber)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::setLastPositionCrewDrillStep', $lastCrewDrillStepNumber)"/>
   </xsl:template>
   
   <xsl:template match="caseCond">

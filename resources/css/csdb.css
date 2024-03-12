@@ -169,6 +169,19 @@ table tbody:before {
   .security .securityClassification-05 {
     @apply text-[--csdb-sc-text-05]
   }
+
+  .em06{
+    @apply underline font-bold
+  }
+  .em07{
+    @apply underline italic
+  }
+  .em08{
+    @apply font-bold italic
+  }
+  .em09 {
+    @apply font-bold italic underline
+  }
 }
 
 /* for IdentStatus Csdb4 vue */

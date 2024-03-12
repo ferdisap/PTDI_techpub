@@ -5,7 +5,7 @@
   
   <xsl:template match="pmRef[ancestor::para]">
     <xsl:variable name="ident">
-      <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmIdent', ., null, 'PMC-', '')"/> 
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDB::resolve_pmIdent', ., 'PMC-', '')"/> 
     </xsl:variable>
     <a>
       <xsl:call-template name="cgmark"/>

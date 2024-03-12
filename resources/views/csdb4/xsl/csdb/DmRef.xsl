@@ -5,14 +5,14 @@
   
   <xsl:template match="dmRef[ancestor::para]">
     <xsl:variable name="ident">
-      <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', ., null, 'DMC-', '')"/> 
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', ., 'DMC-', '')"/> 
     </xsl:variable>
     <a>
       <xsl:call-template name="cgmark"/>
       <xsl:attribute name="href"><xsl:value-of select="$ident"/>,<xsl:value-of select="@referredFragment"/></xsl:attribute>
       <xsl:value-of select="$ident"/>
       <xsl:text>&#160;</xsl:text>
-      <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', dmRefAddressItems/issueDate)"/> 
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', dmRefAddressItems/issueDate)"/> 
     </a>
     
     <!-- jika ancestor bukan para, masih ada elemen security, title, responsible company, dll -->

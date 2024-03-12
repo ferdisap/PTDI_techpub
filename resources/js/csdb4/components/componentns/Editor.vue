@@ -159,12 +159,15 @@ export default {
     }
     else if (this.$props.filename) {
       let raw = await this.getRaw(this.$props.filename);
+      window.raw = raw;
       this.changeText(raw);
     }
 
     if(this.$props.filename){
       this.isUpdate = true;
     }
+
+    // window.raw = this.$props.text;
   }
 }
 </script>
@@ -184,7 +187,7 @@ export default {
       <a href="#" v-else @click.prevent="setCreate()" class="block text-center text-sm underline text-blue-600">Switch to Create</a>
     </div>
 
-    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="uploadICN()">
+    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="submit">
       <h1>File Upload
         <a @click="switchTo('editor')" href="#" class="font-normal text-sm underline text-blue-600">Switch to XML editor</a><br/>
       </h1>
@@ -198,16 +201,16 @@ export default {
           <div class="block w-[70%]">
             <label for="icn-filename" class="text-sm">Filename</label><br/>
             <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
-            <div class="text-red-600" v-html="techpubStore.error('filename')"></div>
+            <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
           </div>
           <div class="block w-auto">
             <label for="securityClassification" class="text-sm">Security Classification</label><br/>
             <input type="text" name="securityClassification" placeholder="type the SC code" class="py-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
-            <div class="text-red-600" v-html="techpubStore.error('securityClassification')"></div>
+            <div class="error text-sm text-red-600" v-html="techpubStore.error('securityClassification')"></div>
           </div>
         </div>
         <input type="file" id="entity" name="entity" @change="readURL($event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-        <div class="text-red-600" v-html="techpubStore.error('entity')"></div>
+        <div class="error text-sm text-red-600" v-html="techpubStore.error('entity')"></div>
       </div>
       <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
     </form>
@@ -235,7 +238,7 @@ export default {
         </div>
         <!-- editor -->
         <div id="xml-editor-container" class="text-xl mb-2"></div>
-        <div class="text-red-600" v-html="techpubStore.error('xmleditor')"></div>
+        <div class="error text-sm text-red-600" v-html="techpubStore.error('xmleditor')"></div>
         <br />
       </div>
       <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>

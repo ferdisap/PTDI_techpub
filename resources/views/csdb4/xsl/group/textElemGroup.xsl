@@ -26,29 +26,31 @@
   <xsl:template match="emphasis">
     <xsl:choose>
       <xsl:when test="@emphasisType = 'em01'">
-        <b><xsl:apply-templates/></b>
+        <b class="{@emphasisType}"><xsl:apply-templates/></b>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em02'">
-        <i><xsl:apply-templates/></i>
+        <i class="{@emphasisType}"><xsl:apply-templates/></i>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em03'">
-        <u><xsl:apply-templates/></u>
+        <u class="{@emphasisType}"><xsl:apply-templates/></u>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em05'">
-        <del><xsl:apply-templates/></del>
+        <del class="{@emphasisType}"><xsl:apply-templates/></del>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em06'"> <!-- underline-bold -->
-        <u style="font-weight:bold"><xsl:apply-templates/></u>
+        <!-- <u class="{@emphasisType}" style="font-weight:bold"><xsl:apply-templates/></u> -->
+        <u class="{@emphasisType}"><xsl:apply-templates/></u>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em07'"> <!-- underline-italic -->
-        <u style="font-style:italic"><xsl:apply-templates/></u>
+        <u class="{@emphasisType}"><xsl:apply-templates/></u>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em08'"> <!-- bold-italic -->
-        <b style="font-style:italic"><xsl:apply-templates/></b>
+        <b class="{@emphasisType}"><xsl:apply-templates/></b>
       </xsl:when>
       <xsl:when test="@emphasisType = 'em09'"> <!-- bold-italic-underline -->
-        <xsl:variable name="fontfamily" select="php:function('Ptdi\Mpub\Pdf2\male\DMC_male::getFontFamily')"/>
-        <u style="font-family:{$fontfamily}b;font-style:italic;"><xsl:apply-templates/></u>
+        <u class="{@emphasisType}"><xsl:apply-templates/></u>
+        <!-- <xsl:variable name="fontfamily" select="php:function('Ptdi\Mpub\Pdf2\male\DMC_male::getFontFamily')"/> -->
+        <!-- <u style="font-family:{$fontfamily}b;font-style:italic;"><xsl:apply-templates/></u> -->
       </xsl:when>
       <xsl:otherwise>
         <span><xsl:apply-templates/></span>

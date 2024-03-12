@@ -67,6 +67,7 @@ export default {
         this.storingResponse(response);
       }
       else if(data.source){
+        this.isICN = true;
         this.icnRenderer(data);
       }
     });

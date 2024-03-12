@@ -15,7 +15,7 @@
         <xsl:apply-templates select="pmCode"/>
         <xsl:apply-templates select="issueInfo"/>
         <xsl:apply-templates select="issueDate"/>
-        <span>Applicability to: <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve', /, '', 'getApplicability', 'true')"/></span>
+        <span>Applicability to: <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getApplicability', applic)"/></span>
       </div>
       <xsl:apply-templates select="productIllustration"/>
       <xsl:apply-templates select="dataRestrictions"/>
@@ -70,18 +70,18 @@
   </xsl:template>
 
   <xsl:template match="pmCode[parent::frontMatterTitlePage]">
-    <h3 class="pmCode"><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', .)"/></h3>
+    <h3 class="pmCode"><xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', .)"/></h3>
   </xsl:template>
 
   <xsl:template match="issueInfo[parent::frontMatterTitlePage]">
     <div class="issueInfo">
-      <h3>Issue No. <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueInfo', .)"/></h3>
+      <h3>Issue No. <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueInfo', .)"/></h3>
     </div>
   </xsl:template>
   
   <xsl:template match="issueDate[parent::frontMatterTitlePage]">
     <div class="issueDate">
-      <h3><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', .)"/></h3>
+      <h3><xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', .)"/></h3>
     </div>
   </xsl:template>
 

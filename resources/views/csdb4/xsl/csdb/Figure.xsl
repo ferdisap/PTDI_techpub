@@ -99,8 +99,7 @@
 
   <xsl:template name="transformICNMetaFile">
     <xsl:param name="filename" />
-    <xsl:for-each
-      select="php:function('Ptdi\Mpub\CSDB::document',/, string(@infoEntityIdent))//icnMetadataFile">
+    <xsl:for-each select="php:function('Ptdi\Mpub\Main\CSDBStatic::document',/, string(@infoEntityIdent))//icnMetadataFile">
       <div class="icnMetadataFile hidden">
         <xsl:attribute name="id">
           <xsl:text>imf-</xsl:text>

@@ -14,6 +14,9 @@ use PrettyXml\Formatter;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
+use Ptdi\Mpub\Main\CSDBError;
+use Ptdi\Mpub\Main\CSDBObject;
+use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Pdf2\Applicability;
 use Ptdi\Mpub\Pdf2\Fonts;
 use Ptdi\Mpub\Pdf2\PMC_PDF;
@@ -21,6 +24,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use XSLTProcessor;
 use ZipStream\ZipStream;
 
+use function PHPUnit\Framework\callback;
 use function Ptdi\Mpub\Pdf2\font_path;
 use function Tes\tes;
 
@@ -47,20 +51,30 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
     $model = Csdb::where('filename', $filename)->first();
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
-    // $csdb_model = new Csdb();
-    // $model->DOMDocument = $dom;
-    $model->DOMDocument = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
-    $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ForIdentStatusVue');
+    $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), ["configuration" => 'ForIdentStatusVue']);
     
-    if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
+    if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
+  // public function tes($param){
+  //   return 'tessas' .$param;
+  //   dd('tes');
+  // }
+
   public function get_transformed_contentpreview(Request $request, string $filename)
   {
+    // $validator = new CSDBValidator('DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml');
+    // dd($validator);
+    // $a = __CLASS__."::tes('aaa')";
+    // $a = callback($a);
+    // $a = call_user_func_array(__CLASS__."::tes",['-aaa']);
+    // dd($a);
+    // $tes = 
+    // dd('aa');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml');
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003A-A_000-01_EN-EN.xml');
@@ -84,9 +98,11 @@ class CsdbServiceController extends CsdbController
     // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     // $csdb_model->filename = $filename; // nanti filename dari csdb.php SQL object
     // $csdb_model->DOMDocument = $dom;
-    $model->DOMDocument = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
-    $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
-    if($error = MpubCSDB::get_errors(false) AND (int)$request->get('ignoreError')){
+    $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    
+    // $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
+    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), ["configuration" => 'ContentPreview']);
+    if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
@@ -97,9 +113,10 @@ class CsdbServiceController extends CsdbController
     // $model = Csdb::where('filename', $filename)->first();
     $model = true;
     if($model){
-      $icn = MpubCSDB::importDocument(storage_path('csdb'), $filename);
-      return Response::make($icn->getFile(),200, [
-        'Content-Type' => $icn->getFileinfo()['mime_type'],
+      $icn = new CSDBObject("5.0");
+      $icn->load(storage_path("csdb/$filename"));
+      return Response::make($icn->document->getFile(),200, [
+        'Content-Type' => $icn->document->getFileinfo()['mime_type'],
       ]);
     }
   }
@@ -115,10 +132,10 @@ class CsdbServiceController extends CsdbController
     if($model){
       // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
       // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
-      $dom = MpubCSDB::importDocument(storage_path('csdb'), $model->filename);
-      // $dom = CSDB::importDocument(storage_path('csdb'), $filename);
+      $CSDBObject = new CSDBObject("5.0");
+      $CSDBObject->load(storage_path("csdb/$filename"));
       $formatter = new Formatter();
-      return Response::make($formatter->format($dom->saveXML()), 200, ['Content-Type' => 'text/xml']);
+      return Response::make($formatter->format($CSDBObject->document->saveXML()), 200, ['Content-Type' => 'text/xml']);
     }
   }
 

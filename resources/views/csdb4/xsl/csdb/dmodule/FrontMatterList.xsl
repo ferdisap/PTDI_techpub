@@ -169,19 +169,17 @@
       <xsl:if test="$frontMatterType = 'fm02'">
         <td class="title">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', descendant::dmRefAddressItems/dmTitle)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmTitle', descendant::dmRefAddressItems/dmTitle)" />
         </td>
-        <td
-          class="code">
+        <td class="code">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
         </td>
-        <td
-          class="issueType">
+        <td class="issueType">
           <xsl:call-template name="issueTypeLEODM" />
         </td>
         <td class="issueDate issueNumber">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', descendant::issueDate)" />, 
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', descendant::issueDate)" />, 
           <xsl:value-of select="descendant::issueInfo/@issueNumber" />
         </td>
         <td class="numberOfPages">
@@ -198,7 +196,7 @@
       <xsl:if test="$frontMatterType = 'fm03'">
         <td class="code">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
         </td>
         <td
           class="reason-for-update">
@@ -209,7 +207,7 @@
       <xsl:if test="$frontMatterType = 'fm04' and $tablename = 'HIGH'">
         <td class="code">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
         </td>
         <td
           class="reason-for-update">
@@ -219,17 +217,16 @@
       <!-- fm04 UPDT -->
       <xsl:if test="$frontMatterType = 'fm04' and $tablename = 'UPDT'">
         <td class="code">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmCode', descendant::dmRefIdent/dmCode)" />
         </td>
         <td class="title">
-          <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_dmTitle', descendant::dmRefAddressItems/dmTitle)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmTitle', descendant::dmRefAddressItems/dmTitle)" />
         </td>
         <td class="issueType">
           <xsl:call-template name="issueTypeUPDT" />
         </td>
         <td class="issueDate issueNumber">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', descendant::issueDate)" />, 
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', descendant::issueDate)" />, 
           <xsl:value-of select="descendant::issueInfo/@issueNumber" />
         </td>        
         <td class="numberOfPages">
@@ -249,10 +246,10 @@
       <xsl:if test="$frontMatterType = 'fm02'">
         <td class="title">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_pmTitle', descendant::pmRefAddressItems/pmTitle)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmTitle', descendant::pmRefAddressItems/pmTitle)" />
         </td>
         <td class="code">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
           <!-- ini nanti ditambah identExtension if extended publication module code is used -->
         </td>
         <td
@@ -261,7 +258,7 @@
         </td>
         <td class="issueDate issueNumber">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', descendant::issueDate)" />, <xsl:value-of
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', descendant::issueDate)" />, <xsl:value-of
             select="descendant::issueInfo/@issueNumber" />
         </td>
         <td class="numberOfPages">
@@ -277,7 +274,7 @@
       <!-- fm03 -->
       <xsl:if test="$frontMatterType = 'fm03'">
         <td class="code">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
           <!-- ini nanti ditambah identExtension if extended publication module code is used -->
         </td>
         <td
@@ -288,18 +285,18 @@
       <!-- fm04 -->
       <xsl:if test="$frontMatterType = 'fm04'">
         <td class="code">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', descendant::pmRefIdent/pmCode)" />
           <!-- ini nanti ditambah identExtension if extended publication module code is used -->
         </td>
         <td class="title">
           <xsl:value-of
-            select="php:function('Ptdi\Mpub\CSDB::resolve_pmTitle', descendant::pmRefAddressItems/pmTitle)" />
+            select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmTitle', descendant::pmRefAddressItems/pmTitle)" />
         </td>
         <td class="issueType">
           <xsl:call-template name="issueTypeUPDT" />
         </td>
         <td class="issueDate issueNumber">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', descendant::issueDate)" />, 
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', descendant::issueDate)" />, 
           <xsl:value-of select="descendant::issueInfo/@issueNumber" />
         </td>        
         <td class="numberOfPages">
@@ -329,7 +326,7 @@
           <xsl:call-template name="issueTypeLEODM" />
         </td>
         <td class="issueDate issueNumber">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_externalPubIssueDate', descendant::externalPubIssueDate)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubIssueDate', descendant::externalPubIssueDate)" />
         </td>
         <td
           class="numberOfPages">
@@ -364,7 +361,7 @@
           <xsl:call-template name="issueTypeUPDT" />
         </td>
         <td class="issueDate issueNumber">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_externalPubIssueDate', descendant::externalPubIssueDate)" />
+          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubIssueDate', descendant::externalPubIssueDate)" />
         </td>
         <td class="numberOfPages">
           <xsl:apply-templates select="numberOfPages" />

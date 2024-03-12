@@ -22,7 +22,8 @@
           <xsl:apply-templates select="//identAndStatusSection/descendant::logo/symbol"/>
         </div>
         <div class="sc">
-          <xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_securityClassification', //identAndStatusSection/descendant::security)"/>
+          <xsl:apply-templates select="//identAndStatusSection/descendant::security"/>
+          <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getSC', 'text')"/> -->
         </div>
         <div class="object-code">
           <xsl:value-of select="$object_code"/>
