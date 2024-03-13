@@ -7,8 +7,9 @@ import Preview from '../componentns/Preview.vue';
 import IdentStatus from '../componentns/IdentStatus.vue';
 import Editor from '../componentns/Editor.vue';
 import History from '../componentns/History.vue';
+import Option from '../componentns/Option.vue';
 export default {
-  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor, History},
+  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor, History, Option},
   data() {
     return {
       bottomBarItems: {
@@ -47,6 +48,13 @@ export default {
           isShow: false,
           data: {}
         },
+        Option: {
+          iconName: 'settings',
+          tooltipName: 'Option',
+          isShow: false,
+          data:{},
+        }
+        ,
       },
       colWidth: {
         satu: { portion: 0.15 },
@@ -132,6 +140,9 @@ export default {
       
       // History
       this.bottomBarItems.History.data = data; // hanya ada filename dan path saja di data
+
+      // Option
+      this.bottomBarItems.Option.data = data; // hanya ada filename dan path saja di data
     });
 
     this.emitter.on('clickFolderFromListTree', (data) => {
@@ -153,6 +164,9 @@ export default {
       
       // History
       this.bottomBarItems.History.data = data; // hanya ada filename dan path di data
+
+      // Option
+      this.bottomBarItems.Option.data = data; // hanya ada filename dan path di data
     });
 
     this.emitter.on('createObjectFromEditor', (data) => { 
@@ -170,6 +184,7 @@ export default {
       this.bottomBarItems.Preview.data = data.model;
       this.bottomBarItems.IdentStatus.data = data.model;
       this.bottomBarItems.History.data = data.model;
+      this.bottomBarItems.Option.data = data.model;
 
     })
 
@@ -198,6 +213,14 @@ export default {
       this.bottomBarItems.History.isShow = false;
       this.bottomBarItems.Analyzer.isShow = false;
     });
+
+    this.emitter.on('ChangePathCSDBObjectFromOption', (data) => {
+      // data adalah model SQL CSDB Object
+      this.emitter.emit('Folder-refresh', data);
+      this.emitter.emit('ListTree-refresh', data); // tidak perlu kirim data karena nanti request ke server
+      // console.log(data);
+      // this.emitter.emit('Folder-updateModel', data);
+    })
   }
 }
 </script>
@@ -237,6 +260,7 @@ export default {
           <!-- col 3 -->
           <div class="flex" :style="[col3Width]">
             <div class="overflow-auto text-wrap relative h-full w-full">
+              <Option v-if="bottomBarItems.Option.isShow" :dataProps="bottomBarItems.Preview.data"/>
               <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
             </div>
           </div>

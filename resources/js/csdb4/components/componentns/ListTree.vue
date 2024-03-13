@@ -1,4 +1,5 @@
 <script>
+import { list } from 'postcss';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 export default {
   data() {
@@ -34,9 +35,20 @@ export default {
         let levels = {};
         for (const v of response.data.data) {
           let path = v.path
-          let l = path.split("/").length - 1; // kurang 1 karena diujung ada "/"
-          levels[l] = levels[l] ?? [];
+          let split = path.split("/");
+          let l = split.length;
+
+          let p = [];
+          for (let i = 1; i <= l; i++) {
+            p.push(split[i-1]);
+            levels[i] = levels[i] ?? [];
+            levels[i].push(p.join("/"));
+          }
           levels[l].indexOf(path) < 0 ? levels[l].push(path) : '';
+
+          // let l = path.split("/").length;
+          // levels[l] = levels[l] ?? [];
+          // levels[l].indexOf(path) < 0 ? levels[l].push(path) : '';
 
           obj[path] = obj[path] || [];
           obj[path].push(v);
@@ -59,11 +71,13 @@ export default {
     createListTreeHTML() {
       const gen_objlist = function (models, style = '') {
         let listobj = '';
-        for (const model of models) {
-          listobj = listobj + `
-                <div class="obj" style="${style}">
-                  <a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
-                </div>              `
+        if(models){ // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
+          for (const model of models) {
+            listobj = listobj + `
+                  <div class="obj" style="${style}">
+                    <a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
+                  </div>`
+          }
         }
         return listobj
       };
@@ -71,43 +85,40 @@ export default {
       const fn = (start_l = 1, leveldata = {}, dataobj = {}, callback, parentPath = '') => {
         let details = '';
         let defaultMarginLeft = 5;
-        // let listobj = '';
         if (leveldata[start_l]) {
-  
+
           for (const path of leveldata[start_l]) { // untuk setiap path 'csdb' dan 'xxx'
-  
+
             let pathSplit = path.split("/");
             let currFolder = pathSplit[start_l - 1];
             pathSplit.splice(pathSplit.indexOf(currFolder), 1);
             let parentP = pathSplit.join("/");
-            // console.log(pathSplit, currFolder, parentP, parentPath);
-  
+
             if (path_yang_sudah.indexOf(path) >= 0
-              || path_yang_sudah.indexOf(parentP) >= 0
-              || parentP !== parentPath
+            || path_yang_sudah.indexOf(parentP) >= 0
+            || parentP !== parentPath // expresi ini membuat path tidak di render
             ) {
               continue;
             }
             let isOpen = this.data.open ? this.data.open[path] : false;
             isOpen = isOpen ? 'open' : '';
-  
+
             // generating folder list
             details = details + `
             <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
               <summary>
                 <a href="#" @click.prevent="$parent.clickFolder({path: '${path}'})">${currFolder}</a>
               </summary>`;
-  
+
             if (leveldata[start_l + 1]) {
-              // details = details + callback(start_l + 1, leveldata, dataobj, callback, path);
               details = details + (callback.bind(this, start_l + 1, leveldata, dataobj, callback, path))();
             }
-  
+
             // generating obj list
             details = details + gen_objlist(dataobj[path], `margin-left:${start_l * 3 + defaultMarginLeft + 2}px;`);
-  
+
             details = details + "</details>"
-  
+
             path_yang_sudah.push(path);
           }
         }
@@ -115,15 +126,46 @@ export default {
       };
 
       this.html = fn(1, this.data[`${this.$props.type}_list_level`], this.data[`${this.$props.type}_list`], fn);
+    },
+
+    /*
+     * akan mendelete jika newModel tidak ada
+    */
+    deleteList(filename) {
+      return Object.entries(this.data[`${this.$props.type}_list`]).find(arr => {
+        let find = arr[1].find(v => v.filename === filename);
+        if (find) {
+          let index = arr[1].indexOf(find);
+          this.data[`${this.$props.type}_list`][arr[0]].splice(index, 1);
+        }
+        return find;
+      });
+    },
+    pushList(model) {
+      let path = model.path;
+      this.data[`${this.$props.type}_list`][path] = this.data[`${this.$props.type}_list`][path] ?? [];
+      this.data[`${this.$props.type}_list`][path].push(model);
+
+      let split = model.path.split("/");
+      let level = split.length;
+      let p = [];
+      for (let i = 1; i <= level; i++) {
+        p.push(split[i-1]);
+        this.data[`${this.$props.type}_list_level`][i] = this.data[`${this.$props.type}_list_level`][i] ?? [];
+        this.data[`${this.$props.type}_list_level`][i].push(p.join("/"));
+      }
+      let foundLevel = Object.entries(this.data[`${this.$props.type}_list_level`]).find(arr =>  arr[0] == level); // output ['level', Array containing path];;
+      if(foundLevel && !(this.data[`${this.$props.type}_list_level`][foundLevel[0]].find(v => v === model.path))){ // agar tidak terduplikasi path nya
+        this.data[`${this.$props.type}_list_level`][foundLevel[0]].push(model.path)
+      } 
     }
   },
   async mounted() {
-    window.lt = this;
     this.emitter.on('ListTree-refresh', (data) => {
       if (data) { //data adalah model SQL Csdb Object
-        let path = data.path;
-
-        this.data[`${this.$props.type}_list`][path].push(data);
+        if (this.deleteList(data.filename)) {
+          this.pushList(data);
+        }
       } else {
         this.get_list(this.$props.type);
       }
@@ -146,7 +188,7 @@ export default {
     level() {
       return this.data[`${this.$props.type}_list_level`] ?? {}
     },
-    tree(){
+    tree() {
       return {
         template: this.html,
         computed: {

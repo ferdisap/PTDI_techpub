@@ -60,5 +60,8 @@ Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_o
 // request XML CSDB Object
 Route::get('/api/object/{filename}', [CsdbServiceController::class, 'request_csdb_object'])->middleware('auth')->name('api.request_csdb_object');
 
+// change Path
+Route::get('api/{filename}/change/path', [CsdbController::class, 'changePath'])->middleware('auth')->name('api.change_object_path');
+
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

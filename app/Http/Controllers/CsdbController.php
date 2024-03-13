@@ -132,7 +132,8 @@ class CsdbController extends Controller
       // di XHR akan ditambah, tapi checknya di dd($request->request->get("path"));. 
       // Kalau di URL, dapetnya bisa langsung di $request->get("path")
       // jika mau dua duanya, checknya pakai $request->path
-      $request->merge(['path' => "csdb/"]); 
+      // $request->merge(['path' => "csdb/"]); 
+      $request->merge(['path' => "csdb"]); 
     }
 
     $this->model = ModelsCsdb::with('initiator');    
@@ -168,6 +169,30 @@ class CsdbController extends Controller
     $ret = $this->model->paginate(100);
     $ret->setPath($request->getUri());
     return $this->ret2(200, $ret->toArray(), ['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
+  }
+
+  /**
+   * @return Response with 'data' = csdb sql model
+   */
+  public function changePath(Request $request, string $filename)
+  {
+    $model = null;
+    $request->merge(['filename' => $filename]);
+    $request->validate([
+      'path' => 'required',
+      'filename' => [function(string $attribute, mixed $value,  Closure $fail) use(&$model){
+        $model = ModelsCsdb::where('filename', $value)->first();
+        if(!$model) $fail("No such $value available in CSDB.");
+      }]
+    ]);
+    
+    if($model AND $model instanceof ModelsCsdb){
+      $model->path = $request->path;
+      if($model->save()){
+        return $this->ret2(200, ['data' => $model], ["Path $filename has been updated."]);
+      }
+    }
+    return $this->ret2(400, ["Failed to update option."]);
   }
 
   /**

@@ -23,18 +23,8 @@ export default {
     },
   },
   computed: {
-    async setObject() {
-      if (this.$props.dataProps.path) {
-        let response = await axios({
-          route: {
-            name: 'api.requestbyfolder.get_allobject_list',
-            data: {
-              path: this.$props.dataProps.path,
-            } // akan receive data: [model1, model2, ...]
-          }
-        });
-        this.storingResponse(response);
-      }
+    setObject() {
+      this.getObjs(this.$props.dataProps.path);
     },
     models() {
       return this.data.models;
@@ -49,7 +39,7 @@ export default {
       // return this.$props.dataProps.path ? this.$props.dataProps.path.slice(0, -1) : 
       // (this.data.current_path ? this.data.current_path.slice(0,-1) : '');
       // return this.$props.dataProps.path.slice(0, -1);
-      return this.data.current_path ? this.data.current_path.slice(0,-1) : '';
+      return this.data.current_path ? this.data.current_path : '';
     },
     pagination() {
       return this.data.paginationInfo;
@@ -64,6 +54,19 @@ export default {
     },
   },
   methods: {
+    async getObjs(path){
+      if (this.$props.dataProps.path) {
+        let response = await axios({
+          route: {
+            name: 'api.requestbyfolder.get_allobject_list',
+            data: {
+              path: path,
+            } // akan receive data: [model1, model2, ...]
+          }
+        });
+        this.storingResponse(response);
+      }
+    },
     storingResponse(response) {
       if (response.statusText === 'OK') {
         this.data.models = response.data.data;
@@ -88,17 +91,9 @@ export default {
     },
     async back(path = undefined) {
       if(!path){
-        path = this.currentPath.replace(/\w+\/?$/, "");
+        path = this.currentPath.replace(/\/\w+\/?$/, "");
       }
-      let response = await axios({
-        route: {
-          name: 'api.requestbyfolder.get_allobject_list',
-          data: {
-            path: path,
-          } // akan receive data: [model1, model2, ...]
-        }
-      });
-      this.storingResponse(response);
+      this.getObjs(path);
       this.data.current_path = path;
     },
     clickFolder(path){
@@ -146,19 +141,45 @@ export default {
         }
       }
     },
-    async search(){
-      let response = await axios({
-        route: {
-          name: 'api.requestbyfolder.get_allobject_list',
-          data: {
-            filenameSearch: this.filenameSearch,
-            path: this.currentPath + "/",
-          } // akan receive data: [model1, model2, ...]
-        }
-      });
-      this.storingResponse(response);
+    search(){
+      this.getObjs(this.currentPath);
     },
+  },
+  mounted(){
+    this.emitter.on('Folder-refresh', (data) => {
+      this.getObjs(this.currentPath);
+    })
+    // this.emitter.on('Folder-updateModel', (data) => {
+    //   // #1. Check apakah path model terbaru sudah ada di this.data.folder atau belum. Tambahkan jika belum
+    //   let curr_folders = Object.assign({},this.data.folders);      
+    //   let curr_models = Object.assign({}, this.data.models);
+    //   let length = Object.values(curr_folders).length;
+    //   if(data.model.path !== this.currentPath){
+    //     Object.values(curr_folders).find(v => {
+    //       if(data.model.path.indexOf(this.currentPath) >= 0){
+    //         let folder = data.model.path.substr(this.currentPath.length + data.model.path.indexOf(this.currentPath) + 1); // ditambah satu untuk menghapus "/" di beginning string;
+    //         let split = folder.split("/");
+    //         if(split.length == 1){
+    //           curr_folders[length] = {path: curr_folders}; // jika nested 1 child saja
+    //         }
+    //         else if(split.length > 1){
+    //           curr_folders[length] = {path: this.currentPath + "/" + split[0]} // jika nested lebih dari 1 child, maka ditambahkan child pertama saja
+    //         }
 
+    //         // #2. removing this.data.model
+    //         let find = Object.entries(curr_models).find(v => v[1].filename === data.model.filename) // output array = [index,value];
+    //         if(find && find.length > 0){
+    //           delete curr_models[find[0]];
+    //         }
+    //       }
+    //       // jika data.model.path termasuk parent dari currentPath, maka tidak perlu ditambahkan ke this.data.folder 
+    //     });
+    //     // this.data.folders = curr_folders;
+    //     // this.data.models = curr_models;
+    //   }
+    //   console.log(window.folders = curr_folders, window.models = curr_models);
+
+    // })
   },
 }
 </script>
@@ -196,22 +217,22 @@ export default {
         </thead>
         <tbody>
           <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
-            <td class="leading-3 text-sm" colspan="5">
+            <td v-if="obj" class="leading-3 text-sm" colspan="5">
               <span class="material-symbols-outlined text-sm mr-1">folder</span>
-              <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-2) }} </a> 
+              <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </a> 
               <!-- min -2 karena diujung folder ada '/' -->
             </td>
           </tr>
           <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
-            <td class="leading-3 text-sm">
+            <td v-if="obj" class="leading-3 text-sm">
               <span class="material-symbols-outlined text-sm mr-1">description</span>
               <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
             </td>
-            <td class="leading-3 text-sm"> {{ obj.path }} </td>
-            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
-            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
-            <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
-            <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
+            <td v-if="obj" class="leading-3 text-sm"> {{ obj.path }} </td>
+            <td v-if="obj" class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
+            <td v-if="obj" class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
+            <td v-if="obj" class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
+            <td v-if="obj" class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
           </tr>        
         </tbody>
       </table>

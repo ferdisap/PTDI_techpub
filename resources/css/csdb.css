@@ -119,7 +119,7 @@ table tbody:before {
     @apply flex justify-between h-[2.5cm] py-2 px-3 border-b-4 border-black mb-[12pt] mx-[1cm]
   }
   .csdbobjectcontent .header *{
-    @apply text-[14pt] font-bold
+    @apply font-bold
   }
   .csdbobjectcontent .logo{
     @apply h-[2cm] w-[30%]
@@ -152,7 +152,7 @@ table tbody:before {
 
   .security * {
     @apply
-    text-[11pt]
+    text-[12pt]
   }
   .security .securityClassification-01 {
     @apply text-[#49a8fabb]
