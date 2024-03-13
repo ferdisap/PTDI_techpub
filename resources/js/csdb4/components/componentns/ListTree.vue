@@ -73,9 +73,10 @@ export default {
         let listobj = '';
         if(models){ // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
           for (const model of models) {
+            let logo = model.filename.substr(0,3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
             listobj = listobj + `
                   <div class="obj" style="${style}">
-                    <a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
+                    ${logo}<a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
                   </div>`
           }
         }
@@ -162,7 +163,8 @@ export default {
   },
   async mounted() {
     this.emitter.on('ListTree-refresh', (data) => {
-      if (data) { //data adalah model SQL Csdb Object
+      //data adalah model SQL Csdb Object
+      if (data) { 
         if (this.deleteList(data.filename)) {
           this.pushList(data);
         }
@@ -171,6 +173,18 @@ export default {
       }
       this.createListTreeHTML();
     });
+
+    this.emitter.on('ListTree-remove', (data) => {
+      //data adalah model SQL Csdb Object
+      this.deleteList(data.filename);
+      this.createListTreeHTML();
+    })
+
+    this.emitter.on('ListTree-add', (data) => {
+      //data adalah model SQL Csdb Object
+      this.pushList(data);
+      this.createListTreeHTML();
+    })
 
     await this.get_list(this.$props.type);
     this.createListTreeHTML();

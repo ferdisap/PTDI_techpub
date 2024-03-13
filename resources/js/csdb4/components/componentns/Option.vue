@@ -1,4 +1,6 @@
 <script>
+import axios from 'axios';
+
 export default {
   data(){
     return {
@@ -21,7 +23,6 @@ export default {
   },
   methods: {
     async submitChangePathForm(evt){
-      // console.log(window.form = new FormData(evt.target));
       let response = await axios({
         route: {
           name: 'api.change_object_path',
@@ -31,9 +32,22 @@ export default {
       if(response.statusText === 'OK'){
         this.emitter.emit('ChangePathCSDBObjectFromOption', response.data.data);
       }
-      // this.emitter.emit('ChangePathCSDBObjectFromOption', {filename: this.modelFilename, path: 'csdb/n219'});
     },
-    submitDeleteForm(){},
+    async submitDeleteForm(){
+      if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: this.modelFilename }))) {
+        return;
+      }
+      let response = await axios({
+        route: {
+          name: 'api.delete_object',
+          data: {filename: this.modelFilename},
+        }
+      });
+      if(response.statusText === 'OK'){
+        console.log(response.data.data2);
+        this.emitter.emit('DeleteCSDBObjectFromOption', [response.data.data, response.data.data2]);
+      }
+    },
     submitIssueeForm(){},
     submitCommitForm(){},
   },
@@ -55,15 +69,15 @@ export default {
           <button type="submit" class="button-violet text-sm inline-block">update</button>
         </div>
       </form>
-      <form @submmit.prevent="submitDeleteForm($event)" class="mb-3 flex">
+      <form @submit.prevent="submitDeleteForm($event)" class="mb-3 flex">
         <label class="text-base">Delete this CSDB Object</label>
         <button type="submit" name="delete" class="button-danger w-max">delete</button>
       </form>      
-      <form @submmit.prevent="submitIssueeForm($event)" class="mb-3 flex">
+      <form @submit.prevent="submitIssueeForm($event)" class="mb-3 flex">
         <label class="text-base">Issue this CSDB Object</label>
         <button type="submit" name="issue" class="button-primary w-max">issue</button>
       </form>
-      <form @submmit.prevent="submitCommitForm($event)" class="mb-3 flex">
+      <form @submit.prevent="submitCommitForm($event)" class="mb-3 flex">
         <label class="text-base">Commit this CSDB Object</label>
         <button type="submit" name="commit" class="button-primary w-max">commit</button>
       </form>

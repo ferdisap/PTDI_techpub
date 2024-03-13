@@ -178,7 +178,7 @@ export default {
       // kemudian Folder di reload sesuai path model. Tapi ini kayaknya tidak perlu. Bikin ribet saja
       // item bottomBar yang lain di set false (hide)
       // alert('emitting to refresh list tree');
-      this.emitter.emit('ListTree-refresh', data.model);
+      this.emitter.emit('ListTree-add', data.model);
       this.bottomBarItems.IdentStatus.data = data.model;
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data.model;
@@ -221,6 +221,18 @@ export default {
       // console.log(data);
       // this.emitter.emit('Folder-updateModel', data);
     })
+
+    this.emitter.on('DeleteCSDBObjectFromOption', (data) => {
+      // data adalah array. data[0] adalah model SQL CSDB Object
+      // data adalah array. data[1] adalah model Deletion Object
+      this.emitter.emit('ListTree-remove', data[0]);
+      this.emitter.emit('Deletion-refresh', data[1]);
+    })
+
+    this.emitter.on('RestoreCSDBobejctFromDeletion', (data) => {
+      // data adalah model SQL CSDB Object
+      this.emitter.emit('ListTree-add', data);
+    })
   }
 }
 </script>
@@ -255,7 +267,7 @@ export default {
               <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename"/>
             </div>
           </div>
-          <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"@mousedown.prevent="sizing2($event, 'dua')"></div>
+          <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize" @mousedown.prevent="sizing2($event, 'dua')"></div>
 
           <!-- col 3 -->
           <div class="flex" :style="[col3Width]">

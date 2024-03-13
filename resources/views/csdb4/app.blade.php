@@ -16,7 +16,7 @@
   @vite('resources/js/csdb4/app.js')
   @vite('resources/css/csdb.css')
   
-  <script type="text/javascript" src="/js/xmlvalidator/xmlvalidate.js-main/dist/worker.js"></script>
+  {{-- <script type="text/javascript" src="/js/xmlvalidator/xmlvalidate.js-main/dist/worker.js"></script> --}}
 
   {{-- ga bisa pakai tooltips dari bootstrap, karena vue component akan dirender dynamic, sementara tooltip harus di initialize setelah component di render. Merepotkan sehingga tidak cocok --}}
   {{-- @vite('resources/scss/style.scss') --}}

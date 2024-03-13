@@ -1,5 +1,6 @@
-import Welcome from './components/route/Welcome.vue'
-import Explorer from './components/route/Explorer.vue'
+import Welcome from './components/route/Welcome.vue';
+import Explorer from './components/route/Explorer.vue';
+import Deletion from './components/route/Deletion.vue';
 
 export default [
   {
@@ -11,6 +12,11 @@ export default [
     name: 'Explorer',
     path: '/csdb4/explorer',
     component: Explorer
+  },
+  {
+    name: 'Deletion',
+    path: '/csdb4/deletion',
+    component: Deletion
   },
   // {
   //   name: 'Staging',

@@ -285,7 +285,7 @@ class CsdbController extends Controller
       if ($new_csdb_model) {
         $new_csdb_model->setRemarks('stage', 'unstaged');
         $new_csdb_model->setRemarks('remarks',$CSDBObject->document); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
-        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$csdb_filename}.");
+        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$csdb_filename}.;{$request->user()->name}");
         $new_csdb_model->initiator = [
           'name' => $request->user()->name,
           'email' => $request->user()->email,
@@ -367,7 +367,7 @@ class CsdbController extends Controller
     // #7. saving
     $save = Storage::disk('csdb')->put($new_filename, $CSDBModel->CSDBObject->document->saveXML());
     if ($save) {
-      $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.");
+      $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.;{$request->user()->name}");
       $CSDBModel->setRemarks('remarks');
       $CSDBModel->updated_at = now();
       $CSDBModel->save();
@@ -450,7 +450,7 @@ class CsdbController extends Controller
       ]);
       if ($new_csdb_model) {
         $new_csdb_model->setRemarks('stage', 'unstaged');
-        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$filename}.");
+        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$filename}.;{$request->user()->name}");
         $new_csdb_model->initiator = [
           'name' => $request->user()->name,
           'email' => $request->user()->email,
@@ -459,6 +459,156 @@ class CsdbController extends Controller
       }
     }
     return $this->ret2(400, ["{$filename} failed to upload."], CSDBError::getErrors());
+  }
+
+  /**
+   * akan memindahkan file ke folder csdb_deleted.
+   * Object yang sudah di delete, tidak akan bisa diapa-apain kecuali di download
+   * Object hanya bisa di delete jika remark->stage != staged
+   * filename akan ditambah dengan 'filename.xml__timestamp_microsecond'
+   * @return Response with data = model SQL object, data2 = Deletion Object
+   */
+  public function delete(Request $request, string $filename)
+  {
+    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
+    if(!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
+
+    
+    if ($model->initiator->id = !$request->user()->id) return $this->ret2(400, ["Deleting {$filename} must be done by {$model->initiator->name}"]);
+    if (isset($model->remarks['stage']) AND $model->remarks['stage'] === 'staged') return $this->ret2(400, ["{$filename} has been staged and cannot be deleted."]);
+    
+    $model->hide(false);
+    $model->direct_save = false;
+    $time = Carbon::now()->timezone(7);
+    $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);    
+    
+    $model->setRemarks('history', Carbon::now().";DELL;Object with filename {$filename} is deleted.;{$request->user()->name}");
+    $model->save();
+
+    $model_meta = $model->toArray();
+    $insert = [
+      "filename" => $new_filename,
+      "deleter_id" => $request->user()->id,
+      "meta" => collect($model_meta),
+      "created_at" => Carbon::now(7),
+    ];
+    $create_deleted_db = fn () => DB::table('csdb_deleted')->insert($insert); // $insert ditaruh diluar agar bisa dikirim sebagai response, karena juga fungsi insert() ini returning boolean
+    $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
+    
+    if(!($create_deleted_db() AND $move_file())) return $this->ret2(400,["{$filename} fails to delete"]);
+    $model->delete();    
+    return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."], ['data' => $model], ['data2' => $insert]);
+  }
+
+  /**
+   * Restore the soft deleted @delete() csdb object.
+   * @return Response contain data is model SQL CSDB Object
+   */
+  public function restore(Request $request, string $filename)
+  {
+    // #1. get deleted model
+    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+    $deleted_model = $deleted_QB->first();
+    if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
+    if($request->user()->id != $deleted_model->deleter_id) return $this->ret2(400, ["Only {$request->user()->name} can restore."]);
+    
+    $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
+      $stdClass = get_object_vars($stdClass);
+      foreach($stdClass as $k => $v){
+        if(is_object($v)) $stdClass[$k] = $fn($v, $fn);
+      }
+      return $stdClass;
+    };
+    $meta = $meta(json_decode($deleted_model->meta), $meta);
+
+    // #2. restore by re-creating ModelsCsdb and move file from path 'csdb_deleted' to 'csdb'
+    $message = "{$filename} fail to restore.";
+    $model = new ModelsCsdb();
+    $restore = function() use($meta, $deleted_QB, $filename, &$message, $request, &$model){
+      if(ModelsCsdb::find($meta['id'])){
+        $message = "Failed to restore due to duplication filename. See {$filename}.";
+        return false;
+      }
+      $model = ModelsCsdb::create($meta);
+      if($model){
+        $isDel = $deleted_QB->delete();
+        if($isDel){
+          $new_filename = preg_replace("/__[\S]+/",'',$filename);
+          $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
+          if($is_move_file) {
+            $message = "{$filename} has been restored";
+            $model->setRemarks('history', Carbon::now().";RSTR;Object with filename {$filename} is deleted.;{$request->user()->name}");
+            $model->save();
+            return $new_filename;
+          };
+        }
+        $model->delete(); // delete model jika gagal save / gagal move file;
+      }
+      return false;
+    };
+    // #3. return
+    if($filename = $restore()){
+      // $filename = preg_replace("/__[\S]+/",'',$filename);
+      return $this->ret2(200, [$message], ['data' => $model]);
+    } else {
+      // $filename = preg_replace("/__[\S]+/",'',$filename);
+      return $this->ret2(400, [$message]);
+    }
+  }
+
+  /**
+   * jika ada filenamSearch, default pencarian adalah column 'filename'
+   */
+  public function get_deletion_list(Request $request)
+  {
+    $messages = [];
+    $this->model = DB::table('csdb_deleted');
+    $this->model->where('deleter_id', $request->user()->id);    
+    if ($request->get('filenameSearch')) {
+      $this->search($request->get('filenameSearch'));
+    }
+    $ret = $this->model
+      ->latest()
+      ->paginate(15);
+    $ret->setPath($request->getUri());
+
+    foreach($ret->items() as $k => $v){
+      $v->meta = json_decode($v->meta);
+    }
+    return $this->ret2(200, $messages, $ret->toArray());
+  }
+
+  public function get_deletion_object(Request $request, string $filename)
+  {
+    $DeletionObject = DB::table('csdb_deleted')->first();
+    if($DeletionObject){
+      $file = Storage::disk('csdb_deleted')->get($filename);
+      $mime = Storage::disk('csdb_deleted')->mimeType($filename);
+      return Response::make($file, 200, [
+        'Content-Type' => $mime,
+      ]);
+    }
+  }
+
+  /**
+   * @return Response with data = Deletion Object;
+   */
+  public function permanentDelete(Request $request)
+  {
+    $filename = $request->get('filename');
+    $message = 'There is no need to be permanently deleted.';
+    $code = 400;
+    if(!$filename){
+      return $this->ret2($code, [$message]);
+    }
+    $data = [];
+    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+    if($deleted_QB->delete() AND Storage::disk('csdb_deleted')->delete($filename)){
+      $code = 200;
+      $message = "{$filename} has been permanently deleted.";
+      $data = ['data' => $deleted_QB];
+    }
+    return $this->ret2($code, [$message], $data);
   }
 
   ################# NEW for csdb3 #################
@@ -959,131 +1109,128 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$filename} failed to open edit."]);
   }
 
-  /**
-   * jika ada filenamSearch, default pencarian adalah column 'filename'
-   */
-  public function get_deletion_list(Request $request)
-  {
-    $messages = [];
-    $this->model = DB::table('csdb_deleted');
-    $this->model->where('deleter_id', $request->user()->id);    
-    if ($request->get('filenameSearch')) {
-      $this->search($request->get('filenameSearch'));
-    }
-    $ret = $this->model
-      ->latest()
-      ->paginate(15);
-    $ret->setPath($request->getUri());
+  // /**
+  //  * jika ada filenamSearch, default pencarian adalah column 'filename'
+  //  */
+  // public function get_deletion_list(Request $request)
+  // {
+  //   $messages = [];
+  //   $this->model = DB::table('csdb_deleted');
+  //   $this->model->where('deleter_id', $request->user()->id);    
+  //   if ($request->get('filenameSearch')) {
+  //     $this->search($request->get('filenameSearch'));
+  //   }
+  //   $ret = $this->model
+  //     ->latest()
+  //     ->paginate(15);
+  //   $ret->setPath($request->getUri());
 
-    foreach($ret->items() as $k => $v){
-      $v->meta = json_decode($v->meta);
-    }
-    return $this->ret2(200, $messages, $ret->toArray());
-  }
+  //   foreach($ret->items() as $k => $v){
+  //     $v->meta = json_decode($v->meta);
+  //   }
+  //   return $this->ret2(200, $messages, $ret->toArray());
+  // }
 
-  /**
-   * akan memindahkan file ke folder csdb_deleted.
-   * Object yang sudah di delete, tidak akan bisa diapa-apain kecuali di download
-   * Object hanya bisa di delete jika remark->stage != unstaged
-   * filename akan ditambah dengan 'filename.xml__timestamp_microsecond'
-   */
-  public function delete(Request $request, string $filename)
-  {
-    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
-    if (!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
+  // /**
+  //  * akan memindahkan file ke folder csdb_deleted.
+  //  * Object yang sudah di delete, tidak akan bisa diapa-apain kecuali di download
+  //  * Object hanya bisa di delete jika remark->stage != staged
+  //  * filename akan ditambah dengan 'filename.xml__timestamp_microsecond'
+  //  */
+  // public function delete(Request $request, string $filename)
+  // {
+  //   $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
+  //   if (!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
 
-    $model->hide(false);
-    $model_meta = $model->toArray();
+  //   $model->hide(false);
+  //   $model_meta = $model->toArray();
     
-    if ($model->initiator->id = !$request->user()->id) return $this->ret2(400, ["Deleting {$filename} must be done by {$model->initiator->name}"]);
-    if (isset($model->remarks['stage']) and $model->remarks['stage'] == 'staged') return $this->ret2(400, ["{$filename} has been staged and cannot be deleted."]);
+  //   if ($model->initiator->id = !$request->user()->id) return $this->ret2(400, ["Deleting {$filename} must be done by {$model->initiator->name}"]);
+  //   if (isset($model->remarks['stage']) and $model->remarks['stage'] === 'staged') return $this->ret2(400, ["{$filename} has been staged and cannot be deleted."]);
     
-    $model->direct_save = false;
-    $time = Carbon::now()->timezone(7);
-    $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);
-    
-    
-    $create_deleted_db = fn () => DB::table('csdb_deleted')->insert([
-      "filename" => $new_filename,
-      "deleter_id" => $request->user()->id,
-      "meta" => collect($model_meta),
-      "created_at" => Carbon::now(7),
-    ]);
-    $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
-    
-    if(!($create_deleted_db() AND $move_file())) return $this->ret2(400,["{$filename} fails to delete"]);
-
-    $model->delete();    
-    return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."]);
-  }
-
-  /**
-   * Restore the soft deleted @delete() csdb object.
-   */
-  public function restore(Request $request, string $filename)
-  {
-    // #1. get deleted model
-    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
-    $deleted_model = $deleted_QB->first();
-    if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
-    $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
-      $stdClass = get_object_vars($stdClass);
-      foreach($stdClass as $k => $v){
-        if(is_object($v)) $stdClass[$k] = $fn($v, $fn);
-      }
-      return $stdClass;
-    };
-    $meta = $meta(json_decode($deleted_model->meta), $meta);
-
-    // #2. restore by re-creating ModelsCsdb and move file from path 'csdb_deleted' to 'csdb'
-    $message = "{$filename} fail to restore.";
-    $restore = function() use($meta, $deleted_QB, $filename, &$message){
-      $model = ModelsCsdb::find($meta['id']);
-      if($model){
-        $message = "Failed to restore due to duplication filename. See {$filename}.";
-        return false;
-      } else {
-        $model = ModelsCsdb::create($meta);
-      }
-      $isDel = $deleted_QB->delete();
-      if($isDel){
-        $new_filename = preg_replace("/__[\S]+/",'',$filename);
-        $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
-        if($is_move_file) {
-          $message = "{$filename} has been restored";
-          return $new_filename;
-        };
-      }
-      return false;
-    };
-    // #3. return
-    if($filename = $restore()){
-      $filename = preg_replace("/__[\S]+/",'',$filename);
-      return $this->ret2(200, [$message]);
-    } else {
-      $filename = preg_replace("/__[\S]+/",'',$filename);
-      return $this->ret2(400, [$message]);
-    }
-  }
-
-  public function permanentDelete(Request $request)
-  {
-    $filename = $request->get('filename');
-    $message = 'There is no need to be permanently deleted.';
-    $code = 400;
-    if(!$filename){
-      return $this->ret2($code, [$message]);
-    }
-    $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
-    if($deleted_QB->delete() AND Storage::disk('csdb_deleted')->delete($filename)){
-      $code = 200;
-      $message = "{$filename} has been permanently deleted.";
-    }
-    return $this->ret2($code, [$message]);
+  //   $model->direct_save = false;
+  //   $time = Carbon::now()->timezone(7);
+  //   $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);
     
     
+  //   $create_deleted_db = fn () => DB::table('csdb_deleted')->insert([
+  //     "filename" => $new_filename,
+  //     "deleter_id" => $request->user()->id,
+  //     "meta" => collect($model_meta),
+  //     "created_at" => Carbon::now(7),
+  //   ]);
+  //   $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
+    
+  //   if(!($create_deleted_db() AND $move_file())) return $this->ret2(400,["{$filename} fails to delete"]);
 
-  }
+  //   $model->delete();    
+  //   return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."]);
+  // }
+
+  // /**
+  //  * Restore the soft deleted @delete() csdb object.
+  //  */
+  // public function restore(Request $request, string $filename)
+  // {
+  //   // #1. get deleted model
+  //   $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+  //   $deleted_model = $deleted_QB->first();
+  //   if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
+  //   $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
+  //     $stdClass = get_object_vars($stdClass);
+  //     foreach($stdClass as $k => $v){
+  //       if(is_object($v)) $stdClass[$k] = $fn($v, $fn);
+  //     }
+  //     return $stdClass;
+  //   };
+  //   $meta = $meta(json_decode($deleted_model->meta), $meta);
+
+  //   // #2. restore by re-creating ModelsCsdb and move file from path 'csdb_deleted' to 'csdb'
+  //   $message = "{$filename} fail to restore.";
+  //   $restore = function() use($meta, $deleted_QB, $filename, &$message){
+  //     $model = ModelsCsdb::find($meta['id']);
+  //     if($model){
+  //       $message = "Failed to restore due to duplication filename. See {$filename}.";
+  //       return false;
+  //     } else {
+  //       $model = ModelsCsdb::create($meta);
+  //     }
+  //     $isDel = $deleted_QB->delete();
+  //     if($isDel){
+  //       $new_filename = preg_replace("/__[\S]+/",'',$filename);
+  //       $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
+  //       if($is_move_file) {
+  //         $message = "{$filename} has been restored";
+  //         return $new_filename;
+  //       };
+  //     }
+  //     return false;
+  //   };
+  //   // #3. return
+  //   if($filename = $restore()){
+  //     $filename = preg_replace("/__[\S]+/",'',$filename);
+  //     return $this->ret2(200, [$message]);
+  //   } else {
+  //     $filename = preg_replace("/__[\S]+/",'',$filename);
+  //     return $this->ret2(400, [$message]);
+  //   }
+  // }
+
+  // public function permanentDelete(Request $request)
+  // {
+  //   $filename = $request->get('filename');
+  //   $message = 'There is no need to be permanently deleted.';
+  //   $code = 400;
+  //   if(!$filename){
+  //     return $this->ret2($code, [$message]);
+  //   }
+  //   $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
+  //   if($deleted_QB->delete() AND Storage::disk('csdb_deleted')->delete($filename)){
+  //     $code = 200;
+  //     $message = "{$filename} has been permanently deleted.";
+  //   }
+  //   return $this->ret2($code, [$message]);
+  // }
 
   /**
    * hanya digunakan untuk developersaja, tidak untuk end-user

@@ -24,7 +24,9 @@ export default {
   },
   computed: {
     setObject() {
-      this.getObjs(this.$props.dataProps.path);
+      if (this.$props.dataProps.path) {
+        this.getObjs({path: this.$props.dataProps.path});
+      }
     },
     models() {
       return this.data.models;
@@ -54,18 +56,14 @@ export default {
     },
   },
   methods: {
-    async getObjs(path){
-      if (this.$props.dataProps.path) {
-        let response = await axios({
-          route: {
-            name: 'api.requestbyfolder.get_allobject_list',
-            data: {
-              path: path,
-            } // akan receive data: [model1, model2, ...]
-          }
-        });
-        this.storingResponse(response);
-      }
+    async getObjs(data = {}){
+      let response = await axios({
+        route: {
+          name: 'api.requestbyfolder.get_allobject_list',
+          data: data// akan receive data: [model1, model2, ...]
+        }
+      });
+      this.storingResponse(response);
     },
     storingResponse(response) {
       if (response.statusText === 'OK') {
@@ -86,14 +84,16 @@ export default {
       }
       if (url) {
         let response = await axios.get(url);
-        this.storingResponse(response);
+        if(response.statusText === 'OK'){
+          this.storingResponse(response);
+        }
       }
     },
     async back(path = undefined) {
       if(!path){
         path = this.currentPath.replace(/\/\w+\/?$/, "");
       }
-      this.getObjs(path);
+      this.getObjs({path: path});
       this.data.current_path = path;
     },
     clickFolder(path){
@@ -142,12 +142,12 @@ export default {
       }
     },
     search(){
-      this.getObjs(this.currentPath);
+      this.getObjs({path: this.currentPath, filenameSearch: this.filenameSearch});
     },
   },
   mounted(){
     this.emitter.on('Folder-refresh', (data) => {
-      this.getObjs(this.currentPath);
+      this.getObjs({path: this.currentPath});
     })
     // this.emitter.on('Folder-updateModel', (data) => {
     //   // #1. Check apakah path model terbaru sudah ada di this.data.folder atau belum. Tambahkan jika belum
@@ -217,22 +217,22 @@ export default {
         </thead>
         <tbody>
           <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
-            <td v-if="obj" class="leading-3 text-sm" colspan="5">
+            <td class="leading-3 text-sm" colspan="5">
               <span class="material-symbols-outlined text-sm mr-1">folder</span>
               <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </a> 
               <!-- min -2 karena diujung folder ada '/' -->
             </td>
           </tr>
           <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
-            <td v-if="obj" class="leading-3 text-sm">
+            <td class="leading-3 text-sm">
               <span class="material-symbols-outlined text-sm mr-1">description</span>
               <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
             </td>
-            <td v-if="obj" class="leading-3 text-sm"> {{ obj.path }} </td>
-            <td v-if="obj" class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
-            <td v-if="obj" class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
-            <td v-if="obj" class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
-            <td v-if="obj" class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
+            <td class="leading-3 text-sm"> {{ obj.path }} </td>
+            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
+            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
+            <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
+            <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
           </tr>        
         </tbody>
       </table>

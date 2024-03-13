@@ -59,7 +59,7 @@ export default {
       let response = await axios({
         route: {
           name: 'api.alert',
-          data: {name: data.name}
+          data : data,
         }
       });
       if(response.statusText !== 'OK'){

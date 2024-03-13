@@ -55,7 +55,7 @@ export default {
     </div>
 
     <div class="relative p-2 flex items-center space-x-3 mb-3">
-      <a href="#" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
+      <a @click.prevent="go('Deletion')" :href="href('Deletion')" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
         data-tooltip="Deletion">folder_delete</a>
     </div>
 
