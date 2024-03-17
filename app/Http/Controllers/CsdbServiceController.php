@@ -7,9 +7,11 @@ use DOMDocument;
 use DOMXPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\Compilers\BladeCompiler;
 use PrettyXml\Formatter;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
@@ -100,12 +102,31 @@ class CsdbServiceController extends CsdbController
     // $csdb_model->DOMDocument = $dom;
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
     
-    // $transformed = $model->transform_to_xml(resource_path("views/csdb4/xsl"), "Container.xsl", 'ContentPreview');
-    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), ["configuration" => 'ContentPreview']);
+    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), [
+      "configuration" => 'ContentPreview',
+      'build' => 'development',
+      'port' => env('VITE_PUSHER_PORT'),
+      'host' => env('VITE_PUSHER_HOST'),
+      'protocol' => env('VITE_PUSHER_SCHEME'),
+      'csrf_token' => csrf_token()
+    ]);
     if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
+    // $transformed = Blade::render($transformed);
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    // return Response::make($transformed,200,['content-type' => 'text/html']);
+  }
+
+  public function tes_deliverFile()
+  {
+    $file = "
+    console.log('aa');
+    function ptt(){
+      console.log('bbb');
+    }
+    ";
+    return Response::make($file,200,['content-type' => 'text/javascript']);
   }
 
   public function request_icn_object(Request $request, string $filename)

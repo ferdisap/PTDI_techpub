@@ -24,7 +24,6 @@ export default {
             }
           })
           this.storingResponse(response);
-          this.datamoduleRenderer();
         }
         else {
           this.isICN = true;
@@ -54,22 +53,10 @@ export default {
           $('#icn-container').html(html);
         }
       }
-    },
-    datamoduleRenderer(){
-      let blob = new Blob([this.data.transformed], {type: 'text/html'});
-      let blobURL = URL.createObjectURL(blob)
-      // window.blobURL = blobURL;
-      // let iframe = document.createElement('iframe');
-      let iframe = document.querySelector('#datamodule-container').firstElementChild;
-      URL.revokeObjectURL(iframe.src)
-      iframe.src = blobURL;
-      // document.querySelector('#datamodule-container').append(iframe)
     }
   },
   mounted(){
-    window.Preview = this;
     this.emitter.on('Preview-refresh', async (data) => {
-      console.log('aaa',data);
       if(data.filename && data.filename.slice(0,3) !== 'ICN'){
         let response = await axios({
           route: {
@@ -77,9 +64,7 @@ export default {
             data: {filename: data.filename}
           }
         });
-        
         this.storingResponse(response);
-        this.datamoduleRenderer();
       }
       else if(data.source){
         this.isICN = true;
@@ -95,14 +80,11 @@ export default {
     <div class="h-[5%] flex mb-3">
       <h1 class="text-blue-500 w-full text-center">Preview</h1>
     </div>
-    <div class="flex justify-center w-full px-3 h-[95%]">
-      <div id="datamodule-container" class="w-full h-full">
-        <iframe id="datamodule-frame" class="w-full h-full"/>
-      </div>
-      <!-- <component v-if="data.transformed && !isICN" :is="transformed"/> -->
-      <!-- <div id="icn-container">
+    <div class="flex justify-center w-[95%]">
+      <component v-if="data.transformed && !isICN" :is="transformed"/>
+      <div id="icn-container">
 
-      </div> -->
+      </div>
     </div>
   </div>
 </template>

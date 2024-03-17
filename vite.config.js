@@ -1,16 +1,29 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { env } from 'node:process';
+import * as dotenv from 'dotenv';
+import dotenvExpand from 'dotenv-expand';
+import mkcert from 'vite-plugin-mkcert'
 // import RubyPlugin from 'vite-plugin-ruby';
 // import inject from "@rollup/plugin-inject";
 
-// const path = require('path');
+let myenv = dotenv.config();
+dotenvExpand.expand(myenv);
 
 export default defineConfig({
   optimizeDeps: {
     exclude: ['js-big-decimal'] // agar mitt bisa dipakai. See app.js csdb3
   },
+  server: {
+    port: process.env.VITE_PUSHER_PORT,
+    host: process.env.VITE_PUSHER_HOST,
+    https: true
+  },
   plugins: [
+    mkcert(),
+    nodePolyfills(), // supaya tidak ada warning yang muncul di console, eg. Module "stream" has been externalized for browser compatibility. Cannot access "stream.Readable" in client code.
     // inject({   // => that should be first under plugins array
     //   $: 'jquery',
     //   jQuery: 'jquery',
@@ -25,12 +38,16 @@ export default defineConfig({
         'resources/js/csdb/CsdbReader.js',
         'resources/js/ietm/app.js',
         // 'resources/views/**/*.vue',
+        // 'resources/views/**/*.js',
+        'resources/js/csdb4/app.js',
+        // 'resources/js/csdb4/tes.js',
         
         // 'resources/js/bootstrap.js',
         // 'resources/scss/style.scss',
         // 'resources/css/app2.css',
         'resources/js/alert.js',
         'resources/css/csdb.css',
+        'resources/css/dump.css',
       ],
       refresh: true
     }),
@@ -48,5 +65,5 @@ export default defineConfig({
       '@': '/resources/js',
       'vue': 'vue/dist/vue.esm-bundler.js',
     }
-  }
+  },
 });

@@ -25,20 +25,4 @@ export default {
       </keep-alive>
     </router-view>
   </div>
-  <!-- <main class="w-full">
-    MAIN
-    <section class="flex w-full p-3 m-3 rounded-xl border-slate-300 bg-slate-50 text-black text-left py-3 shadow-xl">
-      <div :class="[showRightAside ? 'w-1/2' : 'w-full']">
-        <router-view v-slot="{ Component }">
-          <keep-alive>
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-      </div>
-      <div :class="[ showRightAside ? 'w-1/2' : 'w-1/12','relative']">
-        <ButtonMinimizeContainer variable="showRightAside" direction="right" class="top-5 text-white left-0"/>
-        <DetailAll />
-      </div>
-    </section>
-  </main> -->
 </template>

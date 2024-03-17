@@ -9,10 +9,7 @@ import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
-// import pick from '../pick';
-
-
-// window.pick = pick;
+import routes from '../../others/routes.json';
 
 /**
  * @param {string} pattern 
@@ -69,15 +66,12 @@ csdb.config.globalProperties.findText = find;
 //   }
 // });
 
-await axios.get('/auth/check')
+// ga bisa npm build jika pakai await 
+axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)
   .catch(response => window.location.href = "/login");
 // sebelum mounting app, akan request all Routes dulu
-await axios.get('/getAllRoutes')
-  .then(response => {
-    useTechpubStore().WebRoutes = response.data;
-  });
-
+useTechpubStore().WebRoutes = routes;
 
 
 /**

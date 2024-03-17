@@ -31,7 +31,7 @@ class Controller extends BaseController
     ],200);
   }
 
-  public function getAllRoutesNamed()
+  public static function getAllRoutesNamed()
   {
     $allRoutes = Route::getRoutes()->getRoutes();
     $allRoutes = array_filter($allRoutes, fn ($r) => $r->getName());

@@ -51,6 +51,20 @@ class CsdbController extends Controller
   ################# NEW for csdb4 #################
   public function app()
   {
+    // ini bisa
+    // $blade = file_get_contents(resource_path('views/csdb4/app.blade.php'));
+    // $blade = Blade::render($blade);
+    // return Response::make($blade,200,[
+    //   'content-type' => 'text/html'
+    // ]);
+
+    // ini bisa
+    // $view = view('csdb4.app')->render();
+    // return Response::make($view,200,[
+    //   'content-type' => 'text/html'
+    // ]);
+    
+    // ini bisa
     return view('csdb4.app');
   }
 

@@ -1,3 +1,11 @@
+{{-- 
+  // tetap jalan web socketnya walaupun pakai iframe
+  iframe = document.createElement('iframe');
+  iframe.src = 'http://127.0.0.1:8000/csdb4/explorer';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  document.body.append(iframe); 
+--}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +18,18 @@
   
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script type="text/javascript" src="/js/jquery.maphilight.min.js"></script>
-  @vite('resources/css/app.css')
-  @vite('resources/css/loadingbar.css')
-  {{-- @vite('resources/css/dmodule.css') --}}
-  @vite('resources/js/csdb4/app.js')
-  @vite('resources/css/csdb.css')
+
+  {{--
+      untuk vue 
+      gunakan @@vite instead of @vite jika tidak ingin pakai blade @vite directive 
+  --}}
+  <script type="module" src="https://localhost:987/@@vite/client"></script>
+  <link rel="stylesheet" href="https://localhost:987/resources/css/dmodule.css">
+  <link rel="stylesheet" href="https://localhost:987/resources/css/app.css">
+  <link rel="stylesheet" href="https://localhost:987/resources/css/loadingbar.css">
+  <script src="https://localhost:987/resources/js/csdb4/app.js" type="module"> </script>
+  
+  {{-- @vite('resources/css/csdb.css') --}}
   
   {{-- <script type="text/javascript" src="/js/xmlvalidator/xmlvalidate.js-main/dist/worker.js"></script> --}}
 
@@ -32,4 +47,8 @@
   <title>CSDB</title>
 </head>
 <body id="body">
+  FOAS
+  {{-- <script>
+    window.allRoutes = JSON.parse('{{ json_encode($allRoutes) }}'.replace(/&quot;/g,'"'));
+  </script> --}}
 </body>

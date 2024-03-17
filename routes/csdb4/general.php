@@ -68,3 +68,5 @@ Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion
 
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');
+
+Route::get('/tes_deliver-file', [CsdbServiceController::class, 'tes_deliverFile']);

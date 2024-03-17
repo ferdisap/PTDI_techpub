@@ -43,7 +43,7 @@ export default {
           <div class="dropdown-menu"><a class="block w-full" href="/logout">Logout</a></div>
         </div>
       </div>
-      <a class="ml-3" v-else :href="techpubStore.getWebRoute('login')['path']"> login here..</a>
+      <!-- <a class="ml-3" v-else :href="techpubStore.getWebRoute('login')['path']"> login here..</a> -->
     </div>
 
     <div class="flex text-sm">
