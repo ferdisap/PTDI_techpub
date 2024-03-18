@@ -14,6 +14,7 @@ use DOMXPath;
 use Gumlet\ImageResize;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ use Ptdi\Mpub\Validation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipStream\ZipStream;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Vite;
 use PrettyXml\Formatter;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\Main\CSDBError;
@@ -51,12 +53,14 @@ class CsdbController extends Controller
   ################# NEW for csdb4 #################
   public function app()
   {
+    // Vite::useBuildDirectory('production'); // Customize the build directory...
+
     // ini bisa
-    // $blade = file_get_contents(resource_path('views/csdb4/app.blade.php'));
-    // $blade = Blade::render($blade);
-    // return Response::make($blade,200,[
-    //   'content-type' => 'text/html'
-    // ]);
+    $blade = file_get_contents(resource_path('views/csdb4/app.blade.php'));
+    $blade = Blade::render($blade);
+    return Response::make($blade,200,[
+      'content-type' => 'text/html'
+    ]);
 
     // ini bisa
     // $view = view('csdb4.app')->render();

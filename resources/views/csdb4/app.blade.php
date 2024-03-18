@@ -22,12 +22,15 @@
   {{--
       untuk vue 
       gunakan @@vite instead of @vite jika tidak ingin pakai blade @vite directive 
+      tapi saat vite production, tidak bisa otomatis ngarah ke build path
   --}}
-  <script type="module" src="https://localhost:987/@@vite/client"></script>
+  {{-- <script type="module" src="https://localhost:987/@@vite/client"></script>
   <link rel="stylesheet" href="https://localhost:987/resources/css/dmodule.css">
   <link rel="stylesheet" href="https://localhost:987/resources/css/app.css">
   <link rel="stylesheet" href="https://localhost:987/resources/css/loadingbar.css">
-  <script src="https://localhost:987/resources/js/csdb4/app.js" type="module"> </script>
+  <script src="https://localhost:987/resources/js/csdb4/app.js" type="module"> </script> --}}
+  @vite(['resources/css/dmodule.css', 'resources/css/app.css', 'resources/css/loadingbar.css'])
+  @vite(['resources/js/csdb4/app.js'])  
   
   {{-- @vite('resources/css/csdb.css') --}}
   
@@ -47,8 +50,4 @@
   <title>CSDB</title>
 </head>
 <body id="body">
-  FOAS
-  {{-- <script>
-    window.allRoutes = JSON.parse('{{ json_encode($allRoutes) }}'.replace(/&quot;/g,'"'));
-  </script> --}}
 </body>

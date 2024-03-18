@@ -49,6 +49,7 @@ export default defineConfig({
         'resources/css/csdb.css',
         'resources/css/dump.css',
       ],
+      buildDirectory: process.env.VITE_BUILD_DIR,
       refresh: true
     }),
     vue({

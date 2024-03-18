@@ -40,14 +40,14 @@ export default {
 }
 </script>
 
-<style>
-</style>
 
 <template>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   
   <!-- <Loading/> -->
-  <Topbar/>
+  <div class="topbar w-full h-[50px]">
+    <Topbar />
+  </div>
   <Info :isSuccess="techpubStore.isSuccess" :errors="techpubStore.errors" :message="techpubStore.message"/>
   
   <!-- main -->
