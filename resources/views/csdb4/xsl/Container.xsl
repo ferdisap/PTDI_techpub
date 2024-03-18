@@ -69,9 +69,15 @@
         <head>
           <title>Module</title>
           <meta name="csrf-token" content="{$csrf_token}"/>
-          <script type="module" src="https://localhost:987/@vite/client">//</script>
+          <xsl:call-template name="createscript">
+            <xsl:with-param name="pathname">/@vite/client</xsl:with-param>
+            <xsl:with-param name="type">module</xsl:with-param>
+          </xsl:call-template>
           <xsl:call-template name="createlink">
             <xsl:with-param name="pathname">/resources/css/dump.css</xsl:with-param>
+          </xsl:call-template>
+          <xsl:call-template name="createlink">
+            <xsl:with-param name="pathname">/resources/css/csdb.css</xsl:with-param>
           </xsl:call-template>
           <xsl:call-template name="createscript">
             <xsl:with-param name="pathname">/resources/js/foo.js</xsl:with-param>

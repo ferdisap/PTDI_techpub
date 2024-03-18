@@ -102,6 +102,13 @@ class CsdbServiceController extends CsdbController
     // $csdb_model->DOMDocument = $dom;
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
     
+    // dd([
+    //    'port' => env('VITE_PUSHER_PORT'),
+    //   'host' => env('VITE_PUSHER_HOST'),
+    //   'protocol' => env('VITE_PUSHER_SCHEME'),
+    //   'csrf_token' => csrf_token()
+    // ]);
+
     $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), [
       "configuration" => 'ContentPreview',
       'build' => 'development',
@@ -114,8 +121,8 @@ class CsdbServiceController extends CsdbController
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     // $transformed = Blade::render($transformed);
-    return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
-    // return Response::make($transformed,200,['content-type' => 'text/html']);
+    // return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    return Response::make($transformed,200,['content-type' => 'text/html']);
   }
 
   public function tes_deliverFile()

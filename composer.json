@@ -14,7 +14,7 @@
         "madnest/madzipper": "^1.4",
         "maennchen/zipstream-php": "^3.1",
         "nesbot/carbon": "^2.68",
-        "ptdi/mpub": "^1.0",
+        "ptdi/mpub": "^1.07",
         "shanethehat/pretty-xml": "^1.0",
         "spipu/html2pdf": "^5.2",
         "tecnickcom/tcpdf": "^6.6"

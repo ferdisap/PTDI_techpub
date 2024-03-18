@@ -249,7 +249,10 @@ class CsdbController extends Controller
     // #4. assign inWork into '01' and issueNumber to the highest+1
     $domXpath = new \DOMXPath($CSDBObject->document);
     $code = preg_replace("/_.+/", '', $csdb_filename);
-    $collection = scandir(storage_path('csdb'));
+    $collection = Storage::disk('csdb')->files();
+    // $collection = scandir(storage_path('csdb'));
+    // dd(storage_path('csdb'));
+    // dd($collection);
     $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
     if (empty($collection)) {
       $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];

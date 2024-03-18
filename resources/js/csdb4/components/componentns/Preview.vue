@@ -1,9 +1,11 @@
 <script>
+import { useTechpubStore } from '../../../techpub/techpubStore';
 export default {
   data(){
     return {
       data: {},
       isICN: false,
+      techpubStore: useTechpubStore(),
     }
   },
   props:{
@@ -16,15 +18,15 @@ export default {
     async requestTransformed(){
       if(this.$props.dataProps.filename){
         if(this.$props.dataProps.filename.slice(0,3) !== 'ICN'){
-          this.isICN = false;
-          let response = await axios({
-            route: {
-              name: 'api.get_transformed_contentpreview',
-              data: {filename: this.$props.dataProps.filename}
-            }
-          })
-          this.storingResponse(response);
-          this.datamoduleRenderer();
+          // this.isICN = false;
+          // let response = await axios({
+          //   route: {
+          //     name: 'api.get_transformed_contentpreview',
+          //     data: {filename: this.$props.dataProps.filename}
+          //   }
+          // })
+          // this.storingResponse(response);
+          this.datamoduleRenderer(this.$props.dataProps);
         }
         else {
           this.isICN = true;
@@ -55,31 +57,36 @@ export default {
         }
       }
     },
-    datamoduleRenderer(){
-      let blob = new Blob([this.data.transformed], {type: 'text/html'});
-      let blobURL = URL.createObjectURL(blob)
-      // window.blobURL = blobURL;
-      // let iframe = document.createElement('iframe');
-      let iframe = document.querySelector('#datamodule-container').firstElementChild;
-      URL.revokeObjectURL(iframe.src)
-      iframe.src = blobURL;
-      // document.querySelector('#datamodule-container').append(iframe)
+    datamoduleRenderer(data){
+      console.log(data);
+      const route = this.techpubStore.getWebRoute('api.get_transformed_contentpreview', data);
+      console.log(window.route);
+      setTimeout(() => {
+        let iframe = document.querySelector('#datamodule-frame');
+        console.log(iframe);
+        iframe.src = route.url;
+      },0)
+
+      // let blob = new Blob([this.data.transformed], {type: 'text/html'});
+      // let blobURL = URL.createObjectURL(blob)
+      // let iframe = document.querySelector('#datamodule-container').firstElementChild;
+      // URL.revokeObjectURL(iframe.src)
+      // iframe.src = blobURL;
     }
   },
   mounted(){
     window.Preview = this;
     this.emitter.on('Preview-refresh', async (data) => {
-      console.log('aaa',data);
+      // console.log('aaa',data);
       if(data.filename && data.filename.slice(0,3) !== 'ICN'){
-        let response = await axios({
-          route: {
-            name: 'api.get_transformed_contentpreview',
-            data: {filename: data.filename}
-          }
-        });
-        
-        this.storingResponse(response);
-        this.datamoduleRenderer();
+        // let response = await axios({
+        //   route: {
+        //     name: 'api.get_transformed_contentpreview',
+        //     data: {filename: data.filename}
+        //   }
+        // });
+        // this.storingResponse(response);
+        this.datamoduleRenderer(data);
       }
       else if(data.source){
         this.isICN = true;
