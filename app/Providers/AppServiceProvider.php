@@ -24,7 +24,8 @@ class AppServiceProvider extends ServiceProvider
     $path_included = base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR;
     set_include_path(get_include_path() . PATH_SEPARATOR . $path_included);
 
-    Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build')); // Customize the build directory...
+    Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'));
+    
     
     // Blade::anonymousComponentPath(base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR);
   }

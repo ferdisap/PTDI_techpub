@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Compilers\BladeCompiler;
 use PrettyXml\Formatter;
 use Ptdi\Mpub\CSDB as MpubCSDB;
+use Ptdi\Mpub\Fop\Fop;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Main\CSDBError;
@@ -62,78 +64,34 @@ class CsdbServiceController extends CsdbController
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
-  // public function tes($param){
-  //   return 'tessas' .$param;
-  //   dd('tes');
-  // }
-
   public function get_transformed_contentpreview(Request $request, string $filename)
   {
-    // $validator = new CSDBValidator('DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml');
-    // dd($validator);
-    // $a = __CLASS__."::tes('aaa')";
-    // $a = callback($a);
-    // $a = call_user_func_array(__CLASS__."::tes",['-aaa']);
-    // dd($a);
-    // $tes = 
-    // dd('aa');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-003B-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-20-01-00A-043A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-20-02-00A-034A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-01-00A-141A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-02-00A-141A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-03-00A-141A-A_000-01_EN-EN.xml');  
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-04-00A-141A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-05-00A-141A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-06-00A-141A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-15-30-07-00A-028A-A_000-01_EN-EN.xml');
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
-    $model = Csdb::where('filename', $filename)->first();
-    // $dom = MpubCSDB::importDocument(storage_path('csdb'), $filename);
-    // $csdb_model = new Csdb(); // model dari Csdb.php
-    // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml"; // nanti filename dari csdb.php SQL object
-    // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-002A-A_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
-    // $csdb_model->filename = "DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml"; // nanti filename dari csdb.php SQL object
     // $csdb_model->filename = $filename; // nanti filename dari csdb.php SQL object
-    // $csdb_model->DOMDocument = $dom;
+    // atau pakai Route model Binding
+    $model = Csdb::where('filename', $filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
-    
-    // dd([
-    //    'port' => env('VITE_PUSHER_PORT'),
-    //   'host' => env('VITE_PUSHER_HOST'),
-    //   'protocol' => env('VITE_PUSHER_SCHEME'),
-    //   'csrf_token' => csrf_token()
-    // ]);
 
     $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), [
       "configuration" => 'ContentPreview',
-      'build' => 'development',
-      'port' => env('VITE_PUSHER_PORT'),
-      'host' => env('VITE_PUSHER_HOST'),
-      'protocol' => env('VITE_PUSHER_SCHEME'),
-      'csrf_token' => csrf_token()
+      'csrf_token' => csrf_token(),
     ]);
+
     if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
-    // $transformed = Blade::render($transformed);
+    $transformed = Blade::render($transformed);
     // return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     return Response::make($transformed,200,['content-type' => 'text/html']);
   }
 
-  public function tes_deliverFile()
+  public function get_pdf_object(Request $request, string $filename)
   {
-    $file = "
-    console.log('aa');
-    function ptt(){
-      console.log('bbb');
+    $fo = storage_path('examples/fo/helloworld.fo');
+    if($pdf = Fop::FO_to_PDF($fo)){
+      return Response::make($pdf,200,['Content-Type' => 'application/pdf']);
+    } else {
+      return abort(400);
     }
-    ";
-    return Response::make($file,200,['content-type' => 'text/javascript']);
   }
 
   public function request_icn_object(Request $request, string $filename)

@@ -8,15 +8,6 @@
   --csdb-sc-text-05: #fa4949bd;
 }
 
-body {
-  border:5px solid pink;
-}
-
-.dump_orange {
-  border:1px solid orange;
-}
-
-
 table tbody:before {
   content:"@";
   display:block;

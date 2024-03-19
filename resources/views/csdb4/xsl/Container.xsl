@@ -6,7 +6,8 @@
 
   <!-- <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes" /> -->
   <!-- <xsl:output method="html" doctype-system="about:legacy-compat"/> -->
-  <xsl:output doctype-public="HTML" doctype-system="" omit-xml-declaration="yes" />
+  <!-- <xsl:output doctype-public="HTML" doctype-system="" omit-xml-declaration="yes" /> -->
+  <xsl:output method="html" doctype-system="about:legacy-compat"/>
   <xsl:include href="./csdb/Content.xsl" />
   <xsl:include href="./csdb/DmAddress.xsl" />
   <xsl:include href="./csdb/DmAddressItems.xsl" />
@@ -54,10 +55,6 @@
   <xsl:param name="csrf_token"/>
 
   <!-- for vite dev -->
-  <xsl:param name="build" select="'development'"/>
-  <xsl:param name="port"/>
-  <xsl:param name="host"/>
-  <xsl:param name="protocol"/>
 
   <xsl:template match="dmodule | pm | dml">
     <xsl:if test="$configuration = 'ForIdentStatusVue'">
@@ -69,66 +66,19 @@
         <head>
           <title>Module</title>
           <meta name="csrf-token" content="{$csrf_token}"/>
-          <xsl:call-template name="createscript">
-            <xsl:with-param name="pathname">/@vite/client</xsl:with-param>
-            <xsl:with-param name="type">module</xsl:with-param>
-          </xsl:call-template>
-          <xsl:call-template name="createlink">
-            <xsl:with-param name="pathname">/resources/css/dump.css</xsl:with-param>
-          </xsl:call-template>
-          <xsl:call-template name="createlink">
-            <xsl:with-param name="pathname">/resources/css/csdb.css</xsl:with-param>
-          </xsl:call-template>
-          <xsl:call-template name="createscript">
-            <xsl:with-param name="pathname">/resources/js/foo.js</xsl:with-param>
-          </xsl:call-template>
+          <xsl:text disable-output-escaping="yes">
+            {{ 
+              $vite = Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'))
+                      ->withEntryPoints(['resources/css/csdb.css'])
+            }}
+          </xsl:text>
         </head>
         <body>
-          <br></br>
           <xsl:apply-templates select="content"/>
         </body>
       </html>
     </xsl:if>
   </xsl:template>
 
-  <xsl:template name="vite_origin">
-    <xsl:value-of select="$protocol"/>
-    <xsl:text>://</xsl:text>
-    <xsl:value-of select="$host"/>
-    <xsl:text>:</xsl:text>
-    <xsl:value-of select="$port"/>
-  </xsl:template>
-
-  <xsl:template name="vite_href">
-    <xsl:param name="pathname"/>
-    <xsl:call-template name="vite_origin"/>
-    <xsl:value-of select="$pathname"/>
-  </xsl:template>
-
-  <xsl:template name="createlink">
-    <xsl:param name="rel" select="'stylesheet'"/>
-    <xsl:param name="pathname"/>
-    <link rel="{$rel}">
-      <xsl:attribute name="href">
-        <xsl:call-template name="vite_href">
-          <xsl:with-param name="pathname" select="$pathname"/>
-        </xsl:call-template>
-      </xsl:attribute>
-    </link>
-  </xsl:template>
-
-  <xsl:template name="createscript">
-    <!-- type module or text/javascript -->
-    <xsl:param name="type" select="'text/javascript'"/>
-    <xsl:param name="pathname"/>
-    <script type="{$type}">
-      <xsl:attribute name="src">
-        <xsl:call-template name="vite_href">
-          <xsl:with-param name="pathname" select="$pathname"/>
-        </xsl:call-template>
-      </xsl:attribute>
-      <xsl:text>  </xsl:text>
-    </script>
-  </xsl:template>
 
 </xsl:transform>

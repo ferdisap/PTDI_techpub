@@ -16,21 +16,25 @@
           <xsl:text>sc-</xsl:text>
           <xsl:value-of select="//identAndStatusSection/descendant::security/@securityClassification"/>
         </xsl:attribute>
+        <xsl:text> </xsl:text>
       </div>      
       <div class="header">
         <div class="logo">
           <xsl:apply-templates select="//identAndStatusSection/descendant::logo/symbol"/>
+          <xsl:text> </xsl:text>
         </div>
         <div class="sc">
           <xsl:apply-templates select="//identAndStatusSection/descendant::security"/>
-          <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getSC', 'text')"/> -->
+          <xsl:text> </xsl:text>
         </div>
         <div class="object-code">
           <xsl:value-of select="$object_code"/>
+          <xsl:text> </xsl:text>
         </div>
       </div>
       <div class="body">
         <xsl:apply-templates />
+        <xsl:text> </xsl:text>
       </div>
     </div>
   </xsl:template>

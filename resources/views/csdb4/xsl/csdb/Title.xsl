@@ -41,7 +41,8 @@
             <!-- applying text -->
             <xsl:value-of select="$numberedPar"/>
             <xsl:text>.</xsl:text>
-            <xsl:text>&#160;&#160;&#160;</xsl:text>
+            <!-- <xsl:text>&#160;&#160;&#160;</xsl:text> -->
+            <xsl:text>   </xsl:text>
             <xsl:apply-templates/>
 
           </xsl:element>

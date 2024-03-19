@@ -66,6 +66,9 @@ Route::get('/api/{filename}/change/path', [CsdbController::class, 'changePath'])
 // get deletion object
 Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
 
+// get PDF
+Route::get('/api/content/{filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
+
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');
 

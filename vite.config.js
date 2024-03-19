@@ -47,7 +47,6 @@ export default defineConfig({
         // 'resources/css/app2.css',
         'resources/js/alert.js',
         'resources/css/csdb.css',
-        'resources/css/dump.css',
       ],
       buildDirectory: process.env.VITE_BUILD_DIR,
       refresh: true
