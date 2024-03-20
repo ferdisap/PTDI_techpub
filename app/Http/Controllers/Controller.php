@@ -35,18 +35,22 @@ class Controller extends BaseController
   {
     $allRoutes = Route::getRoutes()->getRoutes();
     $allRoutes = array_filter($allRoutes, fn ($r) => $r->getName());
-
+    
     foreach ($allRoutes as $k => $v) {
       $allRoutes[$v->getName()] = $v;
       unset($allRoutes[$k]);
     }
     $allRoutes = array_map(function ($v) {
-      $params = $v->parameterNames();
-      foreach($params as $k => $n){
-        $params[$n] = ":$n";
+      $params = $v->parameterNames(); // ['csdb', 'repo']
+      $bindingFields = $v->bindingFields(); // ['csdb' => 'filename', 'repo' => 'name']
+      foreach($params as $k => $param){
+        if(!empty($bindingFields) AND isset($bindingFields[$param])){
+          $param = $bindingFields[$param];  // param 'csdb' diubah menjadi 'filename'. karena csdb adalah model class 
+        }
+        $params[$param] = ":$param";
         unset($params[$k]);
       }
-      $path = route($v->getName(), $params, false);
+      $path = route($v->getName(), array_values($params), false); // "/api/ietm/{repo:name}/{filename}" menjadi "/api/ietm/:name/:filename" agar JS mudah memasukkan key dan valuenya
       $ret = [
         'name' => $v->getName(),
         'method' => $v->methods(),

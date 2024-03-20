@@ -1,99 +1,97 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import path from 'path';
+import { contentType } from 'es-mime-types';
 export default {
-  data(){
+  data() {
     return {
-      data: {},
-      isICN: false,
       techpubStore: useTechpubStore(),
+      view: 'ietm',
+      isICN: false,
+      data: {},
+      path: path,
     }
   },
-  props:{
+  props: {
     dataProps: {
       type: Object,
       required: true
     }
   },
-  computed:{
-    async requestTransformed(){
-      if(this.$props.dataProps.filename){
-        if(this.$props.dataProps.filename.slice(0,3) !== 'ICN'){
-        //   this.isICN = false;
-        //   let response = await axios({
-        //     route: {
-        //       name: 'api.get_transformed_contentpreview',
-        //       data: {filename: this.$props.dataProps.filename}
-        //     }
-        //   })
-        //   this.storingResponse(response);
-        //   this.datamoduleRenderer();
-          this.datamoduleRenderer(this.$props.dataProps);
-        }
-        else {
-          this.isICN = true;
-        }
-      }
-    },
-    transformed(){
-      return {
-        template: this.data.transformed,
+  computed: {
+    async requestTransformed() {
+      if (this.$props.dataProps.filename) {
+        this.$props.dataProps.filename.slice(0, 3) !== 'ICN' ? this.datamoduleRenderer(this.$props.dataProps) : this.icnRenderer(this.$props.dataProps);
       }
     },
   },
-  methods:{
-    storingResponse(response){
-      if(response.statusText === 'OK'){
-        this.data.transformed = response.data.transformed;
+  methods: {
+    /**
+     * return string blob url
+     * return false
+    */
+    async blobRequestTransformed(routename, data, type) {
+      data = Object.assign(data);
+      delete (data.update_at);
+      let responseType = !type.includes('text') ? 'arraybuffer' : 'json';
+      data.updated_at = 'Thu Mar 14 2024 15:29:29 GMT+0700';
+      let response = await axios({
+        route: {
+          name: routename,
+          data: data,
+        },
+        responseType: responseType,
+      });
+      if (response.statusText === 'OK') {
+        let blob = new Blob([response.data],{type: type});
+        let url = URL.createObjectURL(blob);
+        return url;
+      } else {
+        return false
       }
     },
     /*
      * data bisa berisi tentang mime, source, sourceType, filename
      * jika ada filename, maka akan request ke server
     */
-    icnRenderer(data = {}){
-      if(data.mime.includes('image')){
-        if(data.sourceType === 'url'){
-          let html = `<img src="${data.source}"/>`
-          $('#icn-container').html(html);
-        }
+    icnRenderer(data = {}) {
+      this.isICN = true;
+      console.log(data);
+      // jika dari readFileURLFromEditor
+      if (data.sourceType === 'url') {
+        setTimeout(() => {
+          this.data.mime = data.mime;
+          this.data.src = data.source;
+        }, 0);
+      }
+      else {
+        const route = this.techpubStore.getWebRoute('api.request_icn_object', { filename: data.filename });
+        setTimeout(() => {
+          let path = this.path.extname(data.filename);
+          this.data.mime = contentType(path);
+          this.data.src = route.url.toString();
+        }, 0);
       }
     },
-    datamoduleRenderer(data){
-      // console.log(data);
-      const route = this.techpubStore.getWebRoute('api.get_transformed_contentpreview', data);
-      console.log(window.route);
-      setTimeout(() => {
-        let iframe = document.querySelector('#datamodule-frame');
-        console.log(iframe);
-        iframe.src = route.url;
-      },0)
-
-      // let blob = new Blob([this.data.transformed], {type: 'text/html'});
-      // let blobURL = URL.createObjectURL(blob)
-      // let iframe = document.querySelector('#datamodule-container').firstElementChild;
-      // URL.revokeObjectURL(iframe.src)
-      // iframe.src = blobURL;
+    async datamoduleRenderer(data = {}) {
+      this.isICN = false;
+      let routeName = this.view === 'ietm' ? 'api.get_transformed_contentpreview' : (this.view === 'pdf' ? 'api.get_pdf_object' : '');
+      if (routeName) {
+        this.data.mime = this.view === 'ietm' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
+        let src = await this.blobRequestTransformed(routeName, { filename: data.filename }, this.data.mime);
+        this.data.src = src
+        console.log(src);
+        // const route = this.techpubStore.getWebRoute(routeName, {filename: data.filename});
+        // setTimeout(() => {
+        //   this.data.mime = this.view === 'ietm' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
+        //   this.data.src = route.url.toString();
+        // },0);
+      }
     }
   },
-  mounted(){
-    window.Preview = this;
+  mounted() {
     this.emitter.on('Preview-refresh', async (data) => {
-      // console.log('aaa',data);
-      if(data.filename && data.filename.slice(0,3) !== 'ICN'){
-      //   let response = await axios({
-      //     route: {
-      //       name: 'api.get_transformed_contentpreview',
-      //       data: {filename: data.filename}
-      //     }
-      //   });
-      //   this.storingResponse(response);
-      //   this.datamoduleRenderer();
-        this.datamoduleRenderer(data);
-      }
-      else if(data.source){
-        this.isICN = true;
-        this.icnRenderer(data);
-      }
+      (data.filename && data.filename.slice(0, 3) !== 'ICN') ? this.datamoduleRenderer(data) : this.icnRenderer(data);
     });
   }
 }
@@ -105,13 +103,15 @@ export default {
       <h1 class="text-blue-500 w-full text-center">Preview</h1>
     </div>
     <div class="flex justify-center w-full px-3 h-[95%]">
-      <div id="datamodule-container" class="w-full h-full">
-        <iframe id="datamodule-frame" class="w-full h-full"/>
+      <div v-if="!isICN" id="datamodule-container" class="w-full h-full">
+        <a v-if="view !== 'pdf'" href="#" class="text-sm" @click="view = 'pdf'">Switch to PDF</a>
+        <a v-if="view !== 'ietm'" href="#" class="text-sm" @click="view = 'ietm'">Switch to IETM</a>
+        <iframe id="datamodule-frame" class="w-full h-full" :src="data.src" />
+      </div>
+      <div v-else id="icn-container">
+        <embed class="w-full h-full" :src="data.src" :type="data.mime" />
       </div>
       <!-- <component v-if="data.transformed && !isICN" :is="transformed"/> -->
-      <!-- <div id="icn-container">
-
-      </div> -->
     </div>
   </div>
 </template>

@@ -55,7 +55,7 @@ Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_tra
 Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
 
 // request ICN object
-Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth');
+Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth')->name('api.request_icn_object');
 
 // request XML CSDB Object
 Route::get('/api/object/{filename}', [CsdbServiceController::class, 'request_csdb_object'])->middleware('auth')->name('api.request_csdb_object');
@@ -67,7 +67,7 @@ Route::get('/api/{filename}/change/path', [CsdbController::class, 'changePath'])
 Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
 
 // get PDF
-Route::get('/api/content/{filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
+Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
 
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

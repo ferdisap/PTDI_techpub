@@ -95,10 +95,18 @@ axios.interceptors.request.use(
     useTechpubStore().showLoadingBar = true;
     if (config.route) {
       try {
-        const route = useTechpubStore().getWebRoute(config.route.name, config.route.data);
+        let data = Object.assign({}, config.route.data);
+
+        if(data.updated_at){
+          config.route.headers = config.route.headers || {};
+          config.route.headers['If-Modified-Since'] = data.updated_at;
+        }
+
+        const route = useTechpubStore().getWebRoute(config.route.name, data);
         config.url = route.url;
         config.method = route.method[0];
-        config.data = route.params;
+        config.data = route.params;      
+
       } catch (error) {
         throw new Error(error);        
       }

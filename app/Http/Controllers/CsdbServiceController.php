@@ -84,11 +84,19 @@ class CsdbServiceController extends CsdbController
     return Response::make($transformed,200,['content-type' => 'text/html']);
   }
 
-  public function get_pdf_object(Request $request, string $filename)
+  public function get_pdf_object(Request $request, Csdb $csdb)
   {
+    if(!$csdb) abort(400);
     $fo = storage_path('examples/fo/helloworld.fo');
     if($pdf = Fop::FO_to_PDF($fo)){
-      return Response::make($pdf,200,['Content-Type' => 'application/pdf']);
+      // return Response::make($pdf,200,['Content-Type' => 'application/pdf']);
+      // return Response::make($pdf,200,[
+      return Response::make($pdf,200,[
+        'Content-Type' => 'application/pdf', 
+        'Cache-Control' => 'public',
+        'Expires' => now()->add('day', 1),
+        'Last-Modified' => $csdb->updated_at->toString()
+      ]);
     } else {
       return abort(400);
     }

@@ -274,61 +274,38 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @returns {Object} if route method is get then all params has attached to URL, otherwise is attached in route.params 
      * returned Object will have params (plain Object) if the method is POST;
      */
-    getWebRoute(name, params = {}, route = undefined) {
-      let formData;
+    getWebRoute(name, params, route = undefined) {
+      // mapping FormData. Jika value berupa array, maka dijoin pakai comma
       if (params instanceof FormData) {
-        formData = params;
-        params.delete('http://www.w3.org/1999/xhtml');
-        let a = {};
-        for (const [key, value] of params) {
-          a[key] = value;
+        a = {};
+        for (const [k, v] of fd) {
+          a[k] = a[k] || '';
+          a[k] += ',' + v;
+          if (a[k][0] === ',') {
+            a[k] = a[k].slice(1);
+          }
         }
         params = a;
       }
-      if (route) {
-        route.params = params;
-      } else {
-        route = Object.assign({}, this.WebRoutes[name]);
-      }
+
+      // jika route ada (diambil dari WebRoute biasanya, yang paramnya masih ':value') maka paramnya terisi dengan arguments param;
+      route ? (route.params = params) : route = Object.assign({}, this.WebRoutes[name]); // paramsnya sudah ada, tapi tidak ada valuenya. eg: 'filename': ':filename'
       for (const p in route.params) {
-        if (!params[p]) {
-          throw new Error(`Parameter '${p}' shall be exist.`);
-        }
-        else {
-          route.path = route.path.replace(`:${p}`, params[p]);
-          delete params[p]; // ini diperlukan agar params tidak dijadikan query data
-          // if(formData){
-          //   formData.delete(p);
-          // }
-        }
+        if (!params[p]) throw new Error(`Parameter '${p}' shall be exist.`);
+        route.path = route.path ? route.path.replace(`:${p}`, params[p]) : (() => {throw new Error('Route must have its path.')})();
+        delete params[p]; // ini diperlukan agar params tidak dijadikan query data
       }
-      if (!route.method || route.method.includes('GET')) {
-        if(route.path){
-          let url = new URL(window.location.origin + route.path);
-          url.search = new URLSearchParams(params);
-          route.url = url;
-        } else {
-          throw new Error("Invalid route path: " + route.path)
-        }
+      if (!route.method || route.method === 'GET' || route.method.includes('GET')) {
+        let url = new URL(window.location.origin + route.path);
+        url.search = new URLSearchParams(params);
+        route.url = url;
       }
-      else if (route.method && route.method.includes('POST')) {
-        route.params = formData ?? params;
+      else if (route.method === 'POST' || route.method.includes('POST')) {
+        route.params = params;
         route.url = new URL(window.location.origin + route.path);
       }
       return route;
-
     },
-    // async setProject() {
-    //   if (this.Project.length == 0) {
-    //     this.showLoadingBar = true;
-    //     let url = this.getWebRoute('api.get_index_project').path;
-    //     let response = await axios.get(url)
-    //     if (response.statusText === 'OK') {
-    //       this.Project = response.data;
-    //     }
-    //     this.showLoadingBar = false;
-    //   }
-    // },
 
     /**
      * @param {string} projectName 

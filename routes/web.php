@@ -103,7 +103,6 @@ Route::get("/api/alert/{name}", function(Request $request, string $name){
 })->middleware('auth')->name('api.alert');
 
 Route::get("/tes", function(Request $request){
-  dd($request->all());
-  return Response::make('',200);
+  dd((new Controller())->getAllRoutesNamed());
 });
 
