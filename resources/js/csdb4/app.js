@@ -11,6 +11,9 @@ import { useTechpubStore } from '../techpub/techpubStore';
 import mitt from 'mitt';
 import routes from '../../others/routes.json';
 
+
+// ####### start here
+
 /**
  * @param {string} pattern 
  * @param {string} subject 
@@ -27,26 +30,22 @@ function find(pattern, subject) {
   }
   return match;
 }
-window.findText = find;
 
-// import { markdown } from 'markdown';
+function createWorker()
+{
+  if(window.Worker){
+    return new Worker("/js/csdb/worker.js",{type:'module'}); 
+  } else {
+    return false;
+  }
+}
+
+
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
 axios.defaults.withCredentials = true;
 window.axios = axios;
-
-// let md =  await axios({
-//   url: "/csdb/info",
-//   responseType: "text"
-// });
-// window.md = md;
-// window.MarkDown = markdown;
-// let info = MarkDown.toHTML(md.data);
-// $('body').html($(info));
-// console.log(md);
-// return;
-
 
 const csdb = createApp(App);
 const router = createRouter({
@@ -60,11 +59,7 @@ csdb.use(router);
 csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.findText = find;
-// csdb.use({
-//   install: (app) => {
-//     app.config.globalProperties.References = References;
-//   }
-// });
+csdb.config.globalProperties.createWorker = createWorker;
 
 // ga bisa npm build jika pakai await 
 axios.get('/auth/check')
@@ -72,7 +67,6 @@ axios.get('/auth/check')
   .catch(response => window.location.href = "/login");
 // sebelum mounting app, akan request all Routes dulu
 useTechpubStore().WebRoutes = routes;
-
 
 /**
  * cara menggunakan axios
@@ -84,32 +78,28 @@ useTechpubStore().WebRoutes = routes;
  * if the'event' contains 'name' (string) then it will be emitted an event named the 'event.name', else named the 'route.name'
  * The emitted event will pass the parameter which is event combined with 'route.data'
  */
-
-function createRandomString() {
-  return (Math.random() + 1).toString(36).substring(7);
-}
-// axios.id = {};
 axios.interceptors.request.use(
   async (config) => {
-    window.config = config;
+    let headers = {};
     useTechpubStore().showLoadingBar = true;
     if (config.route) {
       try {
-        let data = Object.assign({}, config.route.data);
-
-        if(data.updated_at){
-          config.route.headers = config.route.headers || {};
-          config.route.headers['If-Modified-Since'] = data.updated_at;
+        let data = config.route.data;
+        if(data.updated_at || (data instanceof FormData && data.get('updated_at'))){
+          headers['If-Modified-Since'] = data.updated_at;
+          data.delete ? data.delete('updated_at') : delete data.updated_at;
         }
-
         const route = useTechpubStore().getWebRoute(config.route.name, data);
         config.url = route.url;
         config.method = route.method[0];
         config.data = route.params;      
 
       } catch (error) {
-        throw new Error(error);        
+        throw new Error(error); 
       }
+    }
+    for(const i in headers){
+      config.headers.set(i,headers[i]);
     }
     return config;
   },
@@ -123,7 +113,7 @@ axios.interceptors.response.use(
     //   csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
     // } else {
     // }
-    if(config.route){
+    if(response.config.route){
       csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
     }
     csdb.config.globalProperties.emitter.emit('flash', {
@@ -152,7 +142,7 @@ axios.interceptors.response.use(
 window.csdb = csdb;
 csdb.mount('#body');
 
-
+// ####### end here
 
 
 
@@ -166,3 +156,8 @@ csdb.mount('#body');
 //   });
 // }
 // await a();
+
+// function createRandomString() {
+//   return (Math.random() + 1).toString(36).substring(7);
+// }
+// axios.id = {};

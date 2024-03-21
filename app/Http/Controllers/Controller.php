@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Ptdi\Mpub\Helper;
 
@@ -29,6 +30,22 @@ class Controller extends BaseController
       'name' => Auth::user()->name,
       'email' => Auth::user()->email,
     ],200);
+  }
+
+  // public function getWorkerJs(Request $request)
+  // {
+  //   $worker = file_get_contents(resource_path('js/csdb4/worker.js'));
+  //   return Response::make($worker,200,[
+  //     'content-type' => 'application/javascript'
+  //   ]);
+  // }
+  public function getAxiosJs(Request $request)
+  {
+    $axoiospath = realpath(getcwd().'../../node_modules/axios/dist/axios.js');
+    $axios = file_get_contents($axoiospath);
+    return Response::make($axios,200,[
+      'content-type' => 'application/javascript'
+    ]);
   }
 
   public static function getAllRoutesNamed()

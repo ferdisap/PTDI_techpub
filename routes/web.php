@@ -106,3 +106,6 @@ Route::get("/tes", function(Request $request){
   dd((new Controller())->getAllRoutesNamed());
 });
 
+Route::get('/worker', [Controller::class, 'getWorkerJs']);
+Route::get('/axios', [Controller::class, 'getAxiosJs']);
+

@@ -35,7 +35,28 @@ class CsdbSeeder extends Seeder
     //   $file->setRemarks('stage', 'unstaged');
     // }
     // for ($i = 1000; $i < 10000; $i++) {
-    for ($i = 1; $i < 600; $i++) {
+
+    $fn = function($seqNumber){
+      $seqNumber = str_pad($seqNumber, 3, '0', STR_PAD_LEFT);
+      return "DMC-MALE-A-00-00-00-00A-00PA-D_$seqNumber-01_EN-EN.xml";      
+    };
+
+    try {
+      Csdb::create([
+        'filename' => "DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml",
+        'path' => 'csdb',
+        'editable' => rand(0,1),
+        'initiator_id' => 1,
+        'remarks' => json_encode([
+          'aaaaaaaaaaa' => 'foooooooo',
+          'bbbb' => 'foooooooo',
+          'cccc' => 'foooooooo',
+        ]),
+      ]);
+    } catch (\Throwable $e) {
+    }
+
+    for ($i = 1; $i < 100; $i++) {
       if($i < 100 ){
         $path = "csdb/";
       }
@@ -54,17 +75,21 @@ class CsdbSeeder extends Seeder
       else {
         $path = "csdb/";
       }
-      Csdb::create([
-        'filename' => "DMC-{$i}_foo",
-        'path' => $path,
-        'editable' => rand(0,1),
-        'initiator_id' => 1,
-        'remarks' => json_encode([
-          'aaaaaaaaaaa' => 'foooooooo',
-          'bbbb' => 'foooooooo',
-          'cccc' => 'foooooooo',
-        ]),
-      ]);
+      try {
+        Csdb::create([
+          'filename' => "DMC-{$i}_foo.xml",
+          'path' => $path,
+          'editable' => rand(0,1),
+          'initiator_id' => 1,
+          'remarks' => json_encode([
+            'aaaaaaaaaaa' => 'foooooooo',
+            'bbbb' => 'foooooooo',
+            'cccc' => 'foooooooo',
+          ]),
+        ]);
+      } catch (\Throwable $e) {
+        # code...
+      }
     }
   }
 }

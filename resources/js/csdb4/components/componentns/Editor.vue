@@ -159,7 +159,6 @@ export default {
     }
     else if (this.$props.filename) {
       let raw = await this.getRaw(this.$props.filename);
-      window.raw = raw;
       this.changeText(raw);
     }
 
@@ -167,7 +166,6 @@ export default {
       this.isUpdate = true;
     }
 
-    // window.raw = this.$props.text;
   }
 }
 </script>

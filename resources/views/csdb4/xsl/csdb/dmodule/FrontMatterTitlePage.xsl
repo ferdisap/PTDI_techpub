@@ -33,15 +33,20 @@
         <div class="enterprise">
           <xsl:apply-templates select="enterpriseLogo"/>
           <xsl:apply-templates select="enterpriseSpec"/>
+          <xsl:text>  </xsl:text>
         </div>
+        <xsl:text>  </xsl:text>
       </div>
       <div class="publisher">
+        <xsl:text>  </xsl:text>
         <span>Publisher: </span>
         <div class="enterprise">
           <xsl:apply-templates select="publisherLogo"/>
           <div class="responsiblePartnerCompany">
             <xsl:apply-templates select="responsiblePartnerCompany/enterpriseName"/>
+            <xsl:text> </xsl:text>
           </div>
+          <xsl:text> </xsl:text>
         </div>
       </div>
       <xsl:apply-templates select="security"/>
@@ -118,8 +123,10 @@
           <xsl:value-of select="enterpriseIdent/@manufacturerCodeValue"/>
         </xsl:attribute>
         <xsl:apply-templates select="enterpriseName"/>
+        <xsl:text> </xsl:text>
       </div>
-      <xsl:apply-templates select="businessUnit"/>      
+      <xsl:apply-templates select="businessUnit"/>
+      <xsl:text> </xsl:text>
     </div>
   </xsl:template>
 
@@ -156,7 +163,9 @@
           </xsl:if>
           <xsl:text>.</xsl:text>
         </xsl:for-each>
+        <xsl:text> </xsl:text>
       </div>
+      <xsl:text>   </xsl:text>
     </div>
   </xsl:template>
 
@@ -239,6 +248,7 @@
       <xsl:for-each select="symbol">
         <xsl:apply-templates/>
       </xsl:for-each>
+      <xsl:text> </xsl:text>
     </div>
   </xsl:template>
 
@@ -247,6 +257,7 @@
       <xsl:for-each select="symbol">
         <xsl:apply-templates/>
       </xsl:for-each>
+      <xsl:text> </xsl:text>
     </div>
   </xsl:template>
 

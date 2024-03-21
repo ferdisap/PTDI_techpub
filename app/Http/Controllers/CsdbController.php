@@ -12,6 +12,7 @@ use DOMElement;
 use DOMNode;
 use DOMXPath;
 use Gumlet\ImageResize;
+use Illuminate\Foundation\Vite as FoundationVite;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\App;
@@ -39,6 +40,7 @@ use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Main\XSIValidator;
+use Illuminate\Support\HtmlString;
 
 class CsdbController extends Controller
 {
@@ -53,17 +55,30 @@ class CsdbController extends Controller
   ################# NEW for csdb4 #################
   public function app()
   {
-    // Vite::useBuildDirectory('production'); // Customize the build directory...
+    // // output <script type="module" src="https://localhost:443/@vite/client"></script><script type="module" src="https://localhost:443/resources/js/csdb4/tes.js"></script>
+    // $vite = Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'))
+    // ->withEntryPoints(['resources/js/csdb4/tes.js']);
+    // dd($vite->toHTML());
+
+    // // output <script type="module" src="https://localhost:443/@vite/client"></script><script type="module" src="https://localhost:443/resources/js/csdb4/tes.js"></script>
+    // $vite = new FoundationVite;
+    // $htmlString = $vite->__invoke('resources/js/csdb4/tes.js', env('VITE_BUILD_DIR', 'build'));
+    // dd($htmlString);
+
+    // // output = <script type="module" src="https://localhost:443/@vite/client"></script>
+    // $vite = new FoundationVite;
+    // dd($vite, $vite->toHTML());
 
     // ini bisa
-    $blade = file_get_contents(resource_path('views/csdb4/app.blade.php'));
-    $blade = Blade::render($blade);
-    return Response::make($blade,200,[
-      'content-type' => 'text/html'
-    ]);
+    // $blade = file_get_contents(resource_path('views/csdb4/app.blade.php'));
+    // $blade = Blade::render($blade);
+    // return Response::make($blade,200,[
+    //   'content-type' => 'text/html'
+    // ]);
 
     // ini bisa
     // $view = view('csdb4.app')->render();
+    // $view = preg_replace('/<script.+src=("[a-zA-Z0-9:\/]+worker.js").+<\/script>/m','$1',$view);
     // return Response::make($view,200,[
     //   'content-type' => 'text/html'
     // ]);
@@ -79,8 +94,10 @@ class CsdbController extends Controller
    */
   public function get_allobjects_list(Request $request)
   {
+    // $tes = ModelsCsdb::where('filename', 'DMC-1_foo')->get(['updated_at']);
+    // dd(now()->toString(), $tes[0]->updated_at->toString());
     if($request->get('listtree')){
-      return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path'])->toArray()]);
+      return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path', 'updated_at'])->toArray()]);
       // return $this->ret2(200, ModelsCsdb::selectRaw("filename, path")->paginate(200)->toArray()); // hanya untuk dump karena database isinya ribuan rows
     }
     $this->model = ModelsCsdb::with('initiator');    

@@ -77,7 +77,8 @@ class Csdb extends Model
   protected function createdAt(): Attribute
   {
     return Attribute::make(
-      set: fn (string $v) => Carbon::now(7),
+      set: fn (string $v) => now()->toString(),
+      get: fn (string $v) => now()->toString(),
     );
   }
 
@@ -87,7 +88,8 @@ class Csdb extends Model
   protected function updatedAt(): Attribute
   {
     return Attribute::make(
-      set: fn (string $v) => Carbon::now(7),
+      set: fn (string $v) => now()->toString(),
+      get:fn (string $v) => now()->toString(),
     );
   }
 

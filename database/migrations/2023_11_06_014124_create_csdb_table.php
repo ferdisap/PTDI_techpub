@@ -14,21 +14,8 @@ return new class extends Migration
    */
   public function up(): void
   {
-    // Schema::connection('techpub_sqlite')->dropIfExists('csdb');
-    // Schema::connection('sqlite')->create('csdb', function (Blueprint $table) {
-    //   $table->ulid('id')->primary();
-    //   $table->string('filename')->unique();
-    //   $table->string('path');
-    //   $table->string('status'); // new/modified/deleted + seeded/initiated/ + unused
-    //   $table->text('description')->nullable();
-    //   // $table->boolean('editable'); // yes(1) or no(0) // sepertinya ini sudah tidak dipakai. awailnya dipakai di CsdbController@postupdate, tapi nanti dihapus saja. Kayaknya diawal ini berfungsi saat object sudah di customer, tidak bisa diedit lagi, padahal sekarang untuk customer pakai database sql yang berbeda (ietm.sqlite);
-    //   $table->integer('initiator_id');
-    //   $table->integer('project_name');
-    //   $table->json('remarks')->nullable();
-    //   $table->timestamps();
-    // });
-    $file = new Filesystem;
-    $file->cleanDirectory('storage/csdb');
+    // $file = new Filesystem;
+    // $file->cleanDirectory('storage/csdb');
     
     Schema::connection('sqlite')->create('csdb', function (Blueprint $table) {
       $table->ulid('id')->primary();

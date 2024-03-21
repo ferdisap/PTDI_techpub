@@ -89,13 +89,11 @@ class CsdbServiceController extends CsdbController
     if(!$csdb) abort(400);
     $fo = storage_path('examples/fo/helloworld.fo');
     if($pdf = Fop::FO_to_PDF($fo)){
-      // return Response::make($pdf,200,['Content-Type' => 'application/pdf']);
-      // return Response::make($pdf,200,[
       return Response::make($pdf,200,[
         'Content-Type' => 'application/pdf', 
         'Cache-Control' => 'public',
         'Expires' => now()->add('day', 1),
-        'Last-Modified' => $csdb->updated_at->toString()
+        'Last-Modified' => $csdb->updated_at
       ]);
     } else {
       return abort(400);

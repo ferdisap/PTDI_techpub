@@ -7,6 +7,7 @@
   <xsl:template match="security">
     <div class="security">
       <xsl:apply-templates select="@securityClassification"/>
+      <xsl:text>  </xsl:text>
     </div>   
   </xsl:template>
 

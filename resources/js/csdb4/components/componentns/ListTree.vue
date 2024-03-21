@@ -1,11 +1,15 @@
 <script>
 import { list } from 'postcss';
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import setListTreeData from '../../../../../public/js/csdb/setListTreeData';
+
+
 export default {
   data() {
     return {
       data: {},
       html: '',
+      techpubStore: useTechpubStore(),
     }
   },
   props: {
@@ -19,43 +23,39 @@ export default {
      */
     async get_list(type, params = {}) {
       params.listtree = 1;
-      let response = await axios({
-        route: {
-          name: `api.get_${type}_list`,
-          data: params
-        }
-      })
-      if (response.statusText === 'OK') {
-        // sortir berdasarkan path
-        response.data.data = response.data.data.sort((a, b) => {
-          return a.path > b.path ? 1 : (a.path < b.path ? -1 : 0);
+      
+      let worker = this.createWorker();
+      if(worker){
+        let route = this.techpubStore.getWebRoute(`api.get_${type}_list`, params);
+        let prom = new Promise((resolve, reject) =>{
+          worker.onmessage = (e) => {
+            this.data[`${type}_list`] = e.data[0];
+            this.data[`${type}_list_level`] = e.data[1];
+            worker.terminate();
+            return resolve(true);
+          };
         });
-        // sortir object dan level path nya eg: "/csdb/n219/amm" berarti level 3
-        let obj = {};
-        let levels = {};
-        for (const v of response.data.data) {
-          let path = v.path
-          let split = path.split("/");
-          let l = split.length;
-
-          let p = [];
-          for (let i = 1; i <= l; i++) {
-            p.push(split[i-1]);
-            levels[i] = levels[i] ?? [];
-            levels[i].push(p.join("/"));
+        worker.postMessage({
+          component: {
+            name: 'ListTree',
+            route: route,
+          },
+        });
+        return prom;
+      } else {
+        let response = await axios({
+          route: {
+            name: `api.get_${type}_list`,
+            data: params
           }
-          levels[l].indexOf(path) < 0 ? levels[l].push(path) : '';
-
-          // let l = path.split("/").length;
-          // levels[l] = levels[l] ?? [];
-          // levels[l].indexOf(path) < 0 ? levels[l].push(path) : '';
-
-          obj[path] = obj[path] || [];
-          obj[path].push(v);
+        })
+        if (response.statusText === 'OK') {
+          let data = setListTreeData(response.data.data);
+          this.data[`${type}_list`] = data[0];
+          this.data[`${type}_list_level`] = data[1];
+          return Promise.resolve(true);
         }
-        this.data[`${type}_list`] = obj;
-        this.data[`${type}_list_level`] = levels;
-        // console.log(window.obj = obj, window.lvl = levels);
+        return Promise.resolve(false);
       }
     },
     async goto(type, page = undefined) {
@@ -71,9 +71,9 @@ export default {
     createListTreeHTML() {
       const gen_objlist = function (models, style = '') {
         let listobj = '';
-        if(models){ // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
+        if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
           for (const model of models) {
-            let logo = model.filename.substr(0,3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+            let logo = model.filename.substr(0, 3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
             listobj = listobj + `
                   <div class="obj" style="${style}">
                     ${logo}<a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
@@ -96,8 +96,8 @@ export default {
             let parentP = pathSplit.join("/");
 
             if (path_yang_sudah.indexOf(path) >= 0
-            || path_yang_sudah.indexOf(parentP) >= 0
-            || parentP !== parentPath // expresi ini membuat path tidak di render
+              || path_yang_sudah.indexOf(parentP) >= 0
+              || parentP !== parentPath // expresi ini membuat path tidak di render
             ) {
               continue;
             }
@@ -128,7 +128,6 @@ export default {
 
       this.html = fn(1, this.data[`${this.$props.type}_list_level`], this.data[`${this.$props.type}_list`], fn);
     },
-
     /*
      * akan mendelete jika newModel tidak ada
     */
@@ -151,20 +150,20 @@ export default {
       let level = split.length;
       let p = [];
       for (let i = 1; i <= level; i++) {
-        p.push(split[i-1]);
+        p.push(split[i - 1]);
         this.data[`${this.$props.type}_list_level`][i] = this.data[`${this.$props.type}_list_level`][i] ?? [];
         this.data[`${this.$props.type}_list_level`][i].push(p.join("/"));
       }
-      let foundLevel = Object.entries(this.data[`${this.$props.type}_list_level`]).find(arr =>  arr[0] == level); // output ['level', Array containing path];;
-      if(foundLevel && !(this.data[`${this.$props.type}_list_level`][foundLevel[0]].find(v => v === model.path))){ // agar tidak terduplikasi path nya
+      let foundLevel = Object.entries(this.data[`${this.$props.type}_list_level`]).find(arr => arr[0] == level); // output ['level', Array containing path];;
+      if (foundLevel && !(this.data[`${this.$props.type}_list_level`][foundLevel[0]].find(v => v === model.path))) { // agar tidak terduplikasi path nya
         this.data[`${this.$props.type}_list_level`][foundLevel[0]].push(model.path)
-      } 
+      }
     }
   },
   async mounted() {
     this.emitter.on('ListTree-refresh', (data) => {
       //data adalah model SQL Csdb Object
-      if (data) { 
+      if (data) {
         if (this.deleteList(data.filename)) {
           this.pushList(data);
         }
@@ -186,8 +185,8 @@ export default {
       this.createListTreeHTML();
     })
 
-    await this.get_list(this.$props.type);
-    this.createListTreeHTML();
+    let list = await this.get_list(this.$props.type);
+    if(list) this.createListTreeHTML();
   },
   computed: {
     listobject() {

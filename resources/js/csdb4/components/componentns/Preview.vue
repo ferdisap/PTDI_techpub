@@ -79,13 +79,7 @@ export default {
       if (routeName) {
         this.data.mime = this.view === 'ietm' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
         let src = await this.blobRequestTransformed(routeName, { filename: data.filename }, this.data.mime);
-        this.data.src = src
-        console.log(src);
-        // const route = this.techpubStore.getWebRoute(routeName, {filename: data.filename});
-        // setTimeout(() => {
-        //   this.data.mime = this.view === 'ietm' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
-        //   this.data.src = route.url.toString();
-        // },0);
+        this.data.src = src // blob:http://127.0.0.1:8000/1a7cdf64-c7f7-4dd3-b4b2-0d26a3f0bb52
       }
     }
   },

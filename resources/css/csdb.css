@@ -16,7 +16,7 @@ table tbody:before {
 }
 
 .csdbobjectcontent *{
-  font-family:sans-serif;
+  font-family:Tahoma, sans-serif;
 }
 
 .csdbobjectcontent{
@@ -192,7 +192,6 @@ table tbody:before {
   }
 }
 
-
 /* for Front Matter */
 @layer components {
   .frontMatter {
@@ -238,8 +237,7 @@ table tbody:before {
   .frontMatterTitlePage .issueInfo{
     @apply 
     /* border border-blue-500 */
-    text-[11pt]
-    
+    text-[11pt]    
   }
   .frontMatterTitlePage .externalPubCode, .frontMatterTitlePage .externalPubCode *{
     @apply 
@@ -284,7 +282,7 @@ table tbody:before {
   /* start Manufacturer */
   .frontMatterTitlePage .manufacturer  {
     @apply
-    py-[6pt]
+    py-[6pt] mx-[1cm]
   }
   .frontMatterTitlePage .manufacturer * {
     @apply
@@ -318,7 +316,7 @@ table tbody:before {
   /* start Publisher */
   .frontMatterTitlePage .publisher  {
     @apply
-    py-[6pt]
+    py-[6pt] mx-[1cm]
   }
   .frontMatterTitlePage .publisher * {
     @apply
@@ -359,9 +357,6 @@ table tbody:before {
   /* start Front Matter Info */
   .frontMatterTitlePage .frontMatterInfo{
     @apply block relative
-  }
-  .frontMatterTitlePage .frontMatterInfo * {
-    @apply text-[8pt] leading-[11pt]
   }
   .frontMatterTitlePage .frontMatterInfo .title {
     @apply font-bold 

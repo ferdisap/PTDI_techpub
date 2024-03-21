@@ -40,6 +40,7 @@ export default defineConfig({
         // 'resources/views/**/*.vue',
         // 'resources/views/**/*.js',
         'resources/js/csdb4/app.js',
+        // 'resources/js/csdb4/worker.js',
         // 'resources/js/csdb4/tes.js',
         
         // 'resources/js/bootstrap.js',

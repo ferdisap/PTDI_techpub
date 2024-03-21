@@ -277,7 +277,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     getWebRoute(name, params, route = undefined) {
       // mapping FormData. Jika value berupa array, maka dijoin pakai comma
       if (params instanceof FormData) {
-        a = {};
+        let a = {};
         for (const [k, v] of fd) {
           a[k] = a[k] || '';
           a[k] += ',' + v;
@@ -298,12 +298,14 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       if (!route.method || route.method === 'GET' || route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
         url.search = new URLSearchParams(params);
-        route.url = url;
+        route.url = url.toString();
       }
       else if (route.method === 'POST' || route.method.includes('POST')) {
         route.params = params;
-        route.url = new URL(window.location.origin + route.path);
+        route.url = new URL(window.location.origin + route.path).toString();
       }
+      route.method = Object.assign({}, route.method); // supaya tidak ada Proxy, sehingga worker bisa pakainya
+      route.params = Object.assign({}, route.params); // supaya tidak ada Proxy
       return route;
     },
 

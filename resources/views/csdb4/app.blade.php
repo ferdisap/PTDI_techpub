@@ -19,6 +19,19 @@
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script type="text/javascript" src="/js/jquery.maphilight.min.js"></script>
 
+  {{-- <script src="/js/csdb/worker.js" type="module"></script> --}}
+
+  {{-- <script>
+    if(window.Worker){
+      // window.w = new Worker("/js/worker.js");
+      // window.w = new Worker("/worker");
+      window.w = new Worker("/js/csdb/worker.js",{type:'module'});
+
+      w.onmessage = function(){
+        console.log('aaa');
+      }
+    }
+  </script> --}}
   {{--
       untuk vue 
       gunakan @@vite instead of @vite jika tidak ingin pakai blade @vite directive 
@@ -30,7 +43,18 @@
   <link rel="stylesheet" href="https://localhost:987/resources/css/loadingbar.css">
   <script src="https://localhost:987/resources/js/csdb4/app.js" type="module"> </script> --}}
   @vite(['resources/css/dmodule.css', 'resources/css/app.css', 'resources/css/loadingbar.css'])
-  @vite(['resources/js/csdb4/app.js'])  
+  @vite(['resources/js/csdb4/app.js'])
+
+  {{-- <script>
+    if(window.Worker){
+      window.w = new Worker(
+        {{ 
+          Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'))
+                  ->withEntryPoints(['resources/js/csdb4/worker.js'])
+        }}
+      )
+    }
+  </script> --}}
   
   {{-- @vite('resources/css/csdb.css') --}}
   

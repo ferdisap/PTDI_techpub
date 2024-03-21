@@ -23,10 +23,13 @@ export default {
   },
   methods: {
     async submitChangePathForm(evt){
+      window.evt = evt;
+      let data = new FormData(evt.target);
+      window.fd = data;
       let response = await axios({
         route: {
           name: 'api.change_object_path',
-          data: new FormData(evt.target),
+          data: data,
         }
       });
       if(response.statusText === 'OK'){
