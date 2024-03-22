@@ -276,9 +276,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      */
     getWebRoute(name, params, route = undefined) {
       // mapping FormData. Jika value berupa array, maka dijoin pakai comma
+      let fd;
       if (params instanceof FormData) {
+        fd = params;
         let a = {};
-        for (const [k, v] of fd) {
+        for (const [k, v] of params) {
           a[k] = a[k] || '';
           a[k] += ',' + v;
           if (a[k][0] === ',') {
@@ -295,17 +297,18 @@ export const useTechpubStore = defineStore('useTechpubStore', {
         route.path = route.path ? route.path.replace(`:${p}`, params[p]) : (() => {throw new Error('Route must have its path.')})();
         delete params[p]; // ini diperlukan agar params tidak dijadikan query data
       }
-      if (!route.method || route.method === 'GET' || route.method.includes('GET')) {
+      if (!route.method || route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
         url.search = new URLSearchParams(params);
         route.url = url.toString();
+        route.params = Object.assign({}, route.params); // supaya tidak ada Proxy
       }
-      else if (route.method === 'POST' || route.method.includes('POST')) {
+      else if (route.method.includes('POST')) {
         route.params = params;
         route.url = new URL(window.location.origin + route.path).toString();
+        route.params = fd;
       }
       route.method = Object.assign({}, route.method); // supaya tidak ada Proxy, sehingga worker bisa pakainya
-      route.params = Object.assign({}, route.params); // supaya tidak ada Proxy
       return route;
     },
 

@@ -8,6 +8,9 @@
   <!-- <xsl:output method="html" doctype-system="about:legacy-compat"/> -->
   <!-- <xsl:output doctype-public="HTML" doctype-system="" omit-xml-declaration="yes" /> -->
   <xsl:output method="html" doctype-system="about:legacy-compat"/>
+
+  <xsl:include href="./dmodule.xsl" />
+
   <xsl:include href="./csdb/Content.xsl" />
   <xsl:include href="./csdb/DmAddress.xsl" />
   <xsl:include href="./csdb/DmAddressItems.xsl" />
@@ -54,31 +57,8 @@
 
   <xsl:param name="csrf_token"/>
 
-  <!-- for vite dev -->
-
-  <xsl:template match="dmodule | pm | dml">
-    <xsl:if test="$configuration = 'ForIdentStatusVue'">
-      <xsl:apply-templates select="identAndStatusSection"/>
-    </xsl:if>
-    <xsl:if test="$configuration = 'ContentPreview'">
-      <!-- <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;</xsl:text> -->
-      <html>
-        <head>
-          <title>Module</title>
-          <meta name="csrf-token" content="{$csrf_token}"/>
-          <xsl:text disable-output-escaping="yes">
-            {{ 
-              $vite = Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'))
-                      ->withEntryPoints(['resources/css/csdb.css'])
-            }}
-          </xsl:text>
-        </head>
-        <body>
-          <xsl:apply-templates select="content"/>
-        </body>
-      </html>
-    </xsl:if>
+  <xsl:template match="/">
+    <xsl:apply-templates/>
   </xsl:template>
-
-
+  
 </xsl:transform>

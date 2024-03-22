@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configs [
+  <!ELEMENT configs (config+)>
+  <!ELEMENT config (path+)>
+  <!ELEMENT path (#PCDATA)>
+  
+  <!ATTLIST config type CDATA #REQUIRED>
+  <!ATTLIST path product-name CDATA #REQUIRED>
+]>
+
+<configs>
+  <config type="pdf">
+    <path product-name="CN235">pdf/CN235/Main.xsl</path>
+    <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
+    <path product-name="MALE">pdf/MALE/Main.xsl</path>
+  </config>
+  <config type="html">
+    <path product-name="*">html/Main.xsl</path>
+  </config>
+</configs>

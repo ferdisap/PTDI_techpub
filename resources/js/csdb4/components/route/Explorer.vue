@@ -112,13 +112,14 @@ export default {
       // this.bottomBarItems.Folder.isShow = true; // hanya dumping
 
       // identStatus
-      this.bottomBarItems.IdentStatus.isShow = true;
+      this.bottomBarItems.IdentStatus.isShow = data.filename.slice(0,3) === 'ICN' ? false : true;
       this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
 
       // Preview
       this.bottomBarItems.Preview.isShow = true;
-      this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
-      // this.emitter.emit('Preview-refresh', data);
+      setTimeout(()=>{
+        this.emitter.emit('Preview-refresh', data); // hanya ada filename dan path di data
+      },0);
 
       // Editor
       this.bottomBarItems.Editor.data = data; // hanya ada filename dan path saja di data
@@ -170,8 +171,18 @@ export default {
       this.bottomBarItems.IdentStatus.data = data.model;
       this.bottomBarItems.History.data = data.model;
       this.bottomBarItems.Option.data = data.model;
-
     })
+
+    this.emitter.on('createICNFromEditor', (data) => {
+      this.emitter.emit('ListTree-add', data.model);
+    });
+
+    this.emitter.on('updateICNFromEditor', (data) => {
+      console.log('explorer emitted by editor updateICNFromEditor');
+      this.emitter.emit('Preview-refresh', data.model)
+    });
+
+    
 
     this.emitter.on('updateObjectFromEditor', (data) => {
       // data berupa model

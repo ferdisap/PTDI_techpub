@@ -500,6 +500,32 @@ class CsdbController extends Controller
   }
 
   /**
+   * hanya mengganti file saja, tidak merubah apapun (termasuk tidak merubah filename) 
+   * jika user ingin mengubah filename, termasuk mengubah sequrity classification, maka harus delete, dan reupload lagi
+   */
+  public function updateICN(Request $request, ModelsCsdb $csdb)
+  {
+    $request->validate([
+      "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+        $ext = strtolower($value->getClientOriginalExtension());
+        $mime = strtolower($value->getMimeType());
+        if ($ext == 'xml' or str_contains($mime, 'text')) {
+          $fail("You should put the non-text file in {$attribute}.");
+        }
+      }],
+    ]);
+    $file = $request->file('entity');
+    if(Storage::disk('csdb')->put($csdb->filename, $file->getContent())){
+      $csdb->updated_at = now();
+      if($csdb->save()){
+        return $this->ret2(200, ["New {$csdb->filename} has been updated."], ["data" => $csdb]);
+      }
+    };
+    return $this->ret2(400, ["{$csdb->filename} failed to update."]);
+    
+  }
+  
+  /**
    * akan memindahkan file ke folder csdb_deleted.
    * Object yang sudah di delete, tidak akan bisa diapa-apain kecuali di download
    * Object hanya bisa di delete jika remark->stage != staged

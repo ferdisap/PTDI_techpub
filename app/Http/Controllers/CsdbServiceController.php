@@ -20,7 +20,9 @@ use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
+use Ptdi\Mpub\Main\CSDBStatic;
 use Ptdi\Mpub\Main\CSDBValidator;
+use Ptdi\Mpub\Main\Helper as MainHelper;
 use Ptdi\Mpub\Pdf2\Applicability;
 use Ptdi\Mpub\Pdf2\Fonts;
 use Ptdi\Mpub\Pdf2\PMC_PDF;
@@ -71,7 +73,7 @@ class CsdbServiceController extends CsdbController
     $model = Csdb::where('filename', $filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
 
-    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/html/Container.xsl"), [
+    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/html/Main.xsl"), [
       "configuration" => 'ContentPreview',
       'csrf_token' => csrf_token(),
     ]);
@@ -84,9 +86,46 @@ class CsdbServiceController extends CsdbController
     return Response::make($transformed,200,['content-type' => 'text/html']);
   }
 
+  private function getPathXSL(string $type, string $productName = '') : string
+  {
+    $config = new \DOMDocument();
+    $config->validateOnParse = true;
+    @$config->load(resource_path("views/csdb4/xsl/Config.xml"));
+
+    $xpath = new \DOMXPath($config);
+    $path = $xpath->evaluate("string(//config[@type='$type']/path[@product-name='$productName' or @product-name='*'])");
+    return !empty($path) ? (CSDB_VIEW_PATH."/xsl/$path") : '';
+  }
+
   public function get_pdf_object(Request $request, Csdb $csdb)
   {
     if(!$csdb) abort(400);
+    // $modelIdentCode = MainHelper::get_attribute_from_filename($csdb->filename, 'modelIdentCode');  
+    $modelIdentCode = 'CN235';
+    $pathxsl = $this->getPathXSL('pdf', $modelIdentCode);
+    if(!$pathxsl) return Response::make('', 200, ['Content-Type' => 'application/pdf']);
+
+    $model = Csdb::where('filename', $csdb->filename)->first();
+    $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+
+    $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
+      "configuration" => 'ContentPreview',
+      'csrf_token' => csrf_token(),
+    ]);
+
+    $fo = resource_path("views/csdb4/xsl//pdf/transformed/".$csdb->filename.".fo");
+    file_put_contents($fo, $transformed);
+    if($pdf = Fop::FO_to_PDF($fo)){
+      return Response::make($pdf,200,[
+        'Content-Type' => 'application/pdf', 
+        'Cache-Control' => 'public',
+        'Expires' => now()->add('day', 1),
+        'Last-Modified' => $csdb->updated_at
+      ]);
+    } else {
+      return abort(400);
+    }
+
     $fo = storage_path('examples/fo/helloworld.fo');
     if($pdf = Fop::FO_to_PDF($fo)){
       return Response::make($pdf,200,[
@@ -100,17 +139,14 @@ class CsdbServiceController extends CsdbController
     }
   }
 
-  public function request_icn_object(Request $request, string $filename)
+  public function request_icn_object(Request $request, Csdb $csdb)
   {
-    // $model = Csdb::where('filename', $filename)->first();
-    $model = true;
-    if($model){
-      $icn = new CSDBObject("5.0");
-      $icn->load(storage_path("csdb/$filename"));
-      return Response::make($icn->document->getFile(),200, [
-        'Content-Type' => $icn->document->getFileinfo()['mime_type'],
-      ]);
-    }
+    // otomatis abort 404 jika $csdb null
+    $icn = new CSDBObject("5.0");
+    $icn->load(storage_path("csdb/$csdb->filename"));
+    return Response::make($icn->document->getFile(),200, [
+      'Content-Type' => $icn->document->getFileinfo()['mime_type'],
+    ]);
   }
 
   /**

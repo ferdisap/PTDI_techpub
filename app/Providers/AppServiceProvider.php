@@ -16,6 +16,15 @@ class AppServiceProvider extends ServiceProvider
     //
   }
 
+  public function wp_normalize_path( $path ) {
+    $path = str_replace( '\\', '/', $path );
+    $path = preg_replace( '|(?<=.)/+|', '/', $path );
+    if ( ':' === substr( $path, 1, 1 ) ) {
+        $path = ucfirst( $path );
+    }
+    return $path;
+}
+
   /**
    * Bootstrap any application services.
    */
@@ -25,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
     set_include_path(get_include_path() . PATH_SEPARATOR . $path_included);
 
     Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'));
+
+    define("CSDB_VIEW_PATH", $this->wp_normalize_path(resource_path('views/csdb4')));
     
     
     // Blade::anonymousComponentPath(base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR);

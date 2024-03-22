@@ -13,10 +13,11 @@ Route::get("/api/object/all",[CsdbController::class, 'get_objects_list'])->middl
 
 Route::get("/api/csdbtransform/{filename}", [CsdbServiceController::class, 'provide_csdb_transform3'])->middleware('auth')->name('api.transform_csdb');
 Route::post("/api/csdbcreate",[CsdbController::class, 'create'])->middleware('auth')->name('api.create_object');
+Route::post("/api/uploadICN", [CsdbController::class, 'uploadICN'])->middleware('auth')->name('api.upload_ICN');
 Route::get("/api/deletion/all",[CsdbController::class, 'get_deletion_list'])->middleware('auth')->name('api.get_deletion_list');
 
 Route::post("/api/updateobject/{filename}", [CsdbController::class, 'update'])->middleware('auth')->name('api.update_object');
-Route::post("/api/uploadICN", [CsdbController::class, 'uploadICN'])->middleware('auth')->name('api.upload_ICN');
+Route::post("/api/updateICN/{csdb:filename}", [CsdbController::class, 'updateICN'])->middleware('auth')->name('api.update_ICN');
 
 Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object'); // dipindah ke CsdbServiceController@request_csdb_bject
 Route::get('/api/getdmcstaged/all', [CsdbController::class, 'get_dmc_staged_list'])->middleware('auth')->name('api.get_dmc_staged_list');
@@ -55,7 +56,7 @@ Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_tra
 Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
 
 // request ICN object
-Route::get("/csdb/icn/{filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth')->name('api.request_icn_object');
+Route::get("/csdb/icn/{csdb:filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth')->name('api.request_icn_object');
 
 // request XML CSDB Object
 Route::get('/api/object/{filename}', [CsdbServiceController::class, 'request_csdb_object'])->middleware('auth')->name('api.request_csdb_object');

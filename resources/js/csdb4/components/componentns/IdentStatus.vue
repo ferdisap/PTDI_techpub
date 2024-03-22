@@ -58,6 +58,7 @@ export default {
     </div>
     <div class="">
       <component v-if="data.transformed" :is="transformed"/>
+      <div v-if="$props.dataProps.filename.slice(0,3) === 'ICN'">ICN Meta File coming soon</div>
     </div>
   </div>
 </template>

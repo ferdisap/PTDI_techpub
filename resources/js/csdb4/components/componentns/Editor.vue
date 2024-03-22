@@ -14,7 +14,7 @@ export default {
       rn_create: 'api.create_object',
     }
   },
-  props: ['text', 'filename'],
+  props: ['filename'],
   computed: {
     getEditor(){
       if(this.editor){
@@ -43,11 +43,19 @@ export default {
     },
     async setUpdate(){
       this.isUpdate = true;
-      let raw = await this.getRaw(this.$props.filename);
-      this.changeText(raw);
+      if(this.$props.filename.slice(0,3) === 'ICN'){
+        this.isFile = true;
+        this.rn_update = 'api.update_ICN';
+      } else {
+        this.isFile = false;
+        this.rn_update = 'api.update_object';
+        let raw = await this.getRaw(this.$props.filename);
+        this.changeText(raw);
+      }
     },
     setCreate(){
       this.isUpdate = false;
+      this.isFile = false;
       this.changeText('');
     },
     async getRaw(filename){
@@ -63,7 +71,7 @@ export default {
         return response.data
       }
     },
-    async create() {
+    async create(event) {
       if(!this.isFileUpload){
         const formData = new FormData(event.target);
         formData.append('xmleditor', this.editor.state.doc.toString());
@@ -86,14 +94,22 @@ export default {
           }
         });
         if(response.statusText === 'OK'){
-          // tidak perlu refresh preview karena sudah di readURL
+          this.emitter.emit('createICNFromEditor', { model: response.data.data });
         }
       }
     },
-    async update() {
+    async update(event) {
+      console.log('update');
+      let emitName;
       const formData = new FormData(event.target);
-      formData.append('xmleditor', this.editor.state.doc.toString());
-      formData.append('filename', this.$props.filename);
+      if(!this.isFileUpload){
+        formData.append('xmleditor', this.editor.state.doc.toString());
+        formData.append('filename', this.$props.filename);
+        emitName = 'updateObjectFromEditor';
+      } else {
+        formData.append('filename', this.$props.filename);
+        emitName = 'updateICNFromEditor';
+      }
       let response = await axios({
         route: {
           name: this.rn_update,
@@ -101,11 +117,11 @@ export default {
         }
       })
       if (response.statusText === 'OK') {
-        this.emitter.emit('updateObjectFromEditor', { model: response.data.data });
+        this.emitter.emit(emitName, { model: response.data.data });
       }
     },
-    submit() {
-      return !this.isUpdate ? this.create() : this.update();
+    submit(event) {
+      return !this.isUpdate ? this.create(event) : this.update(event);
     },
     switchTo(name){
       switch (name) {
@@ -154,16 +170,12 @@ export default {
     });
     // this.editor.state.doc.toString() // untuk ngambil isi text nya
 
-    if (this.$props.text) {
-      this.changeText(this.$props.text);
-    }
-    else if (this.$props.filename) {
-      let raw = await this.getRaw(this.$props.filename);
-      this.changeText(raw);
-    }
-
     if(this.$props.filename){
-      this.isUpdate = true;
+      this.setUpdate();
+      if(this.$props.filename.slice(0,3) !== 'ICN') {
+        let raw = await this.getRaw(this.$props.filename);
+        this.changeText(raw);
+      }
     }
 
   }
@@ -185,7 +197,8 @@ export default {
       <a href="#" v-else @click.prevent="setCreate()" class="block text-center text-sm underline text-blue-600">Switch to Create</a>
     </div>
 
-    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="submit">
+    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="submit($event)">
+    <!-- <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" method="POST" action="/api/uploadICN"> -->
       <h1>File Upload
         <a @click="switchTo('editor')" href="#" class="font-normal text-sm underline text-blue-600">Switch to XML editor</a><br/>
       </h1>
@@ -195,13 +208,14 @@ export default {
           <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
           <input type="checkbox" id="brex_validate" name="brex_validate" />
         </div>
+        <div v-if="isUpdate"> {{ $props.filename }} </div>
         <div class="flex space-x-3 w-full mb-2">
-          <div class="block w-[70%]">
+          <div v-if="!isUpdate" class="block w-[70%]">
             <label for="icn-filename" class="text-sm">Filename</label><br/>
-            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
+            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" /> 
             <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
           </div>
-          <div class="block w-auto">
+          <div v-if="!isUpdate" class="block w-auto">
             <label for="securityClassification" class="text-sm">Security Classification</label><br/>
             <input type="text" name="securityClassification" placeholder="type the SC code" class="py-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
             <div class="error text-sm text-red-600" v-html="techpubStore.error('securityClassification')"></div>
@@ -212,7 +226,7 @@ export default {
       </div>
       <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
     </form>
-    <form v-else @submit.prevent="submit">
+    <form v-else @submit.prevent="submit($event)">
       <h1 class="">XML Editor
         <a @click="switchTo('file-upload')" href="#" class="font-normal text-sm underline text-blue-600">Switch to file upload</a><br/>
       </h1>
