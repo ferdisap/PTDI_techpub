@@ -71,7 +71,7 @@ class CsdbServiceController extends CsdbController
     $model = Csdb::where('filename', $filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
 
-    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), [
+    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/html/Container.xsl"), [
       "configuration" => 'ContentPreview',
       'csrf_token' => csrf_token(),
     ]);
