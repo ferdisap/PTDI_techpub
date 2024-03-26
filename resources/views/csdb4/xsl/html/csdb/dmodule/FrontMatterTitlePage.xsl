@@ -173,74 +173,77 @@
 
   <xsl:template match="businessUnitAddress">
     <div class="businessUnitAddress">
-      <xsl:if test="department">
-        <xsl:text>Dept. </xsl:text><xsl:value-of select="department"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="street">
-        <xsl:text>St. </xsl:text><xsl:value-of select="street"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:value-of select="city"/>
-      <xsl:text>, </xsl:text>
-      <xsl:value-of select="country"/>
-      <xsl:text>, </xsl:text>
-      <xsl:if test="state">
-        <xsl:value-of select="state"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="province">
-        <xsl:value-of select="province"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="building">
-        <xsl:value-of select="building"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="room">
-        <xsl:value-of select="room"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="postOfficeBox">
-        <xsl:value-of select="postOfficeBox"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="postalZipCode">
-        <xsl:value-of select="postalZipCode"/>
-        <xsl:text>, </xsl:text>
-      </xsl:if>
-      <xsl:if test="phoneNumber">
-        <xsl:text>Phone: </xsl:text>
-        <xsl:for-each select="phoneNumber">
-          <xsl:value-of select="phoneNumber"/>
+      <xsl:variable name="address">
+        <xsl:if test="department">
+          <xsl:text>Dept. </xsl:text><xsl:value-of select="department"/>
           <xsl:text>, </xsl:text>
-        </xsl:for-each>
-      </xsl:if>
-      <xsl:if test="faxNumber">
-        <xsl:text>Fax: </xsl:text>
-        <xsl:for-each select="faxNumber">
-          <xsl:value-of select="faxNumber"/>
+        </xsl:if>
+        <xsl:if test="street">
+          <xsl:text>St. </xsl:text><xsl:value-of select="street"/>
           <xsl:text>, </xsl:text>
-        </xsl:for-each>
-      </xsl:if>
-      <xsl:if test="email">
-        <xsl:text>Email: </xsl:text>
-        <xsl:for-each select="email">
-          <xsl:value-of select="email"/>
-          <xsl:text>, </xsl:text>
-        </xsl:for-each>
-      </xsl:if>
-      <xsl:if test="internet">
-        <xsl:text>Web: </xsl:text>
-        <xsl:for-each select="internet">
-          <xsl:value-of select="internet"/>
-          <xsl:text>, </xsl:text>
-        </xsl:for-each>
-      </xsl:if>
-      <xsl:if test="SITA">
-        <xsl:value-of select="SITA"/>
+        </xsl:if>
+        <xsl:value-of select="city"/>
         <xsl:text>, </xsl:text>
-      </xsl:if>
+        <xsl:value-of select="country"/>
+        <xsl:text>, </xsl:text>
+        <xsl:if test="state">
+          <xsl:value-of select="state"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="province">
+          <xsl:value-of select="province"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="building">
+          <xsl:value-of select="building"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="room">
+          <xsl:value-of select="room"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="postOfficeBox">
+          <xsl:value-of select="postOfficeBox"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="postalZipCode">
+          <xsl:value-of select="postalZipCode"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+        <xsl:if test="phoneNumber">
+          <xsl:text>Phone: </xsl:text>
+          <xsl:for-each select="phoneNumber">
+            <xsl:value-of select="phoneNumber"/>
+            <xsl:text>, </xsl:text>
+          </xsl:for-each>
+        </xsl:if>
+        <xsl:if test="faxNumber">
+          <xsl:text>Fax: </xsl:text>
+          <xsl:for-each select="faxNumber">
+            <xsl:value-of select="faxNumber"/>
+            <xsl:text>, </xsl:text>
+          </xsl:for-each>
+        </xsl:if>
+        <xsl:if test="email">
+          <xsl:text>Email: </xsl:text>
+          <xsl:for-each select="email">
+            <xsl:value-of select="email"/>
+            <xsl:text>, </xsl:text>
+          </xsl:for-each>
+        </xsl:if>
+        <xsl:if test="internet">
+          <xsl:text>Web: </xsl:text>
+          <xsl:for-each select="internet">
+            <xsl:value-of select="internet"/>
+            <xsl:text>, </xsl:text>
+          </xsl:for-each>
+        </xsl:if>
+        <xsl:if test="SITA">
+          <xsl:value-of select="SITA"/>
+          <xsl:text>, </xsl:text>
+        </xsl:if>
+      </xsl:variable>
+      <xsl:value-of select="php:function('preg_replace', '/,\s?$/','',$address)"/>
       <xsl:text>.</xsl:text>
     </div>
   </xsl:template>
