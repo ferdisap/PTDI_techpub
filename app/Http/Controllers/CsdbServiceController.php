@@ -58,7 +58,7 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
     $model = Csdb::where('filename', $filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
-    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/Container.xsl"), ["configuration" => 'ForIdentStatusVue']);
+    $transformed = $model->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/Container.xsl", ["configuration" => 'ForIdentStatusVue']);
     
     if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
       return $this->ret2(200, [$error], ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
@@ -66,16 +66,20 @@ class CsdbServiceController extends CsdbController
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
-  public function get_transformed_contentpreview(Request $request, string $filename)
+  public function get_transformed_contentpreview(Request $request, Csdb $csdb)
   {
-    // $csdb_model->filename = $filename; // nanti filename dari csdb.php SQL object
-    // atau pakai Route model Binding
-    $model = Csdb::where('filename', $filename)->first();
-    $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $csdb->CSDBObject->load(storage_path("csdb/$csdb->filename"));
 
-    $transformed = $model->CSDBObject->transform_to_xml(resource_path("views/csdb4/xsl/html/Main.xsl"), [
+    // $modelIdentCode = MainHelper::get_attribute_from_filename($csdb->filename, 'modelIdentCode');  
+    $modelIdentCode = 'CN235';
+    $pathxsl = $this->getPathXSL('html', $modelIdentCode);
+    if(!$pathxsl) return Response::make('', 200, ['Content-Type' => 'application/html']);
+
+    $transformed = $csdb->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/html/Main.xsl", [
       "configuration" => 'ContentPreview',
       'csrf_token' => csrf_token(),
+      // 'Expires' => now()->add('day', 1),
+      // 'Last-Modified' => $csdb->updated_at
     ]);
 
     if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
@@ -90,10 +94,10 @@ class CsdbServiceController extends CsdbController
   {
     $config = new \DOMDocument();
     $config->validateOnParse = true;
-    @$config->load(resource_path("views/csdb4/xsl/Config.xml"));
+    @$config->load(CSDB_VIEW_PATH."/xsl/Config.xml");
 
     $xpath = new \DOMXPath($config);
-    $path = $xpath->evaluate("string(//config[@type='$type']/path[@product-name='$productName' or @product-name='*'])");
+    $path = $xpath->evaluate("string(//config/output/method[@type='$type']/path[@product-name='$productName' or @product-name='*'])");
     return !empty($path) ? (CSDB_VIEW_PATH."/xsl/$path") : '';
   }
 
@@ -108,12 +112,18 @@ class CsdbServiceController extends CsdbController
     $model = Csdb::where('filename', $csdb->filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
 
+    // $config_doc = new CSDBObject("5.0");
+    // $config_doc->load(CSDB_VIEW_PATH."/xsl/Config.xml");
     $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
       "configuration" => 'ContentPreview',
       'csrf_token' => csrf_token(),
+      // 'config_path' => "file://".CSDB_VIEW_PATH."/xsl/Config.xml",
+      // 'config_path' => "file://".CSDB_VIEW_PATH."/xsl/Config.xml",
+      // 'config_path' => str_replace(' ','%20',"file://".CSDB_VIEW_PATH."/xsl/Config.xml"),
+      // 'config_doc' => $config_doc->document
     ]);
 
-    $fo = resource_path("views/csdb4/xsl//pdf/transformed/".$csdb->filename.".fo");
+    $fo = CSDB_VIEW_PATH."/xsl/pdf/transformed/".$csdb->filename.".fo";
     file_put_contents($fo, $transformed);
     if($pdf = Fop::FO_to_PDF($fo)){
       return Response::make($pdf,200,[

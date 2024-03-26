@@ -1,8 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE configs [
-  <!ELEMENT configs (config+)>
+<!DOCTYPE config [
+  <!ELEMENT config (output, security)>
+  
+  <!ELEMENT output (method+)>
+  <!ELEMENT method (path+)>
+  <!ELEMENT path (#PCDATA)>
+
+  <!ELEMENT security (securityClassification+,commercialClassification*,caveat*)>
+  <!ELEMENT securityClassification (#PCDATA)>
+  
+  <!ATTLIST method type CDATA #REQUIRED>
+  <!ATTLIST path product-name CDATA #REQUIRED>
+  <!ATTLIST securityClassification code CDATA #REQUIRED>
+]>
+
+<config>
+  <output>
+    <method type="html">
+      <path product-name="*">html/Main.xsl</path>
+    </method>
+    <method type="pdf">
+      <path product-name="CN235">pdf/CN235/Main.xsl</path>
+      <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
+      <path product-name="MALE">pdf/MALE/Main.xsl</path>    
+    </method>
+  </output>
+  <security>
+    <securityClassification code="01">UNCLASSIFIED</securityClassification>
+    <securityClassification code="02">RESTRICTED</securityClassification>
+    <securityClassification code="03">CONFIDENTIAL</securityClassification>
+    <securityClassification code="04">SECRET</securityClassification>
+    <securityClassification code="05">TOP SECRET</securityClassification>
+  </security>
+</config>
+
+<!-- <!DOCTYPE configs [
+  <!ELEMENT configs (config+|securities)>
   <!ELEMENT config (path+)>
+  <!ELEMENT securities (security+)>
   <!ELEMENT path (#PCDATA)>
   
   <!ATTLIST config type CDATA #REQUIRED>
@@ -18,4 +54,9 @@
   <config type="html">
     <path product-name="*">html/Main.xsl</path>
   </config>
-</configs>
+  <securities>
+    <security>
+
+    </security>
+  </securities>
+</configs> -->

@@ -1,26 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:fo="http://www.w3.org/1999/XSL/Format"
+  xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
+  xmlns:php="http://php.net/xsl">
 
+  <!-- 
+    param 'id' diperlukan jika ingin pakai page 1 of <total>
+   -->
   <xsl:template match="dmodule">
-    <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="Tahoma">
-      <fo:layout-master-set>
-        <fo:simple-page-master master-name="default-A4" page-height="29.7cm" page-width="21cm" margin-top="1cm" margin-bottom="1cm" margin-left="2cm" margin-right="2cm">
-          <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="1.5cm"/>
-          <fo:region-before region-name="header"/>
-          <fo:region-after region-name="footer" extent="1.5cm"/>
-        </fo:simple-page-master>
-      </fo:layout-master-set>
-      <fo:page-sequence master-reference="default-A4">
-        <fo:static-content flow-name="header">
-          <xsl:call-template name="header"/>
-        </fo:static-content>
-        <fo:static-content flow-name="footer">
-          <xsl:call-template name="footer"/>
-        </fo:static-content>
-        <fo:flow flow-name="body">
-          <xsl:call-template name="body"/>
-        </fo:flow>
-      </fo:page-sequence>
-    </fo:root>
+    <xsl:param name="masterReference"/>
+    <xsl:variable name="id">
+      <xsl:value-of select="php:function('rand')"/>
+    </xsl:variable>
+    
+    <fo:page-sequence master-reference="{$masterReference}" initial-page-number="auto-odd" force-page-count="even">
+      <xsl:call-template name="getRegion">
+        <xsl:with-param name="masterReference" select="$masterReference"/>
+        <xsl:with-param name="id" select="$id"/>
+      </xsl:call-template>
+      <fo:flow flow-name="body">
+        <xsl:call-template name="body"/>
+      </fo:flow>
+    </fo:page-sequence>
   </xsl:template>
+
+  <xsl:template name="getRegion">
+      <xsl:param name="masterReference"/>
+      <xsl:param name="id"/>
+      <fo:static-content flow-name="header-odd">
+        <xsl:call-template name="header">
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'odd'"/>
+        </xsl:call-template>
+      </fo:static-content>
+      <fo:static-content flow-name="header-even">
+        <xsl:call-template name="header">
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'even'"/>
+        </xsl:call-template>
+      </fo:static-content>
+      <fo:static-content flow-name="footer-odd">
+        <xsl:call-template name="footer">
+          <xsl:with-param name="id" select="$id"/>
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'odd'"/>
+        </xsl:call-template>
+      </fo:static-content>
+      <fo:static-content flow-name="footer-even">
+        <xsl:call-template name="footer">
+          <xsl:with-param name="id" select="$id"/>
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'even'"/>
+        </xsl:call-template>
+      </fo:static-content>
+      <fo:static-content flow-name="header-left_blank">
+        <xsl:call-template name="header">
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'even'"/>
+        </xsl:call-template>
+        <fo:block-container position="fixed" top="14cm" left="7cm">
+          <fo:block>Intentionally left blank</fo:block>
+        </fo:block-container>
+      </fo:static-content>
+      <fo:static-content flow-name="footer-left_blank">
+        <xsl:call-template name="footer">
+          <xsl:with-param name="id" select="$id"/>
+          <xsl:with-param name="masterName" select="$masterReference"/>
+          <xsl:with-param name="oddOrEven" select="'even'"/>
+        </xsl:call-template>
+      </fo:static-content>
+  </xsl:template>
+  
 </xsl:transform>

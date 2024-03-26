@@ -53,7 +53,7 @@ Route::get("/api/byfolder-allobjects",[CsdbController::class, 'forfolder_get_all
 // transform Ident Status
 Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_transformed_identstatus'])->middleware('auth')->name('api.get_transformed_identstatus');
 // transform Content
-Route::get("/api/content/{filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
+Route::get("/api/content/{csdb:filename}",[CsdbServiceController::class, 'get_transformed_contentpreview'])->middleware('auth')->name('api.get_transformed_contentpreview');
 
 // request ICN object
 Route::get("/csdb/icn/{csdb:filename}", [CsdbServiceController::class, 'request_icn_object'])->middleware('auth')->name('api.request_icn_object');
