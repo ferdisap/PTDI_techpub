@@ -10,4 +10,10 @@
     </fo:block>
   </xsl:template>
 
+  <xsl:template match="para">
+    <fo:block xsl:use-attribute-sets="para">
+      <xsl:apply-templates/>
+    </fo:block>
+  </xsl:template>
+
 </xsl:transform>

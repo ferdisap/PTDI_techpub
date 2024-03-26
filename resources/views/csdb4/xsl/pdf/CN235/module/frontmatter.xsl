@@ -31,10 +31,11 @@
     </fo:block>
 
     <xsl:apply-templates select="productIllustration"/>
-    <xsl:apply-templates select="dataRestrictions"/>
+    <xsl:call-template name="copyright"/>
 
     <!-- externalPubCode -->
-    <fo:block-container>
+    <fo:block-container font-size="8pt" margin-top="3pt">
+      <fo:block>External Publication related:</fo:block>
       <xsl:for-each select="externalPubCode">
         <fo:block>
           <xsl:value-of select="@pubCodingScheme"/><xsl:text>:</xsl:text><xsl:apply-templates/> <xsl:text>   </xsl:text>
@@ -47,14 +48,14 @@
     <!-- manufacturer -->
     <fo:block-container margin-top="11pt">
       <fo:block font-size="8pt">Manufacturer:</fo:block>
-      <fo:block>
+      <fo:block font-size="8pt">
         <fo:table table-layout="fixed" width="100%">
           <fo:table-body>
             <fo:table-row>
-              <fo:table-cell width="2.5cm">
+              <fo:table-cell width="2cm">
                 <xsl:apply-templates select="enterpriseLogo"/>
               </fo:table-cell>
-              <fo:table-cell display-align="center">
+              <fo:table-cell display-align="top">
                 <xsl:apply-templates select="enterpriseSpec"/>
               </fo:table-cell>
             </fo:table-row>
@@ -66,15 +67,15 @@
     <!-- publisher -->
     <fo:block-container margin-top="11pt">
       <fo:block font-size="8pt">Publisher:</fo:block>
-      <fo:block>
+      <fo:block font-size="8pt">
         <fo:table table-layout="fixed" width="100%">
           <fo:table-body>
             <fo:table-row>
-              <fo:table-cell width="2.5cm">
+              <fo:table-cell width="2cm">
                 <xsl:apply-templates select="publisherLogo"/>
                 <fo:block></fo:block>
               </fo:table-cell>
-              <fo:table-cell display-align="center">
+              <fo:table-cell display-align="top">
                 <fo:block><xsl:value-of select="string(responsiblePartnerCompany/enterpriseName)"/></fo:block>
               </fo:table-cell>
             </fo:table-row>
@@ -162,7 +163,7 @@
   <xsl:template match="enterpriseLogo">
     <fo:block>
       <xsl:for-each select="symbol">
-        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="2cm"/>
+        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="1.5cm"/>
       </xsl:for-each>
     </fo:block>
   </xsl:template>
@@ -170,7 +171,7 @@
   <xsl:template match="publisherLogo">
     <fo:block>
       <xsl:for-each select="symbol">
-        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="2cm"/>
+        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="1.5cm"/>
       </xsl:for-each>
     </fo:block>
   </xsl:template>
@@ -290,6 +291,18 @@
       </fo:block>
       <xsl:apply-templates/>
     </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="copyright">
+    <fo:block-container font-size="8pt">
+      <xsl:apply-templates select="dataRestrictions/restrictionInfo/copyright/copyrightPara"/>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template match="copyrightPara">
+    <fo:block margin-top="3pt">
+      <xsl:apply-templates/>
+    </fo:block>
   </xsl:template>
   
 
