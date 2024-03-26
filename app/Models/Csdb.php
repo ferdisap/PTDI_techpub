@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use DOMDocument;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -391,4 +392,76 @@ class Csdb extends Model
   //   }
   //   return $doc;
   // }
+
+  /**
+   * akan mengubah URI nya dari file:...../csdb/DMC-aaaa.xml menjadi file:...../csdb/
+   */
+  public function showCGMArkElement() :void
+  {
+    $xsltString = <<<XSLT
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+      
+      <xsl:output method="xml" omit-xml-declaration="yes"/>
+
+      <xsl:template match="@* | node()">
+        <xsl:copy>
+          <xsl:apply-templates select="@* | node()"/>
+        </xsl:copy>
+      </xsl:template>
+
+      <xsl:template match="//*[@changeMark = '1']">
+        <__cgmark>
+          <xsl:copy-of select="."/>
+        </__cgmark>
+      </xsl:template>
+    </xsl:transform>
+    XSLT;
+
+    $xslDoc = new DOMDocument();
+    $xslDoc->loadXML($xsltString);
+    
+    $xsltProc = new \XSLTProcessor();
+    $xsltProc->importStylesheet($xslDoc);
+
+    $newDoc= $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
+    $root = $newDoc->documentElement->cloneNode(true);
+    $importRoot = $this->CSDBObject->document->importNode($root, true);
+    $this->CSDBObject->document->documentElement->replaceWith($importRoot);
+  }
+
+  public function hideCGMArkElement() :void
+  {
+    $xsltString = <<<XSLT
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+      
+      <xsl:output method="xml" omit-xml-declaration="yes"/>
+
+      <xsl:template match="@* | node()">
+        <xsl:copy>
+          <xsl:apply-templates select="@* | node()"/>
+        </xsl:copy>
+      </xsl:template>
+
+      <xsl:template match="cgmark">
+        <xsl:copy-of select="child::*"/>
+      </xsl:template>
+    </xsl:transform>
+    XSLT; 
+
+    $xslDoc = new DOMDocument();
+    $xslDoc->loadXML($xsltString);
+    
+    $xsltProc = new \XSLTProcessor();
+    $xsltProc->importStylesheet($xslDoc);
+
+    $newDoc= $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
+    $root = $newDoc->documentElement->cloneNode(true);
+    $importRoot = $this->CSDBObject->document->importNode($root, true);
+    $this->CSDBObject->document->documentElement->replaceWith($importRoot);
+    return;
+  }
 }
+
+

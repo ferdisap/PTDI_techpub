@@ -140,6 +140,21 @@
       </fo:bookmark>
     </fo:bookmark-tree> -->
   </xsl:template>
+
+  <xsl:template match="__cgmark">
+    <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
+      <xsl:apply-templates/>
+    <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
+  </xsl:template>
+
+  <!-- <xsl:template match="@changeMark[.='1']"> -->
+    <!-- <xsl:value-of select="php:function('dd',string(parent::*), string(../.))"/> -->
+    <!-- <xsl:value-of select="php:function('dd',name(parent::*))"/> -->
+    <!-- <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/> -->
+      <!-- <xsl:apply-templates select="parent::*/."/> -->
+      <!-- <xsl:apply-templates select="../."/> -->
+    <!-- <fo:change-bar-end change-bar-class="{generate-id(.)}"/> -->
+  <!-- </xsl:template> -->
   
 
 </xsl:transform>

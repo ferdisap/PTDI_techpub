@@ -6,7 +6,7 @@
   <xsl:template match="sequentialList">
     <fo:block><xsl:value-of select="title"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.7cm" provisional-label-separation="0.15cm">
-      <xsl:apply-templates select="listItem">
+      <xsl:apply-templates select="listItem|__cgmark">
         <xsl:with-param name="listItemType">ol</xsl:with-param>
       </xsl:apply-templates>
     </fo:list-block>
@@ -15,7 +15,7 @@
   <xsl:template match="randomList">
     <fo:block><xsl:value-of select="title"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
-      <xsl:apply-templates select="listItem">
+      <xsl:apply-templates select="listItem|__cgmark">
         <xsl:with-param name="listItemType">ul</xsl:with-param>
       </xsl:apply-templates>
     </fo:list-block>
@@ -40,7 +40,7 @@
   <xsl:template match="reducedRandomList">
     <fo:block><xsl:value-of select="title"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
-      <xsl:apply-templates select="reducedRandomListItem"/>
+      <xsl:apply-templates select="reducedRandomListItem|__cgmark"/>
     </fo:list-block>
   </xsl:template>
   <xsl:template match="reducedRandomListItem">
@@ -49,13 +49,13 @@
         <fo:block>-</fo:block>
       </fo:list-item-label>
       <fo:list-item-body start-indent="body-start()">
-        <xsl:apply-templates select="reducedListItemPara"/>
+        <xsl:apply-templates select="reducedListItemPara|__cgmark"/>
       </fo:list-item-body>
     </fo:list-item>
   </xsl:template>
   <xsl:template match="reducedListItemPara">
     <fo:block text-align="justify">
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="__cgmark|node()"/>
     </fo:block>
   </xsl:template>
 
@@ -80,13 +80,13 @@
 
 
   <!-- <ul class="randomList">
-    <xsl:call-template name="cgmark"/>
+    <xsl:call-template name="__cgmark"/>
     <xsl:apply-templates/>
   </ul>          -->
 
   <!-- <xsl:template match="listItem">
     <li class="listItem">
-      <xsl:call-template name="cgmark"/>
+      <xsl:call-template name="__cgmark"/>
       <xsl:apply-templates/>
     </li>
   </xsl:template>
@@ -94,7 +94,7 @@
   <xsl:template match="definitionList">
     <br/>
     <dl class="definitionList">
-      <xsl:call-template name="cgmark"/>
+      <xsl:call-template name="__cgmark"/>
       <xsl:apply-templates select="definitionListItem"/>
     </dl>
   </xsl:template>

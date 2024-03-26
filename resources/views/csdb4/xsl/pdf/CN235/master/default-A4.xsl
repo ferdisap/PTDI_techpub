@@ -51,7 +51,7 @@
       <fo:block border-top="1pt solid black"></fo:block>
       <fo:block>
         <fo:inline-container inline-progression-dimension="49.9%">
-          <fo:block text-align="left"><xsl:call-template name="getApplicabilityOnFooter"/></fo:block>
+          <fo:block text-align="left">Applicable to: <xsl:call-template name="getApplicabilityOnFooter"/></fo:block>
         </fo:inline-container>
         <fo:inline-container inline-progression-dimension="49.9%">
           <fo:block text-align="right"><xsl:call-template name="getDMCodeOnFooter"/></fo:block>
@@ -84,7 +84,7 @@
           <fo:block text-align="left"><xsl:call-template name="getDMCodeOnFooter"/></fo:block>
         </fo:inline-container>
         <fo:inline-container inline-progression-dimension="49.9%">
-          <fo:block text-align="right"><xsl:call-template name="getApplicabilityOnFooter"/></fo:block>
+          <fo:block text-align="right">Applicable to: <xsl:call-template name="getApplicabilityOnFooter"/></fo:block>
         </fo:inline-container>
       </fo:block>
       <fo:block text-align="center">&#160;</fo:block>

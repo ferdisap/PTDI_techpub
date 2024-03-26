@@ -111,16 +111,11 @@ class CsdbServiceController extends CsdbController
 
     $model = Csdb::where('filename', $csdb->filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $model->showCGMArkElement();
 
-    // $config_doc = new CSDBObject("5.0");
-    // $config_doc->load(CSDB_VIEW_PATH."/xsl/Config.xml");
     $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
       "configuration" => 'ContentPreview',
       'csrf_token' => csrf_token(),
-      // 'config_path' => "file://".CSDB_VIEW_PATH."/xsl/Config.xml",
-      // 'config_path' => "file://".CSDB_VIEW_PATH."/xsl/Config.xml",
-      // 'config_path' => str_replace(' ','%20',"file://".CSDB_VIEW_PATH."/xsl/Config.xml"),
-      // 'config_doc' => $config_doc->document
     ]);
 
     $fo = CSDB_VIEW_PATH."/xsl/pdf/transformed/".$csdb->filename.".fo";
