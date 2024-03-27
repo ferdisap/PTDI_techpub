@@ -87,11 +87,22 @@
     <xsl:apply-templates select="security"/>
     <xsl:apply-templates select="barCode"/>
     
-    <fo:block break-before="page">
-      <xsl:apply-templates select="frontMatterInfo"/>
-    </fo:block>
-
-
+    <fo:block-container break-before="page" font-size="8pt">
+      <fo:block margin-top="6pt">
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInfo/policyStatement"/></fo:block>
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInfo/dataConds"/></fo:block>
+      </fo:block>
+      <fo:block margin-top="6pt">
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInstructions/dataDistribution"/></fo:block>
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInstructions/exportControl"/></fo:block>
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInstructions/dataHandling"/></fo:block>
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInstructions/dataDestruction"/></fo:block>
+        <fo:block margin-top="3pt"><xsl:apply-templates select="dataRestrictions/restrictionInstructions/dataDisclosure"/></fo:block>
+      </fo:block>
+      <fo:block margin-top="3pt">
+        <xsl:apply-templates select="frontMatterInfo"/>
+      </fo:block>
+    </fo:block-container>
   </xsl:template>
 
   <xsl:template match="productIntroName[ancestor::frontMatterTitlePage]">

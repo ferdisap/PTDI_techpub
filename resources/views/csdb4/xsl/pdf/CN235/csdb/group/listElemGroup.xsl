@@ -4,7 +4,7 @@
 
 
   <xsl:template match="sequentialList">
-    <fo:block><xsl:value-of select="title"/></fo:block>
+    <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.7cm" provisional-label-separation="0.15cm">
       <xsl:apply-templates select="listItem|__cgmark">
         <xsl:with-param name="listItemType">ol</xsl:with-param>
@@ -13,7 +13,7 @@
   </xsl:template>
 
   <xsl:template match="randomList">
-    <fo:block><xsl:value-of select="title"/></fo:block>
+    <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
       <xsl:apply-templates select="listItem|__cgmark">
         <xsl:with-param name="listItemType">ul</xsl:with-param>
@@ -38,7 +38,7 @@
   </xsl:template>
 
   <xsl:template match="reducedRandomList">
-    <fo:block><xsl:value-of select="title"/></fo:block>
+    <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
     <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
       <xsl:apply-templates select="reducedRandomListItem|__cgmark"/>
     </fo:list-block>

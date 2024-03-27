@@ -5,13 +5,24 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="reducedPara">    
-    <fo:block xsl:use-attribute-sets="reducedPara">
+    <fo:block>
+      <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
 
   <xsl:template match="para">
-    <fo:block xsl:use-attribute-sets="para">
+    <fo:block>
+      <xsl:call-template name="style-para"/>
+      <xsl:apply-templates/>
+    </fo:block>
+    <!-- <fo:block-container reference-orientation="90" width="2cm">
+    </fo:block-container> -->
+  </xsl:template>
+  
+  <xsl:template match="simplePara">
+    <fo:block>
+      <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>

@@ -3,15 +3,21 @@
 <!DOCTYPE config [
   <!ELEMENT config (output, security)>
   
-  <!ELEMENT output (method+)>
+  <!ELEMENT output (method+,layout?)>
   <!ELEMENT method (path+)>
   <!ELEMENT path (#PCDATA)>
+
+  <!ELEMENT layout (width,height,orientation?)>
+  <!ELEMENT width (#PCDATA)>
+  <!ELEMENT height (#PCDATA)>
 
   <!ELEMENT security (securityClassification+,commercialClassification*,caveat*)>
   <!ELEMENT securityClassification (#PCDATA)>
   
-  <!ATTLIST method type CDATA #REQUIRED>
+  <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
+  <!ATTLIST layout master-name CDATA #REQUIRED>
+  <!ATTLIST layout orientation (port|land) #IMPLIED>
   <!ATTLIST securityClassification code CDATA #REQUIRED>
 ]>
 
@@ -23,15 +29,22 @@
     <method type="pdf">
       <path product-name="CN235">pdf/CN235/Main.xsl</path>
       <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
-      <path product-name="MALE">pdf/MALE/Main.xsl</path>    
+      <path product-name="MALE">pdf/MALE/Main.xsl</path>
     </method>
+    <layout master-name="default-A4" orientation="port">
+      <width>21cm</width>
+      <height>29.7cm</height>
+      <!-- <width>29.7cm</width>
+      <height>21cm</height> -->
+    </layout>
   </output>
   <security>
     <securityClassification code="01">UNCLASSIFIED</securityClassification>
     <securityClassification code="02">RESTRICTED</securityClassification>
     <securityClassification code="03">CONFIDENTIAL</securityClassification>
     <securityClassification code="04">SECRET</securityClassification>
-    <securityClassification code="05">TOP SECRET</securityClassification>
+    <securityClassification code="05">bottom SECRET</securityClassification>
+    <securityClassification code="05">left SECRET</securityClassification>
   </security>
 </config>
 

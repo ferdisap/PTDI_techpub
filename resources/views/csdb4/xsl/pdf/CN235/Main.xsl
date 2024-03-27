@@ -6,29 +6,38 @@
 
   <xsl:output method="xml" />
 
-  <xsl:param name="config_path">'../../../Config.xml</xsl:param>
+  <!-- <xsl:param name="config_path">'../../../Config.xml</xsl:param> -->
 
   <xsl:include href="./dmodule.xsl" />
   <xsl:include href="./pm.xsl" />
   <xsl:include href="./master/region.xsl"/>
-  <xsl:include href="../csdb/security.xsl"/>
+  <xsl:include href="../CN235/csdb/security.xsl"/>
   <xsl:include href="./Style.xsl"/>
   <xsl:include href="./csdb/para.xsl"/>
+  <xsl:include href="./csdb/title.xsl"/>
+  <xsl:include href="./csdb/table.xsl"/>
   <xsl:include href="./csdb/group/listElemGroup.xsl"/>
+  <xsl:include href="../helper/position.xsl"/>
+  <xsl:include href="../helper/id.xsl"/>
+  <xsl:include href="../helper/authority.xsl"/>
 
+  <xsl:variable name="masterName">
+    <xsl:choose>
+      <xsl:when test="/pm/@pt">
+        <xsl:value-of select="string(/pm/@pt)" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>default-A4</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <xsl:variable name="orientation">
+    <xsl:value-of select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@orientation)"/>
+  </xsl:variable>
+  
   <xsl:template match="/">
-    <fo:root font-family="Tahoma">
-
-      <xsl:variable name="masterName">
-        <xsl:choose>
-          <xsl:when test="ancestor::pm/@pt">
-            <xsl:value-of select="ancestor::pm/@pt" />
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>default-A4</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
+    <fo:root font-family="Arial">
 
       <xsl:call-template name="setPageMaster">
         <xsl:with-param name="masterName" select="$masterName" />
@@ -65,17 +74,20 @@
             <!-- <fo:region-after region-name="footer" extent="2.0cm" /> -->
           <!-- </fo:simple-page-master> -->
 
-          <fo:simple-page-master master-name="odd" page-height="29.7cm" page-width="21cm" margin-top="1cm" margin-bottom="1cm" margin-left="3cm" margin-right="1.5cm">
+          <xsl:variable name="width" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/width)"/>
+          <xsl:variable name="height" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/height)"/>
+
+          <fo:simple-page-master master-name="odd" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="3cm" margin-right="1.5cm">
             <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>
             <fo:region-before region-name="header-odd" extent="1.5cm" />
             <fo:region-after region-name="footer-odd" extent="2.0cm" />
           </fo:simple-page-master>
-          <fo:simple-page-master master-name="even" page-height="29.7cm" page-width="21cm" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">
+          <fo:simple-page-master master-name="even" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">
             <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>
             <fo:region-before region-name="header-even" extent="1.5cm" />
             <fo:region-after region-name="footer-even" extent="2.0cm" />
           </fo:simple-page-master>
-          <fo:simple-page-master master-name="left-blank" page-height="29.7cm" page-width="21cm" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">            
+          <fo:simple-page-master master-name="left-blank" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">            
             <fo:region-body region-name="left_blank" margin-top="1.5cm" margin-bottom="2.0cm"/>
             <fo:region-before region-name="header-left_blank" extent="1.5cm" />
             <fo:region-after region-name="footer-left_blank" extent="2.0cm" />

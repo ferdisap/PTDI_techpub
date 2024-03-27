@@ -6,8 +6,10 @@
 /storage/*.key
 /storage/csdb/*
 /storage/csdb_tes/*
+/storage/csdb_tes2/*
 /storage/csdb_deleted/*
 /resources/notes/info/README.md
+/resources/views/csdb4/xsd/pdf/transformed
 /resources_dev/*
 /vendor
 .env
