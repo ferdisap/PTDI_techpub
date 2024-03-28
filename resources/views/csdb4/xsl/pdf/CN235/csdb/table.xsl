@@ -128,6 +128,9 @@
       <xsl:with-param name="id" select="$controlAutorityRefs"/>
     </xsl:call-template>
 
+    <!-- <fo:table-and-caption>
+      <fo:table-caption><fo:block>FASSASA</fo:block></fo:table-caption>
+    </fo:table-and-caption> -->
     <fo:table>
       <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
