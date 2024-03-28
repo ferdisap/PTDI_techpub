@@ -31,67 +31,60 @@
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
-
-  <xsl:template name="add_footnote">
-    <xsl:param name="textOnly"/>
-    <xsl:param name="mark"/>
-    <xsl:variable name="position">
-      <xsl:choose>
-        <xsl:when test="$mark = 'sym'">
-          <xsl:text>*</xsl:text>
-        </xsl:when>
-        <xsl:when test="$mark = 'alpha'">
-          <xsl:text>&#945;</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::next_footnotePosition', $filename, boolean(1))"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <fo:block text-indent="-8pt" start-indent="8pt" id="{generate-id(.)}">
-      <fo:inline><xsl:value-of select="$position"/><xsl:text>&#160;&#160;</xsl:text></fo:inline>
-      <xsl:apply-templates>
-        <xsl:with-param name="render">yes</xsl:with-param>
-      </xsl:apply-templates>
-    </fo:block>
-  </xsl:template>
-
+  
   <xsl:template match="para[parent::footnote]">
-    <xsl:param name="render">no</xsl:param>
-    <xsl:choose>
-      <xsl:when test="$render = 'yes'">
-        <xsl:apply-templates/>
-      </xsl:when>
-      <xsl:otherwise>
-      <!-- tambahkan text seperti [1] atau [*] di paragraphnya jika ketemu footnote -->
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:apply-templates/>
   </xsl:template>
 
-  <!-- <xsl:template match="footnote">
-    <xsl:param name="pos">
-      <xsl:if test="ancestor::table">
-        
-      </xsl:if>
-    </xsl:param>
-    <fo:inline vertical-align="sup" padding-left="-3pt" baseline-shift="8pt" font-size="8pt">
-      i
-    </fo:inline>
-  </xsl:template> -->
+  <!-- untuk merender anotasi danjuga footnote di bottom page atau di paragraphnya -->
+  <xsl:template match="footnote[not(ancestor::table)]">
+    <xsl:param name="position"><xsl:number level="any"/></xsl:param>
+    <xsl:variable name="mark">
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
+    </xsl:variable>
+    <fo:footnote font-size="8pt">
+      <fo:inline baseline-shift="super">
+        <fo:basic-link text-decoration="underline" color="blue">
+          <xsl:call-template name="add_id">
+            <xsl:with-param name="force">yes</xsl:with-param>
+            <xsl:with-param name="attributeName">internal-destination</xsl:with-param>
+          </xsl:call-template>
+          <xsl:value-of select="$mark"/>
+        </fo:basic-link>
+      </fo:inline>
+      <fo:footnote-body>
+        <fo:block text-indent="-8pt" start-indent="8pt">
+          <xsl:call-template name="add_id">
+            <xsl:with-param name="force">yes</xsl:with-param>
+          </xsl:call-template>
+          <xsl:value-of select="$mark"/><xsl:text>&#160;&#160;</xsl:text>
+          <xsl:apply-templates/>
+        </fo:block>
+      </fo:footnote-body>
+    </fo:footnote>
+  </xsl:template>
 
-  <xsl:template match="paras[parent::footnote/ancestor::table]">
-    <xsl:param name="prefix"/>
-    <xsl:param name="textOnly"/>
-    <!-- <xsl:if test="$textOnly = 'yes'">
-      <xsl:call-template name="add_applicability"/>
-      <xsl:call-template name="add_controlAuthority"/>
-      <xsl:call-template name="add_security"/>
-      <fo:block text-indent="-8pt" start-indent="8pt" >
-        <fo:inline><xsl:value-of select="$prefix"/></fo:inline>
-        <xsl:apply-templates/>
-      </fo:block>
-    </xsl:if> -->
+  <!-- untuk merender anotasi footnote di table cell -->
+  <xsl:template match="footnote[ancestor::table]|__cgmark[child::footnote]">
+    <xsl:param name="position"><xsl:number level="any"/></xsl:param>
+    <xsl:variable name="mark">
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
+    </xsl:variable>
+    <fo:basic-link internal-destination="{@id}">
+      <fo:inline text-decoration="underline" color="blue" baseline-shift="super" font-size="8pt"><xsl:value-of select="$mark"/></fo:inline>
+    </fo:basic-link>
+  </xsl:template>
 
+  <!-- dipanggil di fo:table-footer select="descendant::footnote"-->
+  <xsl:template name="add_footnote">
+    <xsl:param name="position"><xsl:number level="any"/></xsl:param>
+    <xsl:variable name="mark">
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
+    </xsl:variable>
+    <fo:block text-indent="-8pt" start-indent="8pt" id="{@id}">
+      <fo:inline><xsl:value-of select="$mark"/><xsl:text>&#160;&#160;</xsl:text></fo:inline>
+      <xsl:apply-templates/>
+    </fo:block>
   </xsl:template>
 
 </xsl:transform>

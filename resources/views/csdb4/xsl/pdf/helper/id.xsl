@@ -5,18 +5,20 @@
   <!-- position() mencari posisi sesuai urutan hasil matched="" atau select="" -->
 
   <xsl:template name="add_id">
+    <xsl:param name="attributeName">id</xsl:param>
     <xsl:param name="id"/>
     <xsl:param name="force"/>
     <xsl:choose>
-      <xsl:when test="@id">
-        <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+      <xsl:when test="string(@id) != ''">
+        <xsl:attribute name="{$attributeName}"><xsl:value-of select="@id"/></xsl:attribute>
       </xsl:when>
       <xsl:when test="$id">
-        <xsl:attribute name="id"><xsl:value-of select="$id"/></xsl:attribute>
+        <xsl:attribute name="{$attributeName}"><xsl:value-of select="$id"/></xsl:attribute>
       </xsl:when>
-      <xsl:when test="$force">
-        <xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
-        <!-- <xsl:attribute name="id"><xsl:value-of select="php:function('rand')"/></xsl:attribute> -->
+      <xsl:when test="$force = 'yes'">
+        <xsl:if test="string(@id) = ''">
+          <xsl:attribute name="{$attributeName}"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+        </xsl:if>
       </xsl:when>
     </xsl:choose>
   </xsl:template>

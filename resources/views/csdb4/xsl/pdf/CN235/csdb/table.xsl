@@ -29,7 +29,7 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container id="{$id}" width="100%">
+    <fo:block-container id="{$id}" width="100%" page-break-inside="avoid">
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
@@ -154,8 +154,7 @@
         <fo:table-header>
           <xsl:apply-templates select="thead|__cgmark"/>
         </fo:table-header>
-      </xsl:if>
-      
+      </xsl:if>      
       
       <xsl:if test="descendant::footnote or tfoot">
         <xsl:variable name="colsQuantity" select="string(@cols)"/>
@@ -167,12 +166,11 @@
             </xsl:if>
             <fo:table-row>
               <fo:table-cell number-columns-spanned="{$colsQuantity}">
+                <xsl:call-template name="style-entry"/>
                 <xsl:call-template name="add_applicability"/>
                 <xsl:call-template name="add_controlAuthority"/> 
                 <xsl:call-template name="add_security"/>
-                <xsl:call-template name="add_footnote">
-                  <xsl:with-param name="mark" select="string(@footnoteMark)"/>
-                </xsl:call-template>
+                <xsl:call-template name="add_footnote"/>
               </fo:table-cell>
             </fo:table-row>
             <xsl:if test="@changeMark = '1'">

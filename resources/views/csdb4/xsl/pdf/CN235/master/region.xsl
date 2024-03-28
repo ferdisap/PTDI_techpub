@@ -52,6 +52,10 @@
   </xsl:template>
 
   <xsl:template name="body">
+    <!-- <fo:block>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Explicabo illo nam eaque odit iure velit? Placeat delectus nemo enim qui inventore unde maiores temporibus iure doloremque sed? Voluptates quam tempore architecto nemo magnam amet ullam dignissimos placeat praesentium ipsa eum, dolore non exercitationem, maiores veniam eligendi iusto vitae voluptate aspernatur!</fo:block>
+    <fo:block>
+      <fo:basic-link internal-destination="fnt-001">tes link</fo:basic-link>
+    </fo:block> -->
     <xsl:apply-templates select="content"/>
     <fo:block/>
     <!-- <fo:block-container break-after="page" id="block-001">

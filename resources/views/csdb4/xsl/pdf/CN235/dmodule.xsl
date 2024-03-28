@@ -69,6 +69,9 @@
           <xsl:with-param name="oddOrEven" select="'even'"/>
         </xsl:call-template>
       </fo:static-content>
+      <fo:static-content flow-name="xsl-footnote-separator">
+        <fo:block>---------------</fo:block>
+      </fo:static-content>
   </xsl:template>
   
 </xsl:transform>
