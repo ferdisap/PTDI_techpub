@@ -11,15 +11,16 @@
   <xsl:include href="./dmodule.xsl" />
   <xsl:include href="./pm.xsl" />
   <xsl:include href="./master/region.xsl"/>
-  <xsl:include href="../CN235/csdb/security.xsl"/>
   <xsl:include href="./Style.xsl"/>
   <xsl:include href="./csdb/para.xsl"/>
   <xsl:include href="./csdb/title.xsl"/>
   <xsl:include href="./csdb/table.xsl"/>
   <xsl:include href="./csdb/group/listElemGroup.xsl"/>
   <xsl:include href="../helper/position.xsl"/>
+  <xsl:include href="../helper/security.xsl"/>
   <xsl:include href="../helper/id.xsl"/>
   <xsl:include href="../helper/authority.xsl"/>
+  <xsl:include href="../helper/enterprise.xsl"/>
 
   <xsl:variable name="masterName">
     <xsl:choose>

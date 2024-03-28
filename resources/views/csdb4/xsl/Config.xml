@@ -11,14 +11,21 @@
   <!ELEMENT width (#PCDATA)>
   <!ELEMENT height (#PCDATA)>
 
-  <!ELEMENT security (securityClassification+,commercialClassification*,caveat*)>
+  <!ELEMENT security (securityClassification+,commercialClassification?,caveat?, derivativeClassification?)>
   <!ELEMENT securityClassification (#PCDATA)>
+  <!ELEMENT commercialClassification (#PCDATA)>
+  <!ELEMENT caveat (#PCDATA)>
+  <!ELEMENT derivativeClassification (action+)>
+  <!ELEMENT action (#PCDATA)>
   
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
   <!ATTLIST layout master-name CDATA #REQUIRED>
   <!ATTLIST layout orientation (port|land) #IMPLIED>
   <!ATTLIST securityClassification code CDATA #REQUIRED>
+  <!ATTLIST commercialClassification code CDATA #REQUIRED>
+  <!ATTLIST caveat code CDATA #REQUIRED>
+  <!ATTLIST action code CDATA #REQUIRED>
 ]>
 
 <config>
@@ -34,8 +41,6 @@
     <layout master-name="default-A4" orientation="port">
       <width>21cm</width>
       <height>29.7cm</height>
-      <!-- <width>29.7cm</width>
-      <height>21cm</height> -->
     </layout>
   </output>
   <security>
@@ -45,6 +50,21 @@
     <securityClassification code="04">SECRET</securityClassification>
     <securityClassification code="05">bottom SECRET</securityClassification>
     <securityClassification code="05">left SECRET</securityClassification>
+    <commercialClassification code="cc51">FOO CC</commercialClassification>
+    <caveat code="cv51">FOO CAVEAT</caveat>
+    <derivativeClassification>
+      <action code="ai01">Classified On</action>
+      <action code="ai02">Declasify On</action>
+      <action code="ai03">Downgrande On</action>
+      <action code="ai04">Upgrade On</action>
+      <action code="ai05">Downgrade SC to 03</action>
+      <action code="ai06">Downgrade SC to 04</action>
+      <action code="ai07">Downgrade SC to 05</action>
+      <action code="ai08">Upgrade SC to 03</action>
+      <action code="ai09">Upgrade SC to 04</action>
+      <action code="ai10">Upgrade SC to 05</action>
+    </derivativeClassification>
+
   </security>
 </config>
 

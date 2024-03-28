@@ -73,8 +73,7 @@
         <xsl:if test="following-sibling::para or following-sibling::figure or following-sibling::table">
           <xsl:attribute name="font-size">14pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">17pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">3pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">17pt</xsl:attribute>
           <xsl:attribute name="text-align">center</xsl:attribute>
         </xsl:if>
       </xsl:when>
@@ -83,8 +82,7 @@
           <xsl:attribute name="font-size">14pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
           <xsl:attribute name="font-style">italic</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">17pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">3pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">17pt</xsl:attribute>
           <xsl:attribute name="text-align">center</xsl:attribute>
         </xsl:if>
       </xsl:when>
@@ -92,8 +90,7 @@
         <xsl:if test="following-sibling::para or following-sibling::figure or following-sibling::table">
           <xsl:attribute name="font-size">14pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">17pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">3pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">17pt</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
         </xsl:if>
       </xsl:when>
@@ -101,8 +98,7 @@
         <xsl:if test="following-sibling::para or following-sibling::figure or following-sibling::table">
           <xsl:attribute name="font-size">14pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">15pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">1pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">15pt</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
@@ -111,8 +107,7 @@
         <xsl:if test="following-sibling::para or following-sibling::figure or following-sibling::table">
           <xsl:attribute name="font-size">12pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">12pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">0pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">12pt</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
@@ -122,8 +117,7 @@
           <xsl:attribute name="font-size">10pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">12pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">2pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">12pt</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
       </xsl:when>
@@ -132,8 +126,7 @@
           <xsl:attribute name="font-size">10pt</xsl:attribute>
           <xsl:attribute name="font-weight">bold</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">11pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">1pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
       </xsl:when>
@@ -141,8 +134,7 @@
         <xsl:if test="following-sibling::para or following-sibling::figure or following-sibling::table">
           <xsl:attribute name="font-size">10pt</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">11pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">1pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
       </xsl:when>
@@ -151,8 +143,7 @@
           <xsl:attribute name="font-size">10pt</xsl:attribute>
           <xsl:attribute name="text-align">left</xsl:attribute>
           <xsl:attribute name="font-style">italic</xsl:attribute>
-          <!-- <xsl:attribute name="margin-bottom">11pt</xsl:attribute> -->
-          <xsl:attribute name="margin-bottom">1pt</xsl:attribute>
+          <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
         <xsl:call-template name="numbered"/>
       </xsl:when>
@@ -206,6 +197,7 @@
 
   <xsl:template name="style-table">
     <xsl:param name="orient"/>
+    <xsl:param name="level"/>
     <xsl:if test="$orientation = 'port'">
       <xsl:if test="$orient = 'land'">
         <xsl:attribute name="reference-orientation">90</xsl:attribute>
@@ -216,6 +208,29 @@
         <xsl:attribute name="reference-orientation">90</xsl:attribute>
       </xsl:if>
     </xsl:if>
+    <xsl:if test="following-sibling::para">
+      <xsl:attribute name="margin-bottom">28pt</xsl:attribute>
+    </xsl:if>
+    <xsl:if test="following-sibling::title">
+      <xsl:attribute name="margin-bottom">32pt</xsl:attribute>
+    </xsl:if>
+    <xsl:if test="parent::*/following-sibling::levelledPara/title">
+      <xsl:if test="$level = 's0' or $level = 's1'">
+        <xsl:attribute name="margin-bottom">35pt</xsl:attribute>
+      </xsl:if>
+      <xsl:if test="$level = 's2'">
+        <xsl:attribute name="margin-bottom">34pt</xsl:attribute>
+      </xsl:if>
+      <xsl:if test="$level = 's3' or $level = 's4'">
+        <xsl:attribute name="margin-bottom">32pt</xsl:attribute>
+      </xsl:if>
+      <xsl:if test="$level = 's5'">
+        <xsl:attribute name="margin-bottom">28pt</xsl:attribute>
+      </xsl:if>
+    </xsl:if>
+    <!-- <xsl:variable name="pos"><xsl:number/></xsl:variable> -->
+    <!-- <xsl:variable name="total"><xsl:value-of select="count(parent::*/child::*)"/></xsl:variable> -->
+    <!-- <xsl:value-of select="php:function('dd',$pos, position(), number($total))"/> -->
   </xsl:template>
 
   <xsl:template name="style-tgroup">
@@ -259,6 +274,9 @@
     <xsl:if test="parent::tbody">
       <xsl:attribute name="padding-top">4pt</xsl:attribute>
       <xsl:attribute name="padding-bottom">4pt</xsl:attribute>
+    </xsl:if>
+    <xsl:if test="parent::thead">
+      <xsl:attribute name="font-weight">bold</xsl:attribute>
     </xsl:if>
   </xsl:template>
 

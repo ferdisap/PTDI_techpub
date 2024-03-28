@@ -11,6 +11,7 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="table">
+    <xsl:param name="level"/>
 
     <xsl:variable name="controlAutorityRefs"><xsl:value-of select="parent::table/@controlAutorityRefs"/></xsl:variable>
     <xsl:variable name="id"><xsl:value-of select="parent::table/@id"/></xsl:variable>
@@ -25,6 +26,7 @@
     <fo:block-container id="{$id}" width="100%">
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
+        <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
       <xsl:call-template name="getControlAuthority">
         <xsl:with-param name="id" select="$controlAutorityRefs"/>
@@ -126,7 +128,6 @@
       <xsl:with-param name="id" select="$controlAutorityRefs"/>
     </xsl:call-template>
 
-    <!-- <fo:table border-top="2px solid red"> -->
     <fo:table>
       <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
@@ -148,8 +149,16 @@
 
   </xsl:template>
 
-  <xsl:template match="row">    
+  <xsl:template match="row">
+    <xsl:if test="@applicRefId">
+      <fo:table-row>
+        <fo:table-cell number-columns-spanned="2" padding-top="4pt" padding-bottom="-4pt">
+          <xsl:call-template name="add_applicability"/>      
+        </fo:table-cell>
+      </fo:table-row>
+    </xsl:if>
     <fo:table-row>
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-row"/>
       <xsl:apply-templates/>
     </fo:table-row>
@@ -161,6 +170,7 @@
     2. @charoff, @char belum difungsikan
     3. @warningRefs, @cautionRefs, @controlAuthorityRefs belum difungsikan
     4. @rotate masih bermasalah saat di render pdf karena @width nya atau karena memang @rotate nya belum berfungsi dengan benar
+        masalahnya jika di rotate, cell nya tidak ke rotate juga
    -->
   <xsl:template match="entry">
     <xsl:param name="colname" select="string(@colname)"/>
@@ -190,8 +200,13 @@
     </xsl:param>
     
 
-    <!-- <fo:table-cell width="from-table-column()"> -->
-    <fo:table-cell>
+    <fo:table-cell width="from-table-column()">
+      <xsl:variable name="valign">
+        <xsl:choose>
+          <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
+          <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@valgin)"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       <xsl:if test="@colname and ancestor::tgroup/colspec[string(@colname) = $colname]/@colwidth">
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(ancestor::tgroup/colspec[string(@colname) = $colname]/@colwidth))"/>
         <xsl:attribute name="width"><xsl:value-of select="$width"/></xsl:attribute>
@@ -216,10 +231,10 @@
       </xsl:if>
       
       <xsl:choose>
-        <xsl:when test="string(@valign) = 'bottom'">
+        <xsl:when test="$valign = 'bottom'">
           <xsl:attribute name="display-align">after</xsl:attribute>
         </xsl:when>
-        <xsl:when test="string(@valign) = 'center'">
+        <xsl:when test="$valign = 'center'">
           <xsl:attribute name="display-align">middle</xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
@@ -227,11 +242,16 @@
         </xsl:otherwise>
       </xsl:choose>
 
-      <xsl:if test="@align"><xsl:attribute name="text-align"><xsl:value-of select="string(@valign)"/></xsl:attribute>      </xsl:if>
+      <xsl:if test="@align"><xsl:attribute name="text-align"><xsl:value-of select="string(@align)"/></xsl:attribute>      </xsl:if>
 
       <fo:block-container>
         <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
         <xsl:if test="string(@rotate) = '1'"><xsl:attribute name="reference-orientation">90</xsl:attribute></xsl:if>
+        <xsl:if test="@applicRefId">
+          <xsl:call-template name="add_applicability">
+            <xsl:with-param name="prefix"><xsl:text>This cell is applicable to: </xsl:text></xsl:with-param>
+          </xsl:call-template>
+        </xsl:if>
         <xsl:apply-templates/>
       </fo:block-container>
     </fo:table-cell>    

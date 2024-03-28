@@ -6,6 +6,7 @@
 
   <xsl:template name="add_id">
     <xsl:param name="id"/>
+    <xsl:param name="force"/>
     <xsl:choose>
       <xsl:when test="@id">
         <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
@@ -13,16 +14,18 @@
       <xsl:when test="$id">
         <xsl:attribute name="id"><xsl:value-of select="$id"/></xsl:attribute>
       </xsl:when>
-      <xsl:otherwise>
-        <xsl:attribute name="id"><xsl:value-of select="php:function('rand')"/></xsl:attribute>
-      </xsl:otherwise>
+      <xsl:when test="$force">
+        <xsl:attribute name="id"><xsl:value-of select="generate-id(.)"/></xsl:attribute>
+        <!-- <xsl:attribute name="id"><xsl:value-of select="php:function('rand')"/></xsl:attribute> -->
+      </xsl:when>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template name="add_applicability">
     <xsl:param name="id" select="@applicRefId"/>
+    <xsl:param name="prefix"><xsl:text>Applicable to: </xsl:text></xsl:param>
     <xsl:if test="$id">
-      <fo:block text-align="left">Applicable to: <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getApplicability', //@id[. = $id])"/></fo:block>
+      <fo:block text-align="left" font-size="8pt"><xsl:value-of select="$prefix"/><xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getApplicability', //@id[. = $id])"/></fo:block>
     </xsl:if>
   </xsl:template>
 

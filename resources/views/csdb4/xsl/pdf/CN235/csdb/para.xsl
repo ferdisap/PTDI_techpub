@@ -4,7 +4,7 @@
   xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template match="reducedPara">    
+  <xsl:template match="reducedPara">
     <fo:block>
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
@@ -12,16 +12,21 @@
   </xsl:template>
 
   <xsl:template match="para">
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
     <fo:block>
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
-    <!-- <fo:block-container reference-orientation="90" width="2cm">
-    </fo:block-container> -->
   </xsl:template>
   
   <xsl:template match="simplePara">
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
     <fo:block>
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
