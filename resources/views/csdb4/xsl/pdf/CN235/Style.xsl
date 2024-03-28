@@ -297,17 +297,15 @@
       <xsl:attribute name="border-right">1pt solid black</xsl:attribute>
     </xsl:if>
 
-    <xsl:if test="parent::row/parent::thead">
-      <xsl:attribute name="padding-top">4pt</xsl:attribute>
-      <xsl:attribute name="padding-bottom">4pt</xsl:attribute>
-      <xsl:attribute name="padding-right">4pt</xsl:attribute>
-      <xsl:attribute name="padding-left">4pt</xsl:attribute>
-    </xsl:if>
-    <xsl:if test="parent::row/parent::tbody">
-      <xsl:attribute name="padding-top">4pt</xsl:attribute>
-      <xsl:attribute name="padding-bottom">4pt</xsl:attribute>
-      <xsl:attribute name="padding-right">4pt</xsl:attribute>
-      <xsl:attribute name="padding-left">4pt</xsl:attribute>
+    <xsl:attribute name="padding-top">4pt</xsl:attribute>
+    <xsl:attribute name="padding-bottom">4pt</xsl:attribute>
+    <xsl:attribute name="padding-right">4pt</xsl:attribute>
+    <xsl:attribute name="padding-left">4pt</xsl:attribute>
+  </xsl:template>
+
+  <xsl:template name="style-tbody">
+    <xsl:if test="tfoot or preceding-sibling::tfoot or descendant::footnote">
+      <xsl:attribute name="border-bottom">1pt solid black</xsl:attribute>
     </xsl:if>
   </xsl:template>
 

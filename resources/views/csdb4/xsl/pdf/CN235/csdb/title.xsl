@@ -18,8 +18,17 @@
   </xsl:template>
 
   <xsl:template match="title">
-    <xsl:call-template name="style-title"/>
+    <xsl:param name="prefix"/>
+    <fo:block>
+      <xsl:call-template name="style-title"/>
+      <xsl:value-of select="$prefix"/>
+      <xsl:apply-templates/>
+    </fo:block>
+  </xsl:template>
+
+  <xsl:template match="title[parent::table]">
     <xsl:apply-templates/>
   </xsl:template>
+
 
 </xsl:stylesheet>

@@ -113,9 +113,12 @@ class CsdbServiceController extends CsdbController
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
     $model->showCGMArkElement();
 
+    CSDBStatic::$footnotePositionStore[$model->filename] = [];
+
     $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
-      "configuration" => 'ContentPreview',
-      'csrf_token' => csrf_token(),
+      "filename" => $model->filename
+      // "configuration" => 'ContentPreview',
+      // 'csrf_token' => csrf_token(),
     ]);
 
     $fo = CSDB_VIEW_PATH."/xsl/pdf/transformed/".$csdb->filename.".fo";
