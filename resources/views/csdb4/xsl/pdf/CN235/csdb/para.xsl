@@ -5,19 +5,22 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="reducedPara">
-    <fo:block>
+    <fo:block page-break-before="avoid">
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
 
   <xsl:template match="para">
+    <xsl:param name="level"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
-    <fo:block>
+    <fo:block page-break-before="avoid">
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="style-para"/>
+      <xsl:call-template name="style-para">
+        <xsl:with-param name="level" select="$level"/>
+      </xsl:call-template>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
@@ -25,13 +28,14 @@
   <xsl:template match="simplePara">
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
-    <fo:block>
+    <fo:block page-break-before="avoid">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
   
+  <!-- supaya inline, not block -->
   <xsl:template match="para[parent::footnote]">
     <xsl:apply-templates/>
   </xsl:template>

@@ -8,7 +8,7 @@
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', parent::levelledPara, 1)"/>
     </xsl:param>
 
-    <fo:block>
+    <fo:block page-break-inside="avoid" page-break-after="avoid">
       <xsl:call-template name="style-title">
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
@@ -19,7 +19,7 @@
 
   <xsl:template match="title">
     <xsl:param name="prefix"/>
-    <fo:block>
+    <fo:block page-break-inside="avoid" page-break-after="avoid">
       <xsl:call-template name="style-title"/>
       <xsl:value-of select="$prefix"/>
       <xsl:apply-templates/>

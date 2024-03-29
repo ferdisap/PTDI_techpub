@@ -6,6 +6,10 @@
   2. @charoff belum difungsikan 
   3. table caption contined in multiple pages is not supported as it must comply to S1000D v5.0 Chap 6.2.2 page 13, last paragraph
       jadi untuk itu table caption akan diletakkan dibawah table agar lebih mudah dipahami
+  4. @tabstyle dan @tgstyle belum di implementasikan karena belum tahu bagaimana cara/aturan implementasi
+  5. @cols difungsikan hanya ketika ada table footnote yang 1 cell nya perlu di span maximal
+  6. @colspec HARUS definisikan saat membuat table, sesuai dengan jumlah column yang diperlukan
+  7. centering table is not supported by the FOP. If not use FOP, put the @text-align in <table-and-caption>
  -->
 
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -140,12 +144,12 @@
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
 
-    <fo:table>
+    <fo:table table-omit-footer-at-break="false" table-omit-header-at-break="false">
       <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
         <xsl:with-param name="frame" select="$frame"/>
       </xsl:call-template>
-      <xsl:for-each select="colspec">
+      <xsl:for-each select="colspec[@colnum and @colwidth]">
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(@colwidth))"/>
         <fo:table-column column-number="{@colnum}" column-width="{$width}"/>
       </xsl:for-each>
@@ -213,6 +217,8 @@
     3. @warningRefs, @cautionRefs
     4. @rotate masih bermasalah saat di render pdf karena @width nya atau karena memang @rotate nya belum berfungsi dengan benar
         masalahnya jika di rotate, cell nya tidak ke rotate juga
+    5. @colname tidak bisa difungsikan, karena cell yang menggunakan width pada colspec tersebut akan stacking dengan cell lainnya. Hal ini sepertinya mungkin dikarenakan FOP tidak support table-layout=auto. FItur ini sepertinya bisa di implementasikan oleh TCPDF php
+    6. @spanname tidak bisa digunakan jika total entry pada row tersebut melebihi jumlahnya jika ditambah spanspec. Hal ini sepertinya mungkin dikarenakan FOP tidak support table-layout=auto.
    -->
   <xsl:template match="entry">
     <xsl:param name="colname" select="string(@colname)"/>
@@ -239,8 +245,7 @@
           <xsl:value-of select="ancestor::*[string(@colsep) != '']/@colsep"/>
         </xsl:otherwise>
       </xsl:choose>
-    </xsl:param>
-    
+    </xsl:param>    
 
     <fo:table-cell width="from-table-column()">
       <xsl:variable name="valign">
@@ -249,10 +254,6 @@
           <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@valgin)"/></xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-      <xsl:if test="@colname and ancestor::tgroup/colspec[string(@colname) = $colname]/@colwidth">
-        <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(ancestor::tgroup/colspec[string(@colname) = $colname]/@colwidth))"/>
-        <xsl:attribute name="width"><xsl:value-of select="$width"/></xsl:attribute>
-      </xsl:if>
 
       <xsl:call-template name="style-entry">
         <xsl:with-param name="rowsep" select="$rowsep"/>

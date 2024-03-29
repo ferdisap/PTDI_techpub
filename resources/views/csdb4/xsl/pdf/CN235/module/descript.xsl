@@ -35,8 +35,7 @@
       <xsl:text>s</xsl:text>
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/>
     </xsl:param>
-    <!-- <xsl:value-of select="php:function('dd', $level, string(.))"/> -->
-    <fo:block>
+    <fo:block text-align="justify">
       <xsl:call-template name="style-levelledPara">
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
