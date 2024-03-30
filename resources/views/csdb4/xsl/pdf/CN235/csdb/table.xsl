@@ -33,7 +33,7 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container id="{$id}" width="100%" page-break-inside="avoid">
+    <fo:block-container id="{$id}" width="100%">
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
@@ -144,7 +144,11 @@
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
 
-    <fo:table table-omit-footer-at-break="false" table-omit-header-at-break="false">
+    <!-- 
+      table-omit-footer-at-break=true agar tidak dirender footnote setiap page jika break 
+      table-omit-header-at-break="false" agar header selalu diprint jika page break
+    -->
+    <fo:table table-omit-footer-at-break="true">
       <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
         <xsl:with-param name="frame" select="$frame"/>
@@ -291,6 +295,7 @@
         1. supaya block container tidak akan di page-break, jangan pakai keep-togeter="always" karena cell/container tidak akan membuat line baru jika tulisan lebih panjang dari width cell.
         2. mungkin nanti dicoba pakai attribute yang lain
         <fo:block-container keep-together="always"> 
+        3. jangan di page-break-inside="avoid" agar table nya break. Kalau tidak tampilannya akan hancur karena table panjang ada pada satu page
       -->
       <fo:block-container>
         <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
