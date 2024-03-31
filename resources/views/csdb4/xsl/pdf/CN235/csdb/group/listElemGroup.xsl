@@ -6,9 +6,7 @@
     <fo:block margin-top="11pt">
       <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
       <fo:list-block provisional-distance-between-starts="0.7cm" provisional-label-separation="0.15cm">
-        <xsl:apply-templates select="listItem|__cgmark">
-          <xsl:with-param name="listItemType">ol</xsl:with-param>
-        </xsl:apply-templates>
+        <xsl:apply-templates select="listItem|__cgmark"/>
       </fo:list-block>
     </fo:block>
   </xsl:template>
@@ -18,21 +16,43 @@
       <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
       <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
         <xsl:apply-templates select="listItem|__cgmark">
-          <xsl:with-param name="listItemType">ul</xsl:with-param>
+          <xsl:with-param name="listItemPrefix" select="string(@listItemPrefix)"/>
         </xsl:apply-templates>
       </fo:list-block>
     </fo:block>
   </xsl:template>
   
-  <xsl:template match="listItem">
-    <xsl:param name="listItemType"/>
+  <xsl:template match="listItem[parent::sequentialList]">
     <fo:list-item>
       <xsl:call-template name="style-listItem"/>
       <fo:list-item-label end-indent="label-end()">
         <fo:block>
-          <xsl:call-template name="getListItemLabel">
-            <xsl:with-param name="listItemType" select="$listItemType"/>
-          </xsl:call-template>
+          <xsl:number/><xsl:text>.</xsl:text>
+        </fo:block>
+      </fo:list-item-label>
+      <fo:list-item-body start-indent="body-start()">
+        <xsl:apply-templates/>
+      </fo:list-item-body>
+    </fo:list-item>
+  </xsl:template>
+
+  <xsl:template match="listItem[parent::randomList]">
+    <xsl:param name="listItemPrefix"/>
+    <fo:list-item>
+      <xsl:call-template name="style-listItem"/>
+      <fo:list-item-label end-indent="label-end()">
+        <fo:block>
+          <xsl:choose>
+            <xsl:when test="$listItemPrefix != ''">
+              <xsl:value-of select="$listItemPrefix"/>
+            </xsl:when>
+            <xsl:when test="count(ancestor::randomList) mod 2">
+              <xsl:text>-</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>&#x2022;</xsl:text>
+            </xsl:otherwise>
+          </xsl:choose>
         </fo:block>
       </fo:list-item-label>
       <fo:list-item-body start-indent="body-start()">
@@ -61,24 +81,6 @@
     <fo:block text-align="justify">
       <xsl:apply-templates select="__cgmark|node()"/>
     </fo:block>
-  </xsl:template>
-
-  <!-- return '&#x2022;' or '-', or '<number>.' -->
-  <xsl:template name="getListItemLabel">
-    <xsl:param name="listItemType"/>
-    <xsl:choose>
-      <xsl:when test="$listItemType = 'ul'">
-        <xsl:choose>
-          <xsl:when test="count(ancestor::randomList) mod 2">
-          <xsl:text>&#x2022;</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>-</xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:number/><xsl:text>.</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
   
 </xsl:stylesheet>

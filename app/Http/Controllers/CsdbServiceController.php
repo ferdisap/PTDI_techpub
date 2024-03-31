@@ -23,6 +23,7 @@ use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Main\Helper as MainHelper;
+use Ptdi\Mpub\Main\XSIValidator;
 use Ptdi\Mpub\Pdf2\Applicability;
 use Ptdi\Mpub\Pdf2\Fonts;
 use Ptdi\Mpub\Pdf2\PMC_PDF;
@@ -113,7 +114,7 @@ class CsdbServiceController extends CsdbController
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
     $model->showCGMArkElement();
 
-    CSDBStatic::$footnotePositionStore[$model->filename] = [];
+    CSDBStatic::$footnotePositionStore[$model->filename] = [];    
 
     $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
       "filename" => $model->filename
