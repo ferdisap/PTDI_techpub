@@ -90,5 +90,12 @@
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>
+  
+  <xsl:template match="notePara|warningAndCautionPara">
+    <fo:block margin-top="11pt">
+      <xsl:call-template name="style-warningcautionnotePara"/>
+      <xsl:apply-templates/>     
+    </fo:block>
+  </xsl:template>
 
 </xsl:transform>

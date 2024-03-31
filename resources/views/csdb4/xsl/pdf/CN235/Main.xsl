@@ -16,7 +16,9 @@
   <xsl:include href="./csdb/para.xsl"/>
   <xsl:include href="./csdb/title.xsl"/>
   <xsl:include href="./csdb/table.xsl"/>
+  <xsl:include href="./csdb/media.xsl"/>
   <xsl:include href="./csdb/group/listElemGroup.xsl"/>
+  <xsl:include href="./csdb/group/warningcautionnote.xsl"/>
   <xsl:include href="../helper/position.xsl"/>
   <xsl:include href="../helper/security.xsl"/>
   <xsl:include href="../helper/id.xsl"/>

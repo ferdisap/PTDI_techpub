@@ -34,4 +34,10 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template name="style-warningcautionnotePara">
+    <xsl:if test="following-sibling::*">
+      <xsl:attribute name="margin-bottom">11pt</xsl:attribute>    
+    </xsl:if>
+  </xsl:template>
+
 </xsl:transform>

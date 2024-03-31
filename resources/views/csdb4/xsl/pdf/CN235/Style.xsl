@@ -7,6 +7,8 @@
   <xsl:include href="../style/style-levelledPara.xsl"/>
   <xsl:include href="../style/style-table.xsl"/>
   <xsl:include href="../style/style-list.xsl"/>
+  <xsl:include href="../style/style-icn.xsl"/>
+  <xsl:include href="../style/style-warningcautionnote.xsl"/>
 
   <!-- 
     outstanding:
