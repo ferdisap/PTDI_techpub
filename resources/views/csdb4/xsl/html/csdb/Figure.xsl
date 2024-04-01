@@ -48,17 +48,16 @@
                 </img>
               </div>
               <!-- untuk hotspot -->
-              <xsl:call-template name="transformICNMetaFile">
+              <!-- <xsl:call-template name="transformICNMetaFile">
                 <xsl:with-param name="filename"
                   select="php:function('preg_replace', '/.\w+$/','', string(@infoEntityIdent))" />
-              </xsl:call-template>
+              </xsl:call-template> -->
             </td>
           </tr>
           <tr>
             <td style="text-align:right">
               <span style="font-size:6" paddingleft="5">
-                <xsl:value-of
-                  select="php:function('preg_replace', '/.[\w]+$/', '', string(@infoEntityIdent))" />
+                <xsl:value-of select="php:function('preg_replace', '/.[\w]+$/', '', string(@infoEntityIdent))" />
               </span>
             </td>
           </tr>
@@ -175,9 +174,13 @@
 
   <!-- product illusration -->
   <xsl:template match="graphic[parent::productIllustration]">
+    <xsl:variable name="infoEntityIdent">
+      <xsl:value-of select="$icnPath"/>
+      <xsl:value-of select="php:function('preg_replace','/[\s\S]+(?=\/ICN)/', '', unparsed-entity-uri(@infoEntityIdent))"/>
+    </xsl:variable>
     <img class="graphic">
       <xsl:attribute name="src">
-        <xsl:text>/icn/</xsl:text><xsl:value-of select="@infoEntityIdent" />
+        <xsl:text>/icn/</xsl:text><xsl:value-of select="string($infoEntityIdent)" />
       </xsl:attribute>
     </img>
   </xsl:template>

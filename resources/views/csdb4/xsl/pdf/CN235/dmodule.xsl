@@ -19,7 +19,10 @@
         <xsl:with-param name="id" select="$id"/>
       </xsl:call-template>
       <fo:flow flow-name="body">
-        <xsl:call-template name="body"/>
+        <fo:block start-indent="{$stIndent}">
+        <!-- <fo:block start-indent="1.5cm" border="1px solid red"> -->
+          <xsl:call-template name="body"/>
+        </fo:block>
       </fo:flow>
     </fo:page-sequence>
   </xsl:template>

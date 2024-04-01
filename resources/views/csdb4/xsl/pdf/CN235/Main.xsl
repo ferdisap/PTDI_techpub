@@ -35,10 +35,17 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-
-  <xsl:variable name="orientation">
-    <xsl:value-of select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@orientation)"/>
-  </xsl:variable>
+  <xsl:variable name="orientation" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@orientation)"/>
+  <xsl:variable name="width" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@width)"/>
+  <xsl:variable name="height" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@height)"/>
+  <xsl:variable name="mt" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-top)"/>
+  <xsl:variable name="mb" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-bottom)"/>
+  <xsl:variable name="ml" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-left)"/>
+  <xsl:variable name="mr" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-right)"/>
+  <xsl:variable name="rb" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-before)"/>
+  <xsl:variable name="ra" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-after)"/>
+  <xsl:variable name="stIndent" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@start-indent)"/>
+  <xsl:variable name="titleNumberWidth" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@title-number-width)"/>
   
   <xsl:template match="/">
     <fo:root font-family="Arial">
@@ -77,9 +84,6 @@
             <!-- <fo:region-before region-name="header" extent="1.5cm" /> -->
             <!-- <fo:region-after region-name="footer" extent="2.0cm" /> -->
           <!-- </fo:simple-page-master> -->
-
-          <xsl:variable name="width" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/width)"/>
-          <xsl:variable name="height" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/height)"/>
 
           <fo:simple-page-master master-name="odd" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="3cm" margin-right="1.5cm">
             <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>

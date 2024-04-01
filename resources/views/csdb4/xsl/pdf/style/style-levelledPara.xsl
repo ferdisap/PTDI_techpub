@@ -9,14 +9,14 @@
     </xsl:param>
     <xsl:choose>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 5, table 3 colom 5 (leading text paragraph to the heading) -->
-      <xsl:when test="following-sibling::levelledPara">
+      <xsl:when test="following-sibling::levelledPara and position() != '1'">
         <xsl:attribute name="margin-top">
           <xsl:choose>
-            <xsl:when test="($level = 's0') or ($level = 's1') or ($level = 'c1') or ($level = 'c2')">27pt</xsl:when>
-            <xsl:when test="$level = 's2'">25pt</xsl:when>
-            <xsl:when test="$level = 's3'">23pt</xsl:when>
-            <xsl:when test="$level = 's4'">23pt</xsl:when>
-            <xsl:when test="$level = 's5'">19pt</xsl:when>
+            <xsl:when test="($level = 's0') or ($level = 's1') or ($level = 'c1') or ($level = 'c2')">17pt</xsl:when>
+            <xsl:when test="$level = 's2'">15pt</xsl:when>
+            <xsl:when test="$level = 's3'">13pt</xsl:when>
+            <xsl:when test="$level = 's4'">13pt</xsl:when>
+            <xsl:when test="$level = 's5'">9pt</xsl:when>
             <xsl:otherwise>0pt</xsl:otherwise>
           </xsl:choose>
         </xsl:attribute>
@@ -25,9 +25,9 @@
       <xsl:when test="parent::levelledPara">
         <xsl:attribute name="margin-top">
           <xsl:choose>
-            <xsl:when test="($level = 's0') or ($level = 'c1') or ($level = 'c2')">28pt</xsl:when>
-            <xsl:when test="$level = 's1'">14pt</xsl:when>
-            <xsl:when test="($level = 's2') or ($level = 's3') or ($level = 's4')">11pt</xsl:when>
+            <xsl:when test="($level = 's0') or ($level = 'c1') or ($level = 'c2')">18pt</xsl:when>
+            <xsl:when test="$level = 's1'">4pt</xsl:when>
+            <xsl:when test="($level = 's2') or ($level = 's3') or ($level = 's4')">1pt</xsl:when>
             <xsl:otherwise>0pt</xsl:otherwise>
           </xsl:choose>
         </xsl:attribute>

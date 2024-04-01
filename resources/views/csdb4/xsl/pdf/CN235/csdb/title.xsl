@@ -21,7 +21,7 @@
     <xsl:param name="prefix"/>
     <fo:block page-break-inside="avoid" page-break-after="avoid">
       <xsl:call-template name="style-title"/>
-      <xsl:value-of select="$prefix"/>
+        <xsl:value-of select="$prefix"/>
       <xsl:apply-templates/>
     </fo:block>
   </xsl:template>

@@ -20,9 +20,7 @@
     <fo:block margin-top="11pt" text-align="left">
       <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
       <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
-        <xsl:apply-templates select="listItem|__cgmark">
-          <xsl:with-param name="listItemPrefix" select="string(@listItemPrefix)"/>
-        </xsl:apply-templates>
+        <xsl:apply-templates select="listItem|__cgmark"/>
       </fo:list-block>
     </fo:block>
   </xsl:template>
@@ -42,7 +40,14 @@
   </xsl:template>
 
   <xsl:template match="listItem[parent::randomList]">
-    <xsl:param name="listItemPrefix">pf02</xsl:param>
+    <xsl:param name="listItemPrefix">
+      <xsl:choose>
+        <xsl:when test="@listItemPrefix">
+          <xsl:value-of select="string(@listItemPrefix)"/>
+        </xsl:when>
+        <xsl:otherwise>pf02</xsl:otherwise>
+      </xsl:choose>
+    </xsl:param>
     <fo:list-item>
       <xsl:call-template name="style-listItem"/>
       <fo:list-item-label end-indent="label-end()">

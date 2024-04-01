@@ -19,17 +19,17 @@
         <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
       </xsl:when>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 7, para 2.4 par3 dan table 3 (leading text paragraph to heading)-->
-      <xsl:when test="($level = 'c1' or $level = 'c2' or $level = 's0' or $level = 's1') and parent::*/following-sibling::levelledPara">
-        <xsl:attribute name="margin-bottom">27pt</xsl:attribute>
+      <xsl:when test="($level = 'c1' or $level = 'c2' or $level = 's0' or $level = 's1') and not(following-sibling::*) and parent::*/following-sibling::levelledPara">
+        <xsl:attribute name="margin-bottom">17pt</xsl:attribute>
       </xsl:when>
       <xsl:when test="($level = 's2') and parent::*/following-sibling::levelledPara">
-        <xsl:attribute name="margin-bottom">25pt</xsl:attribute>
+        <xsl:attribute name="margin-bottom">15pt</xsl:attribute>
       </xsl:when>      
       <xsl:when test="($level = 's3' or $level = 's4') and parent::*/following-sibling::levelledPara">
-        <xsl:attribute name="margin-bottom">23pt</xsl:attribute>
+        <xsl:attribute name="margin-bottom">13pt</xsl:attribute>
       </xsl:when>      
       <xsl:when test="($level = 's5') and parent::*/following-sibling::levelledPara">
-        <xsl:attribute name="margin-bottom">19pt</xsl:attribute>
+        <xsl:attribute name="margin-bottom">9pt</xsl:attribute>
       </xsl:when>
     </xsl:choose>
   </xsl:template>

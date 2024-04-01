@@ -5,44 +5,47 @@
   Outstanding:
   1. @cautionType @warningType dan @noteType belum difungsikan
   2. @vitalWarningFlag belum difungsikan
+  3. tidak fully comply S1000D
  -->
 
   <xsl:template match="note|warning|caution">
-    <fo:block margin-bottom="8pt">
-      <xsl:call-template name="style-warningcautionnote" />
-      <xsl:call-template name="add_applicability" />
-      <xsl:call-template name="add_controlAuthority" />
-      <xsl:call-template name="add_security" />
-
-      <xsl:choose>
-        <xsl:when test="symbol/@infoEntityIdent">
-          <fo:block text-align="center">
-            <xsl:apply-templates select="symbol"/>
+    <fo:block-container margin-bottom="8pt" width="95%" page-break-inside="avoid">
+      <fo:block>
+        <xsl:call-template name="style-warningcautionnote" />
+        <xsl:call-template name="add_applicability" />
+        <xsl:call-template name="add_controlAuthority" />
+        <xsl:call-template name="add_security" />
+  
+        <xsl:choose>
+          <xsl:when test="symbol/@infoEntityIdent">
+            <fo:block text-align="center">
+              <xsl:apply-templates select="symbol"/>
+            </fo:block>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:if test="name() = 'warning'">
+              <fo:block text-align="center" font-weight="bold">WARNING</fo:block>
+            </xsl:if>
+            <xsl:if test="name() = 'caution'">
+              <fo:block text-align="center" font-weight="bold">CAUTION</fo:block>
+            </xsl:if>
+            <xsl:if test="name() = 'note'">
+              <fo:block text-align="left" font-weight="bold">Note</fo:block>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
+          
+        <xsl:for-each select="*[name(.) != 'symbol']">
+          <fo:block>
+            <!-- <xsl:if test="name(.) = 'notePara' or name(.) = 'warningAndCautionPara'">
+              <xsl:attribute name="start-indent">16pt</xsl:attribute>
+            </xsl:if> -->
+            <xsl:apply-templates select="."/>
           </fo:block>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:if test="name() = 'warning'">
-            <fo:block text-align="center" font-weight="bold">WARNING</fo:block>
-          </xsl:if>
-          <xsl:if test="name() = 'caution'">
-            <fo:block text-align="center" font-weight="bold">CAUTION</fo:block>
-          </xsl:if>
-          <xsl:if test="name() = 'note'">
-            <fo:block text-align="left" font-weight="bold">Note</fo:block>
-          </xsl:if>
-        </xsl:otherwise>
-      </xsl:choose>
-        
-      <xsl:for-each select="*[name(.) != 'symbol']">
-        <fo:block>
-          <xsl:if test="name(.) = 'notePara' or name(.) = 'warningAndCautionPara'">
-            <xsl:attribute name="start-indent">16pt</xsl:attribute>
-          </xsl:if>
-          <xsl:apply-templates select="."/>
-        </fo:block>
-      </xsl:for-each>
-      <xsl:text>  </xsl:text>
-    </fo:block>
+        </xsl:for-each>
+        <xsl:text>  </xsl:text>
+      </fo:block>
+    </fo:block-container>
   </xsl:template>
 
   <!-- <xsl:template name="warningType">

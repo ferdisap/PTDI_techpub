@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!DOCTYPE config [
   <!ELEMENT config (output, security)>
-  
+
   <!ELEMENT output (method+,layout?)>
   <!ELEMENT method (path+)>
   <!ELEMENT path (#PCDATA)>
 
-  <!ELEMENT layout (width,height,orientation?)>
+  <!-- <!ELEMENT layout (width,height,(region-before?,region-after?), start-indent?)>
   <!ELEMENT width (#PCDATA)>
   <!ELEMENT height (#PCDATA)>
+  <!ELEMENT region-after (#PCDATA)>
+  <!ELEMENT region-before (#PCDATA)>
+  <!ELEMENT start-indent (#PCDATA)> -->
+  <!ELEMENT layout EMPTY>
+
 
   <!ELEMENT security (securityClassification+,commercialClassification?,caveat?, derivativeClassification?)>
   <!ELEMENT securityClassification (#PCDATA)>
@@ -17,10 +21,23 @@
   <!ELEMENT caveat (#PCDATA)>
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
-  
+
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
   <!ATTLIST layout master-name CDATA #REQUIRED>
+
+  <!ATTLIST layout width CDATA #REQUIRED>
+  <!ATTLIST layout height CDATA #REQUIRED>
+  <!ATTLIST layout region-before CDATA #REQUIRED>
+  <!ATTLIST layout region-after CDATA #REQUIRED>
+  <!ATTLIST layout start-indent CDATA #REQUIRED>
+  <!ATTLIST layout title-number-width CDATA #REQUIRED>
+
+  <!ATTLIST layout margin-top CDATA #REQUIRED>
+  <!ATTLIST layout margin-bottom CDATA #REQUIRED>
+  <!ATTLIST layout margin-right CDATA #REQUIRED>
+  <!ATTLIST layout margin-left CDATA #REQUIRED>
+
   <!ATTLIST layout orientation (port|land) #IMPLIED>
   <!ATTLIST securityClassification code CDATA #REQUIRED>
   <!ATTLIST commercialClassification code CDATA #REQUIRED>
@@ -38,10 +55,12 @@
       <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
       <path product-name="MALE">pdf/MALE/Main.xsl</path>
     </method>
-    <layout master-name="default-A4" orientation="port">
-      <width>21cm</width>
-      <height>29.7cm</height>
-    </layout>
+    <layout master-name="default-A4" orientation="port" 
+      margin-top="1cm" margin-bottom="1cm"
+      margin-left="3cm" margin-right="1.5cm"
+      width="21cm" height="29.7cm"
+      region-before="1.5cm" region-after="2cm"
+      start-indent="1.5cm" title-number-width="0cm"/>
   </output>
   <security>
     <securityClassification code="01">UNCLASSIFIED</securityClassification>
