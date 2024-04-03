@@ -33,12 +33,15 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
+    <!-- <fo:block-container id="{$id}" width="100%" border="1px solid green" start-indent="{$stIndent}"> -->
     <fo:block-container id="{$id}" width="100%">
+      
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
       <xsl:call-template name="add_controlAuthority"/>      
+
       <xsl:apply-templates select="tgroup|__cgmark">
         <xsl:with-param name="tocentry" select="string(@tocentry)"/>
         <xsl:with-param name="frame">
@@ -51,9 +54,10 @@
         </xsl:with-param>
         <xsl:with-param name="orient" select="string(@orient)"/>
       </xsl:apply-templates>
+      
       <xsl:apply-templates select="graphic|__cgmark"/>
 
-      <fo:block margin-top="6pt">
+      <fo:block start-indent="{$blockIndent}" margin-top="6pt">
         <xsl:variable name="prefix">
           <xsl:text>Table </xsl:text>
           <xsl:number level="any"/>

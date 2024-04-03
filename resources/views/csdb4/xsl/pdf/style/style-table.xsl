@@ -16,23 +16,29 @@
       </xsl:if>
     </xsl:if>
     <xsl:if test="following-sibling::para">
-      <xsl:attribute name="margin-bottom">28pt</xsl:attribute>
+      <!-- <xsl:attribute name="margin-bottom">28pt</xsl:attribute> -->
+      <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
     </xsl:if>
     <xsl:if test="following-sibling::title">
-      <xsl:attribute name="margin-bottom">32pt</xsl:attribute>
+      <!-- <xsl:attribute name="margin-bottom">32pt</xsl:attribute> -->
+      <xsl:attribute name="margin-bottom">22pt</xsl:attribute>
     </xsl:if>
     <xsl:if test="parent::*/following-sibling::levelledPara/title">
       <xsl:if test="$level = 's0' or $level = 's1'">
-        <xsl:attribute name="margin-bottom">35pt</xsl:attribute>
+        <!-- <xsl:attribute name="margin-bottom">35pt</xsl:attribute> -->
+        <xsl:attribute name="margin-bottom">25pt</xsl:attribute>
       </xsl:if>
       <xsl:if test="$level = 's2'">
-        <xsl:attribute name="margin-bottom">34pt</xsl:attribute>
+        <!-- <xsl:attribute name="margin-bottom">34pt</xsl:attribute> -->
+        <xsl:attribute name="margin-bottom">24pt</xsl:attribute>
       </xsl:if>
       <xsl:if test="$level = 's3' or $level = 's4'">
-        <xsl:attribute name="margin-bottom">32pt</xsl:attribute>
+        <!-- <xsl:attribute name="margin-bottom">32pt</xsl:attribute> -->
+        <xsl:attribute name="margin-bottom">22pt</xsl:attribute>
       </xsl:if>
       <xsl:if test="$level = 's5'">
-        <xsl:attribute name="margin-bottom">28pt</xsl:attribute>
+        <!-- <xsl:attribute name="margin-bottom">28pt</xsl:attribute> -->
+        <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
       </xsl:if>
     </xsl:if>
     <!-- <xsl:variable name="pos"><xsl:number/></xsl:variable> -->

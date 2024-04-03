@@ -45,7 +45,15 @@
   <xsl:variable name="rb" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-before)"/>
   <xsl:variable name="ra" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-after)"/>
   <xsl:variable name="stIndent" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@start-indent)"/>
-  <xsl:variable name="titleNumberWidth" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@title-number-width)"/>
+  <xsl:variable name="titleNumberWidth">
+    <xsl:choose>
+      <xsl:when test="boolean($stIndent) or $stIndent != ''">
+        <xsl:text>0</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>1.5cm</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+  <xsl:variable name="blockIndent">0cm</xsl:variable>
   
   <xsl:template match="/">
     <fo:root font-family="Arial">
