@@ -30,5 +30,11 @@
     <xsl:apply-templates/>
   </xsl:template>
 
+  <xsl:template match="title[parent::crewDrill] | title[parent::subCrewDrill]">
+    <fo:block margin-bottom="6pt" font-weight="bold">
+      <xsl:apply-templates/>
+    </fo:block>
+  </xsl:template>
+
 
 </xsl:stylesheet>

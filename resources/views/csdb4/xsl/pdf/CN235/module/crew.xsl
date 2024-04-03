@@ -11,7 +11,8 @@
     3. crewDrill@independentCheck belum difungsikan karena sepengetahuan saya tidak ada gunanya saat di buat pdf
     4. <if> dan <elseIf> tetap di render dalam sequential number jika di pdf (alias fungsinya sama saja).
     5. crewMemberGroup/@actionResponsibility belum difungsikan karena belum tahu kegunaannya 
-    6. crewDrillStep/@keepWithNext belum difungsikan karena bingung bagaimana menerapkannya
+    6. crewDrillStep/@keepWithNext belum difungsikan karena bingung bagaimana menerapkannya jika ada 'if' or 'elseIf' or 'case'
+    7. <thumbTabText> belum difungsikan karena belum tau gunanya untuk apa
    -->
 
   <xsl:template match="crew">
@@ -50,7 +51,29 @@
           <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
         </fo:block>
       </xsl:if>
-  
+      <xsl:apply-templates select="title|__cgmark"/>
+      <!-- here for <thumbTabText> -->
+      <fo:block margin-bottom="11pt">
+        <xsl:apply-templates select="*[name(.) != 'title']|__cgmark"/>
+      </fo:block>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template match="subCrewDrill">
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_warning"/>
+    <xsl:call-template name="add_caution"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
+
+    <fo:block-container>
+      <xsl:call-template name="add_id"/>
+      <xsl:if test="@skillLevelCode">
+        <xsl:variable name="sk" select="string(@skillLevelCode)"/>
+        <fo:block font-size="8pt">
+          <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
+        </fo:block>
+      </xsl:if> 
       <fo:block margin-bottom="11pt">
         <xsl:apply-templates/>
       </fo:block>
@@ -91,7 +114,6 @@
         <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
       </fo:block>
     </xsl:if>
-
     <xsl:if test="title">
       <xsl:apply-templates select="title"/>
     </xsl:if>
@@ -115,7 +137,7 @@
 
   <xsl:template match="if|elseIf|case">
     <xsl:call-template name="add_applicability"/>
-    <xsl:call-template name="add_controlAuthority" />
+    <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security" />
     <fo:block margin-top="6pt" margin-bottom="6pt">
       <xsl:call-template name="add_id"/>
@@ -131,6 +153,8 @@
   </xsl:template>
 
   <xsl:template match="crewProcedureName">
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
     <fo:block>
       <xsl:apply-templates/>
     </fo:block>
@@ -187,5 +211,14 @@
         <xsl:value-of select="string($ConfigXML//crewMember[@type = $cmtype])"/>
       </fo:block>
     </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template match="endMatter">
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <fo:block>
+      <xsl:call-template name="style-para"/>
+      <xsl:apply-templates/>
+    </fo:block>
   </xsl:template>
 </xsl:transform>
