@@ -9,9 +9,10 @@
  -->
 
   <xsl:template match="note|warning|caution">
-    <fo:block-container margin-bottom="8pt" width="95%" page-break-inside="avoid">
-      <fo:block>
-        <xsl:call-template name="style-warningcautionnote" />
+    <!-- <fo:block-container margin-bottom="8pt" width="95%" page-break-inside="avoid" background-image="url('{unparsed-entity-uri('tes')}')" padding="0.5cm"> -->
+    <fo:block-container width="95%" page-break-inside="avoid">
+      <xsl:call-template name="style-warningcautionnote" />
+      <fo:block start-indent="{$blockIndent}" border="1pt solid black" background-color="white" padding="3pt" margin="-3pt">
         <xsl:call-template name="add_applicability" />
         <xsl:call-template name="add_controlAuthority" />
         <xsl:call-template name="add_security" />
@@ -24,7 +25,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:if test="name() = 'warning'">
-              <fo:block text-align="center" font-weight="bold">WARNING</fo:block>
+              <fo:block text-align="center" font-weight="bold" text-decoration="underline">WARNING</fo:block>
             </xsl:if>
             <xsl:if test="name() = 'caution'">
               <fo:block text-align="center" font-weight="bold">CAUTION</fo:block>

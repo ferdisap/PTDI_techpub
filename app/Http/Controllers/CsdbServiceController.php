@@ -117,9 +117,9 @@ class CsdbServiceController extends CsdbController
     CSDBStatic::$footnotePositionStore[$model->filename] = [];    
 
     $transformed = $model->CSDBObject->transform_to_xml( $pathxsl, [
-      "filename" => $model->filename
-      // "configuration" => 'ContentPreview',
-      // 'csrf_token' => csrf_token(),
+      "filename" => $model->filename,
+      // "alertPathBackground" => "file:///".str_replace("\\","/",storage_path('csdb')),
+      "alertPathBackground" => "file:///".str_replace("\\","/", CSDB_VIEW_PATH."/xsl/pdf/assets"),
     ]);
 
     $fo = CSDB_VIEW_PATH."/xsl/pdf/transformed/".$csdb->filename.".fo";

@@ -54,6 +54,10 @@
     </xsl:choose>
   </xsl:variable>
   <xsl:variable name="blockIndent">0cm</xsl:variable>
+
+  <xsl:param name="alertPathBackground"/>
+  <xsl:variable name="warningPath"><xsl:value-of select="$alertPathBackground"/>/warningBackground.png</xsl:variable>
+  <xsl:variable name="cautionPath"><xsl:value-of select="$alertPathBackground"/>/cautionBackground.png</xsl:variable>
   
   <xsl:template match="/">
     <fo:root font-family="Arial">

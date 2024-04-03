@@ -4,18 +4,15 @@
   
   <xsl:template name="style-warningcautionnote">
     <xsl:attribute name="margin-top">11pt</xsl:attribute>
-    <xsl:choose>    
-      <xsl:when test="name(.) = 'note'">
-        <xsl:attribute name="border">3pt solid black</xsl:attribute>
-        <xsl:attribute name="padding">8pt</xsl:attribute>
-      </xsl:when>
+    <xsl:attribute name="margin-bottom">8pt</xsl:attribute>
+    <xsl:choose>
       <xsl:when test="name(.) = 'caution'">
-        <xsl:attribute name="border">3pt solid orange</xsl:attribute>
-        <xsl:attribute name="padding">8pt</xsl:attribute>
+        <xsl:attribute name="padding">0.5cm</xsl:attribute>
+        <xsl:attribute name="background-image">url('<xsl:value-of select="$cautionPath"/>')</xsl:attribute>
       </xsl:when>
-      <xsl:when test="name(.) = 'note'">
-        <xsl:attribute name="border">3pt solid red</xsl:attribute>
-        <xsl:attribute name="padding">8pt</xsl:attribute>
+      <xsl:when test="name(.) = 'warning'">
+        <xsl:attribute name="padding">0.5cm</xsl:attribute>
+        <xsl:attribute name="background-image">url('<xsl:value-of select="$warningPath"/>')</xsl:attribute>
       </xsl:when>
     </xsl:choose>
   </xsl:template>
