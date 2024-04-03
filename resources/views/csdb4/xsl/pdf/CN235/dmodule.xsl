@@ -5,6 +5,11 @@
   xmlns:php="http://php.net/xsl">
 
   <!-- 
+    Outstanding
+    1. <foldout>, <multimedia>, <....alts> belum difungsikan/dicoba
+   -->
+
+  <!-- 
     param 'id' diperlukan jika ingin pakai page 1 of <total>
    -->
   <xsl:template match="dmodule">
@@ -19,12 +24,17 @@
         <xsl:with-param name="id" select="$id"/>
       </xsl:call-template>
       <fo:flow flow-name="body">
-        <fo:block start-indent="{$stIndent}">
-        <!-- <fo:block start-indent="1.5cm" border="1px solid red"> -->
-          <xsl:call-template name="body"/>
-        </fo:block>
+        <xsl:call-template name="body"/>
       </fo:flow>
     </fo:page-sequence>
+  </xsl:template>
+  
+  <xsl:template match="content">
+    <fo:block-container start-indent="{$stIndent}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:apply-templates select="crew|description|frontMatter"/>
+    </fo:block-container>
   </xsl:template>
 
   <xsl:template name="getRegion">

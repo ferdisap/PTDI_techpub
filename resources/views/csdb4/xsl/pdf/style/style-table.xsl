@@ -16,35 +16,31 @@
         <xsl:attribute name="reference-orientation">90</xsl:attribute>
       </xsl:if>
     </xsl:if>
-    <xsl:if test="following-sibling::para">
-      <!-- <xsl:attribute name="margin-bottom">28pt</xsl:attribute> -->
-      <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
-    </xsl:if>
-    <xsl:if test="following-sibling::title">
-      <!-- <xsl:attribute name="margin-bottom">32pt</xsl:attribute> -->
-      <xsl:attribute name="margin-bottom">22pt</xsl:attribute>
-    </xsl:if>
-    <xsl:if test="parent::*/following-sibling::levelledPara/title">
-      <xsl:if test="$level = 's0' or $level = 's1'">
-        <!-- <xsl:attribute name="margin-bottom">35pt</xsl:attribute> -->
-        <xsl:attribute name="margin-bottom">25pt</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="$level = 's2'">
-        <!-- <xsl:attribute name="margin-bottom">34pt</xsl:attribute> -->
-        <xsl:attribute name="margin-bottom">24pt</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="$level = 's3' or $level = 's4'">
-        <!-- <xsl:attribute name="margin-bottom">32pt</xsl:attribute> -->
-        <xsl:attribute name="margin-bottom">22pt</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="$level = 's5'">
-        <!-- <xsl:attribute name="margin-bottom">28pt</xsl:attribute> -->
+    <xsl:choose>
+      <xsl:when test="following-sibling::para">
         <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
-      </xsl:if>
-    </xsl:if>
-    <!-- <xsl:variable name="pos"><xsl:number/></xsl:variable> -->
-    <!-- <xsl:variable name="total"><xsl:value-of select="count(parent::*/child::*)"/></xsl:variable> -->
-    <!-- <xsl:value-of select="php:function('dd',$pos, position(), number($total))"/> -->
+      </xsl:when>
+      <xsl:when test="following-sibling::title">
+        <xsl:attribute name="margin-bottom">22pt</xsl:attribute>
+      </xsl:when>
+      <!-- compliance to Chap 6.2.2 page 14 randomlist paragraph -->
+      <xsl:when test="parent::*/following-sibling::levelledPara/title">
+        <xsl:choose>
+          <xsl:when test="$level = 's0' or $level = 's1'">
+            <xsl:attribute name="margin-bottom">21pt</xsl:attribute>
+          </xsl:when>
+          <xsl:when test="$level = 's2'">
+            <xsl:attribute name="margin-bottom">21pt</xsl:attribute>
+          </xsl:when>
+          <xsl:when test="$level = 's3' or $level = 's4'">
+            <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
+          </xsl:when>
+          <xsl:when test="$level = 's5'">
+            <xsl:attribute name="margin-bottom">18pt</xsl:attribute>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:when>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template name="style-tgroup">

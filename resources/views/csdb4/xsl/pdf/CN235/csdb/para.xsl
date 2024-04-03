@@ -98,4 +98,15 @@
     </fo:block>
   </xsl:template>
 
+  <xsl:template match="para[parent::challenge] | para[parent::response]">
+    <xsl:choose>
+      <xsl:when test="following-sibling::*">
+        <fo:block>
+          <xsl:apply-templates/>
+        </fo:block>
+      </xsl:when>
+      <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
 </xsl:transform>

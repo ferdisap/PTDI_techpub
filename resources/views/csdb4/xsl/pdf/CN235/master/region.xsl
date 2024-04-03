@@ -4,7 +4,8 @@
 
   <xsl:include href="./default-A4.xsl" />
   <xsl:include href="../module/frontmatter.xsl" />
-  <xsl:include href="../module/descript.xsl" />
+  <xsl:include href="../module/descript.xsl"/>
+  <xsl:include href="../module/crew.xsl"/>
   
   <xsl:template name="header">
     <xsl:param name="masterName"/>

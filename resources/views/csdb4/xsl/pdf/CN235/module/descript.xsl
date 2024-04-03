@@ -4,29 +4,9 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template match="content[name(child::*) = 'description']">
-
-    <!-- <fo:table>
-      <fo:table-body>
-        <fo:table-row>
-          <fo:table-cell>
-            <fo:block>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, sit!</fo:block>
-          </fo:table-cell>
-          <fo:table-cell>
-            <fo:block>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, sit!</fo:block>
-          </fo:table-cell>
-        </fo:table-row>
-        <fo:table-row>
-          <fo:table-cell>
-            <fo:block>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quia iure alias id ea illo repellendus praesentium. Consequatur sit officiis sequi minus architecto? Totam perferendis quisquam ab corrupti distinctio minus exercitationem?</fo:block>
-          </fo:table-cell>
-          <fo:table-cell>
-            <fo:block>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quia iure alias id ea illo repellendus praesentium. Consequatur sit officiis sequi minus architecto? Totam perferendis quisquam ab corrupti distinctio minus exercitationem?</fo:block>
-          </fo:table-cell>
-        </fo:table-row>
-      </fo:table-body>
-    </fo:table> -->
-
+  <xsl:template match="description">
+    <xsl:call-template name="add_warning"/>
+    <xsl:call-template name="add_caution"/>
     <xsl:apply-templates/>
   </xsl:template>
 
@@ -35,7 +15,12 @@
       <xsl:text>s</xsl:text>
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/>
     </xsl:param>
-    <fo:block text-align="justify">
+
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
+    
+    <fo:block text-align="justify" start-indent="0cm">
       <xsl:call-template name="style-levelledPara">
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>

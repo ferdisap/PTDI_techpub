@@ -5,8 +5,7 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:output method="xml" />
-
-  <!-- <xsl:param name="config_path">'../../../Config.xml</xsl:param> -->
+  
   <xsl:param name="filename"/>
 
   <xsl:include href="./dmodule.xsl" />

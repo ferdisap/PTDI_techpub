@@ -2,6 +2,11 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
+
+  <!-- Note
+    1. selanjutnya tes untuk numbering pakai <xsl:number/>, eg: <xsl:number level="multiple" count="levelledPara"/>, <xsl:number level="multiple" count="crewDrill|if"/> (output di crew.xsd '1.1')
+  -->
+
   <xsl:template name="style-title">
     <xsl:param name="level"/>
     <xsl:choose>

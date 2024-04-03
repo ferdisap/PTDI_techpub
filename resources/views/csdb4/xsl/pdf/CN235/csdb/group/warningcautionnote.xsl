@@ -7,7 +7,6 @@
   2. @vitalWarningFlag belum difungsikan
   3. tidak fully comply S1000D
  -->
-
   <xsl:template match="note|warning|caution">
     <fo:block-container width="85%" page-break-inside="avoid" start-indent="0.5cm">
       <xsl:call-template name="style-warningcautionnote" />
@@ -45,36 +44,21 @@
     </fo:block-container>
   </xsl:template>
 
-  <!-- <xsl:template name="warningType">
-    <xsl:if test="@warningType">
-      <xsl:attribute name="warningType">
-        <xsl:value-of select="@warningType" />
-      </xsl:attribute>
+  <!-- 
+    Outstanding for referenced warning and caution
+    1. Belum mengakomodir external store (CIR) warning/caution karena sedang mempelajari CIR
+   -->
+  <xsl:template name="add_warning">
+    <xsl:param name="id" select="@warningRefs"/>
+    <xsl:if test="$id">
+      <xsl:apply-templates select="//warningAndCautions/warning[@id = $id]"/>
     </xsl:if>
   </xsl:template>
-
-  <xsl:template name="cautionType">
-    <xsl:if test="@cautionType">
-      <xsl:attribute name="cautionType">
-        <xsl:value-of select="@cautionType" />
-      </xsl:attribute>
+  <xsl:template name="add_caution">
+    <xsl:param name="id" select="@cautionRefs"/>
+    <xsl:if test="$id">
+      <xsl:apply-templates select="//warningAndCautions/caution[@id = $id]"/>
     </xsl:if>
   </xsl:template>
-
-  <xsl:template name="noteType">
-    <xsl:if test="@noteType">
-      <xsl:attribute name="noteType">
-        <xsl:value-of select="@noteType" />
-      </xsl:attribute>
-    </xsl:if>
-  </xsl:template>
-
-  <xsl:template name="vitalWarningFlag">
-    <xsl:if test="@vitalWarningFlag">
-      <xsl:attribute name="vitalWarningFlag">
-        <xsl:value-of select="@vitalWarningFlag" />
-      </xsl:attribute>
-    </xsl:if>
-  </xsl:template> -->
 
 </xsl:stylesheet>

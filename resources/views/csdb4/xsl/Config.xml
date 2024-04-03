@@ -14,8 +14,12 @@
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
 
-  <!ELEMENT textElemGroup (emphasis*)>
+  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode)*>
   <!ELEMENT emphasis (#PCDATA)>
+  <!ELEMENT crewMember (#PCDATA)>
+  <!ELEMENT crewStepCondition (#PCDATA)>
+  <!ELEMENT skillType (#PCDATA)>
+  <!ELEMENT skillLevelCode (#PCDATA)>
 
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
@@ -25,8 +29,7 @@
   <!ATTLIST layout height CDATA #REQUIRED>
   <!ATTLIST layout region-before CDATA #REQUIRED>
   <!ATTLIST layout region-after CDATA #REQUIRED>
-  <!ATTLIST layout start-indent CDATA #REQUIRED>
-  <!ATTLIST layout title-number-width CDATA #REQUIRED>
+  <!ATTLIST layout start-indent CDATA #IMPLIED>
 
   <!ATTLIST layout margin-top CDATA #REQUIRED>
   <!ATTLIST layout margin-bottom CDATA #REQUIRED>
@@ -40,6 +43,10 @@
   <!ATTLIST action code CDATA #REQUIRED>
 
   <!ATTLIST emphasis type CDATA #REQUIRED>
+  <!ATTLIST crewMember type CDATA #REQUIRED>
+  <!ATTLIST crewStepCondition type CDATA #REQUIRED>
+  <!ATTLIST skillType type CDATA #REQUIRED>
+  <!ATTLIST skillLevelCode type CDATA #REQUIRED>
 ]>
 
 <config>
@@ -57,7 +64,7 @@
       margin-left="3cm" margin-right="1.5cm"
       width="21cm" height="29.7cm"
       region-before="1.5cm" region-after="2cm"
-      start-indent="1.5cm" title-number-width="0cm"/>
+      start-indent="1.5cm"/>
   </output>
   <security>
     <securityClassification code="01">UNCLASSIFIED</securityClassification>
@@ -90,5 +97,28 @@
     <emphasis type="em07">underline-italic</emphasis>
     <emphasis type="em08">bold-italic</emphasis>
     <emphasis type="em09">bold-italic-underline</emphasis>
+    <crewMember type="cm01">All</crewMember>
+    <crewMember type="cm02">Pilot</crewMember>
+    <crewMember type="cm03">Co-Pilot</crewMember>
+    <crewMember type="cm04">Navigator</crewMember>
+    <crewMember type="cm05">Engineer</crewMember>
+    <crewMember type="cm06">Ground Crew</crewMember>
+    <crewMember type="cm07">Load Master</crewMember>
+    <crewMember type="cm08">Cabin Spv.</crewMember>
+    <crewMember type="cm51">CM1</crewMember>
+    <crewMember type="cm52">CM2</crewMember>
+    <crewMember type="cm53">CM3</crewMember>
+    <crewStepCondition type="csc01">Equipment is installed or available</crewStepCondition>
+    <crewStepCondition type="csc02">A detailed procedure for the step is located in the performance section of the condensed checklists</crewStepCondition>
+    <crewStepCondition type="csc03">Performance of the step is mandatory for all through-flights used for combat/tactical operations</crewStepCondition>
+    <crewStepCondition type="csc04">A step that is mandatory for night flights</crewStepCondition>
+    <crewStepCondition type="csc05">A task or step required by the operator's manual</crewStepCondition>
+    <skillType type="st01">AIRPL</skillType>
+    <skillType type="st02">ELEC</skillType>
+    <skillType type="st03">AVION</skillType>
+    <skillType type="st04">ENGIN</skillType>
+    <skillLevelCode type="sk01">Basic</skillLevelCode>
+    <skillLevelCode type="sk02">Intermediate</skillLevelCode>
+    <skillLevelCode type="sk03">Advanced</skillLevelCode>
   </textElemGroup>
 </config>
