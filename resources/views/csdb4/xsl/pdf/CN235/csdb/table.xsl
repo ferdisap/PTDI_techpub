@@ -34,7 +34,7 @@
     <xsl:call-template name="add_security"/>
 
     <!-- <fo:block-container id="{$id}" width="100%" border="1px solid green" start-indent="{$stIndent}"> -->
-    <fo:block-container id="{$id}" width="100%">
+    <fo:block-container id="{$id}" width="100%" page-break-before="avoid">
       
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
@@ -57,7 +57,7 @@
       
       <xsl:apply-templates select="graphic|__cgmark"/>
 
-      <fo:block start-indent="{$blockIndent}" margin-top="6pt">
+      <fo:block start-indent="{$blockIndent}" margin-top="6pt" page-break-before="avoid">
         <xsl:variable name="prefix">
           <xsl:text>Table </xsl:text>
           <xsl:number level="any"/>
@@ -152,7 +152,7 @@
       table-omit-footer-at-break=true agar tidak dirender footnote setiap page jika break 
       table-omit-header-at-break="false" agar header selalu diprint jika page break
     -->
-    <fo:table table-omit-footer-at-break="true">
+    <fo:table table-omit-footer-at-break="true" page-break-before="avoid">
       <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
         <xsl:with-param name="frame" select="$frame"/>
