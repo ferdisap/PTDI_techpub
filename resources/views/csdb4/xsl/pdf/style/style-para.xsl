@@ -18,6 +18,9 @@
       <xsl:when test="parent::listItem and preceding-sibling::para and not(following-sibling::para) and parent::listItem/following-sibling::listItem[parent::randomList]">
         <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
       </xsl:when>
+      <xsl:when test="following-sibling::*">
+        <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
+      </xsl:when>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 7, para 2.4 par3 dan table 3 (leading text paragraph to heading)-->
       <xsl:when test="($level = 'c1' or $level = 'c2' or $level = 's0' or $level = 's1') and not(following-sibling::*) and parent::*/following-sibling::levelledPara">
         <xsl:attribute name="margin-bottom">17pt</xsl:attribute>

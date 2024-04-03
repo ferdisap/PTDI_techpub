@@ -5,6 +5,7 @@
   <xsl:template name="style-table">
     <xsl:param name="orient"/>
     <xsl:param name="level"/>
+    <xsl:attribute name="margin-top">3pt</xsl:attribute>
     <xsl:if test="$orientation = 'port'">
       <xsl:if test="$orient = 'land'">
         <xsl:attribute name="reference-orientation">90</xsl:attribute>

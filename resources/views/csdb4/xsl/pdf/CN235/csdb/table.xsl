@@ -61,7 +61,7 @@
         <xsl:variable name="prefix">
           <xsl:text>Table </xsl:text>
           <xsl:number level="any"/>
-          <xsl:text>&#160;&#160;&#160;</xsl:text>
+          <xsl:text>&#160;&#160;</xsl:text>
         </xsl:variable>
         <xsl:value-of select="$prefix"/>
         <xsl:apply-templates select="title"/>

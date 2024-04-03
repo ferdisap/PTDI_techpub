@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, security)>
+  <!ELEMENT config (output, security, textElemGroup)>
 
   <!ELEMENT output (method+,layout?)>
   <!ELEMENT method (path+)>
   <!ELEMENT path (#PCDATA)>
-
-  <!-- <!ELEMENT layout (width,height,(region-before?,region-after?), start-indent?)>
-  <!ELEMENT width (#PCDATA)>
-  <!ELEMENT height (#PCDATA)>
-  <!ELEMENT region-after (#PCDATA)>
-  <!ELEMENT region-before (#PCDATA)>
-  <!ELEMENT start-indent (#PCDATA)> -->
   <!ELEMENT layout EMPTY>
-
 
   <!ELEMENT security (securityClassification+,commercialClassification?,caveat?, derivativeClassification?)>
   <!ELEMENT securityClassification (#PCDATA)>
@@ -21,6 +13,9 @@
   <!ELEMENT caveat (#PCDATA)>
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
+
+  <!ELEMENT textElemGroup (emphasis*)>
+  <!ELEMENT emphasis (#PCDATA)>
 
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
@@ -43,6 +38,8 @@
   <!ATTLIST commercialClassification code CDATA #REQUIRED>
   <!ATTLIST caveat code CDATA #REQUIRED>
   <!ATTLIST action code CDATA #REQUIRED>
+
+  <!ATTLIST emphasis type CDATA #REQUIRED>
 ]>
 
 <config>
@@ -61,12 +58,6 @@
       width="21cm" height="29.7cm"
       region-before="1.5cm" region-after="2cm"
       start-indent="1.5cm" title-number-width="0cm"/>
-    <!-- <layout master-name="default-A4" orientation="port" 
-      margin-top="1cm" margin-bottom="1cm"
-      margin-left="3cm" margin-right="1.5cm"
-      width="21cm" height="29.7cm"
-      region-before="1.5cm" region-after="2cm"
-      start-indent="1.5cm" title-number-width="0cm"/> -->
   </output>
   <security>
     <securityClassification code="01">UNCLASSIFIED</securityClassification>
@@ -89,32 +80,15 @@
       <action code="ai09">Upgrade SC to 04</action>
       <action code="ai10">Upgrade SC to 05</action>
     </derivativeClassification>
-
   </security>
+  <textElemGroup>
+    <emphasis type="em01">bold</emphasis>
+    <emphasis type="em02">italic</emphasis>
+    <emphasis type="em03">underline</emphasis>
+    <emphasis type="em05">strikethrough</emphasis>
+    <emphasis type="em06">underline-bold</emphasis>
+    <emphasis type="em07">underline-italic</emphasis>
+    <emphasis type="em08">bold-italic</emphasis>
+    <emphasis type="em09">bold-italic-underline</emphasis>
+  </textElemGroup>
 </config>
-
-<!-- <!DOCTYPE configs [
-  <!ELEMENT configs (config+|securities)>
-  <!ELEMENT config (path+)>
-  <!ELEMENT securities (security+)>
-  <!ELEMENT path (#PCDATA)>
-  
-  <!ATTLIST config type CDATA #REQUIRED>
-  <!ATTLIST path product-name CDATA #REQUIRED>
-]>
-
-<configs>
-  <config type="pdf">
-    <path product-name="CN235">pdf/CN235/Main.xsl</path>
-    <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
-    <path product-name="MALE">pdf/MALE/Main.xsl</path>
-  </config>
-  <config type="html">
-    <path product-name="*">html/Main.xsl</path>
-  </config>
-  <securities>
-    <security>
-
-    </security>
-  </securities>
-</configs> -->

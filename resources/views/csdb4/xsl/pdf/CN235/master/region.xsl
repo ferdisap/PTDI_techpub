@@ -76,20 +76,4 @@
     <fo:block id="block-002">Hello World TES TES2!</fo:block>
     <fo:block>Hello World TES TES3!</fo:block> -->
   </xsl:template>
-
-  <xsl:template name="get_logo">
-    <xsl:variable name="infoEntityPath">
-      <xsl:text>url('</xsl:text>
-      <!-- <xsl:text>file:///D:/Temporary/tesimage.png</xsl:text> -->
-      <!-- <xsl:text>file:\\\D:\Temporary\tesimage.png</xsl:text> -->
-      <!-- <xsl:text>file:\\\D:\Temporary/tesimage.png</xsl:text> -->
-      <xsl:value-of select="unparsed-entity-uri(//dmStatus/logo/symbol/@infoEntityIdent)"/>
-      <xsl:text>')</xsl:text>
-    </xsl:variable>
-    
-    <fo:block>
-      <fo:external-graphic src="{$infoEntityPath}" content-width="scale-to-fit" width="2.5cm"/>
-    </fo:block>
-  </xsl:template>
-
 </xsl:transform>

@@ -18,12 +18,16 @@
   <xsl:include href="./csdb/table.xsl"/>
   <xsl:include href="./csdb/media.xsl"/>
   <xsl:include href="./csdb/group/listElemGroup.xsl"/>
+  <xsl:include href="./csdb/group/textElemGroup.xsl"/>
   <xsl:include href="./csdb/group/warningcautionnote.xsl"/>
   <xsl:include href="../helper/position.xsl"/>
   <xsl:include href="../helper/security.xsl"/>
   <xsl:include href="../helper/id.xsl"/>
   <xsl:include href="../helper/authority.xsl"/>
   <xsl:include href="../helper/enterprise.xsl"/>
+
+  
+  <xsl:variable name="ConfigXML" select="document('../../Config.xml')"/>
 
   <xsl:variable name="masterName">
     <xsl:choose>
@@ -35,16 +39,16 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  <xsl:variable name="orientation" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@orientation)"/>
-  <xsl:variable name="width" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@width)"/>
-  <xsl:variable name="height" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@height)"/>
-  <xsl:variable name="mt" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-top)"/>
-  <xsl:variable name="mb" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-bottom)"/>
-  <xsl:variable name="ml" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-left)"/>
-  <xsl:variable name="mr" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@margin-right)"/>
-  <xsl:variable name="rb" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-before)"/>
-  <xsl:variable name="ra" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@region-after)"/>
-  <xsl:variable name="stIndent" select="string(document('../../Config.xml')/config/output/layout[@master-name = $masterName]/@start-indent)"/>
+  <xsl:variable name="orientation" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/>
+  <xsl:variable name="width" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/>
+  <xsl:variable name="height" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@height)"/>
+  <xsl:variable name="mt" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-top)"/>
+  <xsl:variable name="mb" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-bottom)"/>
+  <xsl:variable name="ml" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-left)"/>
+  <xsl:variable name="mr" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-right)"/>
+  <xsl:variable name="rb" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-before)"/>
+  <xsl:variable name="ra" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-after)"/>
+  <xsl:variable name="stIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@start-indent)"/>
   <xsl:variable name="titleNumberWidth">
     <xsl:choose>
       <xsl:when test="boolean($stIndent) or $stIndent != ''">

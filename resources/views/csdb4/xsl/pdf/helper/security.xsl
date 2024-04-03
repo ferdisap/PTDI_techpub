@@ -72,23 +72,23 @@
   <xsl:template name="interpretSC">
     <xsl:param name="scCode" select="@securityClassification"/>
     <xsl:if test="$scCode">
-      <xsl:value-of select="document('../../Config.xml')/config/security/securityClassification[@code = $scCode]"/>
+      <xsl:value-of select="$ConfigXML/config/security/securityClassification[@code = $scCode]"/>
     </xsl:if>
   </xsl:template>
 
   <xsl:template name="interpretCC">
     <xsl:param name="ccCode" select="@commercialClassification"/>
-    <xsl:value-of select="document('../../Config.xml')/config/security/commercialClassification[@code = $ccCode]"/>
+    <xsl:value-of select="$ConfigXML/config/security/commercialClassification[@code = $ccCode]"/>
   </xsl:template>
 
   <xsl:template name="interpretCaveat">
     <xsl:param name="caveat" select="@caveat"/>
-    <xsl:value-of select="document('../../Config.xml')/config/security/caveat[@code = $caveat]"/>
+    <xsl:value-of select="$ConfigXML/config/security/caveat[@code = $caveat]"/>
   </xsl:template>
   
   <xsl:template name="interpretDCActionType">
     <xsl:param name="identType" select="@actionIdentType"/>
-    <xsl:value-of select="document('../../Config.xml')/config/security/derivativeClassification/action[@code = $identType]"/>
+    <xsl:value-of select="$ConfigXML/config/security/derivativeClassification/action[@code = $identType]"/>
   </xsl:template>
 
 </xsl:transform>
