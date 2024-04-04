@@ -95,8 +95,7 @@
     <securityClassification code="02">RESTRICTED</securityClassification>
     <securityClassification code="03">CONFIDENTIAL</securityClassification>
     <securityClassification code="04">SECRET</securityClassification>
-    <securityClassification code="05">bottom SECRET</securityClassification>
-    <securityClassification code="05">left SECRET</securityClassification>
+    <securityClassification code="05">TOP SECRET</securityClassification>
     <commercialClassification code="cc51">FOO CC</commercialClassification>
     <caveat code="cv51">FOO CAVEAT</caveat>
     <derivativeClassification>
@@ -132,6 +131,13 @@
     <crewMember type="cm51">CM1</crewMember>
     <crewMember type="cm52">CM2</crewMember>
     <crewMember type="cm53">CM3</crewMember>
+    <crewMember type="cm54">Pil1</crewMember>
+    <crewMember type="cm55">Pil2</crewMember>
+    <crewMember type="cm56">Pil3</crewMember>
+    <crewMember type="cm57">Pil4</crewMember>
+    <crewMember type="cm58">MO</crewMember>
+    <crewMember type="cm59">LM</crewMember>
+    <crewMember type="cm60">T</crewMember>
     <crewStepCondition type="csc01">Equipment is installed or available</crewStepCondition>
     <crewStepCondition type="csc02">A detailed procedure for the step is located in the performance section of the condensed checklists</crewStepCondition>
     <crewStepCondition type="csc03">Performance of the step is mandatory for all through-flights used for combat/tactical operations</crewStepCondition>

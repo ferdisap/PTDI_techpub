@@ -9,7 +9,7 @@
     </xsl:param>
     <xsl:choose>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 5, table 3 colom 5 (leading text paragraph to the heading) -->
-      <xsl:when test="following-sibling::levelledPara and position() != '1'">
+      <xsl:when test="position() != '1'">
         <xsl:attribute name="margin-top">
           <xsl:choose>
             <xsl:when test="($level = 's0') or ($level = 's1') or ($level = 'c1') or ($level = 'c2')">17pt</xsl:when>

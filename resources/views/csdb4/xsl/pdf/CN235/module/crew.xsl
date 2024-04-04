@@ -37,7 +37,7 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container>
+    <fo:block-container margin-bottom="11pt">
       <xsl:call-template name="add_id"/>
       <xsl:if test="@crewStepCondition">
         <xsl:variable name="csc" select="string(@crewStepCondition)"/>
@@ -53,7 +53,7 @@
       </xsl:if>
       <xsl:apply-templates select="title|__cgmark"/>
       <!-- here for <thumbTabText> -->
-      <fo:block>
+      <fo:block margin-bottom="11pt">
         <xsl:if test="following-sibling::*">
           <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
@@ -69,7 +69,7 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container>
+    <fo:block-container margin-bottom="11pt">
       <xsl:call-template name="add_id"/>
       <xsl:if test="@skillLevelCode">
         <xsl:variable name="sk" select="string(@skillLevelCode)"/>
@@ -77,7 +77,7 @@
           <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
         </fo:block>
       </xsl:if> 
-      <fo:block>
+      <fo:block margin-bottom="11pt">
         <xsl:if test="following-sibling::*">
           <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
@@ -98,7 +98,7 @@
     <xsl:param name="prefixStepFlag">
       <xsl:choose>
         <xsl:when test="$orderedStepsFlag = '1'">
-          <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf|case"/>
+          <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf"/>
         </xsl:when>
         <xsl:otherwise>&#x2022;</xsl:otherwise>
       </xsl:choose>
@@ -123,8 +123,8 @@
     <xsl:if test="title">
       <xsl:apply-templates select="title"/>
     </xsl:if>
-    <xsl:apply-templates select="warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark"/>
     <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
+    
     <fo:block>
       <xsl:call-template name="add_id"/>
       <xsl:if test="@memorizeStepsFlag">
@@ -138,12 +138,59 @@
                 <xsl:value-of select="$prefixStepFlag"/>
               </fo:block>
             </fo:table-cell>
-            <xsl:apply-templates select="crewProcedureName|challengeAndResponse|__cgmark"/>
+            <fo:table-cell width="14cm">
+              <fo:block>
+                <xsl:apply-templates select="crewProcedureName|challengeAndResponse|crewDrillStep|case|if|elseIf|warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark"/>
+              </fo:block>
+            </fo:table-cell>
           </fo:table-row>
         </fo:table-body>
       </fo:table>
     </fo:block>
-    <xsl:apply-templates select="crewDrillStep|case|if|elseIf|__cgmark"/>
+  </xsl:template>  
+
+  <xsl:template match="crewProcedureName">
+    <fo:table>
+      <fo:table-body>
+        <fo:table-row>
+          <fo:table-cell width="14cm">
+            <fo:block>
+              <xsl:call-template name="add_applicability"/>
+              <xsl:call-template name="add_controlAuthority"/>
+              <fo:inline-container width="10cm">
+                <fo:block>
+                  <xsl:apply-templates/>
+                </fo:block>
+              </fo:inline-container>
+            </fo:block>
+          </fo:table-cell>
+        </fo:table-row>
+      </fo:table-body>
+    </fo:table>
+  </xsl:template>
+
+  <xsl:template match="challengeAndResponse">
+    <fo:table>
+      <fo:table-body>
+        <fo:table-row>
+          <fo:table-cell width="10cm">
+            <fo:block margin-right="1pt">
+              <xsl:apply-templates select="challenge|__cgmark"/>
+            </fo:block>
+          </fo:table-cell>
+          <fo:table-cell width="3cm" display-align="after" margin-left="">
+            <fo:block margin-left="1pt">
+              <xsl:apply-templates select="response|__cgmark"/>
+            </fo:block>
+          </fo:table-cell>
+          <fo:table-cell width="1cm" display-align="after" text-align="right">
+            <fo:block>
+              <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
+            </fo:block>
+          </fo:table-cell>
+        </fo:table-row>
+      </fo:table-body>
+    </fo:table>    
   </xsl:template>
 
   <xsl:template match="if|elseIf|case">
@@ -161,38 +208,6 @@
     <fo:block>
       <xsl:apply-templates/>
     </fo:block>
-  </xsl:template>
-
-  <xsl:template match="crewProcedureName">
-    <fo:table-cell width="13cm">
-      <fo:block>
-        <xsl:call-template name="add_applicability"/>
-        <xsl:call-template name="add_controlAuthority"/>
-        <fo:inline-container width="10cm">
-          <fo:block>
-            <xsl:apply-templates/>
-          </fo:block>
-        </fo:inline-container>
-      </fo:block>
-    </fo:table-cell>
-  </xsl:template>
-
-  <xsl:template match="challengeAndResponse">
-    <fo:table-cell width="10cm">
-      <fo:block margin-right="1pt">
-        <xsl:apply-templates select="challenge|__cgmark"/>
-      </fo:block>
-    </fo:table-cell>
-    <fo:table-cell width="3cm" display-align="after">
-      <fo:block>
-        <xsl:apply-templates select="response|__cgmark"/>
-      </fo:block>
-    </fo:table-cell>
-    <fo:table-cell width="1cm" display-align="after">
-      <fo:block>
-        <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
-      </fo:block>
-    </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="challenge">
@@ -219,7 +234,7 @@
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="crewMemberGroup">
+  <xsl:template match="crewMemberGroup[parent::challengeAndResponse]">
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:for-each select="crewMember">
@@ -230,6 +245,21 @@
         <xsl:value-of select="string($ConfigXML//crewMember[@type = $cmtype])"/>
       </fo:block>
     </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template match="crewMemberGroup[parent::crewDrillStep]">
+    <fo:table-cell width="14cm">      
+      <xsl:call-template name="add_applicability"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:for-each select="crewMember">
+        <xsl:variable name="cmtype" select="string(@crewMemberType)"/>
+        <fo:block>
+          <xsl:call-template name="add_applicability"/>
+          <xsl:call-template name="add_controlAuthority"/>
+          <xsl:value-of select="string($ConfigXML//crewMember[@type = $cmtype])"/>
+        </fo:block>
+      </xsl:for-each>
+    </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="endMatter">
