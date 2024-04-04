@@ -8,7 +8,8 @@
   -->
 
   <xsl:template match="sequentialList">
-    <fo:block margin-top="11pt" text-align="left">
+    <xsl:param name="listElemMarginTop">11pt</xsl:param>
+    <fo:block margin-top="{$listElemMarginTop}" text-align="left">
       <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
       <fo:list-block provisional-distance-between-starts="0.7cm" provisional-label-separation="0.15cm">
         <xsl:apply-templates select="listItem|__cgmark"/>
@@ -17,7 +18,8 @@
   </xsl:template>
 
   <xsl:template match="randomList">
-    <fo:block margin-top="11pt" text-align="left">
+    <xsl:param name="listElemMarginTop">11pt</xsl:param>
+    <fo:block margin-top="{$listElemMarginTop}" text-align="left">
       <fo:block><xsl:apply-templates select="title|__cgmark"/></fo:block>
       <fo:list-block provisional-distance-between-starts="0.5cm" provisional-label-separation="0.5cm">
         <xsl:apply-templates select="listItem|__cgmark"/>

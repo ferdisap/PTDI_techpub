@@ -263,7 +263,7 @@ export default {
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            <Option v-if="bottomBarItems.Option.isShow" :dataProps="bottomBarItems.Preview.data"/>
+            <Option v-if="bottomBarItems.Option.isShow" :dataProps="bottomBarItems.Option.data"/>
             <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
           </div>
         </div>

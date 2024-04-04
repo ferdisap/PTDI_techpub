@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, security, textElemGroup, controlAuthorityGroup)>
+  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup)>
 
   <!ELEMENT output (method+,layout?)>
   <!ELEMENT method (path+)>
   <!ELEMENT path (#PCDATA)>
   <!ELEMENT layout EMPTY>
+  <!ELEMENT colors (color+)>
+  <!ELEMENT color EMPTY>
 
   <!ELEMENT security (securityClassification+,commercialClassification?,caveat?, derivativeClassification?)>
   <!ELEMENT securityClassification (#PCDATA)>
@@ -14,12 +16,13 @@
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
 
-  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode)*>
+  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption)*>
   <!ELEMENT emphasis (#PCDATA)>
   <!ELEMENT crewMember (#PCDATA)>
   <!ELEMENT crewStepCondition (#PCDATA)>
   <!ELEMENT skillType (#PCDATA)>
   <!ELEMENT skillLevelCode (#PCDATA)>
+  <!ELEMENT caption (#PCDATA)>
   
   <!ELEMENT controlAuthorityGroup (controlAuthority+)>
   <!ELEMENT controlAuthority (#PCDATA)>
@@ -38,8 +41,12 @@
   <!ATTLIST layout margin-bottom CDATA #REQUIRED>
   <!ATTLIST layout margin-right CDATA #REQUIRED>
   <!ATTLIST layout margin-left CDATA #REQUIRED>
-
   <!ATTLIST layout orientation (port|land) #IMPLIED>
+
+  <!ATTLIST colors mode (rgb|cmyk|hex) #REQUIRED>
+  <!ATTLIST color name CDATA #REQUIRED>
+  <!ATTLIST color code CDATA #REQUIRED>
+
   <!ATTLIST securityClassification code CDATA #REQUIRED>
   <!ATTLIST commercialClassification code CDATA #REQUIRED>
   <!ATTLIST caveat code CDATA #REQUIRED>
@@ -50,6 +57,9 @@
   <!ATTLIST crewStepCondition type CDATA #REQUIRED>
   <!ATTLIST skillType type CDATA #REQUIRED>
   <!ATTLIST skillLevelCode type CDATA #REQUIRED>
+  <!ATTLIST caption type CDATA #REQUIRED>
+  <!ATTLIST caption background-color CDATA #REQUIRED>
+  <!ATTLIST caption color CDATA #REQUIRED>
 
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
 ]>
@@ -71,6 +81,15 @@
       region-before="1.5cm" region-after="2cm"
       start-indent="1.5cm"/>
   </output>
+  <colors mode="hex">
+    <color name="amber" code="#ffc107"/>
+    <color name="black" code="#00000"/>
+    <color name="green" code="#14a339"/>
+    <color name="grey" code="#808080"/>
+    <color name="red" code="#ff0000"/>
+    <color name="white" code="#ffffff"/>
+    <color name="white" code="#ffff00"/>
+  </colors>
   <security>
     <securityClassification code="01">UNCLASSIFIED</securityClassification>
     <securityClassification code="02">RESTRICTED</securityClassification>
@@ -125,6 +144,20 @@
     <skillLevelCode type="sk01">Basic</skillLevelCode>
     <skillLevelCode type="sk02">Intermediate</skillLevelCode>
     <skillLevelCode type="sk03">Advanced</skillLevelCode>
+    <caption type="co01" background-color="green" color="black"/>
+    <caption type="co02" background-color="amber" color="black"/>
+    <caption type="co03" background-color="yellow" color="black"/>
+    <caption type="co04" background-color="red" color="black"/>
+    <caption type="co07" background-color="white" color="black"/>
+    <caption type="co08" background-color="grey" color="black"/>
+    <caption type="co62" background-color="yellow" color="white"/>
+    <caption type="co66" background-color="red" color="black"/>
+    <caption type="co67" background-color="red" color="white"/>
+    <caption type="co81" background-color="black" color="yellow"/>
+    <caption type="co82" background-color="black" color="white"/>
+    <caption type="co83" background-color="black" color="red"/>
+    <caption type="co84" background-color="black" color="green"/>
+    <caption type="co85" background-color="black" color="amber"/>
   </textElemGroup>
   <controlAuthorityGroup>
     <controlAuthority type="cat01">AD</controlAuthority>    

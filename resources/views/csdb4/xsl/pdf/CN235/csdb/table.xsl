@@ -258,16 +258,9 @@
         <xsl:with-param name="rowsep" select="$rowsep"/>
         <xsl:with-param name="colsep" select="$colsep"/>
       </xsl:call-template>
-      
-      <xsl:variable name="valign">
-        <xsl:choose>
-          <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
-          <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@align)"/></xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      
-      <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="$morerows"/></xsl:attribute></xsl:if>
-      
+
+      <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="string(@morerows)"/></xsl:attribute></xsl:if>
+
       <xsl:if test="@spanname">
         <xsl:variable name="numberColumnsSpanned">
           <xsl:variable name="namestColname"><xsl:value-of select="string(ancestor::tgroup/spanspec[@spanname = string(@spanname)]/@namest)"/></xsl:variable>
@@ -278,6 +271,13 @@
         </xsl:variable>
         <xsl:attribute name="number-columns-spanned"><xsl:value-of select="$numberColumnsSpanned"/></xsl:attribute>
       </xsl:if>
+
+      <xsl:variable name="valign">
+        <xsl:choose>
+          <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
+          <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@align)"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>      
       
       <xsl:choose>
         <xsl:when test="$valign = 'bottom'">

@@ -11,7 +11,12 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="content[name(child::*) = 'frontMatter']">
-    <xsl:apply-templates />
+    <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
+    <fo:block-container id="{$dmIdent}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:apply-templates/>
+    </fo:block-container>
   </xsl:template>
 
   <xsl:template match="frontMatterTitlePage">
@@ -163,12 +168,13 @@
   </xsl:template>
 
   <xsl:template match="productIllustration">
-    <fo:block text-align="center">
-      <fo:external-graphic src="url('{unparsed-entity-uri(graphic/@infoEntityIdent)}')" content-width="scale-to-fit">
-        <xsl:call-template name="setGraphicDimension"/>
-      </fo:external-graphic>
-    </fo:block>
-    <xsl:apply-templates/>
+    <xsl:for-each select="graphic">
+      <fo:block text-align="center">
+        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="90%">
+          <xsl:call-template name="setGraphicDimension"/>
+        </fo:external-graphic>
+      </fo:block>
+    </xsl:for-each>
   </xsl:template>
 
   <xsl:template match="enterpriseLogo">
@@ -229,14 +235,19 @@
   </xsl:template>
 
   <xsl:template name="copyright">
-    <fo:block-container font-size="8pt">
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
+    <fo:block-container font-size="8pt" margin-top="8pt">
       <xsl:apply-templates select="dataRestrictions/restrictionInfo/copyright/copyrightPara"/>
     </fo:block-container>
   </xsl:template>
 
   <xsl:template match="copyrightPara">
-    <fo:block margin-top="3pt">
-      <xsl:apply-templates/>
+    <xsl:call-template name="add_applicability"/>
+    <fo:block margin-top="6pt">
+      <xsl:apply-templates>
+        <xsl:with-param name="listElemMarginTop">3pt</xsl:with-param>
+      </xsl:apply-templates>
     </fo:block>
   </xsl:template>
   

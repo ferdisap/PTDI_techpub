@@ -6,7 +6,9 @@
 
   <!-- 
     Outstanding:
-    1. captionGroup@tableOfContentType belum difungsikan karena belum berencana bikin TOC untuk caption
+    1. captionGroup@tableOfContentType dan caption@tableOfContentType belum difungsikan karena belum berencana bikin TOC untuk caption
+    2. caption@systemIdentCode belum difungsikan karena belum tahu kegunaanya
+    3. @changeType tidak dipakai ketika di PDF
    -->
 
   <xsl:template match="captionGroup">
@@ -42,26 +44,10 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:param>
-    <!-- <xsl:param name="alignCaption">
-      <xsl:choose>
-        <xsl:when test="parent::captionGroup/@rowsep">
-          <xsl:value-of select="string(parent::captionGroup/@alignCaption)"/>
-        </xsl:when>
-        <xsl:otherwise>left</xsl:otherwise>
-      </xsl:choose>
-    </xsl:param> -->
-    <!-- <xsl:param name="valign">
-      <xsl:choose>
-        <xsl:when test="@valign">
-          <xsl:value-of select="string(@valign)"/>
-        </xsl:when>
-        <xsl:otherwise>top</xsl:otherwise>
-      </xsl:choose>
-    </xsl:param> -->
-
+    
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
-    <fo:table table-omit-footer-at-break="true" page-break-before="avoid">
+    <fo:table table-omit-footer-at-break="true" page-break-before="avoid" margin-bottom="11pt" margin-top="11pt">
       <xsl:for-each select="parent::captionGroup/colspec[@colnum and @colwidth]">
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(@colwidth))"/>
         <fo:table-column column-number="{@colnum}" column-width="{$width}"/>
@@ -116,7 +102,7 @@
       </xsl:choose>
     </xsl:param>
     
-    <fo:table-cell width="from-table-column()">
+    <fo:table-cell width="from-table-column()" padding="3pt">
       <xsl:call-template name="style-entry">
         <xsl:with-param name="rowsep" select="$rowsep"/>
         <xsl:with-param name="colsep" select="$colsep"/>
@@ -158,7 +144,7 @@
       
       <xsl:if test="@alignCaption"><xsl:attribute name="text-align"><xsl:value-of select="string(@alignCaption)"/></xsl:attribute></xsl:if>
 
-      <fo:block-container>
+      <fo:block>
         <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
         <xsl:if test="@applicRefId">
           <xsl:call-template name="add_applicability">
@@ -167,20 +153,57 @@
           <xsl:call-template name="add_controlAuthority"/>
         </xsl:if>
         <xsl:apply-templates/>
-      </fo:block-container>
+      </fo:block>
     </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="caption">
+    <xsl:param name="alignCaption" select="string(ancestor-or-self::captionGroup/@alignCaption)"/>
 
-  </xsl:template>
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/> 
+    <xsl:call-template name="add_security"/>
 
-  <xsl:template match="captionLine">
-
+    <fo:inline-container display-align="center">
+      <xsl:call-template name="setCaptionColor"/>
+      <xsl:call-template name="setCaptionDimension"/>
+      <fo:block>
+        <xsl:call-template name="add_id"/>
+        <xsl:if test="$alignCaption != ''">
+          <xsl:attribute name="text-align"><xsl:value-of select="$alignCaption"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates select="captionLine"/>
+      </fo:block>
+    </fo:inline-container>
   </xsl:template>
 
   <xsl:template match="captionText">
-    
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template name="setCaptionDimension">
+    <xsl:param name="captionWidth" select="string(@captionWidth)"/>
+    <xsl:param name="captionHeight" select="string(@captionHeight)"/>
+    <xsl:if test="$captionWidth != ''">
+      <xsl:attribute name="width"><xsl:value-of select="$captionWidth"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="$captionHeight != ''">
+      <xsl:attribute name="height"><xsl:value-of select="$captionHeight"/></xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="setCaptionColor">
+    <xsl:param name="type" select="string(@color)"/>
+    <xsl:if test="$type != ''">
+      <xsl:variable name="captionConfig" select="$ConfigXML//caption[string(@type) = $type]"/>
+      <xsl:attribute name="background-color">
+        <xsl:value-of select="$ConfigXML//colors[string(mode) = 'hex']/color[string(@name) = string($captionConfig/@background-color)]/@code"/>
+      </xsl:attribute>
+      <xsl:attribute name="color">
+        <xsl:value-of select="$ConfigXML//colors[string(mode) = 'hex']/color[string(@name) = string($captionConfig/@color)]/@code"/>
+      </xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
 </xsl:transform>
