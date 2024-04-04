@@ -47,14 +47,24 @@
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="para[parent::challenge] | para[parent::response]">
+  <xsl:template match="para[parent::challenge] | para[parent::response] | para[parent::crewProcedureName]">
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
+
     <xsl:choose>
       <xsl:when test="following-sibling::*">
         <fo:block>
+          <xsl:call-template name="add_id"/>
           <xsl:apply-templates/>
         </fo:block>
       </xsl:when>
-      <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+      <xsl:otherwise>
+        <fo:inline>
+          <xsl:call-template name="add_id"/>
+          <xsl:apply-templates/>
+        </fo:inline>
+      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

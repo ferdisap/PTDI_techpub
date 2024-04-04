@@ -31,4 +31,12 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="add_inline_applicability">
+    <xsl:param name="id" select="@applicRefId"/>
+    <xsl:param name="prefix"><xsl:text>Applicable to: </xsl:text></xsl:param>
+    <xsl:if test="$id">
+      <fo:inline text-align="left" font-size="8pt"><xsl:value-of select="$prefix"/><xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::getApplicability', //@id[. = $id])"/></fo:inline>
+    </xsl:if>
+  </xsl:template>
+
 </xsl:stylesheet>

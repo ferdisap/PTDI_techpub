@@ -53,7 +53,10 @@
       </xsl:if>
       <xsl:apply-templates select="title|__cgmark"/>
       <!-- here for <thumbTabText> -->
-      <fo:block margin-bottom="11pt">
+      <fo:block>
+        <xsl:if test="following-sibling::*">
+          <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
+        </xsl:if>
         <xsl:apply-templates select="*[name(.) != 'title']|__cgmark"/>
       </fo:block>
     </fo:block-container>
@@ -74,7 +77,10 @@
           <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
         </fo:block>
       </xsl:if> 
-      <fo:block margin-bottom="11pt">
+      <fo:block>
+        <xsl:if test="following-sibling::*">
+          <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
+        </xsl:if>
         <xsl:apply-templates/>
       </fo:block>
     </fo:block-container>
@@ -92,7 +98,7 @@
     <xsl:param name="prefixStepFlag">
       <xsl:choose>
         <xsl:when test="$orderedStepsFlag = '1'">
-          <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf"/>
+          <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf|case"/>
         </xsl:when>
         <xsl:otherwise>&#x2022;</xsl:otherwise>
       </xsl:choose>
@@ -119,18 +125,23 @@
     </xsl:if>
     <xsl:apply-templates select="warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark"/>
     <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
-    <xsl:apply-templates select="crewProcedureName|__cgmark"/>
     <fo:block>
       <xsl:call-template name="add_id"/>
       <xsl:if test="@memorizeStepsFlag">
         <xsl:attribute name="font-weight">bold</xsl:attribute>
       </xsl:if>
-      <fo:inline-container width="1cm" margin-left="3pt">
-        <fo:block>
-          <xsl:value-of select="$prefixStepFlag"/>
-        </fo:block>
-      </fo:inline-container>
-      <xsl:apply-templates select="challengeAndResponse|__cgmark"/>
+      <fo:table>
+        <fo:table-body>
+          <fo:table-row>
+            <fo:table-cell width="1cm">
+              <fo:block>
+                <xsl:value-of select="$prefixStepFlag"/>
+              </fo:block>
+            </fo:table-cell>
+            <xsl:apply-templates select="crewProcedureName|challengeAndResponse|__cgmark"/>
+          </fo:table-row>
+        </fo:table-body>
+      </fo:table>
     </fo:block>
     <xsl:apply-templates select="crewDrillStep|case|if|elseIf|__cgmark"/>
   </xsl:template>
@@ -153,27 +164,35 @@
   </xsl:template>
 
   <xsl:template match="crewProcedureName">
-    <xsl:call-template name="add_applicability"/>
-    <xsl:call-template name="add_controlAuthority"/>
-    <fo:block>
-      <xsl:apply-templates/>
-    </fo:block>
+    <fo:table-cell width="13cm">
+      <fo:block>
+        <xsl:call-template name="add_applicability"/>
+        <xsl:call-template name="add_controlAuthority"/>
+        <fo:inline-container width="10cm">
+          <fo:block>
+            <xsl:apply-templates/>
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+    </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="challengeAndResponse">
-    <fo:inline-container width="10cm">
-      <fo:block>
+    <fo:table-cell width="10cm">
+      <fo:block margin-right="1pt">
         <xsl:apply-templates select="challenge|__cgmark"/>
       </fo:block>
-    </fo:inline-container>
-    <fo:inline-container width="3cm" margin-left="3pt">
-      <xsl:apply-templates select="response|__cgmark"/>
-    </fo:inline-container>
-    <fo:inline-container width="1cm" margin-left="3pt">
+    </fo:table-cell>
+    <fo:table-cell width="3cm" display-align="after">
+      <fo:block>
+        <xsl:apply-templates select="response|__cgmark"/>
+      </fo:block>
+    </fo:table-cell>
+    <fo:table-cell width="1cm" display-align="after">
       <fo:block>
         <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
       </fo:block>
-    </fo:inline-container>
+    </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="challenge">
