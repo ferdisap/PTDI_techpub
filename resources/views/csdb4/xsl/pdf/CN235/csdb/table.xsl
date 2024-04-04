@@ -19,8 +19,8 @@
   <xsl:template match="table">
     <xsl:param name="level"/>
 
-    <xsl:variable name="controlAutorityRefs"><xsl:value-of select="parent::table/@controlAutorityRefs"/></xsl:variable>
-    <xsl:variable name="id"><xsl:value-of select="parent::table/@id"/></xsl:variable>
+    <!-- <xsl:variable name="controlAutorityRefs"><xsl:value-of select="parent::table/@controlAutorityRefs"/></xsl:variable> -->
+    <!-- <xsl:variable name="id"><xsl:value-of select="parent::table/@id"/></xsl:variable> -->
     <!-- <xsl:variable name="changeType"><xsl:value-of select="parent::table/@changeType"/></xsl:variable>
     <xsl:variable name="changeMark"><xsl:value-of select="parent::table/@changeMark"/></xsl:variable>
     <xsl:variable name="reasonForUpdateRefIds"><xsl:value-of select="parent::table/@reasonForUpdateRefIds"/></xsl:variable>
@@ -33,13 +33,12 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container id="{$id}" width="100%" page-break-before="avoid">
-      
+    <fo:block-container width="100%" page-break-before="avoid">
+      <xsl:call-template name="add_id"/>      
       <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
-      <xsl:call-template name="add_controlAuthority"/>      
 
       <xsl:apply-templates select="tgroup|__cgmark">
         <xsl:with-param name="tocentry" select="string(@tocentry)"/>
@@ -255,17 +254,17 @@
     </xsl:param>    
 
     <fo:table-cell width="from-table-column()">
-      <xsl:variable name="valign">
-        <xsl:choose>
-          <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
-          <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@valgin)"/></xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-
       <xsl:call-template name="style-entry">
         <xsl:with-param name="rowsep" select="$rowsep"/>
         <xsl:with-param name="colsep" select="$colsep"/>
       </xsl:call-template>
+      
+      <xsl:variable name="valign">
+        <xsl:choose>
+          <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
+          <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@align)"/></xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       
       <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="$morerows"/></xsl:attribute></xsl:if>
       

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, security, textElemGroup)>
+  <!ELEMENT config (output, security, textElemGroup, controlAuthorityGroup)>
 
   <!ELEMENT output (method+,layout?)>
   <!ELEMENT method (path+)>
@@ -20,6 +20,9 @@
   <!ELEMENT crewStepCondition (#PCDATA)>
   <!ELEMENT skillType (#PCDATA)>
   <!ELEMENT skillLevelCode (#PCDATA)>
+  
+  <!ELEMENT controlAuthorityGroup (controlAuthority+)>
+  <!ELEMENT controlAuthority (#PCDATA)>
 
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
@@ -47,6 +50,8 @@
   <!ATTLIST crewStepCondition type CDATA #REQUIRED>
   <!ATTLIST skillType type CDATA #REQUIRED>
   <!ATTLIST skillLevelCode type CDATA #REQUIRED>
+
+  <!ATTLIST controlAuthority type CDATA #REQUIRED>
 ]>
 
 <config>
@@ -121,4 +126,16 @@
     <skillLevelCode type="sk02">Intermediate</skillLevelCode>
     <skillLevelCode type="sk03">Advanced</skillLevelCode>
   </textElemGroup>
+  <controlAuthorityGroup>
+    <controlAuthority type="cat01">AD</controlAuthority>    
+    <controlAuthority type="cat02">AMOC</controlAuthority>    
+    <controlAuthority type="cat03">AWL</controlAuthority>    
+    <controlAuthority type="cat04">CATIII</controlAuthority>    
+    <controlAuthority type="cat05">CDCCL</controlAuthority>    
+    <controlAuthority type="cat06">CMR</controlAuthority>    
+    <controlAuthority type="cat07">ETOPS</controlAuthority>    
+    <controlAuthority type="cat08">EWIS</controlAuthority>    
+    <controlAuthority type="cat09">LOI</controlAuthority>    
+    <controlAuthority type="cat10">RII</controlAuthority>    
+  </controlAuthorityGroup>
 </config>

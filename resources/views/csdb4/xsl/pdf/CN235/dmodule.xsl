@@ -30,7 +30,8 @@
   </xsl:template>
   
   <xsl:template match="content">
-    <fo:block-container start-indent="{$stIndent}">
+    <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
+    <fo:block-container id="{$dmIdent}" start-indent="{$stIndent}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority"/>
       <xsl:apply-templates select="crew|description|frontMatter"/>

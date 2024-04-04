@@ -45,7 +45,28 @@
       </xsl:if>
       <xsl:call-template name="add_derivativeClassification"/>
     </fo:block>
+  </xsl:template>
 
+  <xsl:template name="add_inline_security">
+    <xsl:variable name="sc" select="@securityClassification"/>
+    <xsl:variable name="cc" select="@commercialClassification"/>
+    <xsl:variable name="caveat" select="@caveat"/>
+
+    <fo:inline font-size="8pt">
+      <xsl:if test="@securityClassification">
+        <xsl:call-template name="interpretSC"/>
+        <xsl:text>. </xsl:text>
+      </xsl:if>
+      <xsl:if test="@commercialClassification">
+        <xsl:call-template name="interpretCC"/>
+        <xsl:text>. </xsl:text>
+      </xsl:if>
+      <xsl:if test="@caveat">
+        <xsl:call-template name="interpretCaveat"/>
+        <xsl:text>. </xsl:text>
+      </xsl:if>
+      <xsl:call-template name="add_derivativeClassification"/>
+    </fo:inline>
   </xsl:template>
 
   <xsl:template name="add_derivativeClassification">

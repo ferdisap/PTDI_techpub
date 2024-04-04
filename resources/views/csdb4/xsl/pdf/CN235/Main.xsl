@@ -61,6 +61,7 @@
   <xsl:param name="alertPathBackground"/>
   <xsl:variable name="warningPath"><xsl:value-of select="$alertPathBackground"/>/warningBackground.png</xsl:variable>
   <xsl:variable name="cautionPath"><xsl:value-of select="$alertPathBackground"/>/cautionBackground.png</xsl:variable>
+  <xsl:variable name="controlAutoritySymbolPath"><xsl:value-of select="$alertPathBackground"/>/="controlAutoritySymbol.png</xsl:variable>
   
   <xsl:template match="/">
     <fo:root font-family="Arial">

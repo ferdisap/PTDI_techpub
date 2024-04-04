@@ -6,33 +6,57 @@
 
   <xsl:template name="getControlAuthority"> </xsl:template>
 
+  <!-- 
+    Outstanding:
+    1. <dmRef> dan <controlAuthorityText> saat ini tidak digunakan karena untuk output pdf memang tidak diperlukan, beda jika ietm harus diprint pada sebuah identAndStatus file
+   -->
+
   <xsl:template name="add_controlAuthority">
-    <xsl:param name="id" select="@controlAuthorityRefs" />
-    <xsl:param name="prefix"><xsl:text>Controlled By: </xsl:text></xsl:param>
-
+    <xsl:param name="id" select="@controlAuthorityRefs"/>
     <xsl:if test="$id">
-      <xsl:variable name="dmRef" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', controlAuthority[@id = string($id)]/dmRef, '', '')"/>
-      <!-- <xsl:variable name="symbol" select="//controlAuthority[@id = string($id)]/symbol/@infoEntityIdent"/> -->
-
-      <fo:block text-align="left" font-size="8pt">
-        <xsl:value-of select="$prefix" />
-
-        <xsl:if test="//controlAuthority[@id = string($id)]/symbol">
-          <fo:inline-container>
-            <xsl:for-each select="//controlAuthority[@id = string($id)]/symbol">
-              <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit">
-                <xsl:call-template name="setGraphicDimension"/>
-              </fo:external-graphic>
-            </xsl:for-each>
-          </fo:inline-container>
-        </xsl:if>
-
-        <fo:inline-container>
-          <xsl:apply-templates select="//controlAuthority[@id = string($id)]/controlAuthorityText"/>
-        </fo:inline-container>
-        
+      <fo:block font-weight="bold" text-align="left" font-size="8pt">
+        <xsl:choose>
+          <xsl:when test="//controlAuthority[@id = string($id)]/symbol">
+            <xsl:apply-templates select="symbol"/>                          
+          </xsl:when>
+          <xsl:otherwise>
+            <fo:external-graphic src="url('{$controlAutoritySymbolPath}')" content-width="scale-to-fit" max-width="100%"/>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="not(@controlAuthorityValue)">
+            <xsl:apply-templates select="$ConfigXML//controlAuthority[string(@type) = string(//controlAuthority[string(@id) = string($id)]/@controlAuthorityType)]"/>
+          </xsl:when>
+          <xsl:otherwise><xsl:value-of select="string(@controlAuthorityValue)"/></xsl:otherwise>
+        </xsl:choose>
+        <xsl:text> </xsl:text>
       </fo:block>
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="add_inline_controlAuthority">
+    <xsl:param name="id" select="@controlAuthorityRefs"/>
+    <xsl:if test="$id">
+      <fo:inline font-weight="bold" font-size="8pt">
+        <xsl:choose>
+          <xsl:when test="//controlAuthority[@id = string($id)]/symbol">
+            <xsl:apply-templates select="symbol"/>                          
+          </xsl:when>
+          <xsl:otherwise>
+            <fo:external-graphic src="url('{$controlAutoritySymbolPath}')" content-width="scale-to-fit" max-width="100%"/>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="not(@controlAuthorityValue)">
+            <xsl:apply-templates select="$ConfigXML//controlAuthority[string(@type) = string(//controlAuthority[string(@id) = string($id)]/@controlAuthorityType)]"/>
+          </xsl:when>
+          <xsl:otherwise><xsl:value-of select="string(@controlAuthorityValue)"/></xsl:otherwise>
+        </xsl:choose>
+        <xsl:text> </xsl:text>
+      </fo:inline>
+    </xsl:if>
+  </xsl:template>
+  
 </xsl:transform>
