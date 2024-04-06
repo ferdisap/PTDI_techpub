@@ -132,6 +132,9 @@ class Controller extends BaseController
 
     if(!($code >= 200 AND $code < 300)){
       $data['errors'] = [];
+      $data['infotype'] = "warning";
+    } else {
+      $data['infotype'] = "note";
     }
 
     $isArr = function($message, $fn) use(&$data, $code){
@@ -213,19 +216,19 @@ class Controller extends BaseController
    * default search column db is filename
    * harus set $this->model terlebih dahulu baru bisa jalankan fungsi ini
    */
-  public function search($keyword)
+  public function search($keyword, &$messages = [])
   {
     $keywords = Helper::explodeSearchKey(str_replace("_",'\_',$keyword));
-    foreach($keywords as $k => $keyword){
-      if((int)$k OR $k == 0){ // jika $keyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
-        $this->model->whereRaw("filename LIKE '%{$keyword}%' ESCAPE '\'");
+    foreach($keywords as $k => $kyword){
+      if((int)$k OR $k == 0){ // jika $kyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
+        $this->model->whereRaw("filename LIKE '%{$kyword}%' ESCAPE '\'");
       } else {
         $column = Csdb::columnNameMatching($k, 'csdb');
         if($column){
-          $this->model->whereRaw("{$column} LIKE '%{$keyword}%' ESCAPE '\'");
+          $this->model->whereRaw("{$column} LIKE '%{$kyword}%' ESCAPE '\'");
         }
         else {
-          $messages[] = "'{$column}::{$keyword}' cannot be found.";
+          $messages[] = "'{$keyword}' cannot be parsed.";
         }
       }
     }

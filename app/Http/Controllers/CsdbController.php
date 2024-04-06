@@ -172,7 +172,7 @@ class CsdbController extends Controller
     }
 
     $this->model = ModelsCsdb::with('initiator');    
-    $keywords = $this->search($request->get('filenameSearch'));
+    $keywords = $this->search($request->get('filenameSearch'), $m);
 
     // jika ada filename, maka akan menuju request path
     if($request->get("filename")){
@@ -188,22 +188,27 @@ class CsdbController extends Controller
 
     $path = $path ?? $request->path;
     $path = "{$path}%";
-    $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);
-    $folder = $folder->toArray();
-    $folder = array_filter($folder, function($obj) use($request){
-      if($obj['path'] === $request->path){
-        return false;
-      } elseif(count(explode("/", $obj['path'])) - count(explode("/",$request->path)) > 1){
-        return false;
-      }
-      return $obj;
-    });
-    sort($folder); // supaya tidak ada keys nya (hanya value didalam array)
-    
     $this->model->orderBy('filename');
     $ret = $this->model->paginate(100);
     $ret->setPath($request->getUri());
-    return $this->ret2(200, $ret->toArray(), ['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
+
+    if($ret->isNotEmpty()){
+      $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);
+      $folder = $folder->toArray();
+      $folder = array_filter($folder, function($obj) use($request){
+        if($obj['path'] === $request->path){
+          return false;
+        } elseif(count(explode("/", $obj['path'])) - count(explode("/",$request->path)) > 1){
+          return false;
+        }
+        return $obj;
+      });
+      sort($folder); // supaya tidak ada keys nya (hanya value didalam array)
+    } else {
+      $m[] = join(" or ", [$request->filenameSearch, $request->filename]) . "can not be found.";
+    }
+
+    return $this->ret2(200, $ret->toArray(), ['message' => $m, 'infotype' => "caution"] ,['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
   }
 
   /**

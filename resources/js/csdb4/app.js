@@ -117,7 +117,7 @@ axios.interceptors.response.use(
       csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
     }
     csdb.config.globalProperties.emitter.emit('flash', {
-      isSuccess: true,
+      type: response.data.infotype,
       message: response.data.message
     });
     return response;
@@ -128,7 +128,7 @@ axios.interceptors.response.use(
     // if (axiosError.code === 'ERR_BAD_REQUEST')
     if (axiosError.code){
       csdb.config.globalProperties.emitter.emit('flash', {
-        isSuccess: false,
+        type: response.data.infotype,
         errors: axiosError.response.data.errors,
         message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
       });

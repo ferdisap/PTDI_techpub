@@ -38,6 +38,12 @@ export default {
       let index = this.bag.indexOf(value);
       this.bag.splice(index,1);
     },
+    getBgBasedOnInfoType(data){
+      let bg = data.type === 'warning' ? 'bg-red-600' : 
+        data.type === 'caution' ? 'bg-yellow-600' :
+        'bg-cyan-300';
+      return bg;
+    }
   },
   mounted() {
     this.emitter.on('flash', ((data) => this.addBag(data)).bind(this));
@@ -47,7 +53,7 @@ export default {
 
 <template>
   <div class="fixed w-1/2 top-1/5 right-0 z-50 bg-transparent" v-if="bag.length !== 0">
-    <div v-for="info in bag" :class="[info.isSuccess ? 'bg-cyan-300' : 'bg-red-600', 'mb-3 pb-3 px-5 shadow-lg rounded-lg block text-left w-full']">
+    <div v-for="info in bag" :class="[getBgBasedOnInfoType(info), 'mb-3 pb-3 px-5 shadow-lg rounded-lg block text-left w-full']">
       <div class="text-center text-xl p-3 font-bold">Message
         <span class="float-right has-tooltip-arrow" data-tooltip="Close"><button class="hover:scale-150"
             @click="popBag(info)" info-close-btn>X</button></span>
