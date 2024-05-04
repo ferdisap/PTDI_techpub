@@ -306,7 +306,6 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       else if (route.method.includes('POST')) {
         route.params = params;
         route.url = new URL(window.location.origin + route.path).toString();
-        route.params = fd;
       }
       route.method = Object.assign({}, route.method); // supaya tidak ada Proxy, sehingga worker bisa pakainya
       return route;

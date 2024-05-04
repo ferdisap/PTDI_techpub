@@ -2,6 +2,7 @@
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import path from 'path';
 import { contentType } from 'es-mime-types';
+import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
 export default {
   data() {
     return {
@@ -12,6 +13,9 @@ export default {
       path: path,
       filename: '',
     }
+  },
+  components:{
+    PreviewRCMenu
   },
   props: {
     dataProps: {
@@ -81,7 +85,7 @@ export default {
     switchView(name){
       this.view = name;
       this.datamoduleRenderer({filename: this.filename});
-    }
+    },
   },
   mounted() {
     if (this.$props.dataProps.filename) {
@@ -101,13 +105,41 @@ export default {
 </script>
 <template>
   <div class="Preview overflow-auto h-[93%] w-full">
+    <PreviewRCMenu v-if="!isICN">
+      <!-- view IETM or PDF -->
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div v-if="view !== 'pdf'" href="#" class="text-sm" @click="switchView('pdf')">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">book_2</span>
+          Switch to PDF
+        </div>
+        <div v-if="view !== 'html'" href="#" class="text-sm" @click="switchView('html')">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">devices</span>
+          Switch to IETM</div>        
+      </div>
+
+      <!-- Action to be accomplished (delete, issue, commit) -->
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: filename})">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
+          Delete</div>
+      </div>
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-green-600">devices</span>
+          verified</div>
+      </div>
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
+          Commit</div>
+      </div>
+      
+    </PreviewRCMenu>
     <div class="h-[5%] flex mb-3">
       <h1 class="text-blue-500 w-full text-center">Preview</h1>
     </div>
     <div class="flex justify-center w-full px-3 h-[95%]">
       <div v-if="!isICN" id="datamodule-container" class="w-full h-full">
-        <a v-if="view !== 'pdf'" href="#" class="text-sm" @click="switchView('pdf')">Switch to PDF</a>
-        <a v-if="view !== 'html'" href="#" class="text-sm" @click="switchView('html')">Switch to IETM</a>
         <iframe id="datamodule-frame" class="w-full h-full" :src="data.src" />
       </div>
       <div v-else id="icn-container">

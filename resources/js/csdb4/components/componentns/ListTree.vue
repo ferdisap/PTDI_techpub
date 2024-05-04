@@ -107,7 +107,7 @@ export default {
             // generating folder list
             details = details + `
             <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
-              <summary>
+              <summary @click="()=>{console.log($el.nodeName)}">
                 <a href="#" @click.prevent="$parent.clickFolder({path: '${path}'})">${currFolder}</a>
               </summary>`;
 
@@ -176,6 +176,14 @@ export default {
     this.emitter.on('ListTree-remove', (data) => {
       //data adalah model SQL Csdb Object
       this.deleteList(data.filename);
+      this.createListTreeHTML();
+    })
+
+    this.emitter.on('ListTree-removeMultiple', (data) => {
+      // data is array models contained several SQL Csdb Object model 
+      data.forEach(model => {
+        this.deleteList(model.filename);
+      });
       this.createListTreeHTML();
     })
 

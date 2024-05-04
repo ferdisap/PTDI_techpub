@@ -47,14 +47,13 @@ export default {
         }
       });
       if(response.statusText === 'OK'){
-        console.log(response.data.data2);
+        // console.log(response.data.data2);
         this.emitter.emit('DeleteCSDBObjectFromOption', [response.data.data, response.data.data2]);
       }
     },
     submitIssueeForm(){},
     submitCommitForm(){},
   },
-  
 }
 </script>
 <template>
