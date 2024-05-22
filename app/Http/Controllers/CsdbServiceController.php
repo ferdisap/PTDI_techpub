@@ -132,6 +132,7 @@ class CsdbServiceController extends CsdbController
         'Last-Modified' => $csdb->updated_at
       ]);
     } else {
+      dd($pdf, $fo);
       return abort(400);
     }
 

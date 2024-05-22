@@ -7,6 +7,7 @@
   <!-- 
     Outstanding:
     1. verbatimText@verbatimStyle dan verbatimText@xml:space belum digunakan karena belum tau kegunaanya
+    2. quantity@quantityTypeSpecifics belum digunakan karena TBD saja
    -->
   
   <xsl:template match="changeInline">
@@ -189,6 +190,49 @@
         <xsl:attribute name="text-decoration">underline</xsl:attribute>
       </xsl:when>
     </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="quantity">
+    <fo:inline>
+      <xsl:call-template name="add_inline_controlAuthority"/>
+      <xsl:apply-templates/>
+    </fo:inline>
+  </xsl:template>
+
+  <xsl:template match="quantityGroup">
+    <fo:inline>
+      <xsl:text>&#160;</xsl:text>
+      <xsl:apply-templates/>
+      <xsl:text>&#160;</xsl:text>      
+    </fo:inline>
+  </xsl:template>
+
+  <xsl:template match="quantityValue">
+    <fo:inline>
+      <xsl:apply-templates select="quantityValue"/>
+      <xsl:text>&#160;</xsl:text>
+      <xsl:apply-templates/>
+      <xsl:value-of select="@quantityUnitOfMeasure or parent::quantityGroup/@quantityUnitOfMeasure"/>
+    </fo:inline>
+  </xsl:template>
+
+  <xsl:template match="quantityTolerance">
+    <fo:inline>
+      <xsl:choose>
+        <xsl:when test="@quantityToleranceType = 'plus'">
+          <xsl:text>+ </xsl:text>
+        </xsl:when>
+        <xsl:when test="@quantityToleranceType = 'minus'">
+          <xsl:text>- </xsl:text>
+        </xsl:when>
+        <xsl:when test="@quantityToleranceType = 'plusorminus'">
+          <xsl:text>&#177;&#160;</xsl:text>
+        </xsl:when>
+        <xsl:otherwise><xsl:text>&#160;</xsl:text></xsl:otherwise>
+      </xsl:choose>
+      <xsl:apply-templates/>
+      <xsl:value-of select="@quantityUnitOfMeasure or parent::quantityGroup/@quantityUnitOfMeasure"/>
+    </fo:inline>
   </xsl:template>
 
 </xsl:transform>

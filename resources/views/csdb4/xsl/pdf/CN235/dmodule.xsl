@@ -34,7 +34,7 @@
     <fo:block-container id="{$dmIdent}" start-indent="{$stIndent}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority"/>
-      <xsl:apply-templates select="crew|description"/>
+      <xsl:apply-templates select="crew|description|commonRepository"/>
     </fo:block-container>
   </xsl:template>
 

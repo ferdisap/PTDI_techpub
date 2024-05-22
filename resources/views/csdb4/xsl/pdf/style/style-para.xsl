@@ -34,6 +34,9 @@
       <xsl:when test="($level = 's5') and parent::*/following-sibling::levelledPara">
         <xsl:attribute name="margin-bottom">9pt</xsl:attribute>
       </xsl:when>
+      <xsl:otherwise>
+        <xsl:attribute name="margin-bottom">9pt</xsl:attribute>
+      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

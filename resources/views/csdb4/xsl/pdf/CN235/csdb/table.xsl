@@ -200,7 +200,7 @@
   </xsl:template>
 
   <xsl:template match="row">
-    <xsl:if test="@applicRefId">
+    <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
       <fo:table-row keep-together="always">
         <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="-4pt">
           <xsl:call-template name="add_applicability"/>

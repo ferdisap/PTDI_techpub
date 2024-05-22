@@ -16,13 +16,14 @@
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
 
-  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption)*>
+  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption|quantity)*>
   <!ELEMENT emphasis (#PCDATA)>
   <!ELEMENT crewMember (#PCDATA)>
   <!ELEMENT crewStepCondition (#PCDATA)>
   <!ELEMENT skillType (#PCDATA)>
   <!ELEMENT skillLevelCode (#PCDATA)>
   <!ELEMENT caption (#PCDATA)>
+  <!ELEMENT quantity (#PCDATA)>
   
   <!ELEMENT controlAuthorityGroup (controlAuthority+)>
   <!ELEMENT controlAuthority (#PCDATA)>
@@ -60,6 +61,7 @@
   <!ATTLIST caption type CDATA #REQUIRED>
   <!ATTLIST caption background-color CDATA #REQUIRED>
   <!ATTLIST caption color CDATA #REQUIRED>
+  <!ATTLIST quantity type CDATA #REQUIRED>
 
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
 ]>
@@ -164,6 +166,7 @@
     <caption type="co83" background-color="black" color="red"/>
     <caption type="co84" background-color="black" color="green"/>
     <caption type="co85" background-color="black" color="amber"/>
+    <quantity type="qty51">Panel CB CN235</quantity>
   </textElemGroup>
   <controlAuthorityGroup>
     <controlAuthority type="cat01">AD</controlAuthority>    

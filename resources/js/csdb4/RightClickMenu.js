@@ -10,6 +10,8 @@ window.onkeyup = function(e){
   }
 }
 
+
+
 class RightClickMenu{
   name= undefined;
   state = 0;
