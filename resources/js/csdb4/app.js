@@ -93,6 +93,7 @@ axios.interceptors.request.use(
         config.url = route.url;
         config.method = route.method[0];
         config.data = route.params;
+        console.log(config.data, route.params);
       } catch (error) {
         throw new Error(error); 
       }

@@ -5,14 +5,16 @@
   xmlns:php="http://php.net/xsl">
 
     <xsl:include href="./sub/circuitBreakerRepository.xsl" />
+    <xsl:include href="./sub/zoneRepository.xsl" />
 
     <xsl:template match="commonRepository">
       <fo:block text-align="justify" start-indent="0">
-      <!-- <fo:block text-align="justify"> -->
         <xsl:call-template name="add_id"/>
         <xsl:call-template name="add_controlAuthority"/>
         <xsl:call-template name="add_security"/>
-        <xsl:apply-templates/>
+        <xsl:apply-templates select="commonInfo"/>
+        <xsl:apply-templates select="functionalItemRepository|circuitBreakerRepository|partRepository|zoneRepository|accessPointRepository|toolRepository|enterpriseRepository|supplyRepository|supplyRqmtRepository|functionalPhysicalAreaRepository|controlIndicatorRepository|applicRepository|warningRepository|cautionRepository"/>
+        <xsl:apply-templates select="figure|figureAlts|multimedia|multimediaAlts"/>
       </fo:block>
     </xsl:template>
 

@@ -274,42 +274,63 @@ export const useTechpubStore = defineStore('useTechpubStore', {
      * @returns {Object} if route method is get then all params has attached to URL, otherwise is attached in route.params 
      * returned Object will have params (plain Object) if the method is POST;
      */
-    getWebRoute(name, params, route = undefined) {
-      // mapping FormData. Jika value berupa array, maka dijoin pakai comma
-      let fd;
-      if (params instanceof FormData) {
-        fd = params;
-        let a = {};
-        for (const [k, v] of params) {
-          a[k] = a[k] || '';
-          a[k] += ',' + v;
-          if (a[k][0] === ',') {
-            a[k] = a[k].slice(1);
-          }
-        }
-        params = a;
-      }
-
-      // jika route ada (diambil dari WebRoute biasanya, yang paramnya masih ':value') maka paramnya terisi dengan arguments param;
-      route ? (route.params = params) : route = Object.assign({}, this.WebRoutes[name]); // paramsnya sudah ada, tapi tidak ada valuenya. eg: 'filename': ':filename'
+    getWebRoute(name, data, route = undefined) {
+      route ? (route.params = data) : route = Object.assign({}, this.WebRoutes[name]); // paramsnya sudah ada, tapi tidak ada valuenya. eg: 'filename': ':filename'
       for (const p in route.params) {
-        if (!params[p]) throw new Error(`Parameter '${p}' shall be exist.`);
-        route.path = route.path ? route.path.replace(`:${p}`, params[p]) : (() => {throw new Error('Route must have its path.')})();
-        delete params[p]; // ini diperlukan agar params tidak dijadikan query data
+        if (!data[p]) throw new Error(`Parameter '${p}' shall be exist.`);
+        route.path = route.path ? route.path.replace(`:${p}`, data[p]) : (() => {throw new Error('Route must have its path.')})();
+        delete data[p]; // ini diperlukan agar params tidak dijadikan query data
       }
       if (!route.method || route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
-        url.search = new URLSearchParams(params);
+        url.search = new URLSearchParams(data);
         route.url = url.toString();
         route.params = Object.assign({}, route.params); // supaya tidak ada Proxy
       }
       else if (route.method.includes('POST')) {
-        route.params = params;
+        route.params = data;
         route.url = new URL(window.location.origin + route.path).toString();
       }
       route.method = Object.assign({}, route.method); // supaya tidak ada Proxy, sehingga worker bisa pakainya
       return route;
     },
+    // getWebRoute(name, params, route = undefined) {
+    //   // mapping FormData. Jika value berupa array, maka dijoin pakai comma
+    //   let fd;
+    //   if (params instanceof FormData) {
+    //     fd = params;
+    //     let a = {};
+    //     for (const [k, v] of params) {
+    //       a[k] = a[k] || '';
+    //       a[k] += ',' + v;
+    //       if (a[k][0] === ',') {
+    //         a[k] = a[k].slice(1);
+    //       }
+    //     }
+    //     params = a;
+    //   }
+
+    //   // jika route ada (diambil dari WebRoute biasanya, yang paramnya masih ':value') maka paramnya terisi dengan arguments param;
+    //   route ? (route.params = params) : route = Object.assign({}, this.WebRoutes[name]); // paramsnya sudah ada, tapi tidak ada valuenya. eg: 'filename': ':filename'
+    //   for (const p in route.params) {
+    //     if (!params[p]) throw new Error(`Parameter '${p}' shall be exist.`);
+    //     route.path = route.path ? route.path.replace(`:${p}`, params[p]) : (() => {throw new Error('Route must have its path.')})();
+    //     delete params[p]; // ini diperlukan agar params tidak dijadikan query data
+    //   }
+    //   if (!route.method || route.method.includes('GET')) {
+    //     let url = new URL(window.location.origin + route.path);
+    //     url.search = new URLSearchParams(params);
+    //     route.url = url.toString();
+    //     route.params = Object.assign({}, route.params); // supaya tidak ada Proxy
+    //   }
+    //   else if (route.method.includes('POST')) {
+    //     // route.params = params; // kalau pakai ini, entity (file upload) terbaca sebagai text "[Object File]", bukan binary
+    //     route.params = fd; // kalau pakai ini, payload text tidak akan di terbaca di inspector.
+    //     route.url = new URL(window.location.origin + route.path).toString();
+    //   }
+    //   route.method = Object.assign({}, route.method); // supaya tidak ada Proxy, sehingga worker bisa pakainya
+    //   return route;
+    // },
 
     /**
      * @param {string} projectName 

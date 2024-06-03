@@ -20,7 +20,7 @@ export default {
      */
      async deleteCSDBs(data){
       if(!data) return;
-      let filenames = data.filenames || data.filename
+      let filenames = data.filenames || data.filename;
       if (Array.isArray(filenames)) filenames = filenames.join(', ');
       if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: filenames }))) {
         return;

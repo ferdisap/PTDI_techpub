@@ -581,7 +581,9 @@ class CsdbController extends Controller
     // return $this->ret2(200, ['message1', 'message2'], ['models' => ['tes model1', 'tes model2']]);
     $messages = [];
     $models = [];
-    $arrayfilenames = isset($request->filenames) ? explode(', ', $request->filenames) : [$request->filename];
+    // $arrayfilenames = isset($request->filenames) ? explode(', ', $request->filenames) : [$request->filename];
+    $arrayfilenames = $request->filenames ?? $request->filename;
+    if(!is_array($arrayfilenames)) $arrayfilenames = [$arrayfilenames];
     foreach($arrayfilenames as $filename){
       $process = $this->deletingProcess($request, $filename);
       $messages[] = $process["message"];
@@ -627,16 +629,16 @@ class CsdbController extends Controller
     $create_deleted_db = fn () => DB::table('csdb_deleted')->insert($insert); // $insert ditaruh diluar agar bisa dikirim sebagai response, karena juga fungsi insert() ini returning boolean
     $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
 
-    // if(!($create_deleted_db() AND $move_file())) {
-    //   $message = "{$filename} fails to delete";
-    //   $return = false;
-    //   $code = 400;
-    // }
-    // if($model->delete()){
-    //   $message = "{$new_filename} has been created as a result of deleting {$filename}.";
-    //   $return = true;
-    //   $code = 200;
-    // }; 
+    if(!($create_deleted_db() AND $move_file())) {
+      $message = "{$filename} fails to delete";
+      $return = false;
+      $code = 400;
+    }
+    if($model->delete()){
+      $message = "{$new_filename} has been created as a result of deleting {$filename}.";
+      $return = true;
+      $code = 200;
+    }; 
     $message = "{$new_filename} has been created as a result of deleting {$filename}.";
     $return = true;
     $code = 200;

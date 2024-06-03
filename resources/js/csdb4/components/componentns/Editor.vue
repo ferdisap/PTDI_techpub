@@ -87,6 +87,7 @@ export default {
         }
       } else {
         const formData = new FormData(event.target);
+        console.log(window.fd = formData);
         let response = await axios({
           route: {
             name: 'api.upload_ICN',

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Outstanding
+  1. belum mengakomodir elemen circuitBreakerIdent/@itemOriginator
+  2. belum mengakomodir elemen circuitBreakerIdent/@contextIdent
+  3. belum mengakomodir elemen circuitBreakerIdent/@manufacturerCodeValue
+  4. belum mengakomodir elemen functionalItemRefGroup dan attribute nya
+  5. belum mengakomodir elemen circuitBreakerRefGroup dan attribute nya
+  6. belum mengakomodir elemen functionalPhysicalAreaRef dan attribute nya
+-->
+
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
@@ -7,10 +16,6 @@
     <xsl:template match="circuitBreakerRepository">
       <fo:block font-size="14pt" font-weight="bold" margin-bottom="6pt" margin-top="6pt" text-align="center">
         Common Information Repository - Circuit Breaker
-      </fo:block>
-      <fo:block>
-        <xsl:call-template name="style-para"/>
-        Following text are circuit breaker installed in aircraft:
       </fo:block>
       <fo:block>
         <xsl:call-template name="add_id"/>
@@ -57,66 +62,85 @@
         </fo:table-row>
       </xsl:if>
 
-      <xsl:if test="count(circuitBreakerAlts/child::circuitBreaker) = 1">
-        <fo:table-row>
-          <xsl:call-template name="add_id"/>
-          <fo:table-cell padding-left="2pt" padding-right="2pt">
-            <xsl:apply-templates select="circuitBreakerIdent"/>
-          </fo:table-cell>
-          <fo:table-cell padding-left="2pt" padding-right="2pt">
-            <fo:block text-align="left">
-              <xsl:apply-templates select="name"/>
-              <xsl:if test="shortName">
-                <xsl:text>(</xsl:text><xsl:apply-templates select="shortName"/><xsl:text>)</xsl:text>
+      <xsl:apply-templates select="circuitBreakerAlts/circuitBreaker"/>
+    </xsl:template>
+
+    <xsl:template match="circuitBreaker">
+      <fo:table-row>
+        <fo:table-cell padding-left="2pt" padding-right="2pt">
+          <xsl:apply-templates select="ancestor::circuitBreakerSpec/circuitBreakerIdent"/>
+        </fo:table-cell>
+        <fo:table-cell padding-left="2pt" padding-right="2pt">
+          <fo:block text-align="left">
+              <xsl:call-template name="style-para"/>
+              <xsl:apply-templates select="ancestor::circuitBreakerSpec/name"/>
+              <xsl:if test="ancestor::circuitBreakerSpec/shortName">
+                <xsl:text>(</xsl:text><xsl:apply-templates select="ancestor::circuitBreakerSpec/shortName"/><xsl:text>)</xsl:text>
               </xsl:if>
             </fo:block>
-          </fo:table-cell>
-          <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
-            <fo:block>-</fo:block>
-            <!-- <xsl:apply-templates select="circuitBreakerAlts/circuitBreaker/functionalItemRefGroup"/> -->
-          </fo:table-cell>
-          <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
-            <fo:block>-</fo:block>
-            <!-- <xsl:apply-templates select="circuitBreakerRefGroup"/> -->
-          </fo:table-cell>
-          <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
-            <fo:block>
-              <xsl:value-of select="circuitBreakerAlts/circuitBreaker/amperage"/>
-            </fo:block>
-          </fo:table-cell>
-          <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
-            <fo:block>
-              <xsl:apply-templates select="circuitBreakerAlts/circuitBreaker/location/quantity"/>
-            </fo:block>
-          </fo:table-cell>
-        </fo:table-row>
-      </xsl:if>
-
-      <xsl:if test="count(circuitBreakerAlts/child::circuitBreaker) > 1">
-        <!-- isi di sini jika <circuitBreaker lebih dari satu karena element name atau shortname atau FIN, dll akan menggantikan yang parentnya -->
-      </xsl:if>
+        </fo:table-cell>
+        <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
+          <fo:block>
+            <xsl:call-template name="style-para"/>
+            <xsl:text>-</xsl:text>
+          </fo:block>
+          <!-- <xsl:apply-templates select="ancestor::circuitBreakerSpec/circuitBreakerAlts/circuitBreaker/functionalItemRefGroup"/> -->
+        </fo:table-cell>
+        <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
+          <fo:block>
+            <xsl:call-template name="style-para"/>
+            <xsl:text>-</xsl:text>
+          </fo:block>
+          <!-- <xsl:apply-templates select="ancestor::circuitBreakerSpec/circuitBreakerRefGroup"/> -->
+        </fo:table-cell>
+        <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
+          <fo:block>
+            <xsl:call-template name="style-para"/>
+            <xsl:value-of select="ancestor::circuitBreakerSpec/circuitBreakerAlts/circuitBreaker/amperage"/>
+          </fo:block>
+        </fo:table-cell>
+        <fo:table-cell padding-left="2pt" padding-right="2pt" text-align="center">
+          <fo:block>
+            <xsl:call-template name="style-para"/>
+            <xsl:apply-templates select="ancestor::circuitBreakerSpec/circuitBreakerAlts/circuitBreaker/location/quantity"/>
+          </fo:block>
+        </fo:table-cell>        
+      </fo:table-row>
     </xsl:template>
 
     <xsl:template match="circuitBreakerIdent">
       <fo:block>
+        <xsl:call-template name="style-para"/>
         <xsl:apply-templates select="@circuitBreakerNumber"/>
       </fo:block>
     </xsl:template>
 
     <xsl:template match="functionalItemRefGroup[parent::circuitBreaker]">
-      <fo:block>-</fo:block>
+      <fo:block>
+        <xsl:call-template name="style-para"/>
+        <xsl:text>-</xsl:text>
+      </fo:block>
     </xsl:template>
 
     <xsl:template match="circuitBreakerRefGroup[parent::circuitBreakerSpec]">
-      <fo:block>-</fo:block>
+      <fo:block>
+        <xsl:call-template name="style-para"/>
+        <xsl:text>-</xsl:text>
+      </fo:block>
     </xsl:template>
 
     <xsl:template match="functionalPhysicalAreaRef[parent::circuitBreakerSpec]">
-      <fo:block>-</fo:block>
+      <fo:block>
+        <xsl:call-template name="style-para"/>
+        <xsl:text>-</xsl:text>
+      </fo:block>
     </xsl:template>
 
     <xsl:template name="circuitBreakerRefGroup">
-      <fo:block>-</fo:block>
+      <fo:block>
+        <xsl:call-template name="style-para"/>
+        <xsl:text>-</xsl:text>
+      </fo:block>
     </xsl:template>
 
     <xsl:template name="circuitBreakerAlts">
