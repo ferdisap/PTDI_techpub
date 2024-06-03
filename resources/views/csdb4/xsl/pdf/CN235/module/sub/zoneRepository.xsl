@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- Outstanding
+  1. belum mengakomodir element zone/shortname
+  2. belum mengakomodir element zone/zoneSide
+  3. belum mengakomodir element zone/boundaryFrom
+  4. belum mengakomodir element zone/boundaryTo
+  5. belum mengakomodir element zone/zoneRefGroup
+  6. belum mengakomodir element zone/internalRef
+-->
+
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
@@ -9,10 +18,11 @@
       text-align="center">Common Information Repository - Zone Repository
     </fo:block>
     <fo:block>
-      <xsl:call-template name="add_id" />
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority" />
       <xsl:call-template name="add_security" />
 
+      <!-- major zone -->
       <fo:table width="100%">
         <fo:table-column column-number="1" column-width="15%" />
         <fo:table-column column-number="1" column-width="85%" />
@@ -32,13 +42,62 @@
           </fo:table-row>
         </fo:table-header>
         <fo:table-body>
-          <xsl:apply-templates select="zoneSpec" />
+          <xsl:apply-templates select="zoneSpec[@zoneType='majorzone']" />
+        </fo:table-body>
+      </fo:table>
+
+      <!-- subzone -->
+      <fo:table width="100%" margin-top="14pt">
+        <fo:table-column column-number="1" column-width="15%" />
+        <fo:table-column column-number="1" column-width="85%" />
+        <fo:table-header>
+          <fo:table-row>
+            <fo:table-cell number-columns-spanned="2" text-align="center" padding-top="2pt">
+              <fo:block font-weight="bold">Sub Zone</fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell padding="4pt" padding-left="0pt">
+              <fo:block>Zone</fo:block>
+            </fo:table-cell>
+            <fo:table-cell padding="4pt" padding-left="0pt">
+              <fo:block>Description</fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+        </fo:table-header>
+        <fo:table-body>
+          <xsl:apply-templates select="zoneSpec[@zoneType='subzone']" />
+        </fo:table-body>
+      </fo:table>
+
+      <!-- spesific zone -->
+      <fo:table width="100%" margin-top="14pt">
+        <fo:table-column column-number="1" column-width="15%" />
+        <fo:table-column column-number="1" column-width="85%" />
+        <fo:table-header>
+          <fo:table-row>
+            <fo:table-cell number-columns-spanned="2" text-align="center" padding-top="2pt">
+              <fo:block font-weight="bold">Specific Zone</fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell padding="4pt" padding-left="0pt">
+              <fo:block>Zone</fo:block>
+            </fo:table-cell>
+            <fo:table-cell padding="4pt" padding-left="0pt">
+              <fo:block>Description</fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+        </fo:table-header>
+        <fo:table-body>
+          <xsl:apply-templates select="zoneSpec[@zoneType='spesificZone']" />
         </fo:table-body>
       </fo:table>
     </fo:block>
   </xsl:template>
 
   <xsl:template match="zoneSpec">
+    <xsl:call-template name="add_id"/>
     <xsl:if test="@controlAuthorityRefs">
       <fo:table-row keep-together="always">
         <fo:table-cell number-columns-spanned="2">
