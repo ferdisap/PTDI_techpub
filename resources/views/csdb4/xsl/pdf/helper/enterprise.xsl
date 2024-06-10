@@ -4,9 +4,47 @@
   xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
   xmlns:php="http://php.net/xsl">
 
+  <!-- Outstanding
+    1. contactPerson @prefixPerson tidak digunakan
+  -->
+
+  <xsl:template match="enterpriseSpec">
+    <fo:block>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="cgmark_begin"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
+      <xsl:apply-templates select="enterpriseName"/>
+      <xsl:apply-templates select="businessUnit"/>
+      <xsl:call-template name="cgmark_end"/>
+    </fo:block>
+  </xsl:template>
+
+
+  
+
+  <!-- diapnggil di frontmatter.xsl -->
+  <xsl:template match="businessUnit">
+    <fo:block>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="cgmark_begin">
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
+      <xsl:apply-templates select="businessUnitName"/>
+      <xsl:apply-templates select="businessUnitAddress"/>
+      <xsl:apply-templates select="contactPerson"/>
+      <xsl:call-template name="cgmark_end"/>
+      </xsl:call-template>
+    </fo:block>
+  </xsl:template>
+
   <xsl:template match="businessUnitAddress">
     <xsl:param name="fontSize"/>
     <fo:block>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="cgmark_begin"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
       <xsl:if test="$fontSize">
         <xsl:attribute name="font-size"><xsl:value-of select="$fontSize"/></xsl:attribute>
       </xsl:if>
@@ -82,12 +120,17 @@
       </xsl:variable>
       <xsl:value-of select="php:function('preg_replace', '/,\s?$/','',$address)"/>
       <xsl:text>.</xsl:text>
+      <xsl:call-template name="cgmark_end"/>
     </fo:block>
   </xsl:template>
 
   <xsl:template match="contactPerson">
     <xsl:param name="fontSize"/>
     <fo:block>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="cgmark_begin"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
       <xsl:if test="$fontSize">
         <xsl:attribute name="font-size"><xsl:value-of select="$fontSize"/></xsl:attribute>
       </xsl:if>
@@ -113,6 +156,7 @@
         </xsl:variable>
         <xsl:value-of select="php:function('preg_replace', '/,\s?$/','',$cp)"/>
         <xsl:text>.</xsl:text>
+        <xsl:call-template name="cgmark_end"/>
     </fo:block>
   </xsl:template>
 

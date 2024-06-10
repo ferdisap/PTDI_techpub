@@ -8,6 +8,7 @@
   3. tidak fully comply S1000D
  -->
   <xsl:template match="note|warning|caution">
+    <xsl:call-template name="cgmark_begin"/>
     <fo:block-container width="85%" page-break-inside="avoid" start-indent="0.5cm">
       <xsl:call-template name="style-warningcautionnote" />
       <fo:block start-indent="{$blockIndent}" border="1pt solid black" background-color="white" padding="3pt">
@@ -42,6 +43,7 @@
         <xsl:text>  </xsl:text>
       </fo:block>
     </fo:block-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <!-- 

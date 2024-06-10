@@ -11,12 +11,14 @@
    -->
   
   <xsl:template match="changeInline">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
     <fo:inline>
       <xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </fo:inline>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="subScript">
@@ -33,23 +35,38 @@
 
   <xsl:template match="dmRef">
     <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', ., '', '')"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_inline_applicability"/>
+    <xsl:call-template name="add_inline_controlAuthority"/>
+    <xsl:call-template name="add_inline_security"/>
     <fo:basic-link internal-destination="{$dmIdent}" color="blue">
       <xsl:value-of select="$dmIdent"/>
     </fo:basic-link>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="pmRef">
     <xsl:variable name="pmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmIdent', ., '', '')"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_inline_applicability"/>
+    <xsl:call-template name="add_inline_controlAuthority"/>
+    <xsl:call-template name="add_inline_security"/>
     <fo:basic-link internal-destination="{$pmIdent}" color="blue">
       <xsl:value-of select="$pmIdent"/>
     </fo:basic-link>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="externalPubRef">
     <xsl:variable name="externalPubRefIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubRefIdent', ., '', '')"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_inline_applicability"/>
+    <xsl:call-template name="add_inline_controlAuthority"/>
+    <xsl:call-template name="add_inline_security"/>
     <fo:basic-link external-destination="/{$pmIdent}" color="blue">
       <xsl:value-of select="$pmIdent"/>
     </fo:basic-link>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
   
   <!-- untuk merender anotasi danjuga footnote di bottom page atau di paragraphnya -->
@@ -59,6 +76,9 @@
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
     </xsl:variable>
     <fo:footnote font-size="8pt">
+      <xsl:call-template name="add_applicability"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
       <fo:inline baseline-shift="super">
         <fo:basic-link text-decoration="underline" color="blue">
           <xsl:call-template name="add_id">
@@ -68,6 +88,7 @@
           <xsl:value-of select="$mark"/>
         </fo:basic-link>
       </fo:inline>
+      <xsl:call-template name="cgmark_begin"/>
       <fo:footnote-body>
         <fo:block text-indent="-8pt" start-indent="8pt">
           <xsl:call-template name="add_id">
@@ -76,6 +97,7 @@
           <xsl:value-of select="$mark"/><xsl:text>&#160;&#160;</xsl:text>
           <xsl:apply-templates/>
         </fo:block>
+        <xsl:call-template name="cgmark_end"/>
       </fo:footnote-body>
     </fo:footnote>
   </xsl:template>
@@ -86,9 +108,11 @@
     <xsl:variable name="mark">
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
     </xsl:variable>
+    <xsl:call-template name="cgmark_begin"/>
     <fo:basic-link internal-destination="{@id}">
       <fo:inline text-decoration="underline" color="blue" baseline-shift="super" font-size="8pt"><xsl:value-of select="$mark"/></fo:inline>
     </fo:basic-link>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <!-- dipanggil di fo:table-footer select="descendant::footnote"-->
@@ -97,13 +121,16 @@
     <xsl:variable name="mark">
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
     </xsl:variable>
+    <xsl:call-template name="cgmark_begin"/>
     <fo:block text-indent="-8pt" start-indent="8pt" id="{@id}">
       <fo:inline><xsl:value-of select="$mark"/><xsl:text>&#160;&#160;</xsl:text></fo:inline>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template name="acronym">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
     <fo:inline>
@@ -111,6 +138,7 @@
       <xsl:apply-templates select="acronymTerm"/>
       <xsl:apply-templates select="acronymDefinition"/>
     </fo:inline>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <!-- nanti harusnya bisa ditambahkan link ke abbreviation (outside data module, but currently using @internalRefId) -->
@@ -130,6 +158,7 @@
   </xsl:template>
 
   <xsl:template name="acronymDefinition">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
     <fo:inline>
@@ -138,15 +167,18 @@
       <xsl:apply-templates/>
       <xsl:text>) </xsl:text>
     </fo:inline>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template name="verbatimText">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
     <fo:inline font-family="monospace">
       <xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </fo:inline>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="emphasis">

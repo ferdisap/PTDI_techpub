@@ -49,6 +49,7 @@
   <xsl:variable name="rb" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-before)"/>
   <xsl:variable name="ra" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-after)"/>
   <xsl:variable name="stIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@start-indent)"/>
+  <xsl:variable name="cgmarkIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@cgmark-indent)"/>
   <xsl:variable name="titleNumberWidth">
     <xsl:choose>
       <xsl:when test="boolean($stIndent) or $stIndent != ''">
@@ -62,11 +63,10 @@
   <xsl:param name="alertPathBackground"/>
   <xsl:variable name="warningPath"><xsl:value-of select="$alertPathBackground"/>/warningBackground.png</xsl:variable>
   <xsl:variable name="cautionPath"><xsl:value-of select="$alertPathBackground"/>/cautionBackground.png</xsl:variable>
-  <xsl:variable name="controlAutoritySymbolPath"><xsl:value-of select="$alertPathBackground"/>/="controlAutoritySymbol.png</xsl:variable>
+  <xsl:variable name="controlAutoritySymbolPath"><xsl:value-of select="$alertPathBackground"/>/controlAuthoritySymbol.png</xsl:variable>
   
   <xsl:template match="/">
     <fo:root font-family="Arial">
-
       <xsl:call-template name="setPageMaster">
         <xsl:with-param name="masterName" select="$masterName" />
       </xsl:call-template>
@@ -178,10 +178,43 @@
     </fo:bookmark-tree> -->
   </xsl:template>
 
+  <!-- depreciated -->
   <xsl:template match="__cgmark">
-    <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
-      <xsl:apply-templates/>
+    <xsl:param name="select"/>
+    <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="{$cgmarkIndent}"/>
+      <xsl:choose>
+        <xsl:when test="select">
+          <xsl:apply-templates select="$select"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates/>
+        </xsl:otherwise>
+      </xsl:choose>
     <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
+  </xsl:template>
+
+  <xsl:template name="cgmark_begin">
+    <xsl:param name="changeMark" select="@changeMark"/>
+    <xsl:choose>
+      <xsl:when test="parent::__cgmark"></xsl:when>
+      <xsl:otherwise>        
+        <xsl:if test="$changeMark = '1'">
+          <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="cgmark_end">
+    <xsl:param name="changeMark" select="@changeMark"/>
+    <xsl:choose>
+      <xsl:when test="parent::__cgmark"></xsl:when>
+      <xsl:otherwise>
+        <xsl:if test="$changeMark = '1'">
+          <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- <xsl:template match="@changeMark[.='1']"> -->

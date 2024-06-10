@@ -12,15 +12,16 @@
    -->
 
   <xsl:template match="captionGroup">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
     <fo:block-container width="100%" page-break-before="avoid">
-      <xsl:call-template name="add_id"/>
-      
+      <xsl:call-template name="add_id"/>      
       <xsl:apply-templates select="captionBody|__cgmark"/>
     </fo:block-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="captionBody">
@@ -44,7 +45,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:param>
-    
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <fo:table table-omit-footer-at-break="true" page-break-before="avoid" margin-bottom="11pt" margin-top="11pt">
@@ -52,20 +53,22 @@
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(@colwidth))"/>
         <fo:table-column column-number="{@colnum}" column-width="{$width}"/>
       </xsl:for-each>
-
       <fo:table-body>
         <xsl:apply-templates/>
       </fo:table-body>
     </fo:table>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="captionRow">
     <xsl:if test="@applicRefId">
       <fo:table-row keep-together="always">
         <fo:table-cell number-columns-spanned="{string(ancestor::captionGroup/@cols)}" padding-top="4pt" padding-bottom="-4pt">
+          <xsl:call-template name="cgmark_begin"/>
           <xsl:call-template name="add_applicability"/>
           <xsl:call-template name="add_controlAuthority"/> 
           <xsl:call-template name="add_security"/>
+          <xsl:call-template name="cgmark_end"/>
         </fo:table-cell>
       </fo:table-row>
     </xsl:if>
@@ -143,27 +146,31 @@
       </xsl:choose>
       
       <xsl:if test="@alignCaption"><xsl:attribute name="text-align"><xsl:value-of select="string(@alignCaption)"/></xsl:attribute></xsl:if>
-
+      <xsl:call-template name="cgmark_begin">
+        <xsl:with-param name="changeMark" select="parent::captionEntry/@changeMark"/>
+      </xsl:call-template>
       <fo:block>
         <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
         <xsl:if test="@applicRefId">
           <xsl:call-template name="add_applicability">
-            <xsl:with-param name="prefix"><xsl:text>This cell is applicable to: </xsl:text></xsl:with-param>
+            <xsl:with-param name="prefix"><xsl:text>Applicable to: </xsl:text></xsl:with-param>
           </xsl:call-template>          
           <xsl:call-template name="add_controlAuthority"/>
         </xsl:if>
         <xsl:apply-templates/>
       </fo:block>
+      <xsl:call-template name="cgmark_end">
+        <xsl:with-param name="changeMark" select="parent::captionEntry/@changeMark"/>
+      </xsl:call-template>
     </fo:table-cell>
   </xsl:template>
 
   <xsl:template match="caption">
     <xsl:param name="alignCaption" select="string(ancestor-or-self::captionGroup/@alignCaption)"/>
-
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/> 
     <xsl:call-template name="add_security"/>
-
     <fo:inline-container display-align="center">
       <xsl:call-template name="setCaptionColor"/>
       <xsl:call-template name="setCaptionDimension"/>
@@ -175,11 +182,14 @@
         <xsl:apply-templates select="captionLine"/>
       </fo:block>
     </fo:inline-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="captionText">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:apply-templates/>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template name="setCaptionDimension">

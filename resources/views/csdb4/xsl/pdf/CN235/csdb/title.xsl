@@ -19,21 +19,41 @@
 
   <xsl:template match="title">
     <xsl:param name="prefix"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
     <fo:block page-break-inside="avoid" page-break-after="avoid">
       <xsl:call-template name="style-title"/>
       <xsl:value-of select="$prefix"/>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="title[parent::table]">
-    <xsl:apply-templates/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
+    <fo:block margin-top="6pt" page-break-before="avoid">
+      <xsl:variable name="prefix">
+        <xsl:text>Table </xsl:text>
+        <xsl:number level="any" count="title"/>
+        <xsl:text>&#160;&#160;</xsl:text>
+      </xsl:variable>
+      <xsl:value-of select="$prefix"/>
+      <xsl:apply-templates select="title"/>
+    </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="title[parent::crewDrill] | title[parent::subCrewDrill]">
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
     <fo:block margin-bottom="6pt" font-weight="bold">
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
 

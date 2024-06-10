@@ -5,6 +5,9 @@
   xmlns:php="http://php.net/xsl">
 
   <!-- 
+    INFO
+    1. Tidak support <__cgmark>
+
     OUTSTANDING crew
     1. <crewRefCard> belum difungsikan
     2. crewDrill/@drillType belum difungsikan karena belum tau kegunaannya
@@ -16,21 +19,26 @@
    -->
 
   <xsl:template match="crew">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_security"/>
     <fo:block start-indent="0cm">
       <xsl:call-template name="add_id"/>
       <xsl:apply-templates select="descrCrew"/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="descrCrew">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_warning"/>
     <xsl:call-template name="add_caution"/>
     <xsl:call-template name="add_security"/>
     <xsl:apply-templates/>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="crewDrill">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_warning"/>
     <xsl:call-template name="add_caution"/>
@@ -51,18 +59,20 @@
           <xsl:text>Skill level: </xsl:text><xsl:value-of select="string($ConfigXML//skillLevelCode[@type = $sk])"/>
         </fo:block>
       </xsl:if>
-      <xsl:apply-templates select="title|__cgmark"/>
+      <xsl:apply-templates select="title"/>
       <!-- here for <thumbTabText> -->
       <fo:block margin-bottom="11pt">
         <xsl:if test="following-sibling::*">
           <xsl:attribute name="margin-bottom">11pt</xsl:attribute>
         </xsl:if>
-        <xsl:apply-templates select="*[name(.) != 'title']|__cgmark"/>
+        <xsl:apply-templates select="*[name(.) != 'title']"/>
       </fo:block>
     </fo:block-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="subCrewDrill">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_warning"/>
     <xsl:call-template name="add_caution"/>
@@ -84,6 +94,7 @@
         <xsl:apply-templates/>
       </fo:block>
     </fo:block-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="crewDrillStep">
@@ -98,11 +109,31 @@
     <xsl:param name="prefixStepFlag">
       <xsl:choose>
         <xsl:when test="$orderedStepsFlag = '1'">
-          <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf"/>
+          <xsl:value-of select="
+          count(preceding-sibling::crewDrillStep)+
+          count(preceding-sibling::if/crewDrillStep)+
+          count(preceding-sibling::elseIf/crewDrillStep)+
+          count(parent::if/preceding-sibling::crewDrillStep)+
+          count(parent::if/preceding-sibling::if/crewDrillStep)+
+          count(parent::if/preceding-sibling::elseIf/crewDrillStep)+
+          count(parent::elseIf/preceding-sibling::crewDrillStep)+
+          count(parent::elseIf/preceding-sibling::if/crewDrillStep)+
+          count(parent::elseIf/preceding-sibling::elseIf/crewDrillStep)+
+          1"/>
+          <!-- <xsl:choose>
+            <xsl:when test="parent::__cgmark">
+              <xsl:number level="any" from="crewDrill|subCrewDrill" count="__cgmark|crewDrillStep"/>
+              <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="__cgmark"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf|__cgmark[child::crewDrillStep]|__cgmark[child::if]|__cgmark[child::elseIf]"/>
+            </xsl:otherwise>
+          </xsl:choose> -->
         </xsl:when>
         <xsl:otherwise>&#x2022;</xsl:otherwise>
       </xsl:choose>
     </xsl:param>
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
@@ -123,7 +154,7 @@
     <xsl:if test="title">
       <xsl:apply-templates select="title"/>
     </xsl:if>
-    <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
+    <xsl:apply-templates select="crewMemberGroup"/>
     
     <fo:block>
       <xsl:call-template name="add_id"/>
@@ -140,20 +171,24 @@
             </fo:table-cell>
             <fo:table-cell width="14cm">
               <fo:block>
-                <xsl:apply-templates select="crewProcedureName|challengeAndResponse|crewDrillStep|case|if|elseIf|warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark"/>
+                <xsl:apply-templates select="crewProcedureName|challengeAndResponse|crewDrillStep|case|if|elseIf|warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark[child::crewProcedureName]|__cgmark[child::challengeAndResponse]|__cgmark[child::crewDrillStep]|__cgmark[child::case]|__cgmark[child::if]|__cgmark[child::elseIf]|__cgmark[child::warning]|__cgmark[child::caution]|__cgmark[child::note]|__cgmark[child::para]|__cgmark[child::figure]|__cgmark[child::figureAlts]|__cgmark[child::multimedia]|__cgmark[child::multimediaAlts]|__cgmark[child::foldout]|__cgmark[child::table]|__cgmark[child::caption]"/>
               </fo:block>
             </fo:table-cell>
           </fo:table-row>
         </fo:table-body>
       </fo:table>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>  
 
   <xsl:template match="crewProcedureName">
+    <xsl:variable name="challengeWidth" select="number(14)"/>
+    <xsl:variable name="qtyAncestor" select="count(ancestor::crewDrillStep)"/>
     <fo:table>
       <fo:table-body>
         <fo:table-row>
-          <fo:table-cell width="14cm">
+          <fo:table-cell>
+            <xsl:attribute name="width"><xsl:value-of select="$challengeWidth - $qtyAncestor"/>cm</xsl:attribute>
             <fo:block>
               <xsl:call-template name="add_applicability"/>
               <xsl:call-template name="add_controlAuthority"/>
@@ -170,44 +205,51 @@
   </xsl:template>
 
   <xsl:template match="challengeAndResponse">
+    <xsl:variable name="challengeWidth" select="number(10)"/>
+    <xsl:variable name="qtyAncestor" select="count(ancestor::crewDrillStep)"/>
     <fo:table>
       <fo:table-body>
         <fo:table-row>
-          <fo:table-cell width="10cm">
+          <fo:table-cell>
+            <xsl:attribute name="width"><xsl:value-of select="$challengeWidth - $qtyAncestor"/>cm</xsl:attribute>
             <fo:block margin-right="1pt">
-              <xsl:apply-templates select="challenge|__cgmark"/>
+              <xsl:apply-templates select="challenge"/>
             </fo:block>
           </fo:table-cell>
           <fo:table-cell width="3cm" display-align="after" margin-left="">
             <fo:block margin-left="1pt">
-              <xsl:apply-templates select="response|__cgmark"/>
+              <xsl:apply-templates select="response"/>
             </fo:block>
           </fo:table-cell>
           <fo:table-cell width="1cm" display-align="after" text-align="right">
             <fo:block>
-              <xsl:apply-templates select="crewMemberGroup|__cgmark"/>
+              <xsl:apply-templates select="crewMemberGroup"/>
             </fo:block>
           </fo:table-cell>
         </fo:table-row>
       </fo:table-body>
-    </fo:table>    
+    </fo:table>
   </xsl:template>
 
   <xsl:template match="if|elseIf|case">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
-    <xsl:call-template name="add_security" />
+    <xsl:call-template name="add_security"/>
     <fo:block margin-top="6pt" margin-bottom="6pt">
       <xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
   
   <xsl:template match="caseCond">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_security"/>
     <fo:block>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="challenge">

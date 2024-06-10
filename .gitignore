@@ -1,3 +1,4 @@
+
 /.phpunit.cache
 /node_modules
 /public/build
@@ -9,7 +10,7 @@
 /storage/csdb_tes2/*
 /storage/csdb_deleted/*
 /resources/notes/info/README.md
-/resources/views/csdb4/xsd/pdf/transformed
+/resources/views/csdb4/xsl/pdf/transformed/*
 /resources_dev/*
 /vendor
 .env

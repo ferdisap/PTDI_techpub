@@ -28,7 +28,7 @@
     <xsl:variable name="derivativeClassificationRefId"><xsl:value-of select="parent::table/@derivativeClassificationRefId"/></xsl:variable>
     <xsl:variable name="commercialClassification"><xsl:value-of select="parent::table/@commercialClassification"/></xsl:variable>
     <xsl:variable name="caveat"><xsl:value-of select="parent::table/@caveat"/></xsl:variable> -->
-
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
@@ -55,17 +55,18 @@
       
       <xsl:apply-templates select="graphic|__cgmark"/>
 
-      <fo:block margin-top="6pt" page-break-before="avoid">
+      <!-- <fo:block margin-top="6pt" page-break-before="avoid">
         <xsl:variable name="prefix">
           <xsl:text>Table </xsl:text>
-          <xsl:number level="any"/>
+          <xsl:number level="any" count="title"/>
           <xsl:text>&#160;&#160;</xsl:text>
         </xsl:variable>
         <xsl:value-of select="$prefix"/>
         <xsl:apply-templates select="title"/>
-      </fo:block>
-
+      </fo:block> -->
+      <xsl:apply-templates select="title"/>
     </fo:block-container>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="tgroup">
@@ -214,6 +215,11 @@
       <xsl:call-template name="style-row"/>
       <xsl:apply-templates/>
     </fo:table-row>
+    <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
+      <fo:table-row keep-together="always">
+        <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="-4pt"><fo:block/></fo:table-cell>
+      </fo:table-row>
+    </xsl:if>
   </xsl:template>
 
   <!-- 
@@ -299,6 +305,9 @@
         <fo:block-container keep-together="always"> 
         3. jangan di page-break-inside="avoid" agar table nya break. Kalau tidak tampilannya akan hancur karena table panjang ada pada satu page
       -->
+      <xsl:call-template name="cgmark_begin">
+        <xsl:with-param name="changeMark" select="parent::row/@changeMark"/>
+      </xsl:call-template>
       <fo:block-container>
         <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
         <xsl:if test="string(@rotate) = '1'"><xsl:attribute name="reference-orientation">90</xsl:attribute></xsl:if>
@@ -310,15 +319,10 @@
         </xsl:if>
         <xsl:apply-templates/>
       </fo:block-container>
+      <xsl:call-template name="cgmark_end">
+        <xsl:with-param name="changeMark" select="parent::row/@changeMark"/>
+      </xsl:call-template>
     </fo:table-cell>    
-  </xsl:template>
-
-  <xsl:template match="graphic[parent::table]">
-    <fo:block>
-      <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit">
-        <xsl:call-template name="setGraphicDimension"/>
-      </fo:external-graphic>
-    </fo:block>
   </xsl:template>
 
 </xsl:transform>

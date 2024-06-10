@@ -91,14 +91,15 @@ class CsdbServiceController extends CsdbController
     return Response::make($transformed,200,['content-type' => 'text/html']);
   }
 
-  private function getPathXSL(string $type, string $productName = '') : string
+  private function getPathXSL(string $type, string $productName = '', string $xpathString = '') : string
   {
     $config = new \DOMDocument();
     $config->validateOnParse = true;
     @$config->load(CSDB_VIEW_PATH."/xsl/Config.xml");
 
     $xpath = new \DOMXPath($config);
-    $path = $xpath->evaluate("string(//config/output/method[@type='$type']/path[@product-name='$productName' or @product-name='*'])");
+    if(!$xpathString) $xpathString = "string(//config/output/method[@type='$type']/path[@product-name='$productName' or @product-name='*'])";
+    $path = $xpath->evaluate($xpathString);
     return !empty($path) ? (CSDB_VIEW_PATH."/xsl/$path") : '';
   }
 
@@ -122,7 +123,7 @@ class CsdbServiceController extends CsdbController
       "alertPathBackground" => "file:///".str_replace("\\","/", CSDB_VIEW_PATH."/xsl/pdf/assets"),
     ]);
 
-    $fo = CSDB_VIEW_PATH."/xsl/pdf/transformed/".$csdb->filename.".fo";
+    $fo = $this->getPathXSL('','',"string(//method[@type='pdf']/pathCache)")."/".$csdb->filename.".fo";
     file_put_contents($fo, $transformed);
     if($pdf = Fop::FO_to_PDF($fo)){
       return Response::make($pdf,200,[

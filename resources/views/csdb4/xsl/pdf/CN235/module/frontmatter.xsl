@@ -81,7 +81,12 @@
                 <fo:block></fo:block>
               </fo:table-cell>
               <fo:table-cell display-align="top">
-                <fo:block><xsl:value-of select="string(responsiblePartnerCompany/enterpriseName)"/></fo:block>
+                <fo:block>
+                  <xsl:call-template name="add_id">
+                    <xsl:with-param name="id" select="responsiblePartnerCompany/@id"/>
+                  </xsl:call-template>
+                  <xsl:value-of select="string(responsiblePartnerCompany/enterpriseName)"/>
+                </fo:block>
               </fo:table-cell>
             </fo:table-row>
           </fo:table-body>
@@ -191,38 +196,6 @@
         <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="1.5cm"/>
       </xsl:for-each>
     </fo:block>
-  </xsl:template>
-
-  <xsl:template match="enterpriseSpec">
-    <fo:block><xsl:apply-templates select="enterpriseName"/></fo:block>
-    <fo:block><xsl:apply-templates select="businessUnit/businessUnitName"/></fo:block>
-    <fo:block><xsl:apply-templates select="businessUnit/businessUnitAddress"/></fo:block>
-    <xsl:apply-templates select="contactPerson"/>
-    <!-- <fo:block>
-      <fo:inline>
-        <xsl:for-each select="contactPerson">
-          <xsl:apply-templates select="lastName"/>
-          <xsl:if test="middleName">
-            <xsl:text> </xsl:text>
-            <xsl:apply-templates select="middleName"/>
-          </xsl:if>
-          <xsl:if test="firstName">
-            <xsl:text> </xsl:text>
-            <xsl:apply-templates select="firstName"/>
-          </xsl:if>
-          <xsl:if test="jobTitle">
-            <xsl:text>, </xsl:text>
-            <xsl:apply-templates select="jobTitle"/>
-            <xsl:text>,</xsl:text>
-          </xsl:if>
-          <xsl:if test="contactPersonAddress">
-            <xsl:text>, </xsl:text>
-            <xsl:apply-templates select="contactPersonAddress"/>
-          </xsl:if>
-          <xsl:text>.</xsl:text>
-        </xsl:for-each>
-      </fo:inline>
-    </fo:block> -->
   </xsl:template>
 
   <xsl:template match="frontMatterInfo">

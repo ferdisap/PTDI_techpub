@@ -398,6 +398,8 @@ class Csdb extends Model
    */
   public function showCGMArkElement() :void
   {
+    // dd($this->CSDBObject->document->documentElement->getAttributeNS('noNamespaceSchemaLocation', 'http://www.w3.org/2001/XMLSchema-instance'));
+    if(str_contains($this->CSDBObject->document->documentElement->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'noNamespaceSchemaLocation'),'crew.xsd')) return;
     $xsltString = <<<XSLT
     <?xml version="1.0" encoding="UTF-8"?>
     <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

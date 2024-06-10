@@ -3,8 +3,9 @@
   <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup)>
 
   <!ELEMENT output (method+,layout?)>
-  <!ELEMENT method (path+)>
+  <!ELEMENT method (path+,pathCache)>
   <!ELEMENT path (#PCDATA)>
+  <!ELEMENT pathCache (#PCDATA)>
   <!ELEMENT layout EMPTY>
   <!ELEMENT colors (color+)>
   <!ELEMENT color EMPTY>
@@ -37,6 +38,7 @@
   <!ATTLIST layout region-before CDATA #REQUIRED>
   <!ATTLIST layout region-after CDATA #REQUIRED>
   <!ATTLIST layout start-indent CDATA #IMPLIED>
+  <!ATTLIST layout cgmark-indent CDATA #IMPLIED>
 
   <!ATTLIST layout margin-top CDATA #REQUIRED>
   <!ATTLIST layout margin-bottom CDATA #REQUIRED>
@@ -70,18 +72,21 @@
   <output>
     <method type="html">
       <path product-name="*">html/Main.xsl</path>
+      <pathCache></pathCache>
     </method>
     <method type="pdf">
       <path product-name="CN235">pdf/CN235/Main.xsl</path>
       <path product-name="CN235-220M">pdf/CN235/Main.xsl</path>
       <path product-name="MALE">pdf/MALE/Main.xsl</path>
+      <pathCache>pdf/transformed/</pathCache>
     </method>
     <layout master-name="default-A4" orientation="port" 
       margin-top="1cm" margin-bottom="1cm"
       margin-left="3cm" margin-right="1.5cm"
       width="21cm" height="29.7cm"
       region-before="1.5cm" region-after="2cm"
-      start-indent="1.5cm"/>
+      start-indent="1.5cm"
+      cgmark-indent="2cm"/>
   </output>
   <colors mode="hex">
     <color name="amber" code="#ffc107"/>
@@ -179,5 +184,6 @@
     <controlAuthority type="cat08">EWIS</controlAuthority>    
     <controlAuthority type="cat09">LOI</controlAuthority>    
     <controlAuthority type="cat10">RII</controlAuthority>    
+    <controlAuthority type="cat51">DGCA</controlAuthority>    
   </controlAuthorityGroup>
 </config>

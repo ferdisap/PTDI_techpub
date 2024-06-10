@@ -13,6 +13,8 @@
 
   <xsl:template match="para">
     <xsl:param name="level"/>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
@@ -23,9 +25,20 @@
       </xsl:call-template>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
+  </xsl:template>
+
+  <xsl:template match="para[parent::controlAuthorityText]">
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_inline_applicability"/>
+    <xsl:call-template name="add_inline_controlAuthority"/>
+    <xsl:call-template name="add_inline_security"/>
+    <xsl:apply-templates/>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
   
   <xsl:template match="simplePara">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
     <fo:block page-break-before="avoid">
@@ -33,21 +46,34 @@
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
   
   <!-- supaya inline, not block -->
   <xsl:template match="para[parent::footnote]">
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_inline_applicability"/>
+    <xsl:call-template name="add_inline_controlAuthority"/>
+    <xsl:call-template name="add_inline_security"/>
     <xsl:apply-templates/>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
   
   <xsl:template match="notePara|warningAndCautionPara">
     <fo:block margin-top="11pt" text-align="left">
       <xsl:call-template name="style-warningcautionnotePara"/>
+      <xsl:call-template name="cgmark_begin"/>
+      <xsl:call-template name="add_applicability"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:call-template name="add_security"/>
+      <xsl:apply-templates/>
+      <xsl:call-template name="cgmark_end"/>
       <xsl:apply-templates/>     
     </fo:block>
   </xsl:template>
 
   <xsl:template match="para[parent::challenge] | para[parent::response] | para[parent::crewProcedureName]">
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
@@ -66,6 +92,7 @@
         </fo:inline>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
 </xsl:transform>

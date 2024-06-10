@@ -16,14 +16,20 @@
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/>
     </xsl:param>
 
+    <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
     
     <fo:block text-align="justify" start-indent="0cm">
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-levelledPara">
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
+
+      <xsl:call-template name="add_warning"/>
+      <xsl:call-template name="add_caution"/>
+
       <xsl:apply-templates>
         <xsl:with-param name="level" select="$level"/>
       </xsl:apply-templates>
