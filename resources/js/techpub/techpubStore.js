@@ -277,10 +277,18 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     getWebRoute(name, data, route = undefined) {
       route ? (route.params = data) : route = Object.assign({}, this.WebRoutes[name]); // paramsnya sudah ada, tapi tidak ada valuenya. eg: 'filename': ':filename'
       for (const p in route.params) {
-        if (!data[p]) throw new Error(`Parameter '${p}' shall be exist.`);
-        route.path = route.path ? route.path.replace(`:${p}`, data[p]) : (() => {throw new Error('Route must have its path.')})();
+        let par = data[p];
+        if (par === undefined|null) {
+          if(data instanceof FormData && data.get(p)){
+            par = data.get(p);
+          } else {
+            throw new Error(`Parameter '${p}' shall be exist.`);
+          }
+        };
+        route.path = route.path ? route.path.replace(new RegExp(`:${p}\\??`), par) : (() => {throw new Error('Route must have its path.')})();
         delete data[p]; // ini diperlukan agar params tidak dijadikan query data
       }
+      route.path = route.path.replace(/(:\/\/)|(\/)+/g, "$1$2"); // untuk menghilangkan multiple slash
       if (!route.method || route.method.includes('GET')) {
         let url = new URL(window.location.origin + route.path);
         url.search = new URLSearchParams(data);

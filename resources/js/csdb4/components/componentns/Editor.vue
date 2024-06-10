@@ -1,8 +1,12 @@
+<!-- 
+  props.filename is depreciated
+ -->
 <script>
 import { EditorView, gutter, lineNumbers, GutterMarker, keymap } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import axios from "axios";
+import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
 export default {
   data() {
     return {
@@ -12,8 +16,10 @@ export default {
       isFile: false,
       rn_update: 'api.update_object',
       rn_create: 'api.create_object',
+      showLoadingProgress: false,
     }
   },
+  components: {ContinuousLoadingCircle},
   props: ['filename'],
   computed: {
     getEditor(){
@@ -59,19 +65,23 @@ export default {
       this.changeText('');
     },
     async getRaw(filename){
+      this.showLoadingProgress = true;
       let response = await axios({
         route: {
           name: 'api.request_csdb_object',
           data: {
             filename: filename
           }
-        }
+        },
+        useMainLoadingBar: false,
       });
+      this.showLoadingProgress = false;
       if(response.statusText == 'OK'){
         return response.data
       }
     },
     async create(event) {
+      this.showLoadingProgress = true;
       if(!this.isFileUpload){
         const formData = new FormData(event.target);
         formData.append('xmleditor', this.editor.state.doc.toString());
@@ -79,7 +89,8 @@ export default {
           route: {
             name: this.rn_create,
             data: formData,
-          }
+          },
+          useMainLoadingBar: false,
         })
         if(response.statusText === 'OK'){
           this.emitter.emit('createObjectFromEditor', { model: response.data.data });
@@ -92,15 +103,17 @@ export default {
           route: {
             name: 'api.upload_ICN',
             data: formData
-          }
+          },
+          useMainLoadingBar: false,
         });
         if(response.statusText === 'OK'){
           this.emitter.emit('createICNFromEditor', { model: response.data.data });
         }
       }
+      this.showLoadingProgress = false;
     },
     async update(event) {
-      console.log('update');
+      this.showLoadingProgress = true;
       let emitName;
       const formData = new FormData(event.target);
       if(!this.isFileUpload){
@@ -115,11 +128,13 @@ export default {
         route: {
           name: this.rn_update,
           data: formData
-        }
+        },
+        useMainLoadingBar: false,
       })
       if (response.statusText === 'OK') {
         this.emitter.emit(emitName, { model: response.data.data });
       }
+      this.showLoadingProgress = false;
     },
     submit(event) {
       return !this.isUpdate ? this.create(event) : this.update(event);
@@ -179,6 +194,11 @@ export default {
       }
     }
 
+    if(this.$route.params.filename){
+      let raw = await this.getRaw(this.$route.params.filename);
+      this.changeText(raw);
+    }
+
   }
 }
 </script>
@@ -191,7 +211,7 @@ export default {
 }
 </style>
 <template>
-  <div class="editor px-3">
+  <div class="editor px-3 relative">
     <div class="h-[5%] mb-3">
       <h1 class="text-blue-500 w-full text-center">Editor</h1>
       <a href="#" v-if="!isUpdate" @click.prevent="setUpdate()" class="block text-center text-sm underline text-blue-600">Switch to Update</a>
@@ -256,5 +276,6 @@ export default {
       </div>
       <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
     </form>
+    <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

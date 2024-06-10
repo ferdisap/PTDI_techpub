@@ -1,3 +1,6 @@
+<!-- 
+  semua props emit yang ada filename is depreciated. Digantikan oleh $route.params
+ -->
 <script>
 import BottomBar from '../subComponents/BottomBar.vue';
 import ListTree from '../componentns/ListTree.vue'
@@ -113,7 +116,7 @@ export default {
 
       // identStatus
       this.bottomBarItems.IdentStatus.isShow = data.filename.slice(0,3) === 'ICN' ? false : true;
-      this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
+      // this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
 
       // Preview
       this.bottomBarItems.Preview.isShow = true;
@@ -143,7 +146,9 @@ export default {
 
       // Preview
       this.bottomBarItems.Preview.isShow = true;
-      this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
+      // this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
+      this.emitter.emit('Preview-refresh', data);
+
 
       // Editor
       this.bottomBarItems.Editor.data = data; // hanya ada filename dan path di data
@@ -180,9 +185,7 @@ export default {
     this.emitter.on('updateICNFromEditor', (data) => {
       console.log('explorer emitted by editor updateICNFromEditor');
       this.emitter.emit('Preview-refresh', data.model)
-    });
-
-    
+    });    
 
     this.emitter.on('updateObjectFromEditor', (data) => {
       // data berupa model

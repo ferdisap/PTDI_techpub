@@ -45,7 +45,7 @@ export default {
     <hr />
 
     <div class="relative p-2 flex items-center space-x-3 mb-3">
-      <a @click.prevent="go('Explorer')" :href="href('Explorer')" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
+      <a @click.prevent="go('Explorer')" :href="href('Explorer',{filename:'',viewType:''})" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
         data-tooltip="Explore">explore</a>
     </div>
 

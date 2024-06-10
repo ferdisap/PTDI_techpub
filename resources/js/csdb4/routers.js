@@ -8,9 +8,14 @@ export default [
     path: '/csdb4',
     component: Welcome
   },
+  // {
+  //   name: 'Explorer',
+  //   path: '/csdb4/explorer',
+  //   component: Explorer
+  // },
   {
     name: 'Explorer',
-    path: '/csdb4/explorer',
+    path: '/csdb4/explorer/:filename?/:viewType?',
     component: Explorer
   },
   {

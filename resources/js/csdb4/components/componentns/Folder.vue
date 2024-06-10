@@ -2,8 +2,10 @@
 import { sorter } from "../../../helper.js";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
+import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
+
 export default {
-  components:{ Sort },
+  components:{ Sort, ContinuousLoadingCircle },
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -14,6 +16,7 @@ export default {
       open: {},
 
       type: '', // kayaknya ga perlu
+      showLoadingProgress: false
     }
   },
   props: {
@@ -57,13 +60,16 @@ export default {
   },
   methods: {
     async getObjs(data = {}){
+      this.showLoadingProgress = true;
       let response = await axios({
         route: {
           name: 'api.requestbyfolder.get_allobject_list',
           data: data// akan receive data: [model1, model2, ...]
-        }
+        },
+        useMainLoadingBar: false,
       });
       this.storingResponse(response);
+      this.showLoadingProgress = false;
     },
     storingResponse(response) {
       if (response.statusText === 'OK') {
@@ -102,6 +108,14 @@ export default {
       }
     },
     clickFilename(data){
+      this.$router.push({
+          name: 'Explorer',
+          params: {
+              filename: data.filename,
+              viewType: this.$route.params.viewType ?? 'html'
+          },
+          query: this.$route.query
+      });
       this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
     },
     sortTable(){
@@ -147,8 +161,15 @@ export default {
   },
   mounted(){
     this.emitter.on('Folder-refresh', (data) => {
-      this.getObjs({path: this.currentPath});
-    })
+      if(data.filename){
+        this.getObjs(data)
+      } else {
+        this.getObjs({path: this.currentPath});
+      }
+    });
+    if(this.$route.params.filename){
+      this.getObjs({filename: this.$route.params.filename});
+    }
     // this.emitter.on('Folder-updateModel', (data) => {
     //   // #1. Check apakah path model terbaru sudah ada di this.data.folder atau belum. Tambahkan jika belum
     //   let curr_folders = Object.assign({},this.data.folders);      
@@ -189,67 +210,70 @@ export default {
 }
 </style>
 <template>
-  <div v-show="false">{{ setObject }}</div>
-  <div class="folder overflow-auto h-[93%] w-full">
-    <div class="h-[5%] flex mb-3">
-      <div class="w-8 mb-5">
-        <button @click="back()" class="material-symbols-outlined has-tooltip-right" data-tooltip="back">keyboard_backspace</button>
+  <div class="relative">
+    <div v-show="false">{{ setObject }}</div>
+    <div class="folder overflow-auto h-[93%] w-full">
+      <div class="h-[5%] flex mb-3">
+        <div class="w-8 mb-5">
+          <button @click="back()" class="material-symbols-outlined has-tooltip-right" data-tooltip="back">keyboard_backspace</button>
+        </div>
+        <h1 class="text-blue-500 w-full text-center">Folder:/{{ currentPath }}</h1>
       </div>
-      <h1 class="text-blue-500 w-full text-center">Folder:/{{ currentPath }}</h1>
+  
+      <div class="flex justify-center mb-3">
+        <input @change="search()" v-model="this.data.filenameSearch" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({ name: 'searchCsdbObject' })">info</button>
+      </div>
+  
+      <div class="flex justify-center flex-col px-3">
+        <table class="text-left">
+          <thead class="text-sm">
+            <tr class="leading-3 text-sm">
+              <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Initiator <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Editable <Sort :function="sortTable"></Sort></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
+              <td class="leading-3 text-sm" colspan="5">
+                <span class="material-symbols-outlined text-sm mr-1">folder</span>
+                <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </a> 
+                <!-- min -2 karena diujung folder ada '/' -->
+              </td>
+            </tr>
+            <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
+              <td class="leading-3 text-sm">
+                <span class="material-symbols-outlined text-sm mr-1">description</span>
+                <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
+              </td>
+              <td class="leading-3 text-sm"> {{ obj.path }} </td>
+              <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
+              <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
+              <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
+              <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
+            </tr>        
+          </tbody>
+        </table>
+      </div>
+  
+  
     </div>
-
-    <div class="flex justify-center mb-3">
-      <input @change="search()" v-model="this.data.filenameSearch" placeholder="find filename" type="text" class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-      <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info" @click="$root.info({ name: 'searchCsdbObject' })">info</button>
+  
+    <!-- pagination -->
+    <div class="h-[6%] w-full border">
+      <div v-if="pagination" class="flex justify-center items-center mt-2 h-[5%]">
+        <button @click="goto(pageless)" class="material-symbols-outlined text-sm">navigate_before</button>
+        <form @submit.prevent="goto('', pagination['current_page'])" class="flex">
+          <input v-model="pagination['current_page']" class="w-6 border-none text-sm text-center bg-transparent" />
+          <span class="text-sm"> of {{ pagination['last_page'] }} </span>
+        </form>
+        <button @click="goto(pagemore)" class="material-symbols-outlined text-sm">navigate_next</button>
+      </div>
     </div>
-
-    <div class="flex justify-center flex-col px-3">
-      <table class="text-left">
-        <thead class="text-sm">
-          <tr class="leading-3 text-sm">
-            <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
-            <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
-            <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
-            <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
-            <th class="text-sm">Initiator <Sort :function="sortTable"></Sort></th>
-            <th class="text-sm">Editable <Sort :function="sortTable"></Sort></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
-            <td class="leading-3 text-sm" colspan="5">
-              <span class="material-symbols-outlined text-sm mr-1">folder</span>
-              <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </a> 
-              <!-- min -2 karena diujung folder ada '/' -->
-            </td>
-          </tr>
-          <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
-            <td class="leading-3 text-sm">
-              <span class="material-symbols-outlined text-sm mr-1">description</span>
-              <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
-            </td>
-            <td class="leading-3 text-sm"> {{ obj.path }} </td>
-            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
-            <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
-            <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
-            <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
-          </tr>        
-        </tbody>
-      </table>
-    </div>
-
-
-  </div>
-
-  <!-- pagination -->
-  <div class="h-[6%] w-full border">
-    <div v-if="pagination" class="flex justify-center items-center mt-2 h-[5%]">
-      <button @click="goto(pageless)" class="material-symbols-outlined text-sm">navigate_before</button>
-      <form @submit.prevent="goto('', pagination['current_page'])" class="flex">
-        <input v-model="pagination['current_page']" class="w-6 border-none text-sm text-center bg-transparent" />
-        <span class="text-sm"> of {{ pagination['last_page'] }} </span>
-      </form>
-      <button @click="goto(pagemore)" class="material-symbols-outlined text-sm">navigate_next</button>
-    </div>
+    <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

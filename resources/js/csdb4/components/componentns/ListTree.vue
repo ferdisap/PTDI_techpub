@@ -2,7 +2,7 @@
 import { list } from 'postcss';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import setListTreeData from '../../../../../public/js/csdb/setListTreeData';
-
+import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 
 export default {
   data() {
@@ -10,8 +10,10 @@ export default {
       data: {},
       html: '',
       techpubStore: useTechpubStore(),
+      showLoadingProgress: false,
     }
   },
+  components: {ContinuousLoadingCircle},
   props: {
     type: String,
   },
@@ -32,6 +34,7 @@ export default {
             this.data[`${type}_list`] = e.data[0];
             this.data[`${type}_list_level`] = e.data[1];
             worker.terminate();
+            this.showLoadingProgress = false;
             return resolve(true);
           };
         });
@@ -41,6 +44,7 @@ export default {
             route: route,
           },
         });
+        this.showLoadingProgress = true;
         return prom;
       } else {
         let response = await axios({
@@ -65,8 +69,16 @@ export default {
       this.emitter.emit('clickFolderFromListTree', data);
     },
     clickFilename(data) {
-      // this.$parent.$emit('clickFilename', data)
+      this.$router.push({
+          name: 'Explorer',
+          params: {
+              filename: data.filename,
+              viewType: 'html'
+          },
+          query: this.$route.query
+      });
       this.emitter.emit('clickFilenameFromListTree', data); // key path dan filename
+
     },
     createListTreeHTML() {
       const gen_objlist = function (models, style = '') {
@@ -74,9 +86,10 @@ export default {
         if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
           for (const model of models) {
             let logo = model.filename.substr(0, 3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+            let href = this.techpubStore.getWebRoute('',{filename:model.filename,viewType:'html'},Object.assign({},this.$router.getRoutes().find(r => r.name === 'Explorer')))['path'];
             listobj = listobj + `
                   <div class="obj" style="${style}">
-                    ${logo}<a href="#" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
+                    ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
                   </div>`
           }
         }
@@ -116,7 +129,7 @@ export default {
             }
 
             // generating obj list
-            details = details + gen_objlist(dataobj[path], `margin-left:${start_l * 3 + defaultMarginLeft + 2}px;`);
+            details = details + (gen_objlist.bind(this,dataobj[path], `margin-left:${start_l * 3 + defaultMarginLeft + 2}px;`))();
 
             details = details + "</details>"
 
@@ -232,11 +245,12 @@ export default {
 }
 </script>
 <template>
-  <div class="listtree h-full">
+  <div class="listtree h-full relative">
     <!-- list -->
     <div :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
       <!-- <component v-if="(this.data[`${this.$props.type}_list_level`] && this.data[`${this.$props.type}_list`])" :is="tree" /> -->
       <component v-if="html" :is="tree" />
     </div>
+    <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

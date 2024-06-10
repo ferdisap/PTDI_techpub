@@ -1,8 +1,13 @@
-<script>
+<!-- 
+  props.filename is depreciated
+ -->
+ <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import path from 'path';
 import { contentType } from 'es-mime-types';
 import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
+
 export default {
   data() {
     return {
@@ -12,10 +17,11 @@ export default {
       data: {},
       path: path,
       filename: '',
+      showLoadingProgress: false,
     }
   },
   components:{
-    PreviewRCMenu
+    PreviewRCMenu, ContinuousLoadingCircle
   },
   props: {
     dataProps: {
@@ -38,6 +44,7 @@ export default {
           name: routename,
           data: data,
         },
+        useMainLoadingBar: false,
         responseType: responseType,
       });
       if (response.statusText === 'OK') {
@@ -53,6 +60,7 @@ export default {
      * jika ada filename, maka akan request ke server
     */
     icnRenderer(data = {}) {
+      this.showLoadingProgress = true;
       this.isICN = true;
       this.filename = data.filename;
       // jika dari readFileURLFromEditor
@@ -71,20 +79,35 @@ export default {
           this.data.src = route.url.toString();
         }, 100);
       }
+      this.showLoadingProgress = false;
     },
     async datamoduleRenderer(data = {}) {
+      this.showLoadingProgress = true;
       this.isICN = false;
       this.filename = data.filename;
-      let routeName = this.view === 'html' ? 'api.get_transformed_contentpreview' : (this.view === 'pdf' ? 'api.get_pdf_object' : '');
+      let routeName;
+      if(data.viewType === 'html') routeName = 'api.get_transformed_contentpreview';
+      else if(data.viewType === 'pdf') routeName = 'api.get_pdf_object';
+      else if(this.view === 'html') routeName = 'api.get_transformed_contentpreview';
+      else if(this.view === 'pdf') routeName = 'api.get_pdf_object';
       if (routeName) {
         this.data.mime = this.view === 'html' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
         let src = await this.blobRequestTransformed(routeName, { filename: data.filename }, this.data.mime);
         this.data.src = src // blob:http://127.0.0.1:8000/1a7cdf64-c7f7-4dd3-b4b2-0d26a3f0bb52
       }
+      this.showLoadingProgress = false;
     },
     switchView(name){
       this.view = name;
       this.datamoduleRenderer({filename: this.filename});
+      this.$router.push({
+          name: 'Explorer',
+          params: {
+              filename: this.$route.params.filename,
+              viewType: name
+          },
+          query: this.$route.query
+      });
     },
   },
   mounted() {
@@ -100,11 +123,23 @@ export default {
         (data.filename && data.filename.slice(0, 3) !== 'ICN') ? this.datamoduleRenderer(data) : this.icnRenderer(data);          
       }
     });
+    
+    if(this.$route.params.filename){
+      this.filename = this.$route.params.filename;
+      let data = {
+        filename: this.$route.params.filename
+      }
+      if(this.$route.params.viewType) {
+        data.view = this.$route.params.viewType;
+        this.view = this.$route.params.viewType;
+      }
+      this.$route.params.filename.slice(0, 3) !== 'ICN' ? this.datamoduleRenderer(data) : this.icnRenderer(data);
+    }
   }
 }
 </script>
 <template>
-  <div class="Preview overflow-auto h-[93%] w-full">
+  <div class="Preview overflow-auto h-[93%] w-full relative">
     <PreviewRCMenu v-if="!isICN">
       <!-- view IETM or PDF -->
       <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
@@ -146,5 +181,17 @@ export default {
         <embed v-if="isICN" class="w-full h-full" :src="data.src" :type="data.mime" />
       </div>
     </div>
+    <!-- <div v-if="loadingbar" class="top-0 left-0 h-[100vh] w-[100%] z-50 absolute">
+      <div style="
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background:rgba(0,0,0,0.5);
+      ">
+        <div class="loading_buffer"></div>
+      </div>
+    </div> -->
+    <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

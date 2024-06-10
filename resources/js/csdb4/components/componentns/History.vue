@@ -38,6 +38,9 @@ export default {
     else if(this.$props.filename){
       this.setHistoryFromXHR(this.$props.filename);
     }
+    else if(this.$route.params.filename){
+      this.setHistoryFromXHR(this.$route.params.filename);      
+    }
   },
 }
 </script>

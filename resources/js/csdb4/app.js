@@ -81,8 +81,8 @@ useTechpubStore().WebRoutes = routes;
 axios.interceptors.request.use(
   async (config) => {
     let headers = {};
-    useTechpubStore().showLoadingBar = true;
     if (config.route) {
+      useTechpubStore().showLoadingBar = config.useMainLoadingBar == false ? false : true;
       try {
         let data = config.route.data;
         if(data && (data.updated_at || (data instanceof FormData && data.get('updated_at')))){
@@ -93,9 +93,9 @@ axios.interceptors.request.use(
         config.url = route.url;
         config.method = route.method[0];
         config.data = route.params;
-        console.log(config.data, route.params);
       } catch (error) {
-        throw new Error(error); 
+        console.log(error);
+        // throw new Error(error); 
       }
     }
     for(const i in headers){
@@ -125,10 +125,9 @@ axios.interceptors.response.use(
   (axiosError) => {
     window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
     useTechpubStore().showLoadingBar = false;
-    // if (axiosError.code === 'ERR_BAD_REQUEST')
     if (axiosError.code){
       csdb.config.globalProperties.emitter.emit('flash', {
-        type: response.data.infotype,
+        type: axiosError.response.data.infotype,
         errors: axiosError.response.data.errors,
         message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
       });

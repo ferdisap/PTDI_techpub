@@ -41,6 +41,9 @@ export default {
     this.emitter.on('DeleteCSDBObjectFromEveryWhere', (data) => {
       this.deleteCSDBs(data)
     })
+    
+    window.rt = this.$route;
+    window.rtr = this.$router;
   },
 }
 </script>
