@@ -109,22 +109,22 @@ class CsdbController extends Controller
     // $ret->setPath($request->getUri());
     // return $this->ret2(200, $ret->toArray());
 
-    $obj1 = [
-      "filename" => 'cfoo1asasscsascscasas',
-      'path' => 'csdb/'
-    ];
-    $obj1_1 = [
-      "filename" => 'cfoo1_1asasscsascscasas',
-      'path' => 'csdb/'
-    ];
-    $obj11 = [
-      "filename" => 'n2foo11asasscsascscasas',
-      'path' => 'csdb/n219/'
-    ];
-    $obj12 = [
-      "filename" => 'n2foo12asasscsascscasas',
-      'path' => 'csdb/n219/'
-    ];
+    // $obj1 = [
+    //   "filename" => 'cfoo1asasscsascscasas',
+    //   'path' => 'csdb/'
+    // ];
+    // $obj1_1 = [
+    //   "filename" => 'cfoo1_1asasscsascscasas',
+    //   'path' => 'csdb/'
+    // ];
+    // $obj11 = [
+    //   "filename" => 'n2foo11asasscsascscasas',
+    //   'path' => 'csdb/n219/'
+    // ];
+    // $obj12 = [
+    //   "filename" => 'n2foo12asasscsascscasas',
+    //   'path' => 'csdb/n219/'
+    // ];
     // $obj111 = [
     //   "filename" => 'cfoo111asasscsascscasas',
     //   'path' => 'csdb/n219/amm'
@@ -132,22 +132,22 @@ class CsdbController extends Controller
     // $allobj = [$obj1, $obj11, $obj1_1, $obj12];
     // return $this->ret2(200, ['data' => $allobj]);
 
-    $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male/'];
-    $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male/'];
+    // $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male/'];
+    // $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male/'];
 
-    $obj3 = ["filename" => 'xafoo1', "path" => 'xxx/'];
-    $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx/'];
-    $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219/'];
+    // $obj3 = ["filename" => 'xafoo1', "path" => 'xxx/'];
+    // $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx/'];
+    // $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219/'];
     
     // $obj41 = ["filename" => 'yfoo11', "path" => 'yyy/'];
     // $obj42 = ["filename" => 'yfoo11', "path" => 'yyy/aaa/'];
 
 
     // $allobj = [$obj111, $obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31];
-    $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31];
+    // $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31];
     // $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22, $obj3, $obj32, $obj31, $obj41, $obj42];
     // $allobj = [$obj1, $obj11, $obj1_1, $obj12, $obj21, $obj22];
-    return $this->ret2(200, ['data' => $allobj]);
+    // return $this->ret2(200, ['data' => $allobj]);
   }
 
   public function get_object_model(Request $request, string $filename)
@@ -209,30 +209,6 @@ class CsdbController extends Controller
     }
 
     return $this->ret2(200, $ret->toArray(), ['message' => $m, 'infotype' => "caution"] ,['folder' => $folder ?? []], $current_path ?? ["current_path" => ""]);
-  }
-
-  /**
-   * @return Response with 'data' = csdb sql model
-   */
-  public function changePath(Request $request, string $filename)
-  {
-    $model = null;
-    $request->merge(['filename' => $filename]);
-    $request->validate([
-      'path' => 'required',
-      'filename' => [function(string $attribute, mixed $value,  Closure $fail) use(&$model){
-        $model = ModelsCsdb::where('filename', $value)->first();
-        if(!$model) $fail("No such $value available in CSDB.");
-      }]
-    ]);
-    
-    if($model AND $model instanceof ModelsCsdb){
-      $model->path = $request->path;
-      if($model->save()){
-        return $this->ret2(200, ['data' => $model], ["Path $filename has been updated."]);
-      }
-    }
-    return $this->ret2(400, ["Failed to update option."]);
   }
 
   /**
@@ -360,6 +336,13 @@ class CsdbController extends Controller
     }
     if (!$CSDBModel->editable) {
       return $this->ret2(400, ["You cannot update object with the editable status is false."]);
+    }
+
+    if ($request->path){
+      $serviceController = new CsdbServiceController();
+      if(!($changePath = $serviceController->change_object_path($request, $CSDBModel))[0]){
+        return $this->ret2(400, [$changePath[1]]);
+      }
     }
 
     // #1. create dom

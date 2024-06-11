@@ -7,6 +7,7 @@ import { defaultKeymap } from "@codemirror/commands";
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import axios from "axios";
 import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
+
 export default {
   data() {
     return {
@@ -17,6 +18,7 @@ export default {
       rn_update: 'api.update_object',
       rn_create: 'api.create_object',
       showLoadingProgress: false,
+      modelPath: '',
     }
   },
   components: {ContinuousLoadingCircle},
@@ -55,7 +57,8 @@ export default {
       } else {
         this.isFile = false;
         this.rn_update = 'api.update_object';
-        let raw = await this.getRaw(this.$props.filename);
+        // let raw = await this.getRaw(this.$props.filename);
+        let raw = await this.getRaw(this.$route.params.filename);
         this.changeText(raw);
       }
     },
@@ -76,7 +79,7 @@ export default {
         useMainLoadingBar: false,
       });
       this.showLoadingProgress = false;
-      if(response.statusText == 'OK'){
+      if(response.statusText === 'OK'){
         return response.data
       }
     },
@@ -98,7 +101,7 @@ export default {
         }
       } else {
         const formData = new FormData(event.target);
-        console.log(window.fd = formData);
+        // console.log(window.fd = formData);
         let response = await axios({
           route: {
             name: 'api.upload_ICN',
@@ -118,10 +121,10 @@ export default {
       const formData = new FormData(event.target);
       if(!this.isFileUpload){
         formData.append('xmleditor', this.editor.state.doc.toString());
-        formData.append('filename', this.$props.filename);
+        formData.append('filename', this.$route.params.filename);
         emitName = 'updateObjectFromEditor';
       } else {
-        formData.append('filename', this.$props.filename);
+        formData.append('filename', this.$route.params.filename);
         emitName = 'updateICNFromEditor';
       }
       let response = await axios({
@@ -177,6 +180,22 @@ export default {
         }
       }
     },
+    async getPath(filename){
+      this.showLoadingProgress = true;
+      let response = await axios({
+        route: {
+          name: 'api.get_object_path',
+          data: {
+            filename: filename
+          }
+        },
+        useMainLoadingBar: false,
+      });
+      this.showLoadingProgress = false;
+      if(response.statusText === 'OK'){
+        this.modelPath = response.data
+      }
+    }
   },
   async mounted() {
     this.editor = new EditorView({
@@ -186,18 +205,22 @@ export default {
     });
     // this.editor.state.doc.toString() // untuk ngambil isi text nya
 
-    if(this.$props.filename){
-      this.setUpdate();
-      if(this.$props.filename.slice(0,3) !== 'ICN') {
-        let raw = await this.getRaw(this.$props.filename);
-        this.changeText(raw);
-      }
-    }
+    // if(this.$props.filename){
+    //   this.setUpdate();
+    //   if(this.$props.filename.slice(0,3) !== 'ICN') {
+    //     let raw = await this.getRaw(this.$props.filename);
+    //     this.changeText(raw);
+    //     this.getPath(this.$route.params.filename);
+    //   }
+    // }
 
     if(this.$route.params.filename){
       let raw = await this.getRaw(this.$route.params.filename);
       this.changeText(raw);
+      this.getPath(this.$route.params.filename);
     }
+
+
 
   }
 }
@@ -268,6 +291,11 @@ export default {
               </div>
             </div>
           </div>
+        </div>
+        <div class="my-3">
+          <div class="text-sm text-gray-400">Path: eg. csdb/n219/amm</div>
+          <!-- <input :value="modelPath" name="path" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"> -->
+          <input v-model="modelPath" name="path" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
         <!-- editor -->
         <div id="xml-editor-container" class="text-xl mb-2"></div>

@@ -115,12 +115,15 @@ export default {
               continue;
             }
             let isOpen = this.data.open ? this.data.open[path] : false;
+            console.log(this.data.open);
             isOpen = isOpen ? 'open' : '';
 
             // generating folder list
+            // <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
             details = details + `
-            <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
-              <summary @click="()=>{console.log($el.nodeName)}">
+            <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}">
+              <summary class="list-none flex">
+                <span @click.prevent="expandCollapse('${path}')" class="material-symbols-outlined cursor-pointer text-sm content-center">chevron_right</span> 
                 <a href="#" @click.prevent="$parent.clickFolder({path: '${path}'})">${currFolder}</a>
               </summary>`;
 
@@ -174,6 +177,7 @@ export default {
     }
   },
   async mounted() {
+    this.data.open = JSON.parse(top.localStorage.getItem('expandCollapseListTree'))
     this.emitter.on('ListTree-refresh', (data) => {
       //data adalah model SQL Csdb Object
       if (data) {
@@ -231,12 +235,28 @@ export default {
           }
         },
         methods: {
-          clickDetails(element) {
-            setTimeout(() => {
-              let path = element.getAttribute('path');
-              this.$parent.data.open = this.$parent.data.open ?? {};
-              this.$parent.data.open[path] = element.open;
-            }, 0);
+          // clickDetails(element) {
+          //   setTimeout(() => {
+          //     let path = element.getAttribute('path');
+          //     this.$parent.data.open = this.$parent.data.open ?? {};
+          //     this.$parent.data.open[path] = element.open;
+          //   }, 0);
+          // },
+          expandCollapse(path){
+            let details = $(`details[path='${path}']`)[0];
+            details.open = !details.open;
+            let icon = details.firstElementChild.firstElementChild;
+            icon.innerHTML = details.open ? 'keyboard_arrow_down' : 'chevron_right' 
+            if(!this.$parent.data.open){
+              let expandCollapseListTreeFromLocalStorage = top.localStorage.getItem('expandCollapseListTree');
+              if(expandCollapseListTreeFromLocalStorage){
+                this.$parent.data.open = JSON.parse(expandCollapseListTreeFromLocalStorage)
+              } else {
+                this.$parent.data.open = {};
+              }
+            }
+            this.$parent.data.open[path] = details.open;
+            top.localStorage.setItem('expandCollapseListTree', JSON.stringify(this.$parent.data.open))
           }
         },
       }

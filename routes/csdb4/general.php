@@ -63,13 +63,16 @@ Route::get("/csdb/icn/{csdb:filename}", [CsdbServiceController::class, 'request_
 Route::get('/api/object/{filename}', [CsdbServiceController::class, 'request_csdb_object'])->middleware('auth')->name('api.request_csdb_object');
 
 // change Path
-Route::get('/api/{filename}/change/path', [CsdbController::class, 'changePath'])->middleware('auth')->name('api.change_object_path');
+Route::get('/api/{filename}/change/path', [CsdbServiceController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
 
 // get deletion object
 Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
 
 // get PDF
 Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
+
+// get path
+Route::get('/api/{filename}/get/path', [CsdbServiceController::class, 'get_object_path'])->middleware('auth')->name('api.get_object_path');
 
 #### DmlController ####
 Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');

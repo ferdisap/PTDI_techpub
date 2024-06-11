@@ -44,6 +44,7 @@ export default {
     
     window.rt = this.$route;
     window.rtr = this.$router;
+
   },
 }
 </script>

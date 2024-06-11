@@ -30,6 +30,7 @@ use Ptdi\Mpub\Pdf2\PMC_PDF;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use XSLTProcessor;
 use ZipStream\ZipStream;
+use Closure;
 
 use function PHPUnit\Framework\callback;
 use function Ptdi\Mpub\Pdf2\font_path;
@@ -40,6 +41,49 @@ class CsdbServiceController extends CsdbController
   use Applicability;
 
   ############### NEW for csdb4 ###############
+  public function get_object_path(Request $request)
+  {
+    $model = Csdb::where('filename', $request->filename)->first();
+    if($model){
+      return $model->path;
+    }
+  }
+
+  /**
+   * @return array
+   */
+  public function change_object_path(Request $request, Csdb $csdb = null)
+  {
+    $path = $request->path;
+    $re = '/[^a-zA-Z1-9\/\s]+/';
+    preg_match($re, $path, $matches, PREG_OFFSET_CAPTURE, 0);
+    if(!empty($matches)) return [false, 'Path must match to "/[^a-zA-Z1-9\/\s]+/"'];
+    if(!$csdb AND $request->filename){
+      $csdb = Csdb::where('filename', $request->filename)->first();
+    } elseif($csdb){
+      $csdb->path = $path;
+      $csdb->save();
+      return [true];
+    } else return [false];
+    // $model = null;
+    // $request->merge(['filename' => $filename]);
+    // $request->validate([
+    //   'path' => 'required',
+    //   'filename' => [function(string $attribute, mixed $value,  Closure $fail) use(&$model){
+    //     $model = Csdb::where('filename', $value)->first();
+    //     if(!$model) $fail("No such $value available in CSDB.");
+    //   }]
+    // ]);
+    
+    // if($model AND $model instanceof Csdb){
+    //   $model->path = $request->path;
+    //   if($model->save()){
+    //     return $this->ret2(200, ['data' => $model], ["Path $filename has been updated."]);
+    //   }
+    // }
+    // return $this->ret2(400, ["Failed to update option."]);
+  }
+
   public function get_transformed_identstatus(Request $request, string $filename)
   {
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-001A-A_000-02_EN-EN.xml');
