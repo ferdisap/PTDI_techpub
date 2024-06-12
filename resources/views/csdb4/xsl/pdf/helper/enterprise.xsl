@@ -27,14 +27,13 @@
   <xsl:template match="businessUnit">
     <fo:block>
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="cgmark_begin">
+      <xsl:call-template name="cgmark_begin"/>
       <xsl:call-template name="add_controlAuthority"/>
       <xsl:call-template name="add_security"/>
       <xsl:apply-templates select="businessUnitName"/>
       <xsl:apply-templates select="businessUnitAddress"/>
       <xsl:apply-templates select="contactPerson"/>
       <xsl:call-template name="cgmark_end"/>
-      </xsl:call-template>
     </fo:block>
   </xsl:template>
 

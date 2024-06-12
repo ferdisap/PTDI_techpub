@@ -203,7 +203,7 @@
       <fo:block xsl:use-attribute-sets="h1">
         <xsl:value-of select="title"/>
       </fo:block>
-      <xsl:apply-templates/>
+      <xsl:apply-templates select="*[name() != 'title']"/>
     </fo:block-container>
   </xsl:template>
 
@@ -217,9 +217,9 @@
 
   <xsl:template match="copyrightPara">
     <xsl:call-template name="add_applicability"/>
-    <fo:block margin-top="6pt">
+    <fo:block margin-top="0pt">
       <xsl:apply-templates>
-        <xsl:with-param name="listElemMarginTop">3pt</xsl:with-param>
+        <xsl:with-param name="listElemMarginTop">0pt</xsl:with-param>
       </xsl:apply-templates>
     </fo:block>
   </xsl:template>

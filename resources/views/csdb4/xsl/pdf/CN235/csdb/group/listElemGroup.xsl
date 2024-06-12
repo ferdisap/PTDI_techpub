@@ -8,7 +8,7 @@
   -->
 
   <xsl:template match="sequentialList">
-    <xsl:param name="listElemMarginTop">11pt</xsl:param>
+    <xsl:param name="listElemMarginTop">3pt</xsl:param>
     <fo:block margin-top="{$listElemMarginTop}" text-align="left">
       <xsl:call-template name="cgmark_begin"/>
       <xsl:call-template name="add_applicability"/>
@@ -23,8 +23,9 @@
   </xsl:template>
 
   <xsl:template match="randomList">
-    <xsl:param name="listElemMarginTop">11pt</xsl:param>
-    <fo:block margin-top="{$listElemMarginTop}" text-align="left">
+    <xsl:param name="listElemMarginTop">3pt</xsl:param>
+    <!-- <fo:block margin-top="{$listElemMarginTop}" text-align="left"> -->
+    <fo:block margin-top="3pt" text-align="left">
       <xsl:call-template name="cgmark_begin"/>
       <xsl:call-template name="add_applicability"/>
       <xsl:call-template name="add_controlAuthority"/>
@@ -65,7 +66,7 @@
         <xsl:otherwise>pf02</xsl:otherwise>
       </xsl:choose>
     </xsl:param>
-    <fo:list-item>
+    <fo:list-item margin-top="0px" margin-bottom="0px">
       <xsl:call-template name="style-listItem"/>
       <fo:list-item-label end-indent="label-end()">
         <fo:block>
