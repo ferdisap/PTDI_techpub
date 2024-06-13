@@ -218,6 +218,7 @@ export default {
       let raw = await this.getRaw(this.$route.params.filename);
       this.changeText(raw);
       this.getPath(this.$route.params.filename);
+      this.isUpdate = true;
     }
 
 

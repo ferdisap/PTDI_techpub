@@ -8,7 +8,7 @@
     <xsl:call-template name="cgmark_begin"/>
     <fo:inline>
       <xsl:call-template name="add_inline_controlAuthority" />
-      <xsl:apply-templates select="."/>
+      <xsl:apply-templates/>
     </fo:inline>
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>
@@ -17,7 +17,7 @@
     <xsl:call-template name="cgmark_begin"/>
     <fo:inline>
       <xsl:call-template name="add_inline_controlAuthority" />
-      <xsl:apply-templates select="."/>
+      <xsl:apply-templates/>
     </fo:inline>
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>

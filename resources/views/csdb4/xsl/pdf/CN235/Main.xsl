@@ -10,22 +10,57 @@
 
   <xsl:include href="./dmodule.xsl" />
   <xsl:include href="./pm.xsl" />
-  <xsl:include href="./master/region.xsl"/>
-  <xsl:include href="./Style.xsl"/>
-  <xsl:include href="./csdb/para.xsl"/>
-  <xsl:include href="./csdb/title.xsl"/>
-  <xsl:include href="./csdb/table.xsl"/>
-  <xsl:include href="./csdb/media.xsl"/>
-  <xsl:include href="./csdb/commonInfo.xsl"/>
-  <xsl:include href="./csdb/group/listElemGroup.xsl"/>
-  <xsl:include href="./csdb/group/textElemGroup.xsl"/>
-  <xsl:include href="./csdb/group/warningcautionnote.xsl"/>
-  <xsl:include href="../helper/position.xsl"/>
-  <xsl:include href="../helper/security.xsl"/>
-  <xsl:include href="../helper/id.xsl"/>
-  <xsl:include href="../helper/authority.xsl"/>
-  <xsl:include href="../helper/enterprise.xsl"/>
-
+  <xsl:include href="./master/default-A4.xsl" />
+  <xsl:include href="./master/region.xsl" />
+  <xsl:include href="../generalXSL/other/other.xsl" />
+  
+  <xsl:include href="../generalXSL/identStatus/All-Authority.xsl" />
+  <xsl:include href="../generalXSL/identStatus/All-Enterprise.xsl" />
+  <xsl:include href="../generalXSL/identStatus/All-Security.xsl" />
+  <xsl:include href="../generalXSL/content/applicability/All.xsl" />
+  <xsl:include href="../generalXSL/content/captionGroups/All.xsl" />
+  <xsl:include href="../generalXSL/content/changeMarking/All.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformation/commonInfo.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformationRepository/All-AccessPointRepository.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformationRepository/All-CircuitBreakerRepository.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformationRepository/All-ZoneRepository.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformationRepository/comrep.xsl" />
+  <xsl:include href="../generalXSL/content/crewOperatorInformation/All.xsl" />
+  <xsl:include href="../generalXSL/content/descriptiveInformation/Style-levelledPara.xsl" />
+  <xsl:include href="../generalXSL/content/descriptiveInformation/description.xsl" />
+  <xsl:include href="../generalXSL/content/descriptiveInformation/levelledPara.xsl" />
+  <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/All.xsl" />
+  <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/Style-icn.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/All.xsl" />
+  <xsl:include href="../generalXSL/content/lists/All.xsl" />
+  <xsl:include href="../generalXSL/content/lists/Style-list.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/externalPubRef.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/functionalItemRef.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/internalRef.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/pmRef.xsl" />
+  <xsl:include href="../generalXSL/content/referencing/refs.xsl" />
+  <xsl:include href="../generalXSL/content/tables/All.xsl" />
+  <xsl:include href="../generalXSL/content/tables/Style-table.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/All.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/Style-para.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/accessPointRef.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/circuitBreakerRef.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/controlIndicatorRef.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/footnoteRef.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/name.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/para.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/partRef.xsl" />
+  <xsl:include href="../generalXSL/content/textElements/zoneRef.xsl" />
+  <xsl:include href="../generalXSL/content/titles/All.xsl" />
+  <xsl:include href="../generalXSL/content/titles/Style-title.xsl" />
+  <xsl:include href="../generalXSL/content/warningCautionNote/All.xsl" />
+  <xsl:include href="../generalXSL/content/warningCautionNote/Attention.xsl" />
+  <xsl:include href="../generalXSL/content/warningCautionNote/Style-warningcautionnote.xsl" />
+  <xsl:include href="../generalXSL/content/wiringInformation/amperage.xsl" />
+  <xsl:include href="../generalXSL/other/Style.xsl" />
+  <xsl:include href="../generalXSL/other/id.xsl" />
+  <xsl:include href="../generalXSL/other/position.xsl" />
   
   <xsl:variable name="ConfigXML" select="document('../../Config.xml')"/>
 
@@ -78,7 +113,7 @@
       <xsl:call-template name="setPageSequence">
         <xsl:with-param name="masterName" select="$masterName" />
       </xsl:call-template>
-    </fo:root>
+    </fo:root>    
   </xsl:template>
 
   <xsl:template name="setPageMaster">
@@ -145,12 +180,12 @@
   <xsl:template name="setPageSequence">
     <xsl:param name="masterName"/>
     <xsl:choose>
-      <xsl:when test="name(/*) = 'pm'">
+      <xsl:when test="name(*) = 'pm'">
         <xsl:apply-templates select="pm">
           <xsl:with-param name="masterReference" select="$masterName"/>
         </xsl:apply-templates>
       </xsl:when>
-      <xsl:when test="name(/*) = 'dmodule'">
+      <xsl:when test="name(*) = 'dmodule'">
         <xsl:apply-templates select="dmodule">
           <xsl:with-param name="masterReference" select="$masterName"/>
         </xsl:apply-templates>
@@ -158,7 +193,7 @@
       <xsl:otherwise>
         <fo:page-sequence master-reference="default-A4">
           <fo:flow flow-name="body">
-            <fo:block>Nothing to displayed of &#60;<xsl:value-of select="name(/*)"/>&#62;</fo:block>
+            <fo:block>Nothing to displayed of &#60;<xsl:value-of select="name(*)"/>&#62;</fo:block>
           </fo:flow>
         </fo:page-sequence>
       </xsl:otherwise>
@@ -167,7 +202,6 @@
 
   <xsl:template name="setBookmark">
     <xsl:param name="masterName"/>
-
     <!-- <fo:bookmark-tree>
       <fo:bookmark internal-destination="block-001">
         <fo:bookmark-title>Any text</fo:bookmark-title>
@@ -177,54 +211,5 @@
       </fo:bookmark>
     </fo:bookmark-tree> -->
   </xsl:template>
-
-  <!-- depreciated -->
-  <xsl:template match="__cgmark">
-    <xsl:param name="select"/>
-    <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="{$cgmarkIndent}"/>
-      <xsl:choose>
-        <xsl:when test="select">
-          <xsl:apply-templates select="$select"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates/>
-        </xsl:otherwise>
-      </xsl:choose>
-    <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
-  </xsl:template>
-
-  <xsl:template name="cgmark_begin">
-    <xsl:param name="changeMark" select="@changeMark"/>
-    <xsl:choose>
-      <xsl:when test="parent::__cgmark"></xsl:when>
-      <xsl:otherwise>        
-        <xsl:if test="$changeMark = '1'">
-          <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
-        </xsl:if>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
-  <xsl:template name="cgmark_end">
-    <xsl:param name="changeMark" select="@changeMark"/>
-    <xsl:choose>
-      <xsl:when test="parent::__cgmark"></xsl:when>
-      <xsl:otherwise>
-        <xsl:if test="$changeMark = '1'">
-          <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
-        </xsl:if>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
-  <!-- <xsl:template match="@changeMark[.='1']"> -->
-    <!-- <xsl:value-of select="php:function('dd',string(parent::*), string(../.))"/> -->
-    <!-- <xsl:value-of select="php:function('dd',name(parent::*))"/> -->
-    <!-- <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/> -->
-      <!-- <xsl:apply-templates select="parent::*/."/> -->
-      <!-- <xsl:apply-templates select="../."/> -->
-    <!-- <fo:change-bar-end change-bar-class="{generate-id(.)}"/> -->
-  <!-- </xsl:template> -->
-  
 
 </xsl:transform>

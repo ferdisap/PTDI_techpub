@@ -4,9 +4,9 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-    <xsl:include href="./sub/circuitBreakerRepository.xsl" />
-    <xsl:include href="./sub/zoneRepository.xsl" />
-    <xsl:include href="./sub/accessPointRepository.xsl" />
+    <xsl:include href="./All-CircuitBreakerRepository.xsl" />
+    <xsl:include href="./All-ZoneRepository.xsl" />
+    <xsl:include href="./All-AccessPointRepository.xsl" />
 
     <xsl:template match="commonRepository">
       <fo:block text-align="justify" start-indent="0">

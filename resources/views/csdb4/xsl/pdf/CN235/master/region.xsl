@@ -2,12 +2,6 @@
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
-
-  <xsl:include href="./default-A4.xsl" />
-  <xsl:include href="../module/frontmatter.xsl" />
-  <xsl:include href="../module/descript.xsl"/>
-  <xsl:include href="../module/crew.xsl"/>
-  <xsl:include href="../module/comrep.xsl"/>
   
   <xsl:template name="header">
     <xsl:param name="masterName"/>
@@ -60,7 +54,8 @@
       <fo:basic-link internal-destination="fnt-001">tes link</fo:basic-link>
     </fo:block> -->
     <xsl:apply-templates select="content"/>
-    <fo:block/>
+    <!-- <fo:block/> -->
+    <!-- <fo:block>aaaa</fo:block> -->
     <!-- <fo:block-container break-after="page" id="block-001">
       <fo:block>
         <fo:change-bar-begin change-bar-class="tesid" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
@@ -79,13 +74,22 @@
     <fo:block id="block-002">Hello World TES TES2!</fo:block>
     <fo:block>Hello World TES TES3!</fo:block> -->
   </xsl:template>
-
+  
   <xsl:template match="content">
     <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
     <fo:block-container id="{$dmIdent}" start-indent="{$stIndent}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority"/>
       <xsl:apply-templates select="crew|description|commonRepository"/>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template match="content[name(child::*) = 'frontMatter']">
+    <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
+    <fo:block-container id="{$dmIdent}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_controlAuthority"/>
+      <xsl:apply-templates/>
     </fo:block-container>
   </xsl:template>
 

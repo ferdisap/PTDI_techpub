@@ -10,13 +10,17 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template match="content[name(child::*) = 'frontMatter']">
+  <!-- <xsl:template match="content[name(child::*) = 'frontMatter']">
     <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
     <fo:block-container id="{$dmIdent}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority"/>
       <xsl:apply-templates/>
     </fo:block-container>
+  </xsl:template> -->
+
+  <xsl:template match="frontMatter">
+    <xsl:apply-templates/>
   </xsl:template>
 
   <xsl:template match="frontMatterTitlePage">
@@ -123,7 +127,7 @@
 
   <xsl:template match="productAndModel[parent::frontMatterTitlePage]">
     <xsl:if test="productName">
-      <fo:block class="productName"><xsl:apply-templates class="productName"/></fo:block>
+      <fo:block class="productName"><xsl:apply-templates select="productName"/></fo:block>
     </xsl:if>
     <xsl:for-each select="productModel">
       <fo:block-container>
@@ -175,7 +179,7 @@
   <xsl:template match="productIllustration">
     <xsl:for-each select="graphic">
       <fo:block text-align="center">
-        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit" width="90%">
+        <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit">
           <xsl:call-template name="setGraphicDimension"/>
         </fo:external-graphic>
       </fo:block>

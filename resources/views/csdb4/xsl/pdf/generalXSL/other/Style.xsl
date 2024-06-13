@@ -2,13 +2,13 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:include href="../style/style-para.xsl" />
+  <!-- <xsl:include href="../style/style-para.xsl" />
   <xsl:include href="../style/style-title.xsl"/>
   <xsl:include href="../style/style-levelledPara.xsl"/>
   <xsl:include href="../style/style-table.xsl"/>
   <xsl:include href="../style/style-list.xsl"/>
   <xsl:include href="../style/style-icn.xsl"/>
-  <xsl:include href="../style/style-warningcautionnote.xsl"/>
+  <xsl:include href="../style/style-warningcautionnote.xsl"/> -->
 
   <!-- 
     outstanding:
@@ -16,11 +16,11 @@
    -->
 
   <xsl:template name="setGraphicDimension">
-    <xsl:if test="graphic/@reproductionHeight">
-      <xsl:attribute name="height"><xsl:value-of select="graphic/@reproductionHeight"/></xsl:attribute>
+    <xsl:if test="@reproductionHeight">
+      <xsl:attribute name="height"><xsl:value-of select="@reproductionHeight"/></xsl:attribute>
     </xsl:if>
-    <xsl:if test="graphic/@reproductionWidth">
-      <xsl:attribute name="height"><xsl:value-of select="graphic/@reproductionWidth"/></xsl:attribute>
+    <xsl:if test="@reproductionWidth">
+      <xsl:attribute name="height"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
     </xsl:if>
   </xsl:template>
 

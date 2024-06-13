@@ -4,7 +4,14 @@
   xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template match="reducedPara|reducedRandomListItemPara">
+  <xsl:template match="reducedPara">
+    <fo:block page-break-before="avoid">
+      <xsl:call-template name="style-para"/>
+      <xsl:apply-templates/>
+    </fo:block>
+  </xsl:template>
+
+  <xsl:template match="reducedRandomListItemPara">
     <fo:block page-break-before="avoid">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="cgmark_begin"/>
@@ -19,19 +26,19 @@
 
   <xsl:template match="para">
     <xsl:param name="level"/>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <xsl:call-template name="add_applicability"/>
+    <xsl:call-template name="add_controlAuthority"/>
+    <xsl:call-template name="add_security"/>
     <fo:block page-break-before="avoid">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="cgmark_begin"/>
-      <xsl:call-template name="add_applicability"/>
-      <xsl:call-template name="add_controlAuthority"/>
-      <xsl:call-template name="add_security"/>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-para">
         <xsl:with-param name="level" select="$level"/>
       </xsl:call-template>
       <xsl:apply-templates/>
-      <xsl:call-template name="cgmark_end"/>
     </fo:block>
+    <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
   <xsl:template match="para[parent::controlAuthorityText]">
