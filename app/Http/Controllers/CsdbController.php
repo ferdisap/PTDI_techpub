@@ -219,7 +219,18 @@ class CsdbController extends Controller
    * @return Response JSON contain SQL object model with initiator data
    */
   public function create(Request $request)
-  {
+  {    
+    // #0 sama dengan CsdbServiceController@change_object_path
+    $path = $request->path;
+    if($path){
+      preg_match('/[^a-zA-Z1-9\/\s]+/', $path, $matches, PREG_OFFSET_CAPTURE, 0);
+      if(!empty($matches)){
+        return $this->ret2(400, ['Path must match to /[^a-zA-Z1-9\/\s]+/']);
+      };
+    } else {
+      $path = 'csdb';
+    }    
+
     // #1. create dom
     $proccessid = CSDBError::$processId = self::class . "::create";
     $CSDBObject = new CSDBObject("5.0");
@@ -297,7 +308,7 @@ class CsdbController extends Controller
     if ($save) {
       $new_csdb_model = ModelsCsdb::create([
         'filename' => $csdb_filename,
-        'path' => 'csdb',
+        'path' => $path,
         'editable' => 1,
         'initiator_id' => $request->user()->id,
       ]);
@@ -420,15 +431,16 @@ class CsdbController extends Controller
         if($value){
           CSDBError::$processId = 'ICNFilenameValidation';
           $validator = new CSDBValidator('ICNName', ["validatee" => $value]);
+          $validator->setStoragePath(CSDB_STORAGE_PATH);
           if(!$validator->validate()){
             $fail(join(", ", CSDBError::getErrors(true, 'ICNFilenameValidation')));
           }
         }
       }],
-      'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-        $value = (int)$value;
-        if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
-      }],
+      // 'securityClassification' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+      //   $value = (int)$value;
+      //   if (!($value <= 1 or $value >= 5)) $fail("You should put the security classifcation between 1 through 5.");
+      // }],
       "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
         $ext = strtolower($value->getClientOriginalExtension());
         $mime = strtolower($value->getMimeType());
@@ -441,6 +453,7 @@ class CsdbController extends Controller
     $filename = $request->filename ?? (function($filename){
       CSDBError::$processId = 'ICNFilenameValidation';
       $validator = new CSDBValidator('ICNName', ["validatee" => $filename]);
+      $validator->setStoragePath(CSDB_STORAGE_PATH);
       return $validator->validate() ? $filename : '';
     })($file->getClientOriginalName());
     

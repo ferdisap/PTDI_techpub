@@ -51,7 +51,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>
@@ -65,7 +66,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>
@@ -79,7 +81,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>
@@ -93,7 +96,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>
@@ -106,7 +110,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>
@@ -120,7 +125,8 @@
         <!-- <xsl:call-template name="numbered"/> -->
         <fo:inline-container start-indent="-{$stIndent}" width="{$titleNumberWidth}">
           <fo:block>
-            <xsl:call-template name="numbered"/>
+            <!-- <xsl:call-template name="numbered"/> -->
+            <xsl:number level="multiple" count="levelledPara"/>
           </fo:block>
         </fo:inline-container>
       </xsl:when>

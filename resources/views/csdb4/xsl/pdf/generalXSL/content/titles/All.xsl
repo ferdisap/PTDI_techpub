@@ -56,5 +56,17 @@
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
+  <!-- <xsl:template match="title[parent::table] | title[parent::figure]">
+    <xsl:param name="prefix"/>
+    <xsl:call-template name="cgmark_begin"/>
+    <fo:inline>
+      <xsl:call-template name="add_inline_controlAuthority"/>
+      <xsl:call-template name="add_inline_security"/>
+      <xsl:value-of select="$prefix"/>
+      <xsl:apply-templates/>
+    </fo:inline>
+    <xsl:call-template name="cgmark_end"/>
+  </xsl:template> -->
+
 
 </xsl:stylesheet>

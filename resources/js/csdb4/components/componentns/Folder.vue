@@ -108,14 +108,7 @@ export default {
       }
     },
     clickFilename(data){
-      this.$router.push({
-          name: 'Explorer',
-          params: {
-              filename: data.filename,
-              viewType: this.$route.params.viewType ?? 'html'
-          },
-          query: this.$route.query
-      });
+      this.$root.gotoExplorer(data.filename);
       this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
     },
     sortTable(){

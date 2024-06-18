@@ -89,6 +89,16 @@ export default {
       this.alertData = createAlert(data);
       return this.alertData.result;
     },
+    
+    gotoExplorer(filename, viewType = undefined){
+      this.$router.push({
+        name: 'Explorer',
+        params: {
+          filename: filename,
+          viewType:  viewType||this.$route.params.viewType||'html',
+        }
+      });
+    }
   },
   beforeCreate() {
     this.References.defaultStore = useTechpubStore();

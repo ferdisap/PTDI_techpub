@@ -17,7 +17,7 @@
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
 
-  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption|quantity)*>
+  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption|quantity|internalRef)*>
   <!ELEMENT emphasis (#PCDATA)>
   <!ELEMENT crewMember (#PCDATA)>
   <!ELEMENT crewStepCondition (#PCDATA)>
@@ -25,6 +25,7 @@
   <!ELEMENT skillLevelCode (#PCDATA)>
   <!ELEMENT caption (#PCDATA)>
   <!ELEMENT quantity (#PCDATA)>
+  <!ELEMENT internalRef (#PCDATA)>
   
   <!ELEMENT controlAuthorityGroup (controlAuthority+)>
   <!ELEMENT controlAuthority (#PCDATA)>
@@ -64,6 +65,7 @@
   <!ATTLIST caption background-color CDATA #REQUIRED>
   <!ATTLIST caption color CDATA #REQUIRED>
   <!ATTLIST quantity type CDATA #REQUIRED>
+  <!ATTLIST internalRef type CDATA #REQUIRED>
 
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
 ]>
@@ -172,6 +174,20 @@
     <caption type="co84" background-color="black" color="green"/>
     <caption type="co85" background-color="black" color="amber"/>
     <quantity type="qty51">Panel CB CN235</quantity>
+    <internalRef type="irtt01">figure</internalRef>
+    <internalRef type="irtt02">table</internalRef>
+    <internalRef type="irtt03">multimedia</internalRef>
+    <internalRef type="irtt04">supply</internalRef>
+    <internalRef type="irtt05">support Equipment</internalRef>
+    <internalRef type="irtt06">spare</internalRef>
+    <internalRef type="irtt07">para</internalRef>
+    <internalRef type="irtt08">step</internalRef>
+    <internalRef type="irtt09"></internalRef>
+    <internalRef type="irtt10">multimedia</internalRef>
+    <internalRef type="irtt11">zone</internalRef>
+    <internalRef type="irtt14">work area</internalRef>
+    <internalRef type="irtt15">SB</internalRef>
+    <internalRef type="irtt16">access</internalRef>
   </textElemGroup>
   <controlAuthorityGroup>
     <controlAuthority type="cat01">AD</controlAuthority>    

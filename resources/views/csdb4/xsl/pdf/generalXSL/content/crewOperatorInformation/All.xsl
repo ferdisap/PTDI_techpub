@@ -18,7 +18,8 @@
     7. <thumbTabText> belum difungsikan karena belum tau gunanya untuk apa
    -->
 
-  <xsl:template match="crew">
+  <xsl:template match="crew">    
+    <xsl:call-template name="add_dmTitle"/>
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_security"/>
     <fo:block start-indent="0cm">
@@ -109,26 +110,7 @@
     <xsl:param name="prefixStepFlag">
       <xsl:choose>
         <xsl:when test="$orderedStepsFlag = '1'">
-          <xsl:value-of select="
-          count(preceding-sibling::crewDrillStep)+
-          count(preceding-sibling::if/crewDrillStep)+
-          count(preceding-sibling::elseIf/crewDrillStep)+
-          count(parent::if/preceding-sibling::crewDrillStep)+
-          count(parent::if/preceding-sibling::if/crewDrillStep)+
-          count(parent::if/preceding-sibling::elseIf/crewDrillStep)+
-          count(parent::elseIf/preceding-sibling::crewDrillStep)+
-          count(parent::elseIf/preceding-sibling::if/crewDrillStep)+
-          count(parent::elseIf/preceding-sibling::elseIf/crewDrillStep)+
-          1"/>
-          <!-- <xsl:choose>
-            <xsl:when test="parent::__cgmark">
-              <xsl:number level="any" from="crewDrill|subCrewDrill" count="__cgmark|crewDrillStep"/>
-              <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="__cgmark"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf|__cgmark[child::crewDrillStep]|__cgmark[child::if]|__cgmark[child::elseIf]"/>
-            </xsl:otherwise>
-          </xsl:choose> -->
+          <xsl:call-template name="crewDrillStepNumber"/>
         </xsl:when>
         <xsl:otherwise>&#x2022;</xsl:otherwise>
       </xsl:choose>
@@ -171,7 +153,7 @@
             </fo:table-cell>
             <fo:table-cell width="14cm">
               <fo:block>
-                <xsl:apply-templates select="crewProcedureName|challengeAndResponse|crewDrillStep|case|if|elseIf|warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption|__cgmark[child::crewProcedureName]|__cgmark[child::challengeAndResponse]|__cgmark[child::crewDrillStep]|__cgmark[child::case]|__cgmark[child::if]|__cgmark[child::elseIf]|__cgmark[child::warning]|__cgmark[child::caution]|__cgmark[child::note]|__cgmark[child::para]|__cgmark[child::figure]|__cgmark[child::figureAlts]|__cgmark[child::multimedia]|__cgmark[child::multimediaAlts]|__cgmark[child::foldout]|__cgmark[child::table]|__cgmark[child::caption]"/>
+                <xsl:apply-templates select="crewProcedureName|challengeAndResponse|crewDrillStep|case|if|elseIf|warning|caution|note|para|figure|figureAlts|multimedia|multimediaAlts|foldout|table|caption"/>
               </fo:block>
             </fo:table-cell>
           </fo:table-row>
@@ -311,5 +293,29 @@
       <xsl:call-template name="style-para"/>
       <xsl:apply-templates/>
     </fo:block>
+  </xsl:template>
+
+  <!-- dipanggil di internalRef juga -->
+  <xsl:template name="crewDrillStepNumber">    
+    <xsl:value-of select="
+    count(preceding-sibling::crewDrillStep)+
+    count(preceding-sibling::if/crewDrillStep)+
+    count(preceding-sibling::elseIf/crewDrillStep)+
+    count(parent::if/preceding-sibling::crewDrillStep)+
+    count(parent::if/preceding-sibling::if/crewDrillStep)+
+    count(parent::if/preceding-sibling::elseIf/crewDrillStep)+
+    count(parent::elseIf/preceding-sibling::crewDrillStep)+
+    count(parent::elseIf/preceding-sibling::if/crewDrillStep)+
+    count(parent::elseIf/preceding-sibling::elseIf/crewDrillStep)+
+    1"/>
+    <!-- <xsl:choose>
+      <xsl:when test="parent::__cgmark">
+        <xsl:number level="any" from="crewDrill|subCrewDrill" count="__cgmark|crewDrillStep"/>
+        <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="__cgmark"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:number level="multiple" from="crewDrill|subCrewDrill" count="crewDrillStep|if|elseIf|__cgmark[child::crewDrillStep]|__cgmark[child::if]|__cgmark[child::elseIf]"/>
+      </xsl:otherwise>
+    </xsl:choose> -->
   </xsl:template>
 </xsl:transform>

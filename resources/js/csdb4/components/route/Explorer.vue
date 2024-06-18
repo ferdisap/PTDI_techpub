@@ -170,6 +170,7 @@ export default {
       // item bottomBar yang lain di set false (hide)
       // alert('emitting to refresh list tree');
       this.emitter.emit('ListTree-add', data.model);
+      this.$root.gotoExplorer(data.model.filename);
       this.bottomBarItems.IdentStatus.data = data.model;
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data.model;
@@ -180,6 +181,7 @@ export default {
 
     this.emitter.on('createICNFromEditor', (data) => {
       this.emitter.emit('ListTree-add', data.model);
+      this.$root.gotoExplorer(data.model.filename);
     });
 
     this.emitter.on('updateICNFromEditor', (data) => {

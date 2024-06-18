@@ -8,6 +8,7 @@
     Outstanding:
     1. verbatimText@verbatimStyle dan verbatimText@xml:space belum digunakan karena belum tau kegunaanya
     2. quantity@quantityTypeSpecifics belum digunakan karena TBD saja
+    3. inlneSignificantData@significantParaDataType belum digunakan peruntukannya untuk pdf
    -->
   
   <xsl:template match="changeInline">
@@ -264,6 +265,15 @@
       </xsl:choose>
       <xsl:apply-templates/>
       <xsl:value-of select="@quantityUnitOfMeasure or parent::quantityGroup/@quantityUnitOfMeasure"/>
+    </fo:inline>
+  </xsl:template>
+
+  <xsl:template match="inlineSignificantData">
+    <fo:inline font-family="Calibri">
+      <xsl:call-template name="cgmark_begin"/>
+      <xsl:call-template name="add_inline_controlAuthority"/>
+      <xsl:apply-templates/>
+      <xsl:call-template name="cgmark_end"/>
     </fo:inline>
   </xsl:template>
 

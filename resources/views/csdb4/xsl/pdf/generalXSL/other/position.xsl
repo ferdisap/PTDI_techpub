@@ -46,4 +46,15 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="numbered">
+    <xsl:param name="parentName" select="name(parent::*)"/>
+    <xsl:for-each select="..">
+      <xsl:if test="name()=$parentName">
+        <xsl:call-template name="checkParent"/>
+        <xsl:number/>
+        <xsl:text>&#160;&#160;&#160;</xsl:text>
+      </xsl:if>
+    </xsl:for-each>
+  </xsl:template>
+
 </xsl:stylesheet>

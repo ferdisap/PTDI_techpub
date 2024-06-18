@@ -14,10 +14,8 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-    <xsl:template match="circuitBreakerRepository">
-      <fo:block font-size="14pt" font-weight="bold" margin-bottom="6pt" margin-top="6pt" text-align="center">
-        Common Information Repository - Circuit Breaker
-      </fo:block>
+    <xsl:template match="circuitBreakerRepository">      
+      <xsl:call-template name="add_dmTitle"/>
       <fo:block>
         <xsl:call-template name="add_id"/>
         <xsl:call-template name="add_controlAuthority"/>

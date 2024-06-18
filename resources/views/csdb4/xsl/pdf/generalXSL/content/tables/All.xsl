@@ -51,22 +51,39 @@
           </xsl:choose>
         </xsl:with-param>
         <xsl:with-param name="orient" select="string(@orient)"/>
+        <!-- <xsl:if test="title">
+          <xsl:text>Table </xsl:text>
+          <xsl:number level="any" count="title"/>
+          <xsl:text>&#160;&#160;</xsl:text>
+          <xsl:apply-templates select="title"/>
+        </xsl:if> -->
       </xsl:apply-templates>
       
       <xsl:apply-templates select="graphic|__cgmark"/>
 
-      <!-- <fo:block margin-top="6pt" page-break-before="avoid">
-        <xsl:variable name="prefix">
-          <xsl:text>Table </xsl:text>
-          <xsl:number level="any" count="title"/>
-          <xsl:text>&#160;&#160;</xsl:text>
-        </xsl:variable>
-        <xsl:value-of select="$prefix"/>
-        <xsl:apply-templates select="title"/>
-      </fo:block> -->
-      <xsl:apply-templates select="title"/>
+      <!-- <xsl:apply-templates select="title"/> -->
     </fo:block-container>
     <xsl:call-template name="cgmark_end"/>
+  </xsl:template>
+
+  <!-- sama/mirip dengan captionGraphic di figuresMultimediaFoldouts/All.xsl -->
+  <xsl:template name="captionTable">
+    <xsl:param name="prefix">
+      <xsl:text>Table</xsl:text>
+      <xsl:text>&#160;</xsl:text>
+      <xsl:for-each select="..">
+        <xsl:number level="any"/>
+      </xsl:for-each>
+      <xsl:text>&#160;</xsl:text>
+      <xsl:if test="count(parent::*/tgroup) > 1">
+        <xsl:text>sheet </xsl:text>
+        <xsl:value-of select="position()"/>
+        <xsl:text>&#160;</xsl:text>
+      </xsl:if>
+    </xsl:param>
+    <xsl:apply-templates select="parent::*/title">
+      <xsl:with-param name="prefix" select="$prefix"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="tgroup">
@@ -190,13 +207,17 @@
           </xsl:for-each>
         </fo:table-footer>
       </xsl:if>
-
       <fo:table-body>
         <xsl:call-template name="style-tbody"/>
         <xsl:apply-templates select="tbody|__cgmark"/>
-      </fo:table-body>
-      
+      </fo:table-body>      
     </fo:table>
+
+    <xsl:if test="parent::*/title">
+      <fo:block margin-top="3pt">
+        <xsl:call-template name="captionTable"/>
+      </fo:block>
+    </xsl:if>
 
   </xsl:template>
 

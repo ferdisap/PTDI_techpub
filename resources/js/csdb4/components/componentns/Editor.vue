@@ -260,11 +260,11 @@ export default {
             <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" /> 
             <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
           </div>
-          <div v-if="!isUpdate" class="block w-auto">
+          <!-- <div v-if="!isUpdate" class="block w-auto">
             <label for="securityClassification" class="text-sm">Security Classification</label><br/>
             <input type="text" name="securityClassification" placeholder="type the SC code" class="py-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
             <div class="error text-sm text-red-600" v-html="techpubStore.error('securityClassification')"></div>
-          </div>
+          </div> -->
         </div>
         <input type="file" id="entity" name="entity" @change="readURL($event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
         <div class="error text-sm text-red-600" v-html="techpubStore.error('entity')"></div>

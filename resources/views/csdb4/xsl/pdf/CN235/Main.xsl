@@ -17,12 +17,14 @@
   <xsl:include href="../generalXSL/identStatus/All-Authority.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Enterprise.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Security.xsl" />
+  <xsl:include href="../generalXSL/identStatus/dmTitle.xsl" />
   <xsl:include href="../generalXSL/content/applicability/All.xsl" />
   <xsl:include href="../generalXSL/content/captionGroups/All.xsl" />
   <xsl:include href="../generalXSL/content/changeMarking/All.xsl" />
   <xsl:include href="../generalXSL/content/commonInformation/commonInfo.xsl" />
   <xsl:include href="../generalXSL/content/commonInformationRepository/All-AccessPointRepository.xsl" />
   <xsl:include href="../generalXSL/content/commonInformationRepository/All-CircuitBreakerRepository.xsl" />
+  <xsl:include href="../generalXSL/content/commonInformationRepository/All-ControlIndicatorRepository.xsl" />
   <xsl:include href="../generalXSL/content/commonInformationRepository/All-ZoneRepository.xsl" />
   <xsl:include href="../generalXSL/content/commonInformationRepository/comrep.xsl" />
   <xsl:include href="../generalXSL/content/crewOperatorInformation/All.xsl" />
