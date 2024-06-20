@@ -14,8 +14,7 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-    <xsl:template match="circuitBreakerRepository">      
-      <xsl:call-template name="add_dmTitle"/>
+    <xsl:template match="circuitBreakerRepository">
       <fo:block>
         <xsl:call-template name="add_id"/>
         <xsl:call-template name="add_controlAuthority"/>

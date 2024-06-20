@@ -13,7 +13,6 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="accessPointRepository">
-    <xsl:call-template name="add_dmTitle"/>
     <fo:block>  
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority" />

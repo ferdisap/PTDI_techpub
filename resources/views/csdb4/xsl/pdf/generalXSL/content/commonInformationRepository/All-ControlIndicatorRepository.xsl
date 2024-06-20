@@ -10,7 +10,6 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template match="controlIndicatorRepository">
-    <xsl:call-template name="add_dmTitle"/>
     <fo:block>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_controlAuthority" />
@@ -30,7 +29,7 @@
   
       <fo:table width="100%" margin-top="14pt">
         <fo:table-column column-number="1" column-width="10%"/>
-        <fo:table-column column-number="1" column-width="90%"/>
+        <fo:table-column column-number="2" column-width="90%"/>
         <fo:table-header>
           <fo:table-row>
             <fo:table-cell padding="4pt" padding-left="0pt" text-align="left">

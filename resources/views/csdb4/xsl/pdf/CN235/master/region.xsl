@@ -7,17 +7,65 @@
     <xsl:param name="masterName"/>
     <xsl:param name="oddOrEven"/>
     <xsl:param name="pagePosition"/>
+    <xsl:param name="entry"/>
     <xsl:choose>
       <xsl:when test="$masterName = 'default-A4'">
-        <xsl:if test="$oddOrEven = 'odd'">
-          <xsl:call-template name="header-odd-default-A4"/>
-        </xsl:if>
-        <xsl:if test="$oddOrEven = 'odd' and $pagePosition = 'last'">
-          <xsl:call-template name="header-odd-last-default-A4"/>
-        </xsl:if>
-        <xsl:if test="$oddOrEven = 'even'">
-          <xsl:call-template name="header-even-default-A4"/>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$oddOrEven = 'odd'">
+            <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
+            <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'even'">
+            <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:when test="$masterName = 'default-pm'">
+        <xsl:choose>
+          <xsl:when test="$oddOrEven = 'odd'">
+            <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
+            <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'even'">
+            <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:when>
+      <!-- ini nanti diubah, mungkin header-footer nya tidak relevan lagi pakai yang default A4 kalau pakai kertas A5-->
+      <xsl:when test="$masterName = 'poh'">
+        <xsl:choose>
+          <xsl:when test="$oddOrEven = 'odd'">
+            <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
+            <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$oddOrEven = 'even'">
+            <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </xsl:when>
+        </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
         <fo:block>&#160;</fo:block>
@@ -29,16 +77,48 @@
     <xsl:param name="id"/>
     <xsl:param name="masterName"/>
     <xsl:param name="oddOrEven"/>
+    <xsl:param name="entry"/>
     <xsl:choose>
       <xsl:when test="$masterName = 'default-A4'">
         <xsl:if test="$oddOrEven = 'odd'">
           <xsl:call-template name="footer-odd-default-A4">
             <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
         </xsl:if>
         <xsl:if test="$oddOrEven = 'even'">
           <xsl:call-template name="footer-even-default-A4">
             <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+        </xsl:if>
+      </xsl:when>
+      <xsl:when test="$masterName = 'default-pm'">
+        <xsl:if test="$oddOrEven = 'odd'">
+          <xsl:call-template name="footer-odd-default-A4">
+            <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+        </xsl:if>
+        <xsl:if test="$oddOrEven = 'even'">
+          <xsl:call-template name="footer-even-default-A4">
+            <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+        </xsl:if>
+      </xsl:when>
+      <!-- ini nanti diubah, mungkin header-footer nya tidak relevan lagi pakai yang default A4 kalau pakai kertas A5 -->
+      <xsl:when test="$masterName = 'poh'">
+        <xsl:if test="$oddOrEven = 'odd'">
+          <xsl:call-template name="footer-odd-default-A4">
+            <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+        </xsl:if>
+        <xsl:if test="$oddOrEven = 'even'">
+          <xsl:call-template name="footer-even-default-A4">
+            <xsl:with-param name="id" select="$id"/>
+            <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
         </xsl:if>
       </xsl:when>
@@ -74,38 +154,24 @@
     <fo:block id="block-002">Hello World TES TES2!</fo:block>
     <fo:block>Hello World TES TES3!</fo:block> -->
   </xsl:template>
-  
-  <xsl:template match="content">
-    <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
-    <fo:block-container id="{$dmIdent}" start-indent="{$stIndent}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_controlAuthority"/>
-      <xsl:apply-templates select="crew|description|commonRepository"/>
-    </fo:block-container>
-  </xsl:template>
 
-  <xsl:template match="content[name(child::*) = 'frontMatter']">
-    <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/dmAddress/dmIdent, '', '')"/>
-    <fo:block-container id="{$dmIdent}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_controlAuthority"/>
-      <xsl:apply-templates/>
-    </fo:block-container>
-  </xsl:template>
-
+  <!-- dipanggil di fo:page-sequence, cek dmodule.xsl atau pm.xsl -->
   <xsl:template name="getRegion">
       <xsl:param name="masterReference"/>
       <xsl:param name="id"/>
+      <xsl:param name="entry"/>
       <fo:static-content flow-name="header-odd">
         <xsl:call-template name="header">
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'odd'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
       </fo:static-content>
       <fo:static-content flow-name="header-even">
         <xsl:call-template name="header">
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'even'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
       </fo:static-content>
       <fo:static-content flow-name="footer-odd">
@@ -113,6 +179,7 @@
           <xsl:with-param name="id" select="$id"/>
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'odd'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
       </fo:static-content>
       <fo:static-content flow-name="footer-even">
@@ -120,14 +187,25 @@
           <xsl:with-param name="id" select="$id"/>
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'even'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
       </fo:static-content>
       <fo:static-content flow-name="header-left_blank">
         <xsl:call-template name="header">
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'even'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
         <fo:block-container position="fixed" top="14cm" left="7cm">
+          <xsl:choose>
+            <xsl:when test="$masterName = 'default-pm' or $masterName = 'default-A4'">
+              <xsl:attribute name="top">14cm</xsl:attribute>
+              <xsl:attribute name="bottom">cm</xsl:attribute>
+            </xsl:when>
+            <xsl:otherwise>
+              <!-- TBD: jika mastername berbeda-beda, sesuai kertas dan orientasi kertas masing-masing -->
+            </xsl:otherwise>
+          </xsl:choose>
           <fo:block>Intentionally left blank</fo:block>
         </fo:block-container>
       </fo:static-content>
@@ -136,6 +214,7 @@
           <xsl:with-param name="id" select="$id"/>
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="oddOrEven" select="'even'"/>
+          <xsl:with-param name="entry" select="$entry"/>
         </xsl:call-template>
       </fo:static-content>
       <fo:static-content flow-name="xsl-footnote-separator">

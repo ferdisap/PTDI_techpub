@@ -7,7 +7,6 @@
   <xsl:template match="description">
     <xsl:call-template name="add_warning"/>
     <xsl:call-template name="add_caution"/>
-    <xsl:call-template name="add_dmTitle"/>
     <xsl:apply-templates/>
   </xsl:template>
 

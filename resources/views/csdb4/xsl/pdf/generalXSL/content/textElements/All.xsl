@@ -73,6 +73,7 @@
   <!-- untuk merender anotasi danjuga footnote di bottom page atau di paragraphnya -->
   <xsl:template match="footnote[not(ancestor::table)]">
     <xsl:param name="position"><xsl:number level="any"/></xsl:param>
+    <xsl:param name="onlyBottom" select="0"/>
     <xsl:variable name="mark">
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\Helper::get_footnote_mark', number($position), string(@footnoteMark))"/>
     </xsl:variable>
@@ -81,13 +82,15 @@
       <xsl:call-template name="add_controlAuthority"/>
       <xsl:call-template name="add_security"/>
       <fo:inline baseline-shift="super">
-        <fo:basic-link text-decoration="underline" color="blue">
-          <xsl:call-template name="add_id">
-            <xsl:with-param name="force">yes</xsl:with-param>
-            <xsl:with-param name="attributeName">internal-destination</xsl:with-param>
-          </xsl:call-template>
-          <xsl:value-of select="$mark"/>
-        </fo:basic-link>
+        <xsl:if test="not(boolean($onlyBottom))">
+          <fo:basic-link text-decoration="underline" color="blue">
+            <xsl:call-template name="add_id">
+              <xsl:with-param name="force">yes</xsl:with-param>
+              <xsl:with-param name="attributeName">internal-destination</xsl:with-param>
+            </xsl:call-template>
+            <xsl:value-of select="$mark"/>
+          </fo:basic-link>
+        </xsl:if>
       </fo:inline>
       <xsl:call-template name="cgmark_begin"/>
       <fo:footnote-body>
@@ -143,7 +146,7 @@
   </xsl:template>
 
   <!-- nanti harusnya bisa ditambahkan link ke abbreviation (outside data module, but currently using @internalRefId) -->
-  <xsl:template name="acronymTerm">
+  <xsl:template match="acronymTerm">
     <xsl:choose>
       <xsl:when test="following-sibling::acronymDefinition">
         <fo:inline>
@@ -158,7 +161,7 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template name="acronymDefinition">
+  <xsl:template match="acronymDefinition">
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
@@ -171,11 +174,15 @@
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>
 
-  <xsl:template name="verbatimText">
+  <xsl:template match="verbatimText">
+    <xsl:param name="verbatimStyle" select="string(@verbatimStyle)"/>
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_controlAuthority"/>
     <xsl:call-template name="add_inline_security"/>
-    <fo:inline font-family="monospace">
+    <fo:inline>
+      <xsl:attribute name="font-family">
+        <xsl:value-of select="$ConfigXML//verbatimText[string(@type) = $verbatimStyle]"/>
+      </xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </fo:inline>

@@ -19,16 +19,12 @@
     </fo:block-container>
   </xsl:template> -->
 
-  <xsl:template match="frontMatter">
-    <xsl:apply-templates/>
-  </xsl:template>
-
   <xsl:template match="frontMatterTitlePage">
     <xsl:apply-templates select="productIntroName"/>
     <xsl:apply-templates select="productAndModel"/>
     <xsl:apply-templates select="pmTitle"/>
     <xsl:apply-templates select="shortPmTitle"/>
-
+    
     <fo:block>
       <xsl:apply-templates select="pmCode"/>
       <fo:inline-container inline-progression-dimension="30%">

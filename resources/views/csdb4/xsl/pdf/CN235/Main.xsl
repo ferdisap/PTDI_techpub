@@ -8,16 +8,18 @@
   
   <xsl:param name="filename"/>
 
-  <xsl:include href="./dmodule.xsl" />
-  <xsl:include href="./pm.xsl" />
   <xsl:include href="./master/default-A4.xsl" />
+  <xsl:include href="./master/default-pm.xsl" />
   <xsl:include href="./master/region.xsl" />
+  <xsl:include href="./dmodule.xsl" />
+  <xsl:include href="./pm.xsl"/>
   <xsl:include href="../generalXSL/other/other.xsl" />
   
   <xsl:include href="../generalXSL/identStatus/All-Authority.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Enterprise.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Security.xsl" />
   <xsl:include href="../generalXSL/identStatus/dmTitle.xsl" />
+  <xsl:include href="../generalXSL/content/content.xsl" />
   <xsl:include href="../generalXSL/content/applicability/All.xsl" />
   <xsl:include href="../generalXSL/content/captionGroups/All.xsl" />
   <xsl:include href="../generalXSL/content/changeMarking/All.xsl" />
@@ -33,7 +35,13 @@
   <xsl:include href="../generalXSL/content/descriptiveInformation/levelledPara.xsl" />
   <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/All.xsl" />
   <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/Style-icn.xsl" />
-  <xsl:include href="../generalXSL/content/frontMatter/All.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/All-FrontMatterTitlePage.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/All-FrontMatterList.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/Highlights.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/HighlightsAndUpdating.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/Leodm.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/Updating.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/frontMatter.xsl" />
   <xsl:include href="../generalXSL/content/lists/All.xsl" />
   <xsl:include href="../generalXSL/content/lists/Style-list.xsl" />
   <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
@@ -68,8 +76,14 @@
 
   <xsl:variable name="masterName">
     <xsl:choose>
-      <xsl:when test="/pm/@pt">
-        <xsl:value-of select="string(/pm/@pt)" />
+      <xsl:when test="pm">
+        <xsl:variable name="pt" select="$ConfigXML/config/pmGroup/pt[string(@type) = string(pm/@pmType)]" />
+        <xsl:choose>
+          <xsl:when test="$pt">
+            <xsl:value-of select="$pt"/>
+          </xsl:when>
+          <xsl:otherwise>default-pm</xsl:otherwise>
+        </xsl:choose>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>default-A4</xsl:text>
@@ -102,6 +116,9 @@
   <xsl:variable name="cautionPath"><xsl:value-of select="$alertPathBackground"/>/cautionBackground.png</xsl:variable>
   <xsl:variable name="controlAutoritySymbolPath"><xsl:value-of select="$alertPathBackground"/>/controlAuthoritySymbol.png</xsl:variable>
   
+  <xsl:variable name="csdb_path"><xsl:value-of select="php:function('storage_path', 'csdb')"/></xsl:variable>
+
+  
   <xsl:template match="/">
     <fo:root font-family="Arial">
       <xsl:call-template name="setPageMaster">
@@ -121,60 +138,13 @@
   <xsl:template name="setPageMaster">
     <xsl:param name="masterName" />
     <xsl:choose>
-      <xsl:when test="$masterName != 'default-A4'">
-        <xsl:call-template name="pageMasterByPt">
-          <xsl:with-param name="pt" select="$masterName" />
-        </xsl:call-template>
+      <xsl:when test="$masterName = 'default-A4'">
+        <xsl:call-template name="pageMasterByDefaultA4"/>
       </xsl:when>
       <xsl:otherwise>
-        <fo:layout-master-set>
-          <!-- kalau tidak ditulis extent, bisa muncul warning di terminal, fo:region-before on
-          page 1 exceed the available area in the block-progression direction by 42519
-          millipoints. (See position 1:677) -->
-          <!-- <fo:simple-page-master master-name="default-A4" page-height="29.7cm" page-width="21cm" -->
-          <!-- <fo:simple-page-master master-name="tes" page-height="29.7cm" page-width="21cm" -->
-            <!-- margin-top="1cm" margin-bottom="1cm" margin-left="2cm" margin-right="2cm"> -->
-            <!-- <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.0cm" /> -->
-            <!-- <fo:region-before region-name="header" extent="1.5cm" /> -->
-            <!-- <fo:region-after region-name="footer" extent="2.0cm" /> -->
-          <!-- </fo:simple-page-master> -->
-
-          <fo:simple-page-master master-name="odd" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="3cm" margin-right="1.5cm">
-            <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>
-            <fo:region-before region-name="header-odd" extent="1.5cm" />
-            <fo:region-after region-name="footer-odd" extent="2.0cm" />
-          </fo:simple-page-master>
-          <fo:simple-page-master master-name="even" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">
-            <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>
-            <fo:region-before region-name="header-even" extent="1.5cm" />
-            <fo:region-after region-name="footer-even" extent="2.0cm" />
-          </fo:simple-page-master>
-          <fo:simple-page-master master-name="left-blank" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="1.5cm" margin-right="3cm">            
-            <fo:region-body region-name="left_blank" margin-top="1.5cm" margin-bottom="2.0cm"/>
-            <fo:region-before region-name="header-left_blank" extent="1.5cm" />
-            <fo:region-after region-name="footer-left_blank" extent="2.0cm" />
-          </fo:simple-page-master>
-
-          <fo:page-sequence-master master-name="default-A4">
-            <fo:repeatable-page-master-alternatives>
-              <!-- untuk page between first and last -->
-              <fo:conditional-page-master-reference master-reference="odd" page-position="rest" odd-or-even="odd"/>
-              <fo:conditional-page-master-reference master-reference="even" page-position="rest" odd-or-even= "even"/>
-
-              <!-- for the first page -->
-              <fo:conditional-page-master-reference master-reference="odd" page-position="first" odd-or-even="odd"/>
-
-              <!-- 
-                for the end page 1. last, even, and blank akan mencetak intentionally left blank
-                kalau 2. last, even, and not blank tidak akan mencetak intentionally left blank
-               -->
-              <fo:conditional-page-master-reference master-reference="left-blank" page-position="last" odd-or-even="even" blank-or-not-blank="blank"/>
-              <fo:conditional-page-master-reference master-reference="even" page-position="last" odd-or-even="even"/>
-
-            </fo:repeatable-page-master-alternatives>
-          </fo:page-sequence-master>          
-        </fo:layout-master-set>
-        
+        <xsl:call-template name="pageMasterByPt">
+          <xsl:with-param name="masterName" select="$masterName" />
+        </xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -204,6 +174,8 @@
 
   <xsl:template name="setBookmark">
     <xsl:param name="masterName"/>
+    <fo:bookmark-tree/>
+    <!-- <xsl:text>##insert_bookmark_here##</xsl:text> -->
     <!-- <fo:bookmark-tree>
       <fo:bookmark internal-destination="block-001">
         <fo:bookmark-title>Any text</fo:bookmark-title>

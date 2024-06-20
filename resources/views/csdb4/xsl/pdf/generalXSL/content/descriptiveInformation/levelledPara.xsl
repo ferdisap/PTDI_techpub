@@ -7,8 +7,15 @@
   <xsl:template match="levelledPara">
     <xsl:param name="level">
       <xsl:text>s</xsl:text>
-      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/>
+      <xsl:variable name="lvl">
+        <xsl:number level="multiple" count="levelledPara"/>
+      </xsl:variable>
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevelByPrefix', $lvl)"/>
+      <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/> -->
     </xsl:param>
+    <!-- <xsl:value-of select="php:function('dump', $lvl)"/> -->
+
+
 
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>

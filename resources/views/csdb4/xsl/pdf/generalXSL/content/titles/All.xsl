@@ -5,7 +5,8 @@
   <xsl:template match="title[parent::levelledPara]">
     <xsl:param name="level">
       <xsl:text>s</xsl:text>
-      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', parent::levelledPara, 1)"/>
+      <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', parent::levelledPara, 1)"/> -->
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevelByPrefix', $lvl)"/>
     </xsl:param>
 
     <fo:block page-break-inside="avoid" page-break-after="avoid">

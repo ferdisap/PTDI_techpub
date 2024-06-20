@@ -15,7 +15,7 @@
   <xsl:template match="dmodule">
     <xsl:param name="masterReference"/>
     <xsl:variable name="id">
-      <xsl:value-of select="php:function('rand')"/>
+      <xsl:value-of select="generate-id(.)"/>
     </xsl:variable>
     
     <fo:page-sequence master-reference="{$masterReference}" initial-page-number="auto-odd" force-page-count="even">
@@ -28,6 +28,15 @@
       </fo:flow>
     </fo:page-sequence>
   </xsl:template> 
+
+  <xsl:template match="pm" name="call_pmx">
+    <xsl:param name="masterReference"/>
+    <!-- <xsl:variable name="id">
+      <xsl:value-of select="generate-id(.)"/>
+    </xsl:variable> -->
+    <xsl:value-of select="php:function('dd', 'tes4')"/>
+    <!-- <xsl:apply-templates select="//content"/> -->
+  </xsl:template>
   
   
 </xsl:transform>

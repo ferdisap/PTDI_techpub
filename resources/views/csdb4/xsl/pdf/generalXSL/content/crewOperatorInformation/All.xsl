@@ -18,8 +18,7 @@
     7. <thumbTabText> belum difungsikan karena belum tau gunanya untuk apa
    -->
 
-  <xsl:template match="crew">    
-    <xsl:call-template name="add_dmTitle"/>
+  <xsl:template match="crew">
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_security"/>
     <fo:block start-indent="0cm">

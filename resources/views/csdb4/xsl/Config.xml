@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup)>
+  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup, frontMatterGroup, pmGroup)>
 
-  <!ELEMENT output (method+,layout?)>
+  <!ELEMENT output (method+,(layout?)+)>
   <!ELEMENT method (path+,pathCache)>
   <!ELEMENT path (#PCDATA)>
   <!ELEMENT pathCache (#PCDATA)>
@@ -17,7 +17,7 @@
   <!ELEMENT derivativeClassification (action+)>
   <!ELEMENT action (#PCDATA)>
 
-  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption|quantity|internalRef)*>
+  <!ELEMENT textElemGroup (emphasis|crewMember|crewStepCondition|skillType|skillLevelCode|caption|quantity|internalRef|verbatimText)*>
   <!ELEMENT emphasis (#PCDATA)>
   <!ELEMENT crewMember (#PCDATA)>
   <!ELEMENT crewStepCondition (#PCDATA)>
@@ -26,9 +26,16 @@
   <!ELEMENT caption (#PCDATA)>
   <!ELEMENT quantity (#PCDATA)>
   <!ELEMENT internalRef (#PCDATA)>
+  <!ELEMENT verbatimText (#PCDATA)>
   
   <!ELEMENT controlAuthorityGroup (controlAuthority+)>
   <!ELEMENT controlAuthority (#PCDATA)>
+
+  <!ELEMENT frontMatterGroup (frontMatter)*>
+  <!ELEMENT frontMatter (#PCDATA)>
+
+  <!ELEMENT pmGroup (pt)*>
+  <!ELEMENT pt (#PCDATA)>
 
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
@@ -66,8 +73,11 @@
   <!ATTLIST caption color CDATA #REQUIRED>
   <!ATTLIST quantity type CDATA #REQUIRED>
   <!ATTLIST internalRef type CDATA #REQUIRED>
+  <!ATTLIST verbatimText type CDATA #REQUIRED>
 
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
+  <!ATTLIST frontMatter type CDATA #REQUIRED>
+  <!ATTLIST pt type CDATA #REQUIRED>
 ]>
 
 <config>
@@ -83,6 +93,13 @@
       <pathCache>pdf/transformed/</pathCache>
     </method>
     <layout master-name="default-A4" orientation="port" 
+      margin-top="1cm" margin-bottom="1cm"
+      margin-left="3cm" margin-right="1.5cm"
+      width="21cm" height="29.7cm"
+      region-before="1.5cm" region-after="2cm"
+      start-indent="1.5cm"
+      cgmark-indent="2cm"/>
+    <layout master-name="default-pm" orientation="port" 
       margin-top="1cm" margin-bottom="1cm"
       margin-left="3cm" margin-right="1.5cm"
       width="21cm" height="29.7cm"
@@ -188,7 +205,10 @@
     <internalRef type="irtt14">work area</internalRef>
     <internalRef type="irtt15">SB</internalRef>
     <internalRef type="irtt16">access</internalRef>
+    <verbatimText type="vs51">monospace</verbatimText>
+    <verbatimText type="vs52">calibri</verbatimText>
   </textElemGroup>
+
   <controlAuthorityGroup>
     <controlAuthority type="cat01">AD</controlAuthority>    
     <controlAuthority type="cat02">AMOC</controlAuthority>    
@@ -202,4 +222,34 @@
     <controlAuthority type="cat10">RII</controlAuthority>    
     <controlAuthority type="cat51">DGCA</controlAuthority>    
   </controlAuthorityGroup>
+
+  <frontMatterGroup>
+    <frontMatter type="fm01">leop</frontMatter>
+    <frontMatter type="fm02">leodm</frontMatter>
+    <frontMatter type="fm03">highlights</frontMatter>
+    <frontMatter type="fm04">highlights and updating instruction</frontMatter>
+    <frontMatter type="fm05">publication list data modules</frontMatter>
+    <frontMatter type="fm06">loi</frontMatter>
+    <frontMatter type="fm07">loa</frontMatter>
+    <frontMatter type="fm08">lot</frontMatter>
+    <frontMatter type="fm09">los</frontMatter>
+    <frontMatter type="fm10">tsr</frontMatter>
+    <frontMatter type="fm11">lom</frontMatter>
+    <frontMatter type="fm12">loasd</frontMatter>
+    <frontMatter type="fm13">low</frontMatter>
+    <frontMatter type="fm14">loc</frontMatter>
+    <frontMatter type="fm15">lose</frontMatter>
+    <frontMatter type="fm16">losu</frontMatter>
+    <frontMatter type="fm17">losp</frontMatter>
+    <frontMatter type="fm18">lov</frontMatter>
+  </frontMatterGroup>
+
+  <!-- pt digunakan untuk page master -->
+  <pmGroup>
+    <pt type="pt01">cmm</pt>
+    <pt type="pt02">ipd</pt>
+    <pt type="pt03">sb</pt>
+    <pt type="pt51">poh</pt>
+  </pmGroup>
+  
 </config>
