@@ -8,7 +8,29 @@
   -->
 
   <xsl:template name="style-title">
+    <xsl:param name="masterName" select="$masterName"/>
     <xsl:param name="level"/>
+    <xsl:param name="length_unit">
+      <xsl:call-template name="get_layout_unit_length"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+    </xsl:param>
+    <xsl:param name="area_unit">
+      <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+    </xsl:param>
+    <xsl:param name="stIndent">
+      <xsl:call-template name="get_stIndent"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      <xsl:value-of select="$length_unit"/>
+    </xsl:param>
+    <xsl:variable name="titleNumberWidth">
+      <xsl:choose>
+        <xsl:when test="boolean($stIndent) or $stIndent != ''">
+          <xsl:text>0</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>1.5</xsl:text>
+          <xsl:value-of select="$length_unit"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:choose>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 8, para 2.6.1 par2-->
       <xsl:when test="parent::randomList or parent::sequentialList or parent::definitionList or parent::attentionSequentialList or parent::attentionRandomList">

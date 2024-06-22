@@ -13,9 +13,6 @@
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevelByPrefix', $lvl)"/>
       <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/> -->
     </xsl:param>
-    <!-- <xsl:value-of select="php:function('dump', $lvl)"/> -->
-
-
 
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_applicability"/>

@@ -8,6 +8,9 @@
   3. tidak fully comply S1000D
  -->
   <xsl:template match="note|warning|caution">
+    <xsl:param name="blockIndent">
+      <xsl:call-template name="get_blockIndent"/>
+    </xsl:param>
     <xsl:call-template name="cgmark_begin"/>
     <fo:block-container width="85%" page-break-inside="avoid" start-indent="0.5cm">
       <xsl:call-template name="style-warningcautionnote" />

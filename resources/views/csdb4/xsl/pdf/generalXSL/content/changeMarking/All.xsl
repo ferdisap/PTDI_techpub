@@ -10,7 +10,7 @@
   -->
 
   <!-- depreciated -->
-  <xsl:template match="__cgmark">
+  <!-- <xsl:template match="__cgmark">
     <xsl:param name="select"/>
     <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="{$cgmarkIndent}"/>
       <xsl:choose>
@@ -22,15 +22,18 @@
         </xsl:otherwise>
       </xsl:choose>
     <fo:change-bar-end change-bar-class="{generate-id(.)}"/>
-  </xsl:template>
+  </xsl:template> -->
 
   <xsl:template name="cgmark_begin">
     <xsl:param name="changeMark" select="@changeMark"/>
+    <xsl:param name="cgmarkOffset">
+      <xsl:call-template name="get_cgmarkOffset"/>
+    </xsl:param>
     <xsl:choose>
       <xsl:when test="parent::__cgmark"></xsl:when>
       <xsl:otherwise>        
         <xsl:if test="$changeMark = '1'">
-          <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
+          <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="{$cgmarkOffset}"/>
         </xsl:if>
       </xsl:otherwise>
     </xsl:choose>

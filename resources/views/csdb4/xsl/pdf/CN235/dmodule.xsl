@@ -24,19 +24,25 @@
         <xsl:with-param name="id" select="$id"/>
       </xsl:call-template>
       <fo:flow flow-name="body">
-        <xsl:call-template name="body"/>
+        <xsl:apply-templates select="content">
+          <xsl:with-param name="masterName" select="$masterReference"/>
+        </xsl:apply-templates>
+        <!-- <xsl:call-template name="body"/> -->
+        <!-- <fo:block-container>
+          <fo:block>aaa</fo:block>
+        </fo:block-container> -->
       </fo:flow>
     </fo:page-sequence>
   </xsl:template> 
 
-  <xsl:template match="pm" name="call_pmx">
-    <xsl:param name="masterReference"/>
+  <!-- <xsl:template match="pm" name="call_pmx"> -->
+    <!-- <xsl:param name="masterReference"/> -->
     <!-- <xsl:variable name="id">
       <xsl:value-of select="generate-id(.)"/>
     </xsl:variable> -->
-    <xsl:value-of select="php:function('dd', 'tes4')"/>
+    <!-- <xsl:value-of select="php:function('dd', 'tes4')"/> -->
     <!-- <xsl:apply-templates select="//content"/> -->
-  </xsl:template>
+  <!-- </xsl:template> -->
   
   
 </xsl:transform>

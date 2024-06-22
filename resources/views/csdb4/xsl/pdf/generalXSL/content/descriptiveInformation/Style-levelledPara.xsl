@@ -3,10 +3,7 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template name="style-levelledPara">
-    <xsl:param name="level">
-      <xsl:text>s</xsl:text>
-      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', ., 1)"/>
-    </xsl:param>
+    <xsl:param name="level"/>
     <xsl:choose>
       <!-- compliance to S1000D v5.0 chap 6.2.2 page 5, table 3 colom 5 (leading text paragraph to the heading) -->
       <xsl:when test="position() != '1'">

@@ -9,10 +9,10 @@
   <xsl:param name="filename"/>
 
   <xsl:include href="./master/default-A4.xsl" />
-  <xsl:include href="./master/default-pm.xsl" />
-  <xsl:include href="./master/region.xsl" />
   <xsl:include href="./dmodule.xsl" />
   <xsl:include href="./pm.xsl"/>
+  <xsl:include href="./master/region.xsl" />
+  <xsl:include href="./master/default-pm.xsl" />
   <xsl:include href="../generalXSL/other/other.xsl" />
   
   <xsl:include href="../generalXSL/identStatus/All-Authority.xsl" />
@@ -90,17 +90,25 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  <xsl:variable name="orientation" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/>
-  <xsl:variable name="width" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/>
-  <xsl:variable name="height" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@height)"/>
-  <xsl:variable name="mt" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-top)"/>
+  <!-- <xsl:variable name="orientation" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/> -->
+  <!-- depreciated, sudah diganti dengan template template@name="get_width" -->
+  <!-- <xsl:variable name="width" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/> -->
+  <!-- depreciated, sudah diganti dengan template template@name="get_height" -->
+  <!-- <xsl:variable name="height" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@height)"/> -->
+  <!-- <xsl:variable name="mt" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-top)"/>
   <xsl:variable name="mb" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-bottom)"/>
   <xsl:variable name="ml" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-left)"/>
   <xsl:variable name="mr" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@margin-right)"/>
   <xsl:variable name="rb" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-before)"/>
-  <xsl:variable name="ra" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-after)"/>
-  <xsl:variable name="stIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@start-indent)"/>
-  <xsl:variable name="cgmarkIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@cgmark-indent)"/>
+  <xsl:variable name="ra" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@region-after)"/> -->
+  <!-- depreciated,  sudah diganti dengan template@name="get_stIndent" -->
+  <!-- <xsl:variable name="stIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@start-indent)"/> -->
+  <!-- depreciated, sudah diganti dengan template@name="get_cgmarkOffset" -->
+  <!-- <xsl:variable name="cgmarkIndent" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@cgmark-indent)"/> -->
+  
+  <!-- <xsl:variable name="stIndent">
+    <xsl:call-template name="get_stIndent"/>
+  </xsl:variable>
   <xsl:variable name="titleNumberWidth">
     <xsl:choose>
       <xsl:when test="boolean($stIndent) or $stIndent != ''">
@@ -109,17 +117,17 @@
       <xsl:otherwise>1.5cm</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
-  <xsl:variable name="blockIndent">0cm</xsl:variable>
+  <xsl:variable name="blockIndent">0cm</xsl:variable> -->
 
   <xsl:param name="alertPathBackground"/>
   <xsl:variable name="warningPath"><xsl:value-of select="$alertPathBackground"/>/warningBackground.png</xsl:variable>
   <xsl:variable name="cautionPath"><xsl:value-of select="$alertPathBackground"/>/cautionBackground.png</xsl:variable>
   <xsl:variable name="controlAutoritySymbolPath"><xsl:value-of select="$alertPathBackground"/>/controlAuthoritySymbol.png</xsl:variable>
-  
-  <xsl:variable name="csdb_path"><xsl:value-of select="php:function('storage_path', 'csdb')"/></xsl:variable>
+ 
+  <xsl:variable name="csdb_path"><xsl:value-of select="php:function('storage_path', 'csdb')"/></xsl:variable> 
 
-  
   <xsl:template match="/">
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::set_PDF_MasterName', $masterName)"/>
     <fo:root font-family="Arial">
       <xsl:call-template name="setPageMaster">
         <xsl:with-param name="masterName" select="$masterName" />
@@ -132,14 +140,16 @@
       <xsl:call-template name="setPageSequence">
         <xsl:with-param name="masterName" select="$masterName" />
       </xsl:call-template>
-    </fo:root>    
+    </fo:root>
   </xsl:template>
 
   <xsl:template name="setPageMaster">
     <xsl:param name="masterName" />
     <xsl:choose>
       <xsl:when test="$masterName = 'default-A4'">
-        <xsl:call-template name="pageMasterByDefaultA4"/>
+        <xsl:call-template name="pageMasterByDefaultA4">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="pageMasterByPt">
@@ -173,17 +183,245 @@
   </xsl:template>
 
   <xsl:template name="setBookmark">
-    <xsl:param name="masterName"/>
     <fo:bookmark-tree/>
-    <!-- <xsl:text>##insert_bookmark_here##</xsl:text> -->
-    <!-- <fo:bookmark-tree>
-      <fo:bookmark internal-destination="block-001">
-        <fo:bookmark-title>Any text</fo:bookmark-title>
-      </fo:bookmark>
-      <fo:bookmark internal-destination="block-002">
-        <fo:bookmark-title>Any text</fo:bookmark-title>
-      </fo:bookmark>
-    </fo:bookmark-tree> -->
+  </xsl:template>
+
+  <!-- dipanggil di content.xsl dan Style-table.xsl-->
+  <xsl:template name="get_orientation">
+    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/>
+  </xsl:template>
+
+  <!-- dipanggil di content.xsl dan style-title.xsl-->
+  <xsl:template name="get_stIndent">
+    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@start-indent)"/>
+  </xsl:template>
+
+  <!-- dipanggil di warningCautionNote/All.xsl  -->
+  <!-- jika kedepannya membutuhkan masterName untuk setiap template yang digunakan di dmodule/content, maka masterName harus ditaruh di CSDBStatic agar tidak merepotkan transfer parameter terus -->
+  <xsl:template name="get_blockIndent">
+    <xsl:text>0cm</xsl:text>
+  </xsl:template>
+  
+  <!-- dipanggil di content.xsl, pm.xsl -->
+  <xsl:template name="get_defaultFontSize">
+    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@default-font-size)"/>
+  </xsl:template>
+
+  <!-- depreciated, diganti template name "get_layout_width karena nama templatenya saja -->
+  <!-- dipanggil di default-A4.xsl -->
+  <xsl:template name="get_width">
+    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/>
+  </xsl:template>
+
+  <!-- depreciated, diganti template name "get_layout_height" karena nama templatenya saja -->
+  <!-- dipanggil di default-A4.xsl -->
+  <xsl:template name="get_height">
+    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@height)"/>
+  </xsl:template>
+
+  <!-- dipanggil di changeMark/All.xsl -->
+  <xsl:template name="get_cgmarkOffset">
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@cgmark-offset)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_unit_length">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@length-unit)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_unit_area">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@area-unit)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_width">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_height">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@height)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_masterName_for_odd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/master-name_for_odd)"/>
+  </xsl:template>
+  
+  <xsl:template name="get_layout_marginTop_for_odd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_odd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_odd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_odd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginLeft_for_odd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_odd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginRight_for_odd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_odd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginTop_for_odd_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_odd_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_odd_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_odd_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_odd_header">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_odd_header)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_odd_footer">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_odd_footer)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_masterName_for_even">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/master-name_for_even)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginTop_for_even">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_even)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_even">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_even)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginLeft_for_even">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_even)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginRight_for_even">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_even)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginTop_for_even_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_even_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_even_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_even_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_even_header">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_even_header)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_even_footer">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_even_footer)"/>
+  </xsl:template>  
+
+  <xsl:template name="get_layout_masterName_for_leftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/master-name_for_leftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginTop_for_leftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_leftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_leftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_leftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginLeft_for_leftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_leftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginRight_for_leftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_leftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginTop_for_leftBlank_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-top_for_leftBlank_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginBottom_for_leftBlank_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_leftBlank_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_leftBlank_header">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_leftBlank_header)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_extent_for_leftBlank_footer">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_leftBlank_footer)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_bodyLeftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_bodyLeftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_headerOdd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_headerOdd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_footerOdd">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_footerOdd)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_headerEven">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_headerEven)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_footerEven">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_footerEven)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_headerLeftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_headerLeftBlank)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_regionName_for_footerLeftBlank">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/region-name_for_footerLeftBlank)"/>
   </xsl:template>
 
 </xsl:transform>

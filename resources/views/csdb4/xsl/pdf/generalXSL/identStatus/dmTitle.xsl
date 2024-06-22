@@ -4,7 +4,6 @@
   xmlns:php="http://php.net/xsl">
 
   <xsl:template name="add_dmTitle">
-    <xsl:param name="useStIndent" select="1"/>
     <xsl:param name="idParentBookmark"/>
     <xsl:param name="idBookmark" select="generate-id(.)"/>
 
@@ -21,11 +20,15 @@
     </xsl:variable>
 
     <fo:block font-size="16pt" text-align="center" font-weight="bold" margin-bottom="12pt" margin-top="6pt">
-      <xsl:if test="boolean($useStIndent)">
-        <xsl:attribute name="start-indent">
-          <xsl:text>-</xsl:text><xsl:value-of select="$stIndent"/>
-        </xsl:attribute>
-      </xsl:if>
+      <xsl:attribute name="start-indent">
+        <xsl:text>-</xsl:text>
+        <xsl:call-template name="get_stIndent">
+          <xsl:with-param name="masterName" select="php:function('Ptdi\Mpub\Main\CSDBStatic::get_PDF_MasterName')"/>
+        </xsl:call-template>
+        <xsl:call-template name="get_layout_unit_length">
+          <xsl:with-param name="masterName" select="php:function('Ptdi\Mpub\Main\CSDBStatic::get_PDF_MasterName')"/>
+        </xsl:call-template>
+      </xsl:attribute>
       
       <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::fillBookmark', string($idBookmark), concat($chapter, ' ', $title), string($idParentBookmark) )"/>
 

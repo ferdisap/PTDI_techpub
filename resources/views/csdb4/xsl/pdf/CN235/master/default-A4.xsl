@@ -3,8 +3,41 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template name="pageMasterByDefaultA4">
+  <xsl:template name="pageMasterByDefaultA4_xx">
+    <xsl:param name="masterName" select="$masterName"/>
     <fo:layout-master-set>
+      <xsl:call-template name="get_simplePageMaster">
+        <xsl:with-param name="masterName">default-A4</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="get_pageSequenceMaster">
+        <xsl:with-param name="masterName">default-A4</xsl:with-param>
+        <xsl:with-param name="odd_masterReference">odd</xsl:with-param>
+        <xsl:with-param name="even_masterReference">even</xsl:with-param>
+        <xsl:with-param name="leftBlank_masterReference">left-blank</xsl:with-param>
+      </xsl:call-template>
+    </fo:layout-master-set>
+  </xsl:template>
+
+  <!-- diganti templatenya yang call-tmplate simplePageMaster dan pageSequenceMaster -->
+  <xsl:template name="pageMasterByDefaultA4">
+    <xsl:param name="masterName" select="$masterName"/>
+    <fo:layout-master-set>
+      <xsl:variable name="width">
+        <xsl:call-template name="get_layout_width">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+        <xsl:call-template name="get_layout_unit_length">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:variable name="height">
+        <xsl:call-template name="get_layout_height">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+        <xsl:call-template name="get_layout_unit_length">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+      </xsl:variable>
       <!-- kalau tidak ditulis extent, bisa muncul warning di terminal, fo:region-before on
       page 1 exceed the available area in the block-progression direction by 42519
       millipoints. (See position 1:677) -->
@@ -16,6 +49,7 @@
         <!-- <fo:region-after region-name="footer" extent="2.0cm" /> -->
       <!-- </fo:simple-page-master> -->
   
+      <!-- nanti ganti seperti default-pm -->
       <fo:simple-page-master master-name="odd" page-height="{$height}" page-width="{$width}" margin-top="1cm" margin-bottom="1cm" margin-left="3cm" margin-right="1.5cm">
         <fo:region-body region-name="body" margin-top="1.5cm" margin-bottom="2.5cm"/>
         <fo:region-before region-name="header-odd" extent="1.5cm" />
@@ -49,13 +83,18 @@
           <fo:conditional-page-master-reference master-reference="even" page-position="last" odd-or-even="even"/>
   
         </fo:repeatable-page-master-alternatives>
-      </fo:page-sequence-master>          
+      </fo:page-sequence-master>
     </fo:layout-master-set>
   </xsl:template>
 
   <xsl:template name="header-odd-default-A4">
     <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
     <fo:block-container width="100%" height="1.5cm">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
       <fo:block>
         <!-- <fo:inline-container inline-progression-dimension="14.9%">
           <fo:block></fo:block>
@@ -80,7 +119,12 @@
 
   <xsl:template name="header-even-default-A4">
     <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
     <fo:block-container width="100%" height="1.5cm">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
       <fo:block>
         <fo:inline-container inline-progression-dimension="34.9%">
           <fo:block text-align="left">
@@ -107,7 +151,12 @@
   <xsl:template name="footer-odd-default-A4">
     <xsl:param name="id"/>
     <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
     <fo:block-container width="100%">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
       <fo:block border-top="1pt solid black"></fo:block>
       <fo:block>
         <fo:inline-container inline-progression-dimension="49.9%">
@@ -155,7 +204,12 @@
   <xsl:template name="footer-even-default-A4">
     <xsl:param name="id"/>
     <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
     <fo:block-container width="100%">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
       <fo:block border-top="1pt solid black"></fo:block>
       <fo:block>
         <fo:inline-container inline-progression-dimension="49.9%">
@@ -288,4 +342,100 @@
     </fo:block>
   </xsl:template>
   
+  
+  <xsl:template name="get_simplePageMaster">
+    <xsl:param name="masterName"/>
+    <xsl:param name="length_unit"><xsl:call-template name="get_layout_unit_length"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+
+    <!-- setelan defaultnya sama kayak default-A4.xsl -->
+    <xsl:param name="width"><xsl:call-template name="get_layout_width"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="height"><xsl:call-template name="get_layout_height"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+
+    <xsl:param name="masterName_for_odd"><xsl:call-template name="get_layout_masterName_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipakai untuk simple-page-master@master-name, lihat dibawah -->
+    <xsl:param name="marginTop_for_odd"><xsl:call-template name="get_layout_marginTop_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_odd"><xsl:call-template name="get_layout_marginBottom_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_odd"><xsl:call-template name="get_layout_marginLeft_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_odd"><xsl:call-template name="get_layout_marginRight_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginTop_for_odd_body"><xsl:call-template name="get_layout_marginTop_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_odd_body"><xsl:call-template name="get_layout_marginBottom_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_odd_header"><xsl:call-template name="get_layout_extent_for_odd_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_odd_footer"><xsl:call-template name="get_layout_extent_for_odd_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+
+    <!-- ini dipakai untuk simple-page-master@master-name, lihat dibawah -->
+    <xsl:param name="masterName_for_even"><xsl:call-template name="get_layout_masterName_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginTop_for_even"><xsl:call-template name="get_layout_marginTop_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_even"><xsl:call-template name="get_layout_marginBottom_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_even"><xsl:call-template name="get_layout_marginLeft_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_even"><xsl:call-template name="get_layout_marginRight_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginTop_for_even_body"><xsl:call-template name="get_layout_marginTop_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_even_body"><xsl:call-template name="get_layout_marginBottom_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_even_header"><xsl:call-template name="get_layout_extent_for_even_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_even_footer"><xsl:call-template name="get_layout_extent_for_even_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+
+    <!-- ini dipakai untuk simple-page-master@master-name, lihat dibawah -->
+    <xsl:param name="masterName_for_leftBlank"><xsl:call-template name="get_layout_masterName_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginTop_for_leftBlank"><xsl:call-template name="get_layout_marginTop_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_leftBlank"><xsl:call-template name="get_layout_marginBottom_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_leftBlank"><xsl:call-template name="get_layout_marginLeft_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_leftBlank"><xsl:call-template name="get_layout_marginRight_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginTop_for_leftBlank_body"><xsl:call-template name="get_layout_marginTop_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginBottom_for_leftBlank_body"><xsl:call-template name="get_layout_marginBottom_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_leftBlank_header"><xsl:call-template name="get_layout_extent_for_leftBlank_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="extent_for_leftBlank_footer"><xsl:call-template name="get_layout_extent_for_leftBlank_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+
+    <!-- 
+      jika berbeda pm/@pt, terlebih beda kertas/orientasi/width-height, region.xsl, pm.xsl, dmodule.xsl harus ditambahkan agar flow-name nya sesuai dengan region-name dan master-name
+     -->
+    <xsl:param name="regionName_for_body"><xsl:call-template name="get_layout_regionName_for_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini akan di panggil di page-sequence, see pm.xsl or dmodule.xsl -->
+    <xsl:param name="regionName_for_bodyLeftBlank"><xsl:call-template name="get_layout_regionName_for_bodyLeftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- sejauh ini, ini belum digunakan karena tulisan 'intentionally left blank' akan ditulis di static-content header, see region.xsl -->
+    <xsl:param name="regionName_for_headerOdd"><xsl:call-template name="get_layout_regionName_for_headerOdd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+    <xsl:param name="regionName_for_footerOdd"><xsl:call-template name="get_layout_regionName_for_footerOdd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+    <xsl:param name="regionName_for_headerEven"><xsl:call-template name="get_layout_regionName_for_headerEven"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+    <xsl:param name="regionName_for_footerEven"><xsl:call-template name="get_layout_regionName_for_footerEven"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+    <xsl:param name="regionName_for_headerLeftBlank"><xsl:call-template name="get_layout_regionName_for_headerLeftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+    <xsl:param name="regionName_for_footerLeftBlank"><xsl:call-template name="get_layout_regionName_for_footerLeftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
+
+    <!-- nyontek ke default-A4.xsl -->
+    <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
+      <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_odd_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_odd_body, $length_unit)}"/>
+      <fo:region-before region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
+      <fo:region-after region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
+    </fo:simple-page-master>
+    <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
+      <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_even_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_even_body, $length_unit)}"/>
+      <fo:region-before region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
+      <fo:region-after region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
+    </fo:simple-page-master>
+    <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
+      <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-top="{concat($marginTop_for_leftBlank_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank_body, $length_unit)}"/>
+      <fo:region-before region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
+      <fo:region-after region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
+    </fo:simple-page-master>
+  </xsl:template>
+
+  <!-- defaultnya pakai intentionally left blank -->
+  <xsl:template name="get_pageSequenceMaster">
+    <xsl:param name="masterName">default-pm</xsl:param>
+    <xsl:param name="odd_masterReference">oddA4</xsl:param>
+    <xsl:param name="even_masterReference">evenA4</xsl:param>
+    <xsl:param name="leftBlank_masterReference">left-blankA4</xsl:param>
+    <!-- nyontek ke default-A4.xsl -->
+    <fo:page-sequence-master master-name="{$masterName}">
+      <fo:repeatable-page-master-alternatives>
+        <!-- untuk page between first and last -->
+        <fo:conditional-page-master-reference master-reference="{$odd_masterReference}" page-position="rest" odd-or-even="odd"/>
+        <fo:conditional-page-master-reference master-reference="{$even_masterReference}" page-position="rest" odd-or-even= "even"/>
+
+        <!-- for the first page -->
+        <fo:conditional-page-master-reference master-reference="{$odd_masterReference}" page-position="first" odd-or-even="odd"/>
+
+        <!-- 
+          for the end page 1. last, even, and blank akan mencetak intentionally left blank
+          kalau 2. last, even, and not blank tidak akan mencetak intentionally left blank
+        -->
+        <fo:conditional-page-master-reference master-reference="{$leftBlank_masterReference}" page-position="last" odd-or-even="even" blank-or-not-blank="blank"/>
+        <fo:conditional-page-master-reference master-reference="{$even_masterReference}" page-position="last" odd-or-even="even"/>    
+      </fo:repeatable-page-master-alternatives>
+    </fo:page-sequence-master>
+  </xsl:template>
 </xsl:transform>

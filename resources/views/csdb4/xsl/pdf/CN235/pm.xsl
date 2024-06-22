@@ -21,11 +21,9 @@
   <xsl:template match="pmEntry">
     <xsl:param name="masterReference"/>
     <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::set_pmEntryTitle', string(pmEntryTitle))"/>
-
     <xsl:variable name="idParentBookmark">
       <xsl:choose>
         <xsl:when test="preceding-sibling::dmRef">
-          <!-- <xsl:value-of select="generate-id(preceding-sibling::dmRef/dmRefIdent)"/> -->
           <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', preceding-sibling::dmRef/dmRefIdent, '', '')"/>
         </xsl:when>
         <xsl:otherwise>
@@ -55,13 +53,10 @@
       </xsl:call-template>
       <!-- flow-name merujuk ke simple-page-master/region-body/@region-name -->
       <fo:flow flow-name="body">
-        <fo:block-container>
-          <fo:block>
-            <xsl:apply-templates select="$entry//content">
-              <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
-            </xsl:apply-templates>
-          </fo:block>
-        </fo:block-container>
+        <xsl:apply-templates select="$entry//content">
+          <xsl:with-param name="masterName" select="$masterName"/>
+          <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
+        </xsl:apply-templates>
       </fo:flow>
     </fo:page-sequence>
   </xsl:template>
@@ -85,7 +80,7 @@
         <xsl:otherwise>default-pm</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="height" select="'30cm'"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::set_PDF_MasterName', $masterName)"/>
     <xsl:apply-templates select="$entry/pm">
       <xsl:with-param name="masterReference" select="$masterName"/>
     </xsl:apply-templates>

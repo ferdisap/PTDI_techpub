@@ -33,12 +33,13 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
 
-    <fo:block-container width="100%" page-break-before="avoid">
+    <!-- <fo:block-container width="100%" page-break-before="avoid"> -->
+    <fo:block-container width="100%">
       <xsl:call-template name="add_id"/>      
-      <xsl:call-template name="style-table">
+      <!-- <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
 
       <xsl:apply-templates select="tgroup">
         <xsl:with-param name="tocentry" select="string(@tocentry)"/>
@@ -168,11 +169,15 @@
       table-omit-footer-at-break=true agar tidak dirender footnote setiap page jika break 
       table-omit-header-at-break="false" agar header selalu diprint jika page break
     -->
-    <fo:table table-omit-footer-at-break="true" page-break-before="avoid">
-      <xsl:call-template name="style-tgroup">
+    <!-- <fo:table table-omit-footer-at-break="true" page-break-before="avoid"> -->
+    <fo:table table-omit-footer-at-break="true">
+    <!-- <fo:table table-omit-footer-at-break="false"> -->
+    <!-- <fo:table> -->
+    <!-- <fo:table table-omit-header-at-break="false"> -->
+      <!-- <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
         <xsl:with-param name="frame" select="$frame"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
       <xsl:for-each select="colspec[@colnum and @colwidth]">
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(@colwidth))"/>
         <fo:table-column column-number="{@colnum}" column-width="{$width}"/>
@@ -181,9 +186,6 @@
       <xsl:if test="thead">
         <fo:table-header>
           <xsl:apply-templates select="thead"/>
-          <fo:table-row>
-            <fo:table-cell number-columns-spanned="count(colspec)" padding-bottom="2pt"></fo:table-cell>
-          </fo:table-row>
         </fo:table-header>
       </xsl:if>      
       
@@ -197,7 +199,7 @@
             </xsl:if>
             <fo:table-row>
               <fo:table-cell number-columns-spanned="{$colsQuantity}">
-                <xsl:call-template name="style-entry"/>
+                <!-- <xsl:call-template name="style-entry"/> -->
                 <xsl:call-template name="add_applicability"/>
                 <xsl:call-template name="add_controlAuthority"/> 
                 <xsl:call-template name="add_security"/>
@@ -211,7 +213,7 @@
         </fo:table-footer>
       </xsl:if>
       <fo:table-body>
-        <xsl:call-template name="style-tbody"/>
+        <!-- <xsl:call-template name="style-tbody"/> -->
         <xsl:apply-templates select="tbody"/>
       </fo:table-body>      
     </fo:table>
@@ -227,7 +229,7 @@
   <xsl:template match="row">
     <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
       <fo:table-row keep-together="always">
-        <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="4pt">
+        <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="-4pt">
           <xsl:call-template name="add_applicability"/>
           <xsl:call-template name="add_controlAuthority"/> 
           <xsl:call-template name="add_security"/>
@@ -236,7 +238,7 @@
     </xsl:if>
     <fo:table-row>
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="style-row"/>
+      <!-- <xsl:call-template name="style-row"/> -->
       <xsl:apply-templates/>
     </fo:table-row>
     <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
@@ -284,10 +286,10 @@
     </xsl:param>    
 
     <fo:table-cell width="from-table-column()">
-      <xsl:call-template name="style-entry">
+      <!-- <xsl:call-template name="style-entry">
         <xsl:with-param name="rowsep" select="$rowsep"/>
         <xsl:with-param name="colsep" select="$colsep"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
 
       <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="string(@morerows)"/></xsl:attribute></xsl:if>
 

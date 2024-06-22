@@ -13,16 +13,19 @@
         <xsl:choose>
           <xsl:when test="$oddOrEven = 'odd'">
             <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
             <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'even'">
             <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
@@ -32,16 +35,19 @@
         <xsl:choose>
           <xsl:when test="$oddOrEven = 'odd'">
             <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
             <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'even'">
             <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
@@ -52,16 +58,19 @@
         <xsl:choose>
           <xsl:when test="$oddOrEven = 'odd'">
             <xsl:call-template name="header-odd-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'odd' and $pagePosition = 'last'">
             <xsl:call-template name="header-odd-last-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
           <xsl:when test="$oddOrEven = 'even'">
             <xsl:call-template name="header-even-default-A4">
+              <xsl:with-param name="masterName" select="$masterName"/>
               <xsl:with-param name="entry" select="$entry"/>
             </xsl:call-template>
           </xsl:when>
@@ -82,12 +91,14 @@
       <xsl:when test="$masterName = 'default-A4'">
         <xsl:if test="$oddOrEven = 'odd'">
           <xsl:call-template name="footer-odd-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
         </xsl:if>
         <xsl:if test="$oddOrEven = 'even'">
           <xsl:call-template name="footer-even-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
@@ -96,12 +107,14 @@
       <xsl:when test="$masterName = 'default-pm'">
         <xsl:if test="$oddOrEven = 'odd'">
           <xsl:call-template name="footer-odd-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
         </xsl:if>
         <xsl:if test="$oddOrEven = 'even'">
           <xsl:call-template name="footer-even-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
@@ -111,12 +124,14 @@
       <xsl:when test="$masterName = 'poh'">
         <xsl:if test="$oddOrEven = 'odd'">
           <xsl:call-template name="footer-odd-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
         </xsl:if>
         <xsl:if test="$oddOrEven = 'even'">
           <xsl:call-template name="footer-even-default-A4">
+            <xsl:with-param name="masterName" select="$masterName"/>
             <xsl:with-param name="id" select="$id"/>
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
@@ -128,6 +143,7 @@
     </xsl:choose>
   </xsl:template>
 
+  <!-- depreciated, sebelumnya dipanggil di dmodule.xsl. sekarang langsung panggil apply-templates select content -->
   <xsl:template name="body">
     <!-- <fo:block>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Explicabo illo nam eaque odit iure velit? Placeat delectus nemo enim qui inventore unde maiores temporibus iure doloremque sed? Voluptates quam tempore architecto nemo magnam amet ullam dignissimos placeat praesentium ipsa eum, dolore non exercitationem, maiores veniam eligendi iusto vitae voluptate aspernatur!</fo:block>
     <fo:block>

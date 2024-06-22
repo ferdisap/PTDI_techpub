@@ -16,6 +16,35 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
+  <!-- <xsl:value-of select="php:function('dd', //node()[position() &gt; 30])"/> -->
+  <!-- <xsl:template match="table">
+    <fo:block-container>
+      <fo:table width="100%">
+        <fo:table-column column-number="1" column-width="20%"/>
+        <fo:table-column column-number="2" column-width="80%"/>
+        <fo:table-header>
+          <fo:table-row>
+            <fo:table-cell><fo:block>AAA</fo:block></fo:table-cell>
+            <fo:table-cell><fo:block>BBB</fo:block></fo:table-cell>
+          </fo:table-row>
+        </fo:table-header>
+        <fo:table-body>
+          <xsl:for-each select="//node()[position() &gt; 27]">
+            <fo:table-row>
+              <fo:table-cell>
+                <fo:block>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vel, eveniet?</fo:block>
+              </fo:table-cell>
+              <fo:table-cell>
+                <fo:block>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi non ad quaerat, soluta cumque minus accusantium unde quisquam aperiam sed?
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </xsl:for-each>
+        </fo:table-body>
+      </fo:table>
+    </fo:block-container>
+  </xsl:template> -->
   <xsl:template match="table">
     <xsl:param name="level"/>
 
@@ -34,14 +63,14 @@
     <xsl:call-template name="add_security"/>
 
     <fo:block-container width="100%" page-break-before="avoid">
-      <xsl:call-template name="add_id"/>      
-      <xsl:call-template name="style-table">
+      <!-- <xsl:call-template name="add_id"/>       -->
+      <!-- <xsl:call-template name="style-table">
         <xsl:with-param name="orient" select="string(@orient)"/>
         <xsl:with-param name="level" select="$level"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
 
       <xsl:apply-templates select="tgroup">
-        <xsl:with-param name="tocentry" select="string(@tocentry)"/>
+        <!-- <xsl:with-param name="tocentry" select="string(@tocentry)"/>
         <xsl:with-param name="frame">
           <xsl:choose>
             <xsl:when test="@frame">
@@ -50,18 +79,10 @@
             <xsl:otherwise>topbot</xsl:otherwise>
           </xsl:choose>
         </xsl:with-param>
-        <xsl:with-param name="orient" select="string(@orient)"/>
-        <!-- <xsl:if test="title">
-          <xsl:text>Table </xsl:text>
-          <xsl:number level="any" count="title"/>
-          <xsl:text>&#160;&#160;</xsl:text>
-          <xsl:apply-templates select="title"/>
-        </xsl:if> -->
+        <xsl:with-param name="orient" select="string(@orient)"/> -->
       </xsl:apply-templates>
       
       <xsl:apply-templates select="graphic"/>
-
-      <!-- <xsl:apply-templates select="title"/> -->
     </fo:block-container>
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>
@@ -168,11 +189,12 @@
       table-omit-footer-at-break=true agar tidak dirender footnote setiap page jika break 
       table-omit-header-at-break="false" agar header selalu diprint jika page break
     -->
-    <fo:table table-omit-footer-at-break="true" page-break-before="avoid">
-      <xsl:call-template name="style-tgroup">
+    <!-- <fo:table table-omit-footer-at-break="true" page-break-before="avoid"> -->
+    <fo:table>
+      <!-- <xsl:call-template name="style-tgroup">
         <xsl:with-param name="pgwide" select="$pgwide"/>
         <xsl:with-param name="frame" select="$frame"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
       <xsl:for-each select="colspec[@colnum and @colwidth]">
         <xsl:variable name="width" select="php:function('Ptdi\Mpub\Main\CSDBStatic::interpretDimension', string(@colwidth))"/>
         <fo:table-column column-number="{@colnum}" column-width="{$width}"/>
@@ -181,16 +203,13 @@
       <xsl:if test="thead">
         <fo:table-header>
           <xsl:apply-templates select="thead"/>
-          <fo:table-row>
-            <fo:table-cell number-columns-spanned="count(colspec)" padding-bottom="2pt"></fo:table-cell>
-          </fo:table-row>
         </fo:table-header>
       </xsl:if>      
       
-      <xsl:if test="descendant::footnote or tfoot">
+      <!-- <xsl:if test="descendant::footnote or tfoot">
         <xsl:variable name="colsQuantity" select="string(@cols)"/>
         <fo:table-footer font-size="8pt">
-          <xsl:apply-templates select="tfoot"/>
+          <xsl:apply-templates select="tfoot|__cgmark"/>
           <xsl:for-each select="descendant::footnote">
             <xsl:if test="@changeMark = '1'">
               <fo:change-bar-begin change-bar-class="{generate-id(.)}" change-bar-style="solid" change-bar-width="0.5pt" change-bar-offset="0.5cm"/>
@@ -209,41 +228,41 @@
             </xsl:if>
           </xsl:for-each>
         </fo:table-footer>
-      </xsl:if>
+      </xsl:if> -->
       <fo:table-body>
-        <xsl:call-template name="style-tbody"/>
+        <!-- <xsl:call-template name="style-tbody"/> -->
         <xsl:apply-templates select="tbody"/>
       </fo:table-body>      
     </fo:table>
 
-    <xsl:if test="parent::*/title">
+    <!-- <xsl:if test="parent::*/title">
       <fo:block margin-top="3pt">
         <xsl:call-template name="captionTable"/>
       </fo:block>
-    </xsl:if>
+    </xsl:if> -->
 
   </xsl:template>
 
   <xsl:template match="row">
-    <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
+    <!-- <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
       <fo:table-row keep-together="always">
-        <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="4pt">
+        <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="-4pt">
           <xsl:call-template name="add_applicability"/>
           <xsl:call-template name="add_controlAuthority"/> 
           <xsl:call-template name="add_security"/>
         </fo:table-cell>
       </fo:table-row>
-    </xsl:if>
+    </xsl:if> -->
     <fo:table-row>
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="style-row"/>
+      <!-- <xsl:call-template name="add_id"/> -->
+      <!-- <xsl:call-template name="style-row"/> -->
       <xsl:apply-templates/>
     </fo:table-row>
-    <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
+    <!-- <xsl:if test="@applicRefId or controlAuthorityRefs or @securityClassification or @commercialClassification or @caveat">
       <fo:table-row keep-together="always">
         <fo:table-cell number-columns-spanned="{string(ancestor::tgroup/@cols)}" padding-top="4pt" padding-bottom="-4pt"><fo:block/></fo:table-cell>
       </fo:table-row>
-    </xsl:if>
+    </xsl:if> -->
   </xsl:template>
 
   <!-- 
@@ -257,7 +276,7 @@
     6. @spanname tidak bisa digunakan jika total entry pada row tersebut melebihi jumlahnya jika ditambah spanspec. Hal ini sepertinya mungkin dikarenakan FOP tidak support table-layout=auto.
    -->
   <xsl:template match="entry">
-    <xsl:param name="colname" select="string(@colname)"/>
+    <!-- <xsl:param name="colname" select="string(@colname)"/>
     <xsl:param name="rowsep">
       <xsl:choose>
         <xsl:when test="@rowsep"><xsl:value-of select="string(@rowsep)"/></xsl:when>
@@ -281,17 +300,17 @@
           <xsl:value-of select="ancestor::*[string(@colsep) != '']/@colsep"/>
         </xsl:otherwise>
       </xsl:choose>
-    </xsl:param>    
+    </xsl:param>     -->
 
-    <fo:table-cell width="from-table-column()">
-      <xsl:call-template name="style-entry">
+    <fo:table-cell>
+      <!-- <xsl:call-template name="style-entry">
         <xsl:with-param name="rowsep" select="$rowsep"/>
         <xsl:with-param name="colsep" select="$colsep"/>
-      </xsl:call-template>
+      </xsl:call-template> -->
 
-      <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="string(@morerows)"/></xsl:attribute></xsl:if>
+      <!-- <xsl:if test="@morerows"><xsl:attribute name="number-rows-spanned"><xsl:value-of select="string(@morerows)"/></xsl:attribute></xsl:if> -->
 
-      <xsl:if test="@spanname">
+      <!-- <xsl:if test="@spanname">
         <xsl:variable name="numberColumnsSpanned">
           <xsl:variable name="namestColname"><xsl:value-of select="string(ancestor::tgroup/spanspec[@spanname = string(@spanname)]/@namest)"/></xsl:variable>
           <xsl:variable name="nameendColname"><xsl:value-of select="string(ancestor::tgroup/spanspec[@spanname = string(@spanname)]/@nameend)"/></xsl:variable>
@@ -300,16 +319,16 @@
           <xsl:value-of select="number($nameendColnum - $namestColnum + 1)"/>
         </xsl:variable>
         <xsl:attribute name="number-columns-spanned"><xsl:value-of select="$numberColumnsSpanned"/></xsl:attribute>
-      </xsl:if>
+      </xsl:if> -->
 
-      <xsl:variable name="valign">
+      <!-- <xsl:variable name="valign">
         <xsl:choose>
           <xsl:when test="@valign"><xsl:value-of select="string(@valign)"/></xsl:when>
           <xsl:otherwise><xsl:value-of select="string(ancestor::*[@valign]/@align)"/></xsl:otherwise>
         </xsl:choose>
-      </xsl:variable>      
+      </xsl:variable> -->
       
-      <xsl:choose>
+      <!-- <xsl:choose>
         <xsl:when test="$valign = 'bottom'">
           <xsl:attribute name="display-align">after</xsl:attribute>
         </xsl:when>
@@ -319,9 +338,9 @@
         <xsl:otherwise>
           <xsl:attribute name="display-align">top</xsl:attribute>
         </xsl:otherwise>
-      </xsl:choose>
+      </xsl:choose> -->
 
-      <xsl:if test="@align"><xsl:attribute name="text-align"><xsl:value-of select="string(@align)"/></xsl:attribute>      </xsl:if>
+      <!-- <xsl:if test="@align"><xsl:attribute name="text-align"><xsl:value-of select="string(@align)"/></xsl:attribute>      </xsl:if> -->
 
       <!-- 
         1. supaya block container tidak akan di page-break, jangan pakai keep-togeter="always" karena cell/container tidak akan membuat line baru jika tulisan lebih panjang dari width cell.
@@ -332,17 +351,18 @@
       <xsl:call-template name="cgmark_begin">
         <xsl:with-param name="changeMark" select="parent::row/@changeMark"/>
       </xsl:call-template>
-      <fo:block-container>
-        <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
+      <fo:block>
+        <!-- <xsl:if test="@id"><xsl:attribute name="id"><xsl:value-of select="string(@id)"/></xsl:attribute></xsl:if>
         <xsl:if test="string(@rotate) = '1'"><xsl:attribute name="reference-orientation">90</xsl:attribute></xsl:if>
         <xsl:if test="@applicRefId">
           <xsl:call-template name="add_applicability">
             <xsl:with-param name="prefix"><xsl:text>This cell is applicable to: </xsl:text></xsl:with-param>
           </xsl:call-template>          
           <xsl:call-template name="add_controlAuthority"/>
-        </xsl:if>
-        <xsl:apply-templates/>
-      </fo:block-container>
+        </xsl:if> -->
+        <!-- <xsl:apply-templates/> -->
+        <xsl:text>a</xsl:text>
+      </fo:block>
       <xsl:call-template name="cgmark_end">
         <xsl:with-param name="changeMark" select="parent::row/@changeMark"/>
       </xsl:call-template>

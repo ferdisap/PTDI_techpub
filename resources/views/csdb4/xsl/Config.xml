@@ -6,9 +6,55 @@
   <!ELEMENT method (path+,pathCache)>
   <!ELEMENT path (#PCDATA)>
   <!ELEMENT pathCache (#PCDATA)>
-  <!ELEMENT layout EMPTY>
+  <!ELEMENT layout (simple-page-master)>
   <!ELEMENT colors (color+)>
   <!ELEMENT color EMPTY>
+  
+  <!ELEMENT simple-page-master (
+    master-name_for_odd, margin-top_for_odd, margin-bottom_for_odd, margin-left_for_odd, margin-right_for_odd, margin-top_for_odd_body, margin-bottom_for_odd_body, extent_for_odd_header, extent_for_odd_footer,
+    master-name_for_even, margin-top_for_even, margin-bottom_for_even, margin-left_for_even, margin-right_for_even, margin-top_for_even_body, margin-bottom_for_even_body, extent_for_even_header, extent_for_even_footer,
+    master-name_for_leftBlank, margin-top_for_leftBlank, margin-bottom_for_leftBlank, margin-left_for_leftBlank, margin-right_for_leftBlank, margin-top_for_leftBlank_body, margin-bottom_for_leftBlank_body, extent_for_leftBlank_header, extent_for_leftBlank_footer,
+    region-name_for_body, region-name_for_bodyLeftBlank, region-name_for_headerOdd, region-name_for_footerOdd, region-name_for_headerEven, region-name_for_footerEven, region-name_for_headerLeftBlank, region-name_for_footerLeftBlank
+    )>
+  <!-- odd -->
+  <!ELEMENT master-name_for_odd (#PCDATA)>
+  <!ELEMENT margin-top_for_odd (#PCDATA)>
+  <!ELEMENT margin-bottom_for_odd (#PCDATA)>
+  <!ELEMENT margin-left_for_odd (#PCDATA)>
+  <!ELEMENT margin-right_for_odd (#PCDATA)>
+  <!ELEMENT margin-top_for_odd_body (#PCDATA)>
+  <!ELEMENT margin-bottom_for_odd_body (#PCDATA)>
+  <!ELEMENT extent_for_odd_header (#PCDATA)>
+  <!ELEMENT extent_for_odd_footer (#PCDATA)>
+  <!-- even -->
+  <!ELEMENT master-name_for_even (#PCDATA)>
+  <!ELEMENT margin-top_for_even (#PCDATA)>
+  <!ELEMENT margin-bottom_for_even (#PCDATA)>
+  <!ELEMENT margin-left_for_even (#PCDATA)>
+  <!ELEMENT margin-right_for_even (#PCDATA)>
+  <!ELEMENT margin-top_for_even_body (#PCDATA)>
+  <!ELEMENT margin-bottom_for_even_body (#PCDATA)>
+  <!ELEMENT extent_for_even_header (#PCDATA)>
+  <!ELEMENT extent_for_even_footer (#PCDATA)>
+  <!-- left blank -->
+  <!ELEMENT master-name_for_leftBlank (#PCDATA)>
+  <!ELEMENT margin-top_for_leftBlank (#PCDATA)>
+  <!ELEMENT margin-bottom_for_leftBlank (#PCDATA)>
+  <!ELEMENT margin-left_for_leftBlank (#PCDATA)>
+  <!ELEMENT margin-right_for_leftBlank (#PCDATA)>
+  <!ELEMENT margin-top_for_leftBlank_body (#PCDATA)>
+  <!ELEMENT margin-bottom_for_leftBlank_body (#PCDATA)>
+  <!ELEMENT extent_for_leftBlank_header (#PCDATA)>
+  <!ELEMENT extent_for_leftBlank_footer (#PCDATA)>
+  <!-- region name -->
+  <!ELEMENT region-name_for_body (#PCDATA)>
+  <!ELEMENT region-name_for_bodyLeftBlank (#PCDATA)>
+  <!ELEMENT region-name_for_headerOdd (#PCDATA)>
+  <!ELEMENT region-name_for_footerOdd (#PCDATA)>
+  <!ELEMENT region-name_for_headerEven (#PCDATA)>
+  <!ELEMENT region-name_for_footerEven (#PCDATA)>
+  <!ELEMENT region-name_for_headerLeftBlank (#PCDATA)>
+  <!ELEMENT region-name_for_footerLeftBlank (#PCDATA)>
 
   <!ELEMENT security (securityClassification+,commercialClassification?,caveat?, derivativeClassification?)>
   <!ELEMENT securityClassification (#PCDATA)>
@@ -40,19 +86,28 @@
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
   <!ATTLIST layout master-name CDATA #REQUIRED>
-
+  <!ATTLIST layout length-unit CDATA #REQUIRED>
+  <!ATTLIST layout area-unit CDATA #REQUIRED>
+  <!ATTLIST layout height CDATA #REQUIRED>
   <!ATTLIST layout width CDATA #REQUIRED>
+  <!ATTLIST layout default-font-size CDATA #IMPLIED>
+  <!ATTLIST layout cgmark-offset CDATA #IMPLIED>
+  <!ATTLIST layout start-indent CDATA #IMPLIED>
+  <!ATTLIST layout orientation (port|land) #IMPLIED>
+
+  <!-- <!ATTLIST layout width CDATA #REQUIRED>
   <!ATTLIST layout height CDATA #REQUIRED>
   <!ATTLIST layout region-before CDATA #REQUIRED>
   <!ATTLIST layout region-after CDATA #REQUIRED>
   <!ATTLIST layout start-indent CDATA #IMPLIED>
   <!ATTLIST layout cgmark-indent CDATA #IMPLIED>
+  <!ATTLIST layout default-font-size CDATA #IMPLIED> -->
 
-  <!ATTLIST layout margin-top CDATA #REQUIRED>
+  <!-- <!ATTLIST layout margin-top CDATA #REQUIRED>
   <!ATTLIST layout margin-bottom CDATA #REQUIRED>
   <!ATTLIST layout margin-right CDATA #REQUIRED>
   <!ATTLIST layout margin-left CDATA #REQUIRED>
-  <!ATTLIST layout orientation (port|land) #IMPLIED>
+  <!ATTLIST layout orientation (port|land) #IMPLIED> -->
 
   <!ATTLIST colors mode (rgb|cmyk|hex) #REQUIRED>
   <!ATTLIST color name CDATA #REQUIRED>
@@ -92,20 +147,106 @@
       <path product-name="MALE">pdf/MALE/Main.xsl</path>
       <pathCache>pdf/transformed/</pathCache>
     </method>
-    <layout master-name="default-A4" orientation="port" 
+    <!-- <layout master-name="default-A4" orientation="port" 
       margin-top="1cm" margin-bottom="1cm"
       margin-left="3cm" margin-right="1.5cm"
       width="21cm" height="29.7cm"
       region-before="1.5cm" region-after="2cm"
       start-indent="1.5cm"
-      cgmark-indent="2cm"/>
+      cgmark-indent="2cm"
+      default-font-size="11pt"/>
     <layout master-name="default-pm" orientation="port" 
       margin-top="1cm" margin-bottom="1cm"
       margin-left="3cm" margin-right="1.5cm"
       width="21cm" height="29.7cm"
       region-before="1.5cm" region-after="2cm"
       start-indent="1.5cm"
-      cgmark-indent="2cm"/>
+      cgmark-indent="2cm"
+      default-font-size="11pt"/> -->
+    <layout master-name="default-A4" length-unit="cm" area-unit="pt" width="21" height="29.7" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="port">
+      <simple-page-master>
+        <master-name_for_odd>odd</master-name_for_odd>
+        <margin-top_for_odd>1</margin-top_for_odd>
+        <margin-bottom_for_odd>1</margin-bottom_for_odd>
+        <margin-left_for_odd>3</margin-left_for_odd>
+        <margin-right_for_odd>1.5</margin-right_for_odd>
+        <margin-top_for_odd_body>1.5</margin-top_for_odd_body>
+        <margin-bottom_for_odd_body>1.7</margin-bottom_for_odd_body>
+        <extent_for_odd_header>1.5</extent_for_odd_header>
+        <extent_for_odd_footer>1.5</extent_for_odd_footer>
+
+        <master-name_for_even>even</master-name_for_even>
+        <margin-top_for_even>1</margin-top_for_even>
+        <margin-bottom_for_even>1</margin-bottom_for_even>
+        <margin-left_for_even>1.5</margin-left_for_even>
+        <margin-right_for_even>3</margin-right_for_even>
+        <margin-top_for_even_body>1.5</margin-top_for_even_body>
+        <margin-bottom_for_even_body>1.7</margin-bottom_for_even_body>
+        <extent_for_even_header>1.5</extent_for_even_header>
+        <extent_for_even_footer>1.5</extent_for_even_footer>
+
+        <master-name_for_leftBlank>left-blank</master-name_for_leftBlank>
+        <margin-top_for_leftBlank>1</margin-top_for_leftBlank>
+        <margin-bottom_for_leftBlank>1</margin-bottom_for_leftBlank>
+        <margin-left_for_leftBlank>1.5</margin-left_for_leftBlank>
+        <margin-right_for_leftBlank>3</margin-right_for_leftBlank>
+        <margin-top_for_leftBlank_body>1.5</margin-top_for_leftBlank_body>
+        <margin-bottom_for_leftBlank_body>2</margin-bottom_for_leftBlank_body>
+        <extent_for_leftBlank_header>1.5</extent_for_leftBlank_header>
+        <extent_for_leftBlank_footer>2</extent_for_leftBlank_footer>
+
+        <region-name_for_body>body</region-name_for_body>
+        <region-name_for_bodyLeftBlank>left_blank</region-name_for_bodyLeftBlank>
+        <region-name_for_headerOdd>header-odd</region-name_for_headerOdd>
+        <region-name_for_footerOdd>footer-odd</region-name_for_footerOdd>
+        <region-name_for_headerEven>header-even</region-name_for_headerEven>
+        <region-name_for_footerEven>footer-even</region-name_for_footerEven>
+        <region-name_for_headerLeftBlank>header-left_blank</region-name_for_headerLeftBlank>
+        <region-name_for_footerLeftBlank>footer-left_blank</region-name_for_footerLeftBlank>
+      </simple-page-master>
+    </layout>
+    <layout master-name="default-pm" length-unit="cm" area-unit="pt" width="21" height="29.7" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="port">
+      <simple-page-master>
+        <master-name_for_odd>oddA4</master-name_for_odd>
+        <margin-top_for_odd>1</margin-top_for_odd>
+        <margin-bottom_for_odd>1</margin-bottom_for_odd>
+        <margin-left_for_odd>3</margin-left_for_odd>
+        <margin-right_for_odd>1.5</margin-right_for_odd>
+        <margin-top_for_odd_body>1.5</margin-top_for_odd_body>
+        <margin-bottom_for_odd_body>1.7</margin-bottom_for_odd_body>
+        <extent_for_odd_header>1.5</extent_for_odd_header>
+        <extent_for_odd_footer>1.5</extent_for_odd_footer>
+
+        <master-name_for_even>evenA4</master-name_for_even>
+        <margin-top_for_even>1</margin-top_for_even>
+        <margin-bottom_for_even>1</margin-bottom_for_even>
+        <margin-left_for_even>1.5</margin-left_for_even>
+        <margin-right_for_even>3</margin-right_for_even>
+        <margin-top_for_even_body>1.5</margin-top_for_even_body>
+        <margin-bottom_for_even_body>1.7</margin-bottom_for_even_body>
+        <extent_for_even_header>1.5</extent_for_even_header>
+        <extent_for_even_footer>1.5</extent_for_even_footer>
+
+        <master-name_for_leftBlank>left-blankA4</master-name_for_leftBlank>
+        <margin-top_for_leftBlank>1</margin-top_for_leftBlank>
+        <margin-bottom_for_leftBlank>1</margin-bottom_for_leftBlank>
+        <margin-left_for_leftBlank>1.5</margin-left_for_leftBlank>
+        <margin-right_for_leftBlank>3</margin-right_for_leftBlank>
+        <margin-top_for_leftBlank_body>1.5</margin-top_for_leftBlank_body>
+        <margin-bottom_for_leftBlank_body>2</margin-bottom_for_leftBlank_body>
+        <extent_for_leftBlank_header>1.5</extent_for_leftBlank_header>
+        <extent_for_leftBlank_footer>2</extent_for_leftBlank_footer>
+
+        <region-name_for_body>body</region-name_for_body>
+        <region-name_for_bodyLeftBlank>left_blank</region-name_for_bodyLeftBlank>
+        <region-name_for_headerOdd>header-odd</region-name_for_headerOdd>
+        <region-name_for_footerOdd>footer-odd</region-name_for_footerOdd>
+        <region-name_for_headerEven>header-even</region-name_for_headerEven>
+        <region-name_for_footerEven>footer-even</region-name_for_footerEven>
+        <region-name_for_headerLeftBlank>header-left_blank</region-name_for_headerLeftBlank>
+        <region-name_for_footerLeftBlank>footer-left_blank</region-name_for_footerLeftBlank>
+      </simple-page-master>
+    </layout>
   </output>
   <colors mode="hex">
     <color name="amber" code="#ffc107"/>

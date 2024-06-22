@@ -31,7 +31,7 @@
     <xsl:call-template name="add_applicability"/>
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
-    <fo:block page-break-before="avoid">
+    <fo:block>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="style-para">
         <xsl:with-param name="level" select="$level"/>
