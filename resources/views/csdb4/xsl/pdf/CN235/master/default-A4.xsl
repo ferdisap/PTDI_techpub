@@ -99,7 +99,7 @@
         <!-- <fo:inline-container inline-progression-dimension="14.9%">
           <fo:block></fo:block>
         </fo:inline-container> -->
-        <fo:inline-container inline-progression-dimension="64.9%" text-align="left">
+        <fo:inline-container inline-progression-dimension="54.9%" text-align="left">
           <xsl:call-template name="get_logo">
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
@@ -107,7 +107,7 @@
             <xsl:call-template name="getPmEntryTitle"/>
           </fo:block>
         </fo:inline-container>
-        <fo:inline-container inline-progression-dimension="34.9%">
+        <fo:inline-container inline-progression-dimension="44.9%">
           <fo:block text-align="right">
             <xsl:call-template name="getPMCode"/>
           </fo:block>
@@ -126,13 +126,13 @@
         <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
       </xsl:attribute>
       <fo:block>
-        <fo:inline-container inline-progression-dimension="34.9%">
+        <fo:inline-container inline-progression-dimension="44.9%">
           <fo:block text-align="left">
             <xsl:call-template name="getPMCode"/>
           </fo:block>
         </fo:inline-container>
         
-        <fo:inline-container inline-progression-dimension="64.9%" text-align="right">
+        <fo:inline-container inline-progression-dimension="54.9%" text-align="right">
           <xsl:call-template name="get_logo">
             <xsl:with-param name="entry" select="$entry"/>
           </xsl:call-template>
@@ -416,9 +416,9 @@
   <!-- defaultnya pakai intentionally left blank -->
   <xsl:template name="get_pageSequenceMaster">
     <xsl:param name="masterName">default-pm</xsl:param>
-    <xsl:param name="odd_masterReference">oddA4</xsl:param>
-    <xsl:param name="even_masterReference">evenA4</xsl:param>
-    <xsl:param name="leftBlank_masterReference">left-blankA4</xsl:param>
+    <xsl:param name="odd_masterReference"><xsl:call-template name="get_layout_masterName_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="even_masterReference"><xsl:call-template name="get_layout_masterName_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="leftBlank_masterReference"><xsl:call-template name="get_layout_masterName_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <!-- nyontek ke default-A4.xsl -->
     <fo:page-sequence-master master-name="{$masterName}">
       <fo:repeatable-page-master-alternatives>

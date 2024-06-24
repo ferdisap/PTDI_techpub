@@ -25,10 +25,26 @@
       </xsl:call-template>
       <xsl:call-template name="get_pageSequenceMaster">
         <xsl:with-param name="masterName" select="$masterName"/>
-        <xsl:with-param name="odd_masterReference">oddA4</xsl:with-param>
-        <xsl:with-param name="even_masterReference">evenA4</xsl:with-param>
-        <xsl:with-param name="leftBlank_masterReference">left-blankA4</xsl:with-param>
       </xsl:call-template>
+
+      <!-- scan pmRef disetiap PMC -->
+      <xsl:for-each select="//pmRef">
+        <xsl:variable name="pmDoc" select="php:function(
+        'Ptdi\Mpub\Main\CSDBStatic::document',
+        $csdb_path,
+        php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmIdent', descendant::pmRefIdent)
+        )"/>
+        <xsl:variable name="pt" select="string($pmDoc/pm/@pmType)"/>
+        <xsl:variable name="masterName" select="string($ConfigXML/config/pmGroup/pt[string(@type) = $pt])"/>
+        
+        <xsl:call-template name="get_simplePageMaster">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+        <xsl:call-template name="get_pageSequenceMaster">
+          <xsl:with-param name="masterName" select="$masterName"/>
+        </xsl:call-template>
+      </xsl:for-each>
+
       <!-- masterName: default-pm01 -->
       <!-- masterName: default-pm02 -->
       <!-- masterName: default-pm03 -->

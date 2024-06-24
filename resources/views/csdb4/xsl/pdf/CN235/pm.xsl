@@ -54,7 +54,7 @@
       <!-- flow-name merujuk ke simple-page-master/region-body/@region-name -->
       <fo:flow flow-name="body">
         <xsl:apply-templates select="$entry//content">
-          <xsl:with-param name="masterName" select="$masterName"/>
+          <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
         </xsl:apply-templates>
       </fo:flow>
@@ -75,12 +75,15 @@
       <xsl:variable name="pt" select="string($entry/pm/@pmType)"/>
       <xsl:choose>
         <xsl:when test="$pt">
-          <xsl:value-of select="$ConfigXML/config/pmGroup/pt[string(@type) = $pt]"/>
+          <xsl:value-of select="string($ConfigXML/config/pmGroup/pt[string(@type) = $pt])"/>
         </xsl:when>
         <xsl:otherwise>default-pm</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::set_PDF_MasterName', $masterName)"/>
+    <!-- <xsl:value-of select="php:function('dump', string($masterName))"/>f -->
+    
+    <!-- <xsl:value-of select="php:function('dd', 'ccc', $masterName)"/> -->
     <xsl:apply-templates select="$entry/pm">
       <xsl:with-param name="masterReference" select="$masterName"/>
     </xsl:apply-templates>
