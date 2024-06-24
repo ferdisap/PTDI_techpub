@@ -30,7 +30,7 @@
               <fo:block text-align="center" font-weight="bold" text-decoration="underline">WARNING</fo:block>
             </xsl:if>
             <xsl:if test="name() = 'caution'">
-              <fo:block text-align="center" font-weight="bold">CAUTION</fo:block>
+              <fo:block text-align="center" font-weight="bold">CAUTIONs</fo:block>
             </xsl:if>
             <xsl:if test="name() = 'note'">
               <fo:block text-align="left" font-weight="bold">Note</fo:block>

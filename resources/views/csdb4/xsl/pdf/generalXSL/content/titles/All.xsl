@@ -3,7 +3,9 @@
   xmlns:php="http://php.net/xsl" xmlns:fo="http://www.w3.org/1999/XSL/Format">
 
   <xsl:template match="title[parent::levelledPara]">
-    <xsl:param name="masterName" select="$masterName"/>
+    <xsl:param name="masterName">
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::get_PDF_MasterName')"/>
+    </xsl:param>
     <xsl:param name="level">
       <xsl:text>s</xsl:text>
       <!-- <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::checkLevel', parent::levelledPara, 1)"/> -->
@@ -27,9 +29,9 @@
     <xsl:call-template name="add_controlAuthority"/>
     <xsl:call-template name="add_security"/>
     <fo:block page-break-inside="avoid" page-break-after="avoid">
-      <xsl:call-template name="style-title"/>
+      <!-- <xsl:call-template name="style-title"/>
         <xsl:value-of select="$prefix"/>
-      <xsl:apply-templates/>
+      <xsl:apply-templates/> -->
     </fo:block>
     <xsl:call-template name="cgmark_end"/>
   </xsl:template>

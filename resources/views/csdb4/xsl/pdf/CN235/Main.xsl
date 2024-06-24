@@ -19,6 +19,7 @@
   <xsl:include href="../generalXSL/identStatus/All-Enterprise.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Security.xsl" />
   <xsl:include href="../generalXSL/identStatus/dmTitle.xsl" />
+  <xsl:include href="../generalXSL/identStatus/Style-dmTitle.xsl" />
   <xsl:include href="../generalXSL/content/content.xsl" />
   <xsl:include href="../generalXSL/content/applicability/All.xsl" />
   <xsl:include href="../generalXSL/content/captionGroups/All.xsl" />
@@ -52,6 +53,9 @@
   <xsl:include href="../generalXSL/content/referencing/refs.xsl" />
   <xsl:include href="../generalXSL/content/tables/All.xsl" />
   <xsl:include href="../generalXSL/content/tables/Style-table.xsl" />
+  <xsl:include href="../generalXSL/content/tables/Style-tgroup.xsl" />
+  <xsl:include href="../generalXSL/content/tables/Style-row.xsl" />
+  <xsl:include href="../generalXSL/content/tables/Style-entry.xsl" />
   <xsl:include href="../generalXSL/content/textElements/All.xsl" />
   <xsl:include href="../generalXSL/content/textElements/Style-para.xsl" />
   <xsl:include href="../generalXSL/content/textElements/accessPointRef.xsl" />
@@ -184,6 +188,11 @@
 
   <xsl:template name="setBookmark">
     <fo:bookmark-tree/>
+  </xsl:template>
+
+  <!-- -->
+  <xsl:template name="get_PDF_MasterName">
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::get_PDF_MasterName')"/>
   </xsl:template>
 
   <!-- dipanggil di content.xsl dan Style-table.xsl-->
