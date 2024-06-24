@@ -49,11 +49,11 @@
       </xsl:if>
       <xsl:variable name="address">
         <xsl:if test="department">
-          <xsl:text>Dept. </xsl:text><xsl:value-of select="department"/>
+          <xsl:text></xsl:text><xsl:value-of select="department"/>
           <xsl:text>, </xsl:text>
         </xsl:if>
         <xsl:if test="street">
-          <xsl:text>St. </xsl:text><xsl:value-of select="street"/>
+          <xsl:text></xsl:text><xsl:value-of select="street"/>
           <xsl:text>, </xsl:text>
         </xsl:if>
         <xsl:value-of select="city"/>

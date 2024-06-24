@@ -23,33 +23,48 @@
     <fo:block>Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi sapiente eos reprehenderit iure veritatis, quam, soluta nulla cupiditate eaque fugit recusandae repellat distinctio porro eum obcaecati optio officia? Explicabo, voluptates! Rem doloribus repudiandae voluptas velit necessitatibus illo quaerat mollitia error iusto perspiciatis, laudantium odio, exercitationem obcaecati provident? Dignissimos ut ad ipsam, obcaecati rerum sed itaque animi? Accusantium debitis voluptatibus vero quisquam, cum corrupti dolorum earum perspiciatis nulla rem aperiam praesentium vitae modi enim, unde quidem quis impedit veniam deleniti eum cumque saepe corporis? Unde corporis fugiat explicabo eos dicta doloribus id et. Iste quae minus blanditiis, deserunt, nihil, asperiores assumenda cumque tenetur quam praesentium id consequuntur vitae ad rerum cupiditate corrupti animi totam molestiae. Alias quo fuga cum accusantium tempore dolorem mollitia eum consequuntur odio veniam? Ipsa, doloribus rerum, enim suscipit quisquam ullam impedit dicta nostrum debitis similique quibusdam, corporis dolor. Ratione ex molestiae assumenda ipsum quasi dolore dolorum temporibus! Odio velit quasi assumenda necessitatibus repellat, placeat nihil fuga ipsum non, quo nesciunt repellendus sapiente, quis iste! Ab quaerat, reprehenderit amet odio, facilis architecto libero aspernatur et cum minus esse sint quibusdam? Molestias blanditiis impedit vero, accusantium saepe, assumenda, culpa ipsam dolore incidunt explicabo officiis voluptatibus voluptas. Maxime, porro eum?</fo:block>
   </xsl:template> -->
   <xsl:template match="frontMatterTitlePage">
-    <xsl:apply-templates select="productIntroName"/>
-    <xsl:apply-templates select="productAndModel"/>
-    <xsl:apply-templates select="pmTitle"/>
-    <xsl:apply-templates select="shortPmTitle"/>
+    <xsl:param name="masterName"><xsl:call-template name="get_PDF_MasterName"/></xsl:param>    
+    <xsl:choose>
+      <xsl:when test="$masterName = 'poh'">
+        <xsl:call-template name="poh-frontMatterTitlePage"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="default-frontMatterTitlePage"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <!-- <xsl:call-template name="default-frontMatterTitlePage"/> -->
+  </xsl:template>
+
+  <xsl:template name="default-frontMatterTitlePage">
+    <xsl:call-template name="default-productIntroName"/>
+    <xsl:call-template name="default-productAndModel"/>
+    <xsl:call-template name="default-pmTitle"/>
+    <xsl:call-template name="default-shortPmTitle"/>
     
     <fo:block>
-      <xsl:apply-templates select="pmCode"/>
+      <xsl:call-template name="default-pmCode"/>
       <fo:inline-container inline-progression-dimension="30%">
-        <xsl:apply-templates select="issueInfo"/>
+        <xsl:call-template name="default-issueInfo"/>
       </fo:inline-container>
       <fo:inline-container>
-        <xsl:apply-templates select="issueDate"/>
+        <xsl:call-template name="default-issueDate"/>
       </fo:inline-container>
     </fo:block>
 
-    <xsl:apply-templates select="productIllustration"/>
+    <xsl:call-template name="default-productIllustration"/>
     <xsl:call-template name="copyright"/>
 
     <!-- externalPubCode -->
-    <fo:block-container font-size="8pt" margin-top="3pt">
-      <fo:block>External Publication related:</fo:block>
-      <xsl:for-each select="externalPubCode">
-        <fo:block>
-          <xsl:value-of select="@pubCodingScheme"/><xsl:text>:</xsl:text><xsl:apply-templates/> <xsl:text>   </xsl:text>
-        </fo:block>
-      </xsl:for-each>
-    </fo:block-container>
+    <xsl:if test="externalPubCode">
+      <fo:block-container font-size="8pt" margin-top="3pt">
+        <fo:block>External Publication related:</fo:block>
+        <xsl:for-each select="externalPubCode">
+          <fo:block>
+            <xsl:value-of select="@pubCodingScheme"/><xsl:text>:</xsl:text><xsl:apply-templates/> <xsl:text>   </xsl:text>
+          </fo:block>
+        </xsl:for-each>
+      </fo:block-container>
+    </xsl:if>
 
     <!-- dervative classification here -->
 
@@ -118,17 +133,17 @@
     </fo:block-container>
   </xsl:template>
 
-  <xsl:template match="productIntroName[ancestor::frontMatterTitlePage]">
+  <xsl:template name="default-productIntroName">
     <fo:block xsl:use-attribute-sets="fmIntroName">
-      <xsl:apply-templates select="name" />
+      <xsl:apply-templates select="productIntroName/name" />
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="productAndModel[parent::frontMatterTitlePage]">
-    <xsl:if test="productName">
-      <fo:block class="productName"><xsl:apply-templates select="productName"/></fo:block>
+  <xsl:template name="default-productAndModel">
+    <xsl:if test="productAndModel/productName">
+      <fo:block class="productName"><xsl:apply-templates select="productAndModel/productName"/></fo:block>
     </xsl:if>
-    <xsl:for-each select="productModel">
+    <xsl:for-each select="productAndModel/productModel">
       <fo:block-container>
         <fo:block>
           <fo:inline>Model: <xsl:apply-templates select="modelName"/></fo:inline>
@@ -145,38 +160,38 @@
     </xsl:for-each>
   </xsl:template>
 
-  <xsl:template match="pmTitle[parent::frontMatterTitlePage]">
+  <xsl:template name="default-pmTitle">
     <fo:block xsl:use-attribute-sets="fmPmTitle">
-      <xsl:apply-templates />
+      <xsl:apply-templates select="pmTitle/."/>
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="shortPmTitle[parent::frontMatterTitlePage]">
+  <xsl:template name="default-shortPmTitle">
     <fo:block xsl:use-attribute-sets="fmShortPmTitle">
-      <xsl:apply-templates />
+      <xsl:apply-templates select="shortPmTitle/."/>
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="pmCode[parent::frontMatterTitlePage]">
+  <xsl:template name="default-pmCode">
     <fo:block xsl:use-attribute-sets="fmPmCode">
-      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', .)" />
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmCode', pmCode/.)" />
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="issueInfo[parent::frontMatterTitlePage]">
+  <xsl:template name="default-issueInfo">
     <fo:block xsl:use-attribute-sets="fmPmIssueInfo">
-      Issue No.: <xsl:value-of select="@issueNumber"/>
+      Issue No.: <xsl:value-of select="issueInfo/@issueNumber"/>
     </fo:block>
   </xsl:template>
   
-  <xsl:template match="issueDate[parent::frontMatterTitlePage]">
+  <xsl:template name="default-issueDate">
     <fo:block xsl:use-attribute-sets="fmPmIssueDate">
-      Issue Date: <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', .)"/>
+      Issue Date: <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_issueDate', issueDate/.)"/>
     </fo:block>
   </xsl:template>
 
-  <xsl:template match="productIllustration">
-    <xsl:for-each select="graphic">
+  <xsl:template name="default-productIllustration">
+    <xsl:for-each select="productIllustration/graphic">
       <fo:block text-align="center">
         <fo:external-graphic src="url('{unparsed-entity-uri(@infoEntityIdent)}')" content-width="scale-to-fit">
           <xsl:call-template name="setGraphicDimension"/>

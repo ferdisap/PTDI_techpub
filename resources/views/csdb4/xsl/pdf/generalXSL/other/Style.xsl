@@ -20,7 +20,7 @@
       <xsl:attribute name="height"><xsl:value-of select="@reproductionHeight"/></xsl:attribute>
     </xsl:if>
     <xsl:if test="@reproductionWidth">
-      <xsl:attribute name="height"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
+      <xsl:attribute name="width"><xsl:value-of select="@reproductionWidth"/></xsl:attribute>
     </xsl:if>
   </xsl:template>
 
@@ -30,14 +30,31 @@
     <xsl:attribute name="margin-top">32pt</xsl:attribute>
   </xsl:attribute-set>
 
+  <xsl:attribute-set name="poh-fmIntroName">
+    <xsl:attribute name="font-size">14pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="margin-top">12pt</xsl:attribute>
+  </xsl:attribute-set>
+
   <xsl:attribute-set name="fmPmTitle">
     <xsl:attribute name="font-size">24pt</xsl:attribute>
     <xsl:attribute name="font-weight">bold</xsl:attribute>
     <xsl:attribute name="margin-top">28pt</xsl:attribute>
   </xsl:attribute-set>
 
+  <xsl:attribute-set name="poh-fmPmTitle">
+    <xsl:attribute name="font-size">20pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="margin-top">18pt</xsl:attribute>
+  </xsl:attribute-set>
+
   <xsl:attribute-set name="fmShortPmTitle">
     <xsl:attribute name="font-size">14pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+  </xsl:attribute-set>
+
+  <xsl:attribute-set name="poh-fmShortPmTitle">
+    <xsl:attribute name="font-size">12pt</xsl:attribute>
     <xsl:attribute name="font-weight">bold</xsl:attribute>
   </xsl:attribute-set>
 
@@ -47,13 +64,29 @@
     <xsl:attribute name="margin-top">28pt</xsl:attribute>
   </xsl:attribute-set>
 
+  <xsl:attribute-set name="poh-fmPmCode">
+    <xsl:attribute name="font-size">10pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+    <xsl:attribute name="margin-top">14pt</xsl:attribute>
+  </xsl:attribute-set>
+
   <xsl:attribute-set name="fmPmIssueInfo">
     <xsl:attribute name="font-size">14pt</xsl:attribute>
     <xsl:attribute name="font-weight">bold</xsl:attribute>
   </xsl:attribute-set>
 
+  <xsl:attribute-set name="poh-fmPmIssueInfo">
+    <xsl:attribute name="font-size">10pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+  </xsl:attribute-set>
+
   <xsl:attribute-set name="fmPmIssueDate">
     <xsl:attribute name="font-size">14pt</xsl:attribute>
+    <xsl:attribute name="font-weight">bold</xsl:attribute>
+  </xsl:attribute-set>
+
+  <xsl:attribute-set name="poh-fmPmIssueDate">
+    <xsl:attribute name="font-size">10pt</xsl:attribute>
     <xsl:attribute name="font-weight">bold</xsl:attribute>
   </xsl:attribute-set>
 

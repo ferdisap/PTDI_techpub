@@ -37,6 +37,7 @@
   <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/All.xsl" />
   <xsl:include href="../generalXSL/content/figuresMultimediaFoldouts/Style-icn.xsl" />
   <xsl:include href="../generalXSL/content/frontMatter/All-FrontMatterTitlePage.xsl" />
+  <xsl:include href="../generalXSL/content/frontMatter/POH-FrontMatterTitlePage.xsl" />
   <xsl:include href="../generalXSL/content/frontMatter/All-FrontMatterList.xsl" />
   <xsl:include href="../generalXSL/content/frontMatter/Highlights.xsl" />
   <xsl:include href="../generalXSL/content/frontMatter/HighlightsAndUpdating.xsl" />
@@ -81,10 +82,11 @@
   <xsl:variable name="masterName">
     <xsl:choose>
       <xsl:when test="pm">
-        <xsl:variable name="pt" select="$ConfigXML/config/pmGroup/pt[string(@type) = string(pm/@pmType)]" />
+        <xsl:variable name="pt" select="string(pm/@pmType)" />
+        <xsl:variable name="name" select="string($ConfigXML/config/pmGroup/pt[@type = $pt])" />
         <xsl:choose>
-          <xsl:when test="$pt">
-            <xsl:value-of select="$pt"/>
+          <xsl:when test="$name">
+            <xsl:value-of select="$name"/>
           </xsl:when>
           <xsl:otherwise>default-pm</xsl:otherwise>
         </xsl:choose>
