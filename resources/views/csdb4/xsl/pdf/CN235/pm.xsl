@@ -32,7 +32,8 @@
       </xsl:choose>
     </xsl:variable>
 
-    <xsl:apply-templates select="dmRef|pmRef|pmEntry">
+    <xsl:apply-templates select="dmRef|pmRef|externalPubRef|pmEntry">
+    <!-- <xsl:apply-templates select="externalPubRef"> -->
       <xsl:with-param name="masterReference" select="$masterReference"/>
       <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
     </xsl:apply-templates>
@@ -89,12 +90,28 @@
     </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="pmRef[parent::externalPubRef]">
+  <xsl:template match="externalPubRef[parent::pmEntry]">
+    <xsl:param name="masterReference"/>
+    <xsl:param name="idParentBookmark"/>
 
+    <xsl:variable name="entryFilename">
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubRefIdent', descendant::externalPubRefIdent)"/>
+      <xsl:if test="php:function('strtoupper', string(externalPubRefIdent/externalPubCode/@pubCodingScheme)) = 'PDF'">
+        <xsl:text>.pdf</xsl:text>
+      </xsl:if>        
+    </xsl:variable>
+
+    <xsl:variable name="path">
+      <xsl:text>url('</xsl:text>
+      <xsl:value-of select="concat('file:\\\',$csdb_path, php:function('Ptdi\Mpub\Main\CSDBStatic::directory_separator') ,$entryFilename)"/>
+      <xsl:text>')</xsl:text>
+    </xsl:variable>
+    
+    <fox:external-document src="{$path}"/>
   </xsl:template>
 
   <xsl:template match="pmEntryTitle">
-    <!-- nothing to do -->
+    <!-- nothing to do because the title will be put inside header -->
   </xsl:template>
 
 </xsl:transform>
