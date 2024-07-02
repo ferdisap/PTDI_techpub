@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup, frontMatterGroup, pmGroup)>
+  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup, frontMatterGroup, pmGroup, maintenance)>
 
   <!ELEMENT output (method+,(layout?)+)>
   <!ELEMENT method (path+,pathCache)>
@@ -11,9 +11,9 @@
   <!ELEMENT color EMPTY>
   
   <!ELEMENT simple-page-master (
-    master-name_for_odd, margin-top_for_odd, margin-bottom_for_odd, margin-left_for_odd, margin-right_for_odd, margin-top_for_odd_body, margin-bottom_for_odd_body, extent_for_odd_header, extent_for_odd_footer,
-    master-name_for_even, margin-top_for_even, margin-bottom_for_even, margin-left_for_even, margin-right_for_even, margin-top_for_even_body, margin-bottom_for_even_body, extent_for_even_header, extent_for_even_footer,
-    master-name_for_leftBlank, margin-top_for_leftBlank, margin-bottom_for_leftBlank, margin-left_for_leftBlank, margin-right_for_leftBlank, margin-top_for_leftBlank_body, margin-bottom_for_leftBlank_body, extent_for_leftBlank_header, extent_for_leftBlank_footer,
+    master-name_for_odd, margin-top_for_odd, margin-bottom_for_odd, margin-left_for_odd, margin-right_for_odd, margin-top_for_odd_body, margin-bottom_for_odd_body, margin-left_for_odd_body, margin-right_for_odd_body, extent_for_odd_header, extent_for_odd_footer,
+    master-name_for_even, margin-top_for_even, margin-bottom_for_even, margin-left_for_even, margin-right_for_even, margin-top_for_even_body, margin-bottom_for_even_body, margin-left_for_even_body, margin-right_for_even_body, extent_for_even_header, extent_for_even_footer,
+    master-name_for_leftBlank, margin-top_for_leftBlank, margin-bottom_for_leftBlank, margin-left_for_leftBlank, margin-right_for_leftBlank, margin-top_for_leftBlank_body, margin-bottom_for_leftBlank_body, margin-left_for_leftBlank_body, margin-right_for_leftBlank_body, extent_for_leftBlank_header, extent_for_leftBlank_footer,
     region-name_for_body, region-name_for_bodyLeftBlank, region-name_for_headerOdd, region-name_for_footerOdd, region-name_for_headerEven, region-name_for_footerEven, region-name_for_headerLeftBlank, region-name_for_footerLeftBlank
     )>
   <!-- odd -->
@@ -24,6 +24,8 @@
   <!ELEMENT margin-right_for_odd (#PCDATA)>
   <!ELEMENT margin-top_for_odd_body (#PCDATA)>
   <!ELEMENT margin-bottom_for_odd_body (#PCDATA)>
+  <!ELEMENT margin-left_for_odd_body (#PCDATA)>
+  <!ELEMENT margin-right_for_odd_body (#PCDATA)>
   <!ELEMENT extent_for_odd_header (#PCDATA)>
   <!ELEMENT extent_for_odd_footer (#PCDATA)>
   <!-- even -->
@@ -34,6 +36,8 @@
   <!ELEMENT margin-right_for_even (#PCDATA)>
   <!ELEMENT margin-top_for_even_body (#PCDATA)>
   <!ELEMENT margin-bottom_for_even_body (#PCDATA)>
+  <!ELEMENT margin-left_for_even_body (#PCDATA)>
+  <!ELEMENT margin-right_for_even_body (#PCDATA)>
   <!ELEMENT extent_for_even_header (#PCDATA)>
   <!ELEMENT extent_for_even_footer (#PCDATA)>
   <!-- left blank -->
@@ -44,6 +48,8 @@
   <!ELEMENT margin-right_for_leftBlank (#PCDATA)>
   <!ELEMENT margin-top_for_leftBlank_body (#PCDATA)>
   <!ELEMENT margin-bottom_for_leftBlank_body (#PCDATA)>
+  <!ELEMENT margin-left_for_leftBlank_body (#PCDATA)>
+  <!ELEMENT margin-right_for_leftBlank_body (#PCDATA)>
   <!ELEMENT extent_for_leftBlank_header (#PCDATA)>
   <!ELEMENT extent_for_leftBlank_footer (#PCDATA)>
   <!-- region name -->
@@ -83,6 +89,11 @@
   <!ELEMENT pmGroup (pt)*>
   <!ELEMENT pt (#PCDATA)>
 
+  <!ELEMENT maintenance (source|threshold|task)*>
+  <!ELEMENT source (#PCDATA)>
+  <!ELEMENT threshold (#PCDATA)>
+  <!ELEMENT task (#PCDATA)>
+
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
   <!ATTLIST layout master-name CDATA #REQUIRED>
@@ -94,6 +105,8 @@
   <!ATTLIST layout cgmark-offset CDATA #IMPLIED>
   <!ATTLIST layout start-indent CDATA #IMPLIED>
   <!ATTLIST layout orientation (port|land) #IMPLIED>
+  <!ATTLIST source type CDATA #REQUIRED>
+  <!ATTLIST threshold uom CDATA #REQUIRED>
 
   <!-- <!ATTLIST layout width CDATA #REQUIRED>
   <!ATTLIST layout height CDATA #REQUIRED>
@@ -133,6 +146,7 @@
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
   <!ATTLIST frontMatter type CDATA #REQUIRED>
   <!ATTLIST pt type CDATA #REQUIRED>
+  <!ATTLIST task code CDATA #REQUIRED>
 ]>
 
 <config>
@@ -163,6 +177,54 @@
       start-indent="1.5cm"
       cgmark-indent="2cm"
       default-font-size="11pt"/> -->
+    <layout master-name="default-A4L" length-unit="cm" area-unit="pt" width="29.7" height="21" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="land">
+      <simple-page-master>
+        <master-name_for_odd>odd</master-name_for_odd>
+        <margin-top_for_odd>3</margin-top_for_odd>
+        <margin-bottom_for_odd>1.5</margin-bottom_for_odd>
+        <margin-left_for_odd>2</margin-left_for_odd>
+        <margin-right_for_odd>1</margin-right_for_odd>
+        <margin-top_for_odd_body>0</margin-top_for_odd_body>
+        <margin-bottom_for_odd_body>0</margin-bottom_for_odd_body>
+        <margin-left_for_odd_body>1</margin-left_for_odd_body>
+        <margin-right_for_odd_body>1</margin-right_for_odd_body>
+        <extent_for_odd_header>0.5</extent_for_odd_header>
+        <extent_for_odd_footer>-1.5</extent_for_odd_footer>
+
+        <master-name_for_even>even</master-name_for_even>
+        <margin-top_for_even>1.5</margin-top_for_even>
+        <margin-bottom_for_even>3</margin-bottom_for_even>
+        <margin-left_for_even>2</margin-left_for_even>
+        <margin-right_for_even>1</margin-right_for_even>
+        <margin-top_for_even_body>0</margin-top_for_even_body>
+        <margin-bottom_for_even_body>0</margin-bottom_for_even_body>
+        <margin-left_for_even_body>1</margin-left_for_even_body>
+        <margin-right_for_even_body>1</margin-right_for_even_body>
+        <extent_for_even_header>0.5</extent_for_even_header>
+        <extent_for_even_footer>-1.5</extent_for_even_footer>
+
+        <master-name_for_leftBlank>left-blank</master-name_for_leftBlank>
+        <margin-top_for_leftBlank>1</margin-top_for_leftBlank>
+        <margin-bottom_for_leftBlank>1</margin-bottom_for_leftBlank>
+        <margin-left_for_leftBlank>1.5</margin-left_for_leftBlank>
+        <margin-right_for_leftBlank>3</margin-right_for_leftBlank>
+        <margin-top_for_leftBlank_body>1.5</margin-top_for_leftBlank_body>
+        <margin-bottom_for_leftBlank_body>2</margin-bottom_for_leftBlank_body>
+        <margin-left_for_leftBlank_body>0</margin-left_for_leftBlank_body>
+        <margin-right_for_leftBlank_body>0</margin-right_for_leftBlank_body>
+        <extent_for_leftBlank_header>1.5</extent_for_leftBlank_header>
+        <extent_for_leftBlank_footer>2</extent_for_leftBlank_footer>
+
+        <region-name_for_body>body</region-name_for_body>
+        <region-name_for_bodyLeftBlank>left_blank</region-name_for_bodyLeftBlank>
+        <region-name_for_headerOdd>header-odd</region-name_for_headerOdd>
+        <region-name_for_footerOdd>footer-odd</region-name_for_footerOdd>
+        <region-name_for_headerEven>header-even</region-name_for_headerEven>
+        <region-name_for_footerEven>footer-even</region-name_for_footerEven>
+        <region-name_for_headerLeftBlank>header-left_blank</region-name_for_headerLeftBlank>
+        <region-name_for_footerLeftBlank>footer-left_blank</region-name_for_footerLeftBlank>
+      </simple-page-master>
+    </layout>
     <layout master-name="default-A4" length-unit="cm" area-unit="pt" width="21" height="29.7" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="port">
       <simple-page-master>
         <master-name_for_odd>odd</master-name_for_odd>
@@ -172,6 +234,8 @@
         <margin-right_for_odd>1.5</margin-right_for_odd>
         <margin-top_for_odd_body>1.5</margin-top_for_odd_body>
         <margin-bottom_for_odd_body>1.7</margin-bottom_for_odd_body>
+        <margin-left_for_odd_body>0</margin-left_for_odd_body>
+        <margin-right_for_odd_body>0</margin-right_for_odd_body>
         <extent_for_odd_header>1.5</extent_for_odd_header>
         <extent_for_odd_footer>1.5</extent_for_odd_footer>
 
@@ -182,6 +246,8 @@
         <margin-right_for_even>3</margin-right_for_even>
         <margin-top_for_even_body>1.5</margin-top_for_even_body>
         <margin-bottom_for_even_body>1.7</margin-bottom_for_even_body>
+        <margin-left_for_even_body>0</margin-left_for_even_body>
+        <margin-right_for_even_body>0</margin-right_for_even_body>
         <extent_for_even_header>1.5</extent_for_even_header>
         <extent_for_even_footer>1.5</extent_for_even_footer>
 
@@ -192,6 +258,8 @@
         <margin-right_for_leftBlank>3</margin-right_for_leftBlank>
         <margin-top_for_leftBlank_body>1.5</margin-top_for_leftBlank_body>
         <margin-bottom_for_leftBlank_body>2</margin-bottom_for_leftBlank_body>
+        <margin-left_for_leftBlank_body>0</margin-left_for_leftBlank_body>
+        <margin-right_for_leftBlank_body>0</margin-right_for_leftBlank_body>
         <extent_for_leftBlank_header>1.5</extent_for_leftBlank_header>
         <extent_for_leftBlank_footer>2</extent_for_leftBlank_footer>
 
@@ -214,6 +282,8 @@
         <margin-right_for_odd>1.5</margin-right_for_odd>
         <margin-top_for_odd_body>1.5</margin-top_for_odd_body>
         <margin-bottom_for_odd_body>1.7</margin-bottom_for_odd_body>
+        <margin-left_for_odd_body>0</margin-left_for_odd_body>
+        <margin-right_for_odd_body>0</margin-right_for_odd_body>
         <extent_for_odd_header>1.5</extent_for_odd_header>
         <extent_for_odd_footer>1.5</extent_for_odd_footer>
 
@@ -224,6 +294,8 @@
         <margin-right_for_even>3</margin-right_for_even>
         <margin-top_for_even_body>1.5</margin-top_for_even_body>
         <margin-bottom_for_even_body>1.7</margin-bottom_for_even_body>
+        <margin-left_for_even_body>0</margin-left_for_even_body>
+        <margin-right_for_even_body>0</margin-right_for_even_body>
         <extent_for_even_header>1.5</extent_for_even_header>
         <extent_for_even_footer>1.5</extent_for_even_footer>
 
@@ -234,6 +306,8 @@
         <margin-right_for_leftBlank>3</margin-right_for_leftBlank>
         <margin-top_for_leftBlank_body>1.5</margin-top_for_leftBlank_body>
         <margin-bottom_for_leftBlank_body>2</margin-bottom_for_leftBlank_body>
+        <margin-left_for_leftBlank_body>0</margin-left_for_leftBlank_body>
+        <margin-right_for_leftBlank_body>0</margin-right_for_leftBlank_body>
         <extent_for_leftBlank_header>1.5</extent_for_leftBlank_header>
         <extent_for_leftBlank_footer>2</extent_for_leftBlank_footer>
 
@@ -256,6 +330,8 @@
         <margin-right_for_odd>1</margin-right_for_odd>
         <margin-top_for_odd_body>1.5</margin-top_for_odd_body>
         <margin-bottom_for_odd_body>1.2</margin-bottom_for_odd_body>
+        <margin-left_for_odd_body>0</margin-left_for_odd_body>
+        <margin-right_for_odd_body>0</margin-right_for_odd_body>
         <extent_for_odd_header>1.2</extent_for_odd_header>
         <extent_for_odd_footer>1.2</extent_for_odd_footer>
 
@@ -266,6 +342,8 @@
         <margin-right_for_even>2</margin-right_for_even>
         <margin-top_for_even_body>1.5</margin-top_for_even_body>
         <margin-bottom_for_even_body>1.2</margin-bottom_for_even_body>
+        <margin-left_for_even_body>0</margin-left_for_even_body>
+        <margin-right_for_even_body>0</margin-right_for_even_body>
         <extent_for_even_header>1.2</extent_for_even_header>
         <extent_for_even_footer>1.2</extent_for_even_footer>
 
@@ -276,6 +354,8 @@
         <margin-right_for_leftBlank>2</margin-right_for_leftBlank>
         <margin-top_for_leftBlank_body>1.2</margin-top_for_leftBlank_body>
         <margin-bottom_for_leftBlank_body>1.2</margin-bottom_for_leftBlank_body>
+        <margin-left_for_leftBlank_body>0</margin-left_for_leftBlank_body>
+        <margin-right_for_leftBlank_body>0</margin-right_for_leftBlank_body>
         <extent_for_leftBlank_header>1.2</extent_for_leftBlank_header>
         <extent_for_leftBlank_footer>1.2</extent_for_leftBlank_footer>
 
@@ -287,6 +367,54 @@
         <region-name_for_footerEven>footer-even</region-name_for_footerEven>
         <region-name_for_headerLeftBlank>header-left_blank</region-name_for_headerLeftBlank>
         <region-name_for_footerLeftBlank>footer-left_blank</region-name_for_footerLeftBlank>
+      </simple-page-master>
+    </layout>
+    <layout master-name="maintPlanning" length-unit="cm" area-unit="pt" width="29.7" height="21" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="land">
+      <simple-page-master>
+        <master-name_for_odd>odd</master-name_for_odd>
+        <margin-top_for_odd>3</margin-top_for_odd>
+        <margin-bottom_for_odd>1.5</margin-bottom_for_odd>
+        <margin-left_for_odd>2</margin-left_for_odd>
+        <margin-right_for_odd>1</margin-right_for_odd>
+        <margin-top_for_odd_body>0</margin-top_for_odd_body>
+        <margin-bottom_for_odd_body>0</margin-bottom_for_odd_body>
+        <margin-left_for_odd_body>1</margin-left_for_odd_body>
+        <margin-right_for_odd_body>1</margin-right_for_odd_body>
+        <extent_for_odd_header>0.5</extent_for_odd_header>
+        <extent_for_odd_footer>-1.5</extent_for_odd_footer>
+
+        <master-name_for_even>even</master-name_for_even>
+        <margin-top_for_even>1.5</margin-top_for_even>
+        <margin-bottom_for_even>3</margin-bottom_for_even>
+        <margin-left_for_even>2</margin-left_for_even>
+        <margin-right_for_even>1</margin-right_for_even>
+        <margin-top_for_even_body>0</margin-top_for_even_body>
+        <margin-bottom_for_even_body>0</margin-bottom_for_even_body>
+        <margin-left_for_even_body>1</margin-left_for_even_body>
+        <margin-right_for_even_body>1</margin-right_for_even_body>
+        <extent_for_even_header>0.5</extent_for_even_header>
+        <extent_for_even_footer>-1.5</extent_for_even_footer>
+
+        <master-name_for_leftBlank>left-blank</master-name_for_leftBlank>
+        <margin-top_for_leftBlank>1.5</margin-top_for_leftBlank>
+        <margin-bottom_for_leftBlank>3</margin-bottom_for_leftBlank>
+        <margin-left_for_leftBlank>2</margin-left_for_leftBlank>
+        <margin-right_for_leftBlank>1</margin-right_for_leftBlank>
+        <margin-top_for_leftBlank_body>0</margin-top_for_leftBlank_body>
+        <margin-bottom_for_leftBlank_body>1</margin-bottom_for_leftBlank_body>
+        <margin-left_for_leftBlank_body>1</margin-left_for_leftBlank_body>
+        <margin-right_for_leftBlank_body>1</margin-right_for_leftBlank_body>
+        <extent_for_leftBlank_header>0.5</extent_for_leftBlank_header>
+        <extent_for_leftBlank_footer>-1.5</extent_for_leftBlank_footer>
+
+        <region-name_for_body>body</region-name_for_body>
+        <region-name_for_bodyLeftBlank>left_blank-maintPlanning</region-name_for_bodyLeftBlank>
+        <region-name_for_headerOdd>header-odd-maintPlanning</region-name_for_headerOdd>
+        <region-name_for_footerOdd>footer-odd-maintPlanning</region-name_for_footerOdd>
+        <region-name_for_headerEven>header-even-maintPlanning</region-name_for_headerEven>
+        <region-name_for_footerEven>footer-even-maintPlanning</region-name_for_footerEven>
+        <region-name_for_headerLeftBlank>header-left_blank-maintPlanning</region-name_for_headerLeftBlank>
+        <region-name_for_footerLeftBlank>footer-left_blank-maintPlanning</region-name_for_footerLeftBlank>
       </simple-page-master>
     </layout>
   </output>
@@ -433,6 +561,63 @@
     <pt type="pt02">ipd</pt>
     <pt type="pt03">sb</pt>
     <pt type="pt51">poh</pt>
+    <pt type="pt52">maintPlanning</pt>
   </pmGroup>
+
+  <maintenance>
+    <source type="stc51">MSG-3</source>
+    <source type="stc52">ZAP</source>
+    <source type="stc53">CMR</source>
+    <threshold uom="th01">FH</threshold>
+    <threshold uom="th02">FC</threshold>
+    <threshold uom="th03">Months</threshold>
+    <threshold uom="th04">Weeks</threshold>
+    <threshold uom="th05">Years</threshold>
+    <threshold uom="th06">Days</threshold>
+    <threshold uom="th07">Supersonic Cycles</threshold>
+    <threshold uom="th08">Pressure Cycles</threshold>
+    <threshold uom="th09">Engine Cycles</threshold>
+    <threshold uom="th10">Engine Change</threshold>
+    <threshold uom="th11">Shop Visits</threshold>
+    <threshold uom="th12">APU Change</threshold>
+    <threshold uom="th13">Landing Gear Change</threshold>
+    <threshold uom="th14">Wheel Change</threshold>
+    <threshold uom="th15">Engine Start</threshold>
+    <threshold uom="th16">APU Hours</threshold>
+    <threshold uom="th17">EH</threshold>
+    <threshold uom="th18">ETH</threshold>
+    <threshold uom="th19">Landings</threshold>
+    <threshold uom="th20">Operating Cycles</threshold>
+    <threshold uom="th21">Operating hours</threshold>
+    <threshold uom="th22">Supersonic hours</threshold>
+    <threshold uom="th23">A</threshold>
+    <threshold uom="th24">B</threshold>
+    <threshold uom="th25">C</threshold>
+    <threshold uom="th26">D</threshold>
+    <threshold uom="th27">Daily</threshold>
+    <threshold uom="th28">E</threshold>
+    <threshold uom="th29">Overnight</threshold>
+    <threshold uom="th30">Preflight</threshold>
+    <threshold uom="th31">Routine</threshold>
+    <threshold uom="th32">Structural C Check</threshold>
+    <threshold uom="th33">Service Check</threshold>
+    <threshold uom="th34">Transit</threshold>
+    <threshold uom="th35">Kilometers</threshold>
+    <threshold uom="th36">cubic meter</threshold>
+    <threshold uom="th37">l</threshold>
+    <threshold uom="th38">shots</threshold>
+    <threshold uom="th39">shots</threshold>
+    <task code="taskcd01">DET</task>
+    <task code="taskcd02">DIS</task>
+    <task code="taskcd03">FNC</task>
+    <task code="taskcd04">GVI</task>
+    <task code="taskcd05">LUB</task>
+    <task code="taskcd06">OPC</task>
+    <task code="taskcd07">RST</task>
+    <task code="taskcd08">SVC</task>
+    <task code="taskcd09">VCK</task>
+    <task code="taskcd10">SDI</task>
+  </maintenance>
+  
   
 </config>

@@ -34,7 +34,7 @@
     </fo:inline>
   </xsl:template>
 
-  <xsl:template match="dmRef">
+  <!-- <xsl:template match="dmRef">
     <xsl:variable name="dmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', ., '', '')"/>
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_applicability"/>
@@ -44,9 +44,9 @@
       <xsl:value-of select="$dmIdent"/>
     </fo:basic-link>
     <xsl:call-template name="cgmark_end"/>
-  </xsl:template>
+  </xsl:template> -->
 
-  <xsl:template match="pmRef">
+  <!-- <xsl:template match="pmRef">
     <xsl:variable name="pmIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_pmIdent', ., '', '')"/>
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_applicability"/>
@@ -56,9 +56,9 @@
       <xsl:value-of select="$pmIdent"/>
     </fo:basic-link>
     <xsl:call-template name="cgmark_end"/>
-  </xsl:template>
+  </xsl:template> -->
 
-  <xsl:template match="externalPubRef">
+  <!-- <xsl:template match="externalPubRef">
     <xsl:variable name="externalPubRefIdent" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubRefIdent', ., '', '')"/>
     <xsl:call-template name="cgmark_begin"/>
     <xsl:call-template name="add_inline_applicability"/>
@@ -68,7 +68,7 @@
       <xsl:value-of select="$pmIdent"/>
     </fo:basic-link>
     <xsl:call-template name="cgmark_end"/>
-  </xsl:template>
+  </xsl:template> -->
   
   <!-- untuk merender anotasi danjuga footnote di bottom page atau di paragraphnya -->
   <xsl:template match="footnote[not(ancestor::table)]">

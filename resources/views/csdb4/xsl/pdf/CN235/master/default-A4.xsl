@@ -3,14 +3,14 @@
   xmlns:fo="http://www.w3.org/1999/XSL/Format"
   xmlns:php="http://php.net/xsl">
 
-  <xsl:template name="pageMasterByDefaultA4_xx">
+  <xsl:template name="pageMasterByDefaultA4">
     <xsl:param name="masterName" select="$masterName"/>
     <fo:layout-master-set>
       <xsl:call-template name="get_simplePageMaster">
-        <xsl:with-param name="masterName">default-A4</xsl:with-param>
+        <xsl:with-param name="masterName" select="$masterName"/>
       </xsl:call-template>
       <xsl:call-template name="get_pageSequenceMaster">
-        <xsl:with-param name="masterName">default-A4</xsl:with-param>
+        <xsl:with-param name="masterName" select="$masterName"/>
         <xsl:with-param name="odd_masterReference">odd</xsl:with-param>
         <xsl:with-param name="even_masterReference">even</xsl:with-param>
         <xsl:with-param name="leftBlank_masterReference">left-blank</xsl:with-param>
@@ -19,7 +19,7 @@
   </xsl:template>
 
   <!-- diganti templatenya yang call-tmplate simplePageMaster dan pageSequenceMaster -->
-  <xsl:template name="pageMasterByDefaultA4">
+  <xsl:template name="pageMasterByDefaultA4_xx">
     <xsl:param name="masterName" select="$masterName"/>
     <fo:layout-master-set>
       <xsl:variable name="width">
@@ -96,9 +96,6 @@
         <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
       </xsl:attribute>
       <fo:block>
-        <!-- <fo:inline-container inline-progression-dimension="14.9%">
-          <fo:block></fo:block>
-        </fo:inline-container> -->
         <fo:inline-container inline-progression-dimension="54.9%" text-align="left">
           <xsl:call-template name="get_logo">
             <xsl:with-param name="entry" select="$entry"/>
@@ -115,6 +112,51 @@
       </fo:block>
       <fo:block border-bottom="1pt solid black"></fo:block>
     </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="header-odd-last-default-A4">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="header-odd-default-A4">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="header-odd-default-A4L">
+    <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
+    <fo:block-container height="100%" reference-orientation="270">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
+      <fo:block>
+        <fo:inline-container inline-progression-dimension="54.9%" text-align="left">
+          <xsl:call-template name="get_logo">
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+          <fo:block>
+            <xsl:call-template name="getPmEntryTitle"/>
+          </fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="44.9%">
+          <fo:block text-align="right">
+            <xsl:call-template name="getPMCode"/>
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+      <fo:block border-bottom="1pt solid black"></fo:block>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="header-odd-last-default-A4L">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="header-odd-default-A4L">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="header-even-default-A4">
@@ -146,6 +188,53 @@
       </fo:block>
       <fo:block border-bottom="1pt solid black"></fo:block>
     </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="header-even-last-default-A4">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="header-even-default-A4">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="header-even-default-A4L">
+    <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
+    <fo:block-container height="100%" reference-orientation="270">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
+      <fo:block>
+        <fo:inline-container inline-progression-dimension="44.9%">
+          <fo:block text-align="left">
+            <xsl:call-template name="getPMCode"/>
+          </fo:block>
+        </fo:inline-container>
+        
+        <fo:inline-container inline-progression-dimension="54.9%" text-align="right">
+          <xsl:call-template name="get_logo">
+            <xsl:with-param name="entry" select="$entry"/>
+          </xsl:call-template>
+          <fo:block>
+            <xsl:call-template name="getPmEntryTitle"/>
+            <fo:inline>bbb</fo:inline>
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+      <fo:block border-bottom="1pt solid black"></fo:block>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="header-even-last-default-A4L">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="header-even-default-A4L">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="footer-odd-default-A4">
@@ -201,6 +290,77 @@
     </fo:block-container>
   </xsl:template>
 
+  <xsl:template name="footer-odd-last-default-A4">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="footer-odd-default-A4">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="footer-odd-default-A4L">
+    <xsl:param name="id"/>
+    <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
+    <fo:block-container height="100%" reference-orientation="270">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
+      <fo:block border-top="1pt solid black"></fo:block>
+      <fo:block>
+        <fo:inline-container inline-progression-dimension="49.9%">
+          <fo:block text-align="left">
+            <xsl:text>Applicable to: </xsl:text>
+            <xsl:call-template name="getApplicabilityOnFooter">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="49.9%">
+          <fo:block text-align="right">
+            <xsl:call-template name="getDMCode">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+      <fo:block text-align="center">&#160;</fo:block>
+      <fo:block text-align="center">
+        <fo:inline-container inline-progression-dimension="34.9%">
+          <fo:block text-align="left">
+            <xsl:call-template name="getDate">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+            <xsl:text> Page </xsl:text>
+            <fo:page-number/>
+            <!-- Date and Page <fo:page-number/> of <fo:page-number-citation-last ref-id="{$id}"/> -->
+          </fo:block>
+        </fo:inline-container>        
+        <fo:inline-container inline-progression-dimension="34.9%">
+          <fo:block>
+            <xsl:call-template name="getSecurity">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="29.9%">
+          <fo:block></fo:block>
+        </fo:inline-container>
+      </fo:block>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="footer-odd-last-default-A4L">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="footer-odd-default-A4L">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
+  </xsl:template>
+
   <xsl:template name="footer-even-default-A4">
     <xsl:param name="id"/>
     <xsl:param name="entry"/>
@@ -252,6 +412,77 @@
         </fo:inline-container>
       </fo:block>
     </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="footer-even-last-default-A4">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="footer-even-default-A4">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="footer-even-default-A4L">
+    <xsl:param name="id"/>
+    <xsl:param name="entry"/>
+    <xsl:param name="masterName"/>
+    <fo:block-container height="100%" reference-orientation="270">
+      <xsl:attribute name="font-size">
+        <xsl:call-template name="get_defaultFontSize"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+        <xsl:call-template name="get_layout_unit_area"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+      </xsl:attribute>
+      <fo:block border-top="1pt solid black"></fo:block>
+      <fo:block>
+        <fo:inline-container inline-progression-dimension="49.9%">
+          <fo:block text-align="left">
+            <xsl:call-template name="getDMCode">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="49.9%">
+          <fo:block text-align="right">
+            <xsl:text>Applicable to: </xsl:text>
+            <xsl:call-template name="getApplicabilityOnFooter">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+      <fo:block text-align="center">&#160;</fo:block>
+      <fo:block text-align="center">
+        <fo:inline-container inline-progression-dimension="29.9%">
+          <fo:block></fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="34.9%">
+          <fo:block>
+            <xsl:call-template name="getSecurity">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+          </fo:block>
+        </fo:inline-container>
+        <fo:inline-container inline-progression-dimension="34.9%">
+          <fo:block text-align="right">
+            <xsl:call-template name="getDate">
+              <xsl:with-param name="entry" select="$entry"/>
+            </xsl:call-template>
+            <xsl:text> Page </xsl:text>
+            <fo:page-number/>
+            <!-- Date and Page <fo:page-number/> of <fo:page-number-citation-last ref-id="{$id}"/> -->
+          </fo:block>
+        </fo:inline-container>
+      </fo:block>
+    </fo:block-container>
+  </xsl:template>
+
+  <xsl:template name="footer-even-last-default-A4L">
+    <xsl:param name="masterName"/>
+    <xsl:param name="entry"/>
+    <xsl:call-template name="footer-even-default-A4L">
+      <xsl:with-param name="masterName" select="$masterName"/>
+      <xsl:with-param name="entry" select="$entry"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="getPmEntryTitle">
@@ -345,6 +576,10 @@
   
   <xsl:template name="get_simplePageMaster">
     <xsl:param name="masterName"/>
+    <!-- <xsl:param name="orient" select="'port'"/> -->
+    <!-- <xsl:param name="orient" select="'land'"/> -->
+    <!-- <xsl:param name="orient" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/> -->
+    <!-- <xsl:param name="orient"><xsl:call-template name="get_orientation"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> -->
     <xsl:param name="length_unit"><xsl:call-template name="get_layout_unit_length"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
     <!-- setelan defaultnya sama kayak default-A4.xsl -->
@@ -358,6 +593,8 @@
     <xsl:param name="marginRight_for_odd"><xsl:call-template name="get_layout_marginRight_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginTop_for_odd_body"><xsl:call-template name="get_layout_marginTop_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginBottom_for_odd_body"><xsl:call-template name="get_layout_marginBottom_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_odd_body"><xsl:call-template name="get_layout_marginLeft_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_odd_body"><xsl:call-template name="get_layout_marginRight_for_odd_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_odd_header"><xsl:call-template name="get_layout_extent_for_odd_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_odd_footer"><xsl:call-template name="get_layout_extent_for_odd_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
@@ -369,6 +606,8 @@
     <xsl:param name="marginRight_for_even"><xsl:call-template name="get_layout_marginRight_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginTop_for_even_body"><xsl:call-template name="get_layout_marginTop_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginBottom_for_even_body"><xsl:call-template name="get_layout_marginBottom_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_even_body"><xsl:call-template name="get_layout_marginLeft_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_even_body"><xsl:call-template name="get_layout_marginRight_for_even_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_even_header"><xsl:call-template name="get_layout_extent_for_even_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_even_footer"><xsl:call-template name="get_layout_extent_for_even_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
@@ -380,6 +619,12 @@
     <xsl:param name="marginRight_for_leftBlank"><xsl:call-template name="get_layout_marginRight_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginTop_for_leftBlank_body"><xsl:call-template name="get_layout_marginTop_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginBottom_for_leftBlank_body"><xsl:call-template name="get_layout_marginBottom_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginLeft_for_leftBlank_body">
+      <xsl:call-template name="get_layout_marginLeft_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+    </xsl:param>
+    <xsl:param name="marginRight_for_leftBlank_body">
+      <xsl:call-template name="get_layout_marginRight_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
+    </xsl:param>
     <xsl:param name="extent_for_leftBlank_header"><xsl:call-template name="get_layout_extent_for_leftBlank_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_leftBlank_footer"><xsl:call-template name="get_layout_extent_for_leftBlank_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
@@ -395,22 +640,90 @@
     <xsl:param name="regionName_for_headerLeftBlank"><xsl:call-template name="get_layout_regionName_for_headerLeftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
     <xsl:param name="regionName_for_footerLeftBlank"><xsl:call-template name="get_layout_regionName_for_footerLeftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipanggil di static-content, see region.xsl -->
 
+    <!-- <xsl:variable name="orient"><xsl:call-template name="get_orientation"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:variable> -->
+    <!-- <xsl:variable name="orient">land</xsl:variable> -->
+    <!-- <xsl:variable name="orient"><xsl:call-template name="get_orientation"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:variable> -->
+    <xsl:variable name="orient" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/>
+    <!-- <xsl:value-of select="php:function('dd',$orient)"/> -->
     <!-- nyontek ke default-A4.xsl -->
-    <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
-      <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_odd_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_odd_body, $length_unit)}"/>
-      <fo:region-before region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
-      <fo:region-after region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
-    </fo:simple-page-master>
-    <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
-      <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_even_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_even_body, $length_unit)}"/>
-      <fo:region-before region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
-      <fo:region-after region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
-    </fo:simple-page-master>
-    <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
-      <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-top="{concat($marginTop_for_leftBlank_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank_body, $length_unit)}"/>
-      <fo:region-before region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
-      <fo:region-after region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
-    </fo:simple-page-master>
+    <xsl:choose>
+      <xsl:when test="$orient = 'port'">
+        <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_odd_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_odd_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
+          <fo:region-after region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_even_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_even_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
+          <fo:region-after region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-top="{concat($marginTop_for_leftBlank_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
+          <fo:region-after region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
+        </fo:simple-page-master>
+        <!-- <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_odd_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_odd_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
+          <fo:region-after region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
+          <fo:region-start region-name="aaa"/>
+          <fo:region-end region-name="bbb"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-top="{concat($marginTop_for_even_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_even_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
+          <fo:region-after region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
+          <fo:region-start region-name="ccc"/>
+          <fo:region-end region-name="ddd"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-top="{concat($marginTop_for_leftBlank_body, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank_body, $length_unit)}"/>
+          <fo:region-before region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
+          <fo:region-after region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
+          <fo:region-start region-name="eee"/>
+          <fo:region-end region-name="fff"/>
+        </fo:simple-page-master> -->
+      </xsl:when>
+      <xsl:otherwise>
+        <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-right="{concat($marginRight_for_odd_body, $length_unit)}" margin-left="{concat($marginLeft_for_odd_body, $length_unit)}"/>
+          <fo:region-start region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
+          <fo:region-end region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-right="{concat($marginRight_for_even_body, $length_unit)}" margin-left="{concat($marginLeft_for_even_body, $length_unit)}"/>
+          <fo:region-start region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
+          <fo:region-end region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-right="{concat($marginRight_for_leftBlank_body, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank_body, $length_unit)}"/>
+          <fo:region-start region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
+          <fo:region-end region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
+        </fo:simple-page-master>
+        <!-- <fo:simple-page-master master-name="{$masterName_for_odd}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_odd,$length_unit)}" margin-bottom="{concat($marginBottom_for_odd,$length_unit)}" margin-left="{concat($marginLeft_for_odd, $length_unit)}" margin-right="{concat($marginRight_for_odd, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-right="{concat($marginRight_for_odd_body, $length_unit)}" margin-left="{concat($marginLeft_for_odd_body, $length_unit)}"/>
+          <fo:region-before region-name="ggg"/>
+          <fo:region-after region-name="hhh"/>
+          <fo:region-start region-name="{$regionName_for_footerOdd}" extent="{concat($extent_for_odd_footer,$length_unit)}" />
+          <fo:region-end region-name="{$regionName_for_headerOdd}" extent="{concat($extent_for_odd_header, $length_unit)}" />
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_even}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_even, $length_unit)}" margin-bottom="{concat($marginBottom_for_even, $length_unit)}" margin-left="{concat($marginLeft_for_even, $length_unit)}" margin-right="{concat($marginRight_for_even, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_body}" margin-right="{concat($marginRight_for_even_body, $length_unit)}" margin-left="{concat($marginLeft_for_even_body, $length_unit)}"/>
+          <fo:region-before region-name="iii"/>
+          <fo:region-after region-name="jjj"/>
+          <fo:region-start region-name="{$regionName_for_footerEven}" extent="{concat($extent_for_even_footer, $length_unit)}"/>
+          <fo:region-end region-name="{$regionName_for_headerEven}" extent="{concat($extent_for_even_header, $length_unit)}"/>
+        </fo:simple-page-master>
+        <fo:simple-page-master master-name="{$masterName_for_leftBlank}" page-height="{concat($height, $length_unit)}" page-width="{concat($width, $length_unit)}" margin-top="{concat($marginTop_for_leftBlank, $length_unit)}" margin-bottom="{concat($marginBottom_for_leftBlank, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank, $length_unit)}" margin-right="{concat($marginRight_for_leftBlank, $length_unit)}">
+          <fo:region-body region-name="{$regionName_for_bodyLeftBlank}" margin-right="{concat($marginRight_for_leftBlank_body, $length_unit)}" margin-left="{concat($marginLeft_for_leftBlank_body, $length_unit)}"/>
+          <fo:region-before region-name="kkk"/>
+          <fo:region-after region-name="lll"/>
+          <fo:region-start region-name="{$regionName_for_footerLeftBlank}" extent="{concat($extent_for_leftBlank_footer, $length_unit)}" />
+          <fo:region-end region-name="{$regionName_for_headerLeftBlank}" extent="{concat($extent_for_leftBlank_header, $length_unit)}" />
+        </fo:simple-page-master> -->
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- defaultnya pakai intentionally left blank -->

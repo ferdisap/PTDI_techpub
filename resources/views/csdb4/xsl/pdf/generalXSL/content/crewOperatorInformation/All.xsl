@@ -197,7 +197,7 @@
               <xsl:apply-templates select="challenge"/>
             </fo:block>
           </fo:table-cell>
-          <fo:table-cell width="3cm" display-align="after" margin-left="">
+          <fo:table-cell width="3cm" display-align="before" margin-left="">
             <fo:block margin-left="1pt">
               <xsl:apply-templates select="response"/>
             </fo:block>

@@ -16,7 +16,7 @@
   <xsl:template match="internalRef" name="add_internalRef">
     <xsl:param name="irtt" select="string(@internalRefTargetType)"/>
     <xsl:call-template name="cgmark_begin"/>
-    <fo:inline color="#3366CC" text-decoration="underline">
+    <fo:inline color="{$colorLink}" text-decoration="underline">
       <xsl:call-template name="add_referredFragment"/>
       <xsl:call-template name="add_inline_applicability"/>
       <xsl:call-template name="add_inline_controlAuthority"/>

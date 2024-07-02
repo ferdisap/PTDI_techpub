@@ -10,13 +10,13 @@
   <xsl:template match="zoneRef">
     <xsl:call-template name="cgmark_begin"/>
     <fo:inline>
-      <xsl:call-template name="id"/>
+      <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_inline_applicability"/>
       <xsl:call-template name="add_inline_controlAuthority"/>
       <xsl:call-template name="add_inline_security"/>
       <xsl:choose>
         <xsl:when test="@zoneNumber">
-          <xsl:value-of select="zoneNumber"/>
+          <xsl:value-of select="@zoneNumber"/>
         </xsl:when>
         <xsl:when test="name">
           <xsl:value-of select="name"/>

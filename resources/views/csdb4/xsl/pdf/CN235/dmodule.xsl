@@ -23,26 +23,13 @@
         <xsl:with-param name="masterReference" select="$masterReference"/>
         <xsl:with-param name="id" select="$id"/>
       </xsl:call-template>
-      <fo:flow flow-name="body">
+      <xsl:variable name="filename" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', //identAndStatusSection/descendant::dmIdent)"/>
+      <fo:flow flow-name="body" id="{$filename}">
         <xsl:apply-templates select="content">
           <xsl:with-param name="masterName" select="$masterReference"/>
         </xsl:apply-templates>
-        <!-- <xsl:call-template name="body"/> -->
-        <!-- <fo:block-container>
-          <fo:block>aaa</fo:block>
-        </fo:block-container> -->
       </fo:flow>
     </fo:page-sequence>
-  </xsl:template> 
-
-  <!-- <xsl:template match="pm" name="call_pmx"> -->
-    <!-- <xsl:param name="masterReference"/> -->
-    <!-- <xsl:variable name="id">
-      <xsl:value-of select="generate-id(.)"/>
-    </xsl:variable> -->
-    <!-- <xsl:value-of select="php:function('dd', 'tes4')"/> -->
-    <!-- <xsl:apply-templates select="//content"/> -->
-  <!-- </xsl:template> -->
-  
+  </xsl:template>  
   
 </xsl:transform>

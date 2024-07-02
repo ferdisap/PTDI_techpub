@@ -46,6 +46,7 @@
   <xsl:include href="../generalXSL/content/frontMatter/frontMatter.xsl" />
   <xsl:include href="../generalXSL/content/lists/All.xsl" />
   <xsl:include href="../generalXSL/content/lists/Style-list.xsl" />
+  <xsl:include href="../generalXSL/content/maintenancePlanningInformation/All-MaintPlanning.xsl" />
   <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/externalPubRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/functionalItemRef.xsl" />
@@ -96,6 +97,9 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
+
+  <xsl:variable name="colorLink">blue</xsl:variable>
+  <!-- <xsl:variable name="colorLink">#3366CC</xsl:variable> -->
   <!-- <xsl:variable name="orientation" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@orientation)"/> -->
   <!-- depreciated, sudah diganti dengan template template@name="get_width" -->
   <!-- <xsl:variable name="width" select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@width)"/> -->
@@ -294,6 +298,16 @@
     <xsl:param name="masterName"/>
     <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_odd_body)"/>
   </xsl:template>
+  
+  <xsl:template name="get_layout_marginRight_for_odd_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_odd_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginLeft_for_odd_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_odd_body)"/>
+  </xsl:template>
 
   <xsl:template name="get_layout_extent_for_odd_header">
     <xsl:param name="masterName"/>
@@ -340,6 +354,16 @@
     <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_even_body)"/>
   </xsl:template>
 
+  <xsl:template name="get_layout_marginLeft_for_even_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_even_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginRight_for_even_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_even_body)"/>
+  </xsl:template>
+
   <xsl:template name="get_layout_extent_for_even_header">
     <xsl:param name="masterName"/>
     <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/extent_for_even_header)"/>
@@ -383,6 +407,16 @@
   <xsl:template name="get_layout_marginBottom_for_leftBlank_body">
     <xsl:param name="masterName"/>
     <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-bottom_for_leftBlank_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginLeft_for_leftBlank_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-left_for_leftBlank_body)"/>
+  </xsl:template>
+
+  <xsl:template name="get_layout_marginRight_for_leftBlank_body">
+    <xsl:param name="masterName"/>
+    <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/simple-page-master/margin-right_for_leftBlank_body)"/>
   </xsl:template>
 
   <xsl:template name="get_layout_extent_for_leftBlank_header">

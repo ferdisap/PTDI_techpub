@@ -138,7 +138,7 @@
           <xsl:attribute name="display-align">after</xsl:attribute>
         </xsl:when>
         <xsl:when test="$valign = 'center'">
-          <xsl:attribute name="display-align">middle</xsl:attribute>
+          <xsl:attribute name="display-align">center</xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
           <xsl:attribute name="display-align">top</xsl:attribute>

@@ -19,7 +19,6 @@
       </xsl:if>
     </xsl:variable>
 
-    <!-- <fo:block font-size="16pt" text-align="center" font-weight="bold" margin-bottom="12pt" margin-top="6pt"> -->
     <fo:block>
       <xsl:call-template name="style-dmTitle"/>
       
@@ -37,22 +36,65 @@
   </xsl:template>
 
   <xsl:template name="get_chapter">
+    <xsl:param name="dmIdent"/>
+
     <xsl:variable name="systemCode">
-      <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@systemCode)"/>
+      <xsl:choose>
+        <xsl:when test="not($dmIdent)">
+          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@systemCode)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="number(descendant::dmCode/@systemCode)"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
     <xsl:variable name="subSystemCode">
-      <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSystemCode)"/>
+      <xsl:choose>
+        <xsl:when test="not($dmIdent)">
+          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSystemCode)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="number(descendant::dmCode/@subSystemCode)"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
     <xsl:variable name="subSubSystemCode">
-      <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSubSystemCode)"/>
+      <xsl:choose>
+        <xsl:when test="not($dmIdent)">
+          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSubSystemCode)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="number(descendant::dmCode/@subSubSystemCode)"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
     <xsl:variable name="assyCode">
-      <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@assyCode)"/>
+      <xsl:choose>
+        <xsl:when test="not($dmIdent)">
+          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@assyCode)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="number(descendant::dmCode/@assyCode)"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
     <xsl:variable name="disassyCode">
-      <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@disassyCode)"/>
+      <xsl:choose>
+        <xsl:when test="not($dmIdent)">
+          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@disassyCode)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="number(descendant::dmCode/@disassyCode)"/>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:variable>
-
+    <xsl:choose>
+      <xsl:when test="not($dmIdent)">
+      </xsl:when>
+      <xsl:otherwise>
+      </xsl:otherwise>
+    </xsl:choose>
+    
     <xsl:variable name="combined">
       <xsl:value-of select="$systemCode"/>
       <xsl:text>.</xsl:text>

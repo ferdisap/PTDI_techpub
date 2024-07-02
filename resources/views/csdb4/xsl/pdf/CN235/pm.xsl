@@ -33,7 +33,6 @@
     </xsl:variable>
 
     <xsl:apply-templates select="dmRef|pmRef|externalPubRef|pmEntry">
-    <!-- <xsl:apply-templates select="externalPubRef"> -->
       <xsl:with-param name="masterReference" select="$masterReference"/>
       <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
     </xsl:apply-templates>
@@ -42,10 +41,11 @@
   <xsl:template match="dmRef[parent::pmEntry]">
     <xsl:param name="masterReference"/>
     <xsl:param name="idParentBookmark"/>
+    <xsl:variable name="filename" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', descendant::dmRefIdent)"/>
     <xsl:variable name="entry" select="php:function(
       'Ptdi\Mpub\Main\CSDBStatic::document',
       $csdb_path,
-      php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_dmIdent', descendant::dmRefIdent)
+      $filename
       )"/>
     <fo:page-sequence master-reference="{$masterReference}" initial-page-number="auto-odd" force-page-count="even">
       <xsl:call-template name="getRegion">
@@ -53,7 +53,7 @@
         <xsl:with-param name="entry" select="$entry"/>
       </xsl:call-template>
       <!-- flow-name merujuk ke simple-page-master/region-body/@region-name -->
-      <fo:flow flow-name="body">
+      <fo:flow flow-name="body" id="{$filename}">
         <xsl:apply-templates select="$entry//content">
           <xsl:with-param name="masterName" select="$masterReference"/>
           <xsl:with-param name="idParentBookmark" select="$idParentBookmark"/>
@@ -82,9 +82,6 @@
       </xsl:choose>
     </xsl:variable>
     <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::set_PDF_MasterName', $masterName)"/>
-    <!-- <xsl:value-of select="php:function('dump', string($masterName))"/>f -->
-    
-    <!-- <xsl:value-of select="php:function('dd', 'ccc', $masterName)"/> -->
     <xsl:apply-templates select="$entry/pm">
       <xsl:with-param name="masterReference" select="$masterName"/>
     </xsl:apply-templates>
@@ -94,20 +91,15 @@
     <xsl:param name="masterReference"/>
     <xsl:param name="idParentBookmark"/>
 
-    <xsl:variable name="entryFilename">
-      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubRefIdent', descendant::externalPubRefIdent)"/>
-      <xsl:if test="php:function('strtoupper', string(externalPubRefIdent/externalPubCode/@pubCodingScheme)) = 'PDF'">
-        <xsl:text>.pdf</xsl:text>
-      </xsl:if>        
-    </xsl:variable>
+    <xsl:variable name="entryFilename" select="php:function('Ptdi\Mpub\Main\CSDBStatic::resolve_externalPubRefIdent', descendant::externalPubRefIdent, php:function('strtoupper', string(externalPubRefIdent/externalPubCode/@pubCodingScheme)))"/>
 
     <xsl:variable name="path">
       <xsl:text>url('</xsl:text>
       <xsl:value-of select="concat('file:\\\',$csdb_path, php:function('Ptdi\Mpub\Main\CSDBStatic::directory_separator') ,$entryFilename)"/>
       <xsl:text>')</xsl:text>
     </xsl:variable>
-    
-    <fox:external-document src="{$path}"/>
+
+    <fox:external-document src="{$path}" id="{$entryFilename}"/>
   </xsl:template>
 
   <xsl:template match="pmEntryTitle">
