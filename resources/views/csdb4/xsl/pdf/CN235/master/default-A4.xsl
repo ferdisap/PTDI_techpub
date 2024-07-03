@@ -575,6 +575,7 @@
   
   
   <xsl:template name="get_simplePageMaster">
+    <xsl:param name="unixId"/>
     <xsl:param name="masterName"/>
     <!-- <xsl:param name="orient" select="'port'"/> -->
     <!-- <xsl:param name="orient" select="'land'"/> -->
@@ -586,7 +587,7 @@
     <xsl:param name="width"><xsl:call-template name="get_layout_width"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="height"><xsl:call-template name="get_layout_height"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
-    <xsl:param name="masterName_for_odd"><xsl:call-template name="get_layout_masterName_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipakai untuk simple-page-master@master-name, lihat dibawah -->
+    <xsl:param name="masterName_for_odd"><xsl:call-template name="get_layout_masterName_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param> <!-- ini dipakai untuk simple-page-master@master-name, lihat di bawah -->
     <xsl:param name="marginTop_for_odd"><xsl:call-template name="get_layout_marginTop_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginBottom_for_odd"><xsl:call-template name="get_layout_marginBottom_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginLeft_for_odd"><xsl:call-template name="get_layout_marginLeft_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
@@ -619,12 +620,8 @@
     <xsl:param name="marginRight_for_leftBlank"><xsl:call-template name="get_layout_marginRight_for_leftBlank"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginTop_for_leftBlank_body"><xsl:call-template name="get_layout_marginTop_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="marginBottom_for_leftBlank_body"><xsl:call-template name="get_layout_marginBottom_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
-    <xsl:param name="marginLeft_for_leftBlank_body">
-      <xsl:call-template name="get_layout_marginLeft_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
-    </xsl:param>
-    <xsl:param name="marginRight_for_leftBlank_body">
-      <xsl:call-template name="get_layout_marginRight_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template>
-    </xsl:param>
+    <xsl:param name="marginLeft_for_leftBlank_body"><xsl:call-template name="get_layout_marginLeft_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
+    <xsl:param name="marginRight_for_leftBlank_body"><xsl:call-template name="get_layout_marginRight_for_leftBlank_body"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_leftBlank_header"><xsl:call-template name="get_layout_extent_for_leftBlank_header"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="extent_for_leftBlank_footer"><xsl:call-template name="get_layout_extent_for_leftBlank_footer"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
 
@@ -728,6 +725,7 @@
 
   <!-- defaultnya pakai intentionally left blank -->
   <xsl:template name="get_pageSequenceMaster">
+    <xsl:param name="unixId"/>
     <xsl:param name="masterName">default-pm</xsl:param>
     <xsl:param name="odd_masterReference"><xsl:call-template name="get_layout_masterName_for_odd"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
     <xsl:param name="even_masterReference"><xsl:call-template name="get_layout_masterName_for_even"><xsl:with-param name="masterName" select="$masterName"/></xsl:call-template></xsl:param>
@@ -736,18 +734,18 @@
     <fo:page-sequence-master master-name="{$masterName}">
       <fo:repeatable-page-master-alternatives>
         <!-- untuk page between first and last -->
-        <fo:conditional-page-master-reference master-reference="{$odd_masterReference}" page-position="rest" odd-or-even="odd"/>
-        <fo:conditional-page-master-reference master-reference="{$even_masterReference}" page-position="rest" odd-or-even= "even"/>
+        <fo:conditional-page-master-reference master-reference="{concat($odd_masterReference, $unixId)}" page-position="rest" odd-or-even="odd"/>
+        <fo:conditional-page-master-reference master-reference="{concat($even_masterReference, $unixId)}" page-position="rest" odd-or-even= "even"/>
 
         <!-- for the first page -->
-        <fo:conditional-page-master-reference master-reference="{$odd_masterReference}" page-position="first" odd-or-even="odd"/>
+        <fo:conditional-page-master-reference master-reference="{concat($odd_masterReference, $unixId)}" page-position="first" odd-or-even="odd"/>
 
         <!-- 
           for the end page 1. last, even, and blank akan mencetak intentionally left blank
           kalau 2. last, even, and not blank tidak akan mencetak intentionally left blank
         -->
-        <fo:conditional-page-master-reference master-reference="{$leftBlank_masterReference}" page-position="last" odd-or-even="even" blank-or-not-blank="blank"/>
-        <fo:conditional-page-master-reference master-reference="{$even_masterReference}" page-position="last" odd-or-even="even"/>    
+        <fo:conditional-page-master-reference master-reference="{concat($leftBlank_masterReference, $unixId)}" page-position="last" odd-or-even="even" blank-or-not-blank="blank"/>
+        <fo:conditional-page-master-reference master-reference="{concat($even_masterReference, $unixId)}" page-position="last" odd-or-even="even"/>    
       </fo:repeatable-page-master-alternatives>
     </fo:page-sequence-master>
   </xsl:template>

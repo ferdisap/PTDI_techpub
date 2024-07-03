@@ -20,6 +20,7 @@
       -->
       
       <!-- masterName: default-pm -->
+      <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBStatic::add_masterName', $masterName)"/>
       <xsl:call-template name="get_simplePageMaster">
         <xsl:with-param name="masterName" select="$masterName"/>
       </xsl:call-template>
@@ -38,13 +39,21 @@
         )"/>
         <xsl:variable name="pt" select="string($pmDoc/pm/@pmType)"/>
         <xsl:variable name="masterName" select="string($ConfigXML/config/pmGroup/pt[string(@type) = $pt])"/>
+        <xsl:variable name="checkMasterName" select="boolean(php:function('Ptdi\Mpub\Main\CSDBStatic::add_masterName', $masterName))"/>
         
-        <xsl:call-template name="get_simplePageMaster">
-          <xsl:with-param name="masterName" select="$masterName"/>
-        </xsl:call-template>
-        <xsl:call-template name="get_pageSequenceMaster">
-          <xsl:with-param name="masterName" select="$masterName"/>
-        </xsl:call-template>
+        <xsl:choose>
+          <xsl:when test="$checkMasterName">
+            <xsl:call-template name="get_simplePageMaster">
+              <xsl:with-param name="masterName" select="$masterName"/>
+            </xsl:call-template>
+            <xsl:call-template name="get_pageSequenceMaster">
+              <xsl:with-param name="masterName" select="$masterName"/>
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:otherwise>
+            <!-- nothing to do. Artinya mastername sudah ditambahkan dan tidak akan ada multiple masterName di layout -->
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:for-each>
     </fo:layout-master-set>
   </xsl:template>
