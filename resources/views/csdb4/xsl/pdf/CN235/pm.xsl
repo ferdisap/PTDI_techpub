@@ -20,6 +20,8 @@
 
   <xsl:template match="pmEntry">
     <xsl:param name="masterReference"/>
+    <xsl:variable name="entryType" select="string(@pmEntryType)"/>
+    <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::set_pmEntryType', string($ConfigXML/config/pmGroup/pmt[@type = $entryType]))"/>
     <xsl:value-of select="php:function('Ptdi\Mpub\Main\CSDBObject::set_pmEntryTitle', string(pmEntryTitle))"/>
     <xsl:variable name="idParentBookmark">
       <xsl:choose>

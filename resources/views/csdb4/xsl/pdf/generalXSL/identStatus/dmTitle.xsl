@@ -51,40 +51,40 @@
     <xsl:variable name="subSystemCode">
       <xsl:choose>
         <xsl:when test="not($dmIdent)">
-          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSystemCode)"/>
+          <xsl:value-of select="string(//dmAddress/dmIdent/dmCode/@subSystemCode)"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="number(descendant::dmCode/@subSystemCode)"/>
+          <xsl:value-of select="string(descendant::dmCode/@subSystemCode)"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:variable name="subSubSystemCode">
       <xsl:choose>
         <xsl:when test="not($dmIdent)">
-          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@subSubSystemCode)"/>
+          <xsl:value-of select="string(//dmAddress/dmIdent/dmCode/@subSubSystemCode)"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="number(descendant::dmCode/@subSubSystemCode)"/>
+          <xsl:value-of select="string(descendant::dmCode/@subSubSystemCode)"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:variable name="assyCode">
       <xsl:choose>
         <xsl:when test="not($dmIdent)">
-          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@assyCode)"/>
+          <xsl:value-of select="string(//dmAddress/dmIdent/dmCode/@assyCode)"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="number(descendant::dmCode/@assyCode)"/>
+          <xsl:value-of select="string(descendant::dmCode/@assyCode)"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:variable name="disassyCode">
       <xsl:choose>
         <xsl:when test="not($dmIdent)">
-          <xsl:value-of select="number(//dmAddress/dmIdent/dmCode/@disassyCode)"/>
+          <xsl:value-of select="string(//dmAddress/dmIdent/dmCode/@disassyCode)"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="number(descendant::dmCode/@disassyCode)"/>
+          <xsl:value-of select="string(descendant::dmCode/@disassyCode)"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -105,7 +105,8 @@
       <xsl:value-of select="$disassyCode"/>
     </xsl:variable>
 
-    <xsl:variable name="final_combined" select="php:function('preg_replace', '/0?(.0)+$/', '', $combined)"/>
+    <!-- <xsl:variable name="final_combined" select="php:function('preg_replace', '/0?(.0)+$/', '', $combined)"/> -->
+    <xsl:variable name="final_combined" select="php:function('preg_replace', '/.?(00.?)+$/', '', $combined)"/>
 
     <xsl:if test="$final_combined">
       <xsl:text>Chapter </xsl:text>

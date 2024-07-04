@@ -9,6 +9,8 @@
   <xsl:param name="filename"/>
 
   <xsl:include href="./master/default-A4.xsl" />
+  <xsl:include href="./master/header_default.xsl" />
+  <xsl:include href="./master/footer_default.xsl" />
   <xsl:include href="./dmodule.xsl" />
   <xsl:include href="./pm.xsl"/>
   <xsl:include href="./master/region.xsl" />
@@ -47,6 +49,8 @@
   <xsl:include href="../generalXSL/content/lists/All.xsl" />
   <xsl:include href="../generalXSL/content/lists/Style-list.xsl" />
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/All-MaintPlanning.xsl" />
+  <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_structuralInspectionProgram.xsl" />
+  <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_systemAndPowerPlantInspectionProgram.xsl" />
   <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/externalPubRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/functionalItemRef.xsl" />

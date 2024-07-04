@@ -86,8 +86,9 @@
   <!ELEMENT frontMatterGroup (frontMatter)*>
   <!ELEMENT frontMatter (#PCDATA)>
 
-  <!ELEMENT pmGroup (pt)*>
+  <!ELEMENT pmGroup (pt|pmt)*>
   <!ELEMENT pt (#PCDATA)>
+  <!ELEMENT pmt (#PCDATA)>
 
   <!ELEMENT maintenance (source|threshold|task)*>
   <!ELEMENT source (#PCDATA)>
@@ -146,6 +147,7 @@
   <!ATTLIST controlAuthority type CDATA #REQUIRED>
   <!ATTLIST frontMatter type CDATA #REQUIRED>
   <!ATTLIST pt type CDATA #REQUIRED>
+  <!ATTLIST pmt type CDATA #REQUIRED>
   <!ATTLIST task code CDATA #REQUIRED>
 ]>
 
@@ -369,7 +371,7 @@
         <region-name_for_footerLeftBlank>footer-left_blank</region-name_for_footerLeftBlank>
       </simple-page-master>
     </layout>
-    <layout master-name="maintPlanning" length-unit="cm" area-unit="pt" width="29.7" height="21" default-font-size="11" cgmark-offset="2cm" start-indent="1.5" orientation="land">
+    <layout master-name="maintPlanning" length-unit="cm" area-unit="pt" width="29.7" height="21" default-font-size="11" cgmark-offset="0.5cm" start-indent="1.5" orientation="land">
       <simple-page-master>
         <master-name_for_odd>odd</master-name_for_odd>
         <margin-top_for_odd>3</margin-top_for_odd>
@@ -562,6 +564,42 @@
     <pt type="pt03">sb</pt>
     <pt type="pt51">poh</pt>
     <pt type="pt52">maintPlanning</pt>
+    <pmt type="pmt01">TP</pmt>
+    <pmt type="pmt02">CONF</pmt>
+    <pmt type="pmt03">COPY</pmt>
+    <pmt type="pmt04">ADMIN</pmt>
+    <pmt type="pmt05">SAFE</pmt>
+    <pmt type="pmt06">LOEDM</pmt>
+    <pmt type="pmt07">CR</pmt>
+    <pmt type="pmt08">HIGH</pmt>
+    <pmt type="pmt09">LOA</pmt>
+    <pmt type="pmt10">LOT</pmt>
+    <pmt type="pmt11">LOS</pmt>
+    <pmt type="pmt12">TSR</pmt>
+    <pmt type="pmt13">TOC</pmt>
+    <pmt type="pmt14">LOI</pmt>
+    <pmt type="pmt15">LOTBL</pmt>
+    <pmt type="pmt16">LOASD</pmt>
+    <pmt type="pmt17">LOSUP</pmt>
+    <pmt type="pmt18">LOSE</pmt>
+    <pmt type="pmt19">LOSU</pmt>
+    <pmt type="pmt20">LOSP</pmt>
+    <pmt type="pmt21">INTRO</pmt>
+    <pmt type="pmt22">FUNC</pmt>
+    <pmt type="pmt23">DESC</pmt>
+    <pmt type="pmt24">SCHEM</pmt>
+    <pmt type="pmt25">MAINT</pmt>
+    <pmt type="pmt26">RI</pmt>
+    <pmt type="pmt27">TS</pmt>
+    <pmt type="pmt28">SERVC</pmt>
+    <pmt type="pmt29">TEST</pmt>
+    <pmt type="pmt30">DIS</pmt>
+    <pmt type="pmt31">REP</pmt>
+    <pmt type="pmt32">ASSY</pmt>
+    <pmt type="pmt33">STORE</pmt>
+    <pmt type="pmt34">IPD</pmt>
+    <pmt type="pmt51">Structure Inspection Program</pmt> <!-- seperti AMM CHP5 CN235 chapter 05-20-20 -->
+    <pmt type="pmt52">System And Powerplant Inspection Program</pmt> <!-- seperti AMM CHP5 CN235 chapter 05-20-10 -->
   </pmGroup>
 
   <maintenance>
@@ -607,15 +645,16 @@
     <threshold uom="th37">l</threshold>
     <threshold uom="th38">shots</threshold>
     <threshold uom="th39">shots</threshold>
+    <threshold uom="th51">-Z-</threshold>
     <task code="taskcd01">DET</task>
-    <task code="taskcd02">DIS</task>
-    <task code="taskcd03">FNC</task>
+    <task code="taskcd02">DS</task>
+    <task code="taskcd03">FC</task>
     <task code="taskcd04">GVI</task>
-    <task code="taskcd05">LUB</task>
-    <task code="taskcd06">OPC</task>
-    <task code="taskcd07">RST</task>
-    <task code="taskcd08">SVC</task>
-    <task code="taskcd09">VCK</task>
+    <task code="taskcd05">LU</task>
+    <task code="taskcd06">OP</task>
+    <task code="taskcd07">RS</task>
+    <task code="taskcd08">SV</task>
+    <task code="taskcd09">IN</task>
     <task code="taskcd10">SDI</task>
   </maintenance>
   
