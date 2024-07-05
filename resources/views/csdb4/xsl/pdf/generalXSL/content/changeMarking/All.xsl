@@ -27,7 +27,9 @@
   <xsl:template name="cgmark_begin">
     <xsl:param name="changeMark" select="@changeMark"/>
     <xsl:param name="cgmarkOffset">
-      <xsl:call-template name="get_cgmarkOffset"/>
+      <xsl:call-template name="get_cgmarkOffset">
+        <xsl:with-param name="masterName" select="php:function('Ptdi\Mpub\Main\CSDBStatic::get_PDF_MasterName')"/>
+      </xsl:call-template>
     </xsl:param>
     <xsl:choose>
       <xsl:when test="parent::__cgmark"></xsl:when>

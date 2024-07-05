@@ -70,6 +70,7 @@
                 <fo:block>
                   <xsl:variable name="thresUom" select="string(limit/threshold[@thresholdType = 'threshold']/@thresholdUnitOfMeasure)"/>
                   <xsl:apply-templates select="limit/threshold[@thresholdType = 'threshold']"/>
+                  <xsl:text>&#160;</xsl:text>
                   <xsl:value-of select="$ConfigXML/config/maintenance/threshold[string(@uom) = $thresUom]"/>
                 </fo:block>
               </fo:table-cell>
@@ -77,6 +78,7 @@
                 <fo:block>
                   <xsl:variable name="thresUom" select="string(limit/threshold[@thresholdType = 'interval']/@thresholdUnitOfMeasure)"/>
                   <xsl:apply-templates select="limit/threshold[@thresholdType = 'interval']"/>
+                  <xsl:text>&#160;</xsl:text>
                   <xsl:value-of select="$ConfigXML/config/maintenance/threshold[string(@uom) = $thresUom]"/>
                 </fo:block>
               </fo:table-cell>

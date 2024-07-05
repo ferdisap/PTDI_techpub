@@ -22,6 +22,11 @@
     5. belum mengakomodir attribute @skillLevelType
     6. saat ini, applicRefId, changeMark, id, controlAuthority, security dilakukan di parentnya, yaitu element taskDefinition
    -->
+
+   <!-- 
+    Outstanding element relatedTask
+    1. bleum difungsikan attribute realtedTaskDesc meskipun mandatory ditulis
+   -->
    <xsl:template match="maintPlanning">
     <xsl:apply-templates select="commonInfo"/>
     <xsl:apply-templates select="preliminaryRqmts"/>
@@ -32,6 +37,9 @@
       </xsl:when>
       <xsl:when test="taskDefinition and $entryType = 'System And Powerplant Inspection Program'">
         <xsl:call-template name="add_taskDefinition_for_systemAndPowerPlantInspectionProgram"/>
+      </xsl:when>
+      <xsl:when test="taskDefinition and $entryType = 'Zonal Inspection Program'">
+        <xsl:call-template name="add_taskDefinition_for_zonalInspectionProgram"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>
@@ -155,6 +163,12 @@
    <xsl:template match="taskTitle">
     <fo:block font-weight="bold">
       <xsl:apply-templates select="."/>
+    </fo:block>
+   </xsl:template>
+
+   <xsl:template match="relatedTask">
+    <fo:block>
+      <xsl:value-of select="string(@taskIdent)"/>
     </fo:block>
    </xsl:template>
 

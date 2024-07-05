@@ -51,6 +51,7 @@
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/All-MaintPlanning.xsl" />
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_structuralInspectionProgram.xsl" />
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_systemAndPowerPlantInspectionProgram.xsl" />
+  <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_zonalInspectionProgram.xsl" />
   <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/externalPubRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/functionalItemRef.xsl" />
@@ -245,6 +246,7 @@
 
   <!-- dipanggil di changeMark/All.xsl -->
   <xsl:template name="get_cgmarkOffset">
+    <xsl:param name="masterName" select="$masterName"/>
     <xsl:value-of select="string($ConfigXML/config/output/layout[@master-name = $masterName]/@cgmark-offset)"/>
   </xsl:template>
 
