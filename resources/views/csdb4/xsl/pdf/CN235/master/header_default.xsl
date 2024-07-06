@@ -136,7 +136,6 @@
           </xsl:call-template>
           <fo:block>
             <xsl:call-template name="getPmEntryTitle"/>
-            <fo:inline>bbb</fo:inline>
           </fo:block>
         </fo:inline-container>
       </fo:block>

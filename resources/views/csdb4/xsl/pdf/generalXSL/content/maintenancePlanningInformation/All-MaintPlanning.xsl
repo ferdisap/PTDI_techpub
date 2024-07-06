@@ -3,9 +3,17 @@
   xmlns:php="http://php.net/xsl" xmlns:fo="http://www.w3.org/1999/XSL/Format">
 
   <!-- 
+    * timeLimitInfo adalah elemen yang digunakan untuk membuat planning berdasarkan equipment/part
+    * inspectionDefinition adalah element yang digunakan untuk membuat planning berdasarkan waktu inspection
+    * taskDefinition digunakan berdasarkan nomor task
+    * maintenanceAllocation ... TBD 
+    * see S1000D_5.0 page 771/3503
+   -->
+
+  <!-- 
     Outstanding:
     1. belum memfungsikan @maintPlanningType, the textual information used to classify the maintenance planning data
-    2. belum memfungsikan maintAllocation|toolList|remarkList
+    2. belum memfungsikan inspectionDefinition|timeLimitInfo|maintAllocation|toolList|remarkList
    -->
 
   <!-- 
@@ -21,6 +29,7 @@
     4. belum mengakomodir attribute @skillLevelCode
     5. belum mengakomodir attribute @skillLevelType
     6. saat ini, applicRefId, changeMark, id, controlAuthority, security dilakukan di parentnya, yaitu element taskDefinition
+    7. saat ini belum difungsikan elemen equip/partRef dan equip/catalogSeqNumberRef dan equip/natoStockNumber
    -->
 
    <!-- 
@@ -40,6 +49,9 @@
       </xsl:when>
       <xsl:when test="taskDefinition and $entryType = 'Zonal Inspection Program'">
         <xsl:call-template name="add_taskDefinition_for_zonalInspectionProgram"/>
+      </xsl:when>
+      <xsl:when test="taskDefinition and $entryType = 'Time Limit Program'">
+        <xsl:call-template name="add_taskDefinition_for_timeLimitProgram"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:choose>

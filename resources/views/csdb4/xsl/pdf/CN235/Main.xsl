@@ -21,6 +21,7 @@
   <xsl:include href="../generalXSL/identStatus/All-Enterprise.xsl" />
   <xsl:include href="../generalXSL/identStatus/All-Security.xsl" />
   <xsl:include href="../generalXSL/identStatus/dmTitle.xsl" />
+  <xsl:include href="../generalXSL/identStatus/remarks.xsl" />
   <xsl:include href="../generalXSL/identStatus/Style-dmTitle.xsl" />
   <xsl:include href="../generalXSL/content/content.xsl" />
   <xsl:include href="../generalXSL/content/applicability/All.xsl" />
@@ -52,6 +53,8 @@
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_structuralInspectionProgram.xsl" />
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_systemAndPowerPlantInspectionProgram.xsl" />
   <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_zonalInspectionProgram.xsl" />
+  <xsl:include href="../generalXSL/content/maintenancePlanningInformation/taskDefinition_for_timeLimitProgram.xsl" />
+  <xsl:include href="../generalXSL/content/preliminaryRequirementsAndRequirementsAfterJobCompletion/identNumber.xsl" />
   <xsl:include href="../generalXSL/content/referencing/dmRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/externalPubRef.xsl" />
   <xsl:include href="../generalXSL/content/referencing/functionalItemRef.xsl" />
