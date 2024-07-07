@@ -25,6 +25,7 @@ Route::get('/api/geticnstaged/all', [CsdbController::class, 'get_icn_staged_list
 Route::get('/api/export/{filename}', [CsdbServiceController::class, 'export'])->middleware('auth')->name('api.get_export_file');
 
 Route::get("/api/commit/{filename}",[CsdbController::class, 'commit'])->middleware('auth')->name("api.commit_object");
+Route::post("/api/multiplecommitcsdbobject",[CsdbController::class, 'commit_multiple'])->middleware('auth')->name("api.commit_objects");
 Route::get("/api/issue/{filename}", [CsdbController::class, 'issue'])->middleware('auth')->name('api.issue_object');
 Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware('auth')->name('api.edit_object');
 // Route::post('api/pushtostage',)

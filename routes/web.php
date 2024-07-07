@@ -109,3 +109,9 @@ Route::get("/tes", function(Request $request){
 Route::get('/worker', [Controller::class, 'getWorkerJs']);
 Route::get('/axios', [Controller::class, 'getAxiosJs']);
 
+Route::get('tes123', function(){
+  $inWork = 'AA';
+  $inWork = str_pad($inWork, 2, '0', STR_PAD_LEFT);
+  $inWork++;
+  dd($inWork);
+});

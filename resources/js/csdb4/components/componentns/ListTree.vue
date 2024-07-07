@@ -210,6 +210,14 @@ export default {
       this.createListTreeHTML();
     })
 
+    this.emitter.on('ListTree-addMultiple', (data) => {
+      //data adalah array yang tedapat banyak model SQL Csdb Object
+      data.forEach(model => {
+        this.pushList(model);
+      })
+      this.createListTreeHTML();
+    })
+
     let list = await this.get_list(this.$props.type);
     if(list) this.createListTreeHTML();
   },

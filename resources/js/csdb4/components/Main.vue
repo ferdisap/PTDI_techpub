@@ -13,15 +13,18 @@ export default {
     // ButtonMinimizeContainer 
   },
   methods:{
-    // available action towards CSDB    
+    // available action towards CSDB
     /**
-     * 
      * @param {*} data; if data.filenames is array then it'll be joined, otherwise data.filename is choosen 
      */
-     async deleteCSDBs(data){
-      if(!data) return;
+     joinFilename(data){
       let filenames = data.filenames || data.filename;
       if (Array.isArray(filenames)) filenames = filenames.join(', ');
+      return filenames;
+    },
+    async deleteCSDBs(data){
+      if(!data) return;
+      let filenames = this.joinFilename(data);
       if (!(await this.$root.alert({ name: 'beforeDeleteCsdbObject', filename: filenames }))) {
         return;
       }
@@ -32,7 +35,20 @@ export default {
         }
       });
       this.emitter.emit('DeleteMultipleCSDBObject', response.data.models);
-
+    },
+    async commitCSDBs(data){
+      if(!data) return;
+      let filenames = this.joinFilename(data);
+      if (!(await this.$root.alert({ name: 'beforeCommitCsdbObject', filename: filenames }))) {
+        return;
+      }
+      let response = await axios({
+        route: {
+          name: 'api.commit_objects',
+          data: {filenames: filenames},
+        }
+      });
+      this.emitter.emit('CommitMultipleCSDBObject', response.data.models);
     }
   },
   mounted() {
@@ -40,6 +56,9 @@ export default {
     
     this.emitter.on('DeleteCSDBObjectFromEveryWhere', (data) => {
       this.deleteCSDBs(data)
+    })
+    this.emitter.on('CommitCSDBObjectFromEveryWhere', (data) => {
+      this.commitCSDBs(data)
     })
     
     window.rt = this.$route;

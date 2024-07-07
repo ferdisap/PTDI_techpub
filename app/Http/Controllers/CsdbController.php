@@ -84,6 +84,7 @@ class CsdbController extends Controller
     // ]);
     
     // ini bisa
+    // return view('csdb3.app');
     return view('csdb4.app');
   }
 
@@ -315,7 +316,7 @@ class CsdbController extends Controller
       if ($new_csdb_model) {
         $new_csdb_model->setRemarks('stage', 'unstaged');
         $new_csdb_model->setRemarks('remarks',$CSDBObject->document); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
-        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$csdb_filename}.;{$request->user()->name}");
+        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$csdb_filename}.;{$request->user()->name}");
         $new_csdb_model->initiator = [
           'name' => $request->user()->name,
           'email' => $request->user()->email,
@@ -542,68 +543,45 @@ class CsdbController extends Controller
     } else {
       return $this->ret2($process["code"], $process["message"]);
     }
-    // $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
-    // if(!$model) return $this->ret2(400, ["{$filename} failed to delete."]);
-
-    
-    // if ($model->initiator->id = !$request->user()->id) return $this->ret2(400, ["Deleting {$filename} must be done by {$model->initiator->name}"]);
-    // if (isset($model->remarks['stage']) AND $model->remarks['stage'] === 'staged') return $this->ret2(400, ["{$filename} has been staged and cannot be deleted."]);
-    
-    // $model->hide(false);
-    // $model->direct_save = false;
-    // $time = Carbon::now()->timezone(7);
-    // $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);    
-    
-    // $model->setRemarks('history', Carbon::now().";DELL;Object with filename {$filename} is deleted.;{$request->user()->name}");
-    // $model->save();
-
-    // $model_meta = $model->toArray();
-    // $insert = [
-    //   "filename" => $new_filename,
-    //   "deleter_id" => $request->user()->id,
-    //   "meta" => collect($model_meta),
-    //   "created_at" => Carbon::now(7),
-    // ];
-    // $create_deleted_db = fn () => DB::table('csdb_deleted')->insert($insert); // $insert ditaruh diluar agar bisa dikirim sebagai response, karena juga fungsi insert() ini returning boolean
-    // $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
-    
-    // if(!($create_deleted_db() AND $move_file())) return $this->ret2(400,["{$filename} fails to delete"]);
-    // $model->delete();
-    // return $this->ret2(200, ["{$new_filename} has been created as a result of deleting {$filename}."], ['data' => $model], ['data2' => $insert]);
   }
 
   public function delete_multiple(Request $request)
   {
     // return $this->ret2(200, ['message1', 'message2'], ['models' => ['tes model1', 'tes model2']]);
     $messages = [];
-    $models = [];
+    $deletedModels = [];
     // $arrayfilenames = isset($request->filenames) ? explode(', ', $request->filenames) : [$request->filename];
     $arrayfilenames = $request->filenames ?? $request->filename;
     if(!is_array($arrayfilenames)) $arrayfilenames = [$arrayfilenames];
     foreach($arrayfilenames as $filename){
       $process = $this->deletingProcess($request, $filename);
       $messages[] = $process["message"];
-      $models[] = $process['model'];
+      $deletedModels[] = $process['model'];
     }
-    return $this->ret2(200, $messages, ['models' => $models]);
+    return $this->ret2(200, $messages, ['models' => $deletedModels]);
   }
   
   public function deletingProcess(Request $request, string $filename)
   {
-    $message = '';
-    $return = false;
-    $code = 0;
-    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first(); 
-
-    if ($model->initiator->id = !$request->user()->id) {
-      $message = "Deleting {$filename} must be done by {$model->initiator->name}";
-      $return = false;
-      $code = 400;
+    $fnRet = function($message, $result, $code, $model, $deleted_data){
+      return [
+        "message" => $message,
+        "result" => $result,
+        "code" => $code,
+        "model" => $model,
+        "deleted_data" => $deleted_data,
+      ];
     };
+
+    $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first(); 
+    if ($model->initiator->id = !$request->user()->id) {
+      return $fnRet(
+        "Deleting {$filename} must be done by {$model->initiator->name}",
+        false, 400, $model, null);
+      };
     if (isset($model->remarks['stage']) AND $model->remarks['stage'] === 'staged') {
-      $message = "{$filename} has been staged and cannot be deleted.";
-      $return = false;
-      $code = 400;
+      return $fnRet(
+        "{$filename} has been staged and cannot be deleted.", false, 400, $model, null);
     }
    
     $model->hide(false);
@@ -624,28 +602,23 @@ class CsdbController extends Controller
 
     $create_deleted_db = fn () => DB::table('csdb_deleted')->insert($insert); // $insert ditaruh diluar agar bisa dikirim sebagai response, karena juga fungsi insert() ini returning boolean
     $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
+    $revert_move_file = fn() => Storage::disk('csdb')->put($filename, Storage::disk('csdb_deleted')->get($new_filename)) AND Storage::disk('csdb_deleted')->delete($new_filename);
 
-    if(!($create_deleted_db() AND $move_file())) {
-      $message = "{$filename} fails to delete";
-      $return = false;
-      $code = 400;
+    if(!($move_file()) AND $create_deleted_db()) {
+      $revert_move_file();
+      return $fnRet(
+        "{$filename} fails to delete", false, 400, $model, null );
     }
+    Storage::disk('csdb')->delete($filename);
     if($model->delete()){
-      $message = "{$new_filename} has been created as a result of deleting {$filename}.";
-      $return = true;
-      $code = 200;
+      return $fnRet(
+        "{$new_filename} has been created as a result of deleting {$filename}.", true, 200, $model, $insert);
     }; 
-    $message = "{$new_filename} has been created as a result of deleting {$filename}.";
-    $return = true;
-    $code = 200;
 
-    return [
-      "message" => $message,
-      "result" => $return,
-      "code" => $code,
-      "model" => $model,
-      "deleted_data" => $insert,
-    ];
+    return $fnRet(
+      "{$new_filename} has been created as a result of deleting {$filename}.",
+      true, 200, $model, $insert
+    );
   }
 
   /**
@@ -669,37 +642,50 @@ class CsdbController extends Controller
     };
     $meta = $meta(json_decode($deleted_model->meta), $meta);
 
-    // #2. restore by re-creating ModelsCsdb and move file from path 'csdb_deleted' to 'csdb'
+    // #2 restore by move file from path 'csdb_deleted' to 'csdb' and then re-create ModelsCsdb
     $message = "{$filename} fail to restore.";
     $model = new ModelsCsdb();
     $restore = function() use($meta, $deleted_QB, $filename, &$message, $request, &$model){
+      // chek duplicate id
       if(ModelsCsdb::find($meta['id'])){
         $message = "Failed to restore due to duplication filename. See {$filename}.";
         return false;
       }
-      $model = ModelsCsdb::create($meta);
-      if($model){
-        $isDel = $deleted_QB->delete();
-        if($isDel){
-          $new_filename = preg_replace("/__[\S]+/",'',$filename);
-          $is_move_file = Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
-          if($is_move_file) {
-            $message = "{$filename} has been restored";
-            $model->setRemarks('history', Carbon::now().";RSTR;Object with filename {$filename} is deleted.;{$request->user()->name}");
-            $model->save();
-            return $new_filename;
-          };
-        }
-        $model->delete(); // delete model jika gagal save / gagal move file;
+      $new_filename = preg_replace("/__[\S]+/",'',$filename);
+      $move_file = fn() => Storage::disk('csdb')->put($new_filename, Storage::disk('csdb_deleted')->get($filename)) AND Storage::disk('csdb_deleted')->delete($filename);
+      $revert_move_file = fn() => Storage::disk('csdb_deleted')->put($filename, Storage::disk('csdb')->get($new_filename)) AND Storage::disk('csdb')->delete($new_filename);
+
+      // jika gagal memindahkan file, maka revert moved file
+      if(!$move_file()) {
+        $message = "Failed to move file from deleted to csdb.";
+        return false;
+      };
+
+      // jika gagal membuat model maka revert moved file
+      if(!($model = ModelsCsdb::create($meta))){
+        $revert_move_file();
+        $message = "Failed to create CSDB Model.";
+        return false;
       }
-      return false;
+
+      // jika gagal delete the deletion csdb, maka revert moved file dan delete model
+      if(!($deleted_QB->delete())) {
+        $revert_move_file();
+        $model->delete();
+        $message = "Failed to delete the deletion csdb.";
+        return false;
+      };
+
+      $message = "{$filename} has been restored";
+      $model->setRemarks('history', Carbon::now().";RSTR;Object with filename {$filename} is deleted.;{$request->user()->name}");
+      $model->save();
+      return $new_filename;
     };
+    
     // #3. return
     if($filename = $restore()){
-      // $filename = preg_replace("/__[\S]+/",'',$filename);
       return $this->ret2(200, [$message], ['data' => $model]);
     } else {
-      // $filename = preg_replace("/__[\S]+/",'',$filename);
       return $this->ret2(400, [$message]);
     }
   }
@@ -757,6 +743,96 @@ class CsdbController extends Controller
       $data = ['data' => $deleted_QB];
     }
     return $this->ret2($code, [$message], $data);
+  }
+
+  /**
+   * nyontek dari delete()
+   */
+  public function commit(Request $request, string $filename)
+  {
+    $process = $this->commitingProccess($request, $filename);
+    if($process['result']){
+      return $this->ret2($process["code"], $process["message"], ['data' => $process["oldmodel"]], ["data2" => $process["newmodel"]]);
+    } else {
+      return $this->ret2($process["code"], $process["message"]);
+    }
+  }
+
+  /**
+   * nyontek dari delete_multiple()
+   */
+  public function commit_multiple(Request $request)
+  {
+    $messages = [];
+    $newModels = [];    
+    $arrayfilenames = $request->filenames ?? $request->filename;
+    if(!is_array($arrayfilenames)) $arrayfilenames = [$arrayfilenames];
+    foreach($arrayfilenames as $filename){
+      $process = $this->commitingProcess($request, $filename);
+      $messages[] = $process["message"];
+      $newModels[] = $process['newmodel'];
+    }
+    return $this->ret2(200, $messages, ['models' => $newModels]);
+  }
+
+  /**
+   * see DmlController@commit. Algoritma nya sama
+   * history code CMMT
+   */
+  public function commitingProcess(Request $request, string $filename)
+  {
+    $fnRet = function($message, $result, $code, $model, $newmodel){
+      return [
+        "message" => $message,
+        "result" => $result,
+        "code" => $code,
+        "model" => $model,
+        "newmodel" => $newmodel,
+      ];
+    };
+    $CSDBModel = ModelsCsdb::where('filename', $filename)->first();
+    if ($CSDBModel->initiator_id != $request->user()->id) {
+      // $this->ret2(400, ["Only Initiator ({$CSDBModel->initiator->name}) can commit."])
+      return $fnRet(
+        "Only Initiator ({$CSDBModel->initiator->name}) can commit.",
+        false, 400, $CSDBModel, null);
+    };
+    $CSDBModel->direct_save = false;
+
+    $newCSDBObject = new CSDBObject("5.0");
+    $newCSDBObject->load(CSDB_STORAGE_PATH. DIRECTORY_SEPARATOR. $CSDBModel->filename);
+    if(!$newCSDBObject->commit()) {
+      return $fnRet('Fail to commit.', false, 400, $CSDBModel, null);
+    };
+    $newFilename = $newCSDBObject->getFilename();
+
+    $CSDBModel->editable = 0;
+    $CSDBModel->setRemarks('history', Carbon::now().";CMMT;Object is commited with new filename {$newFilename}.;{$request->user()->name}");
+
+    //# save old and new DOM
+    $save = fn() => Storage::disk('csdb')->put($newFilename, $newCSDBObject->document->saveXML());
+    $revert_save = fn() => Storage::disk('csdb')->delete($newFilename);
+    if($save()){
+      $newCSDBModel = ModelsCSDB::create([
+        'filename' => $newFilename,
+        'path' => $CSDBModel->path,
+        'editable' => 1,
+        'initiator_id' => $CSDBModel->initiator_id,
+        'remarks' => $CSDBModel->remarks,
+      ]);
+      if(!($newCSDBModel)) {
+        $revert_save();
+        return $fnRet("Fail to create new CSDB Model.", false, 400, $CSDBModel, null);
+      }
+      $newCSDBModel->setRemarks('stage', 'unstaged');
+      $newCSDBModel->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$newFilename}.;{$request->user()->name}");
+      if(!($CSDBModel->save())){
+        $revert_save();
+        $newCSDBModel->delete();
+        return $fnRet("Fail to save {$CSDBModel->filename}.", false, 400, $CSDBModel, null);
+      }
+      return $fnRet("Successfully commit. New {$newFilename} has been created.", true, 200, $CSDBModel, $newCSDBModel);
+    }
   }
 
   ################# NEW for csdb3 #################
@@ -1124,7 +1200,7 @@ class CsdbController extends Controller
   /**
    * see DmlController@commit. Algoritma nya sama
    */
-  public function commit(Request $request, string $filename)
+  public function commit_xx(Request $request, string $filename)
   {
     $model = ModelsCsdb::where('filename', $filename)->first();
     if ($model->initiator_id != $request->user()->id) return $this->ret2(400, ["Only Initiator ({$model->initiator->name}) can commit."]);

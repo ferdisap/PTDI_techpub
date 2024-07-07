@@ -35,8 +35,11 @@ class AppServiceProvider extends ServiceProvider
 
     Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'));
 
-    define("CSDB_VIEW_PATH", $this->wp_normalize_path(resource_path('views/csdb4')));
-    define("CSDB_STORAGE_PATH", storage_path('csdb'));
+    try {
+      define("CSDB_VIEW_PATH", $this->wp_normalize_path(resource_path('views/csdb4')));
+      define("CSDB_STORAGE_PATH", storage_path('csdb'));
+    } catch (\Throwable $e) {
+    }
     
     
     // Blade::anonymousComponentPath(base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR);

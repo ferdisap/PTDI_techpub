@@ -161,10 +161,10 @@ export default {
       <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-green-600">devices</span>
-          verified</div>
+          Issue</div>
       </div>
       <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">
+        <div class="text-sm" @click="()=>this.emitter.emit('CommitCSDBObjectFromEveryWhere', {filename: filename})">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
           Commit</div>
       </div>

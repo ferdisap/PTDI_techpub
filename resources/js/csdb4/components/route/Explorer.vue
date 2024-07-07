@@ -232,12 +232,6 @@ export default {
 
     this.emitter.on('DeleteMultipleCSDBObject', (data) => {
       // data is array models contained several model
-      // console.log(window.models = data);
-      // data.forEach(fn => {
-      //   setTimeout(() => {        
-      //     this.emitter.emit('ListTree-remove', fn);
-      //   }, 10);
-      // })
       this.emitter.emit('ListTree-removeMultiple', data);
       this.emitter.emit('Deletion-refresh');
     })
@@ -245,6 +239,10 @@ export default {
     this.emitter.on('RestoreCSDBobejctFromDeletion', (data) => {
       // data adalah model SQL CSDB Object
       this.emitter.emit('ListTree-add', data);
+    })
+
+    this.emitter.on('CommitMultipleCSDBObject', (data) => {
+      this.emitter.emit('ListTree-addMultiple', data);
     })
   }
 }
