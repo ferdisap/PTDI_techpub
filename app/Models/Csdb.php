@@ -346,7 +346,15 @@ class Csdb extends Model
     // dd($this->DOMDocument);
 
     // if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
-    if (isset($this->CSDBObject->document) and Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML())) {
+    // dd($this->filename, $this->CSDBObject->document->saveXML());
+    // dd(Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML()));
+    // dd(($this->CSDBObject), isset($this->CSDBObject->document));
+
+    // saat buat DML, isset($this->CSDBObject->document) = false padahal documentnya ada dan sudah dibuat
+    // dd($this->CSDBObject->document instanceof \DOMDocument, isset($this->CSDBObject->document));
+    // dd(isset($this->CSDBObject->document), ($this->CSDBObject->document));
+    // dd(isset($this->CSDBObject->document));
+    if (($this->CSDBObject->document instanceof \DOMDocument) AND Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML())) {
       $this->setRemarks('ident');
       if ($this->save()) {
         return true;

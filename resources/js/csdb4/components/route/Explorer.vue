@@ -105,8 +105,8 @@ export default {
     }
   },
   mounted() {
-    if(window.localStorage.colWidthExplorer){
-      this.colWidth = JSON.parse(window.localStorage.colWidthExplorer);
+    if(top.localStorage.colWidthExplorer){
+      this.colWidth = JSON.parse(top.localStorage.colWidthExplorer);
     }
 
     this.emitter.on('clickFilenameFromListTree', (data) => {

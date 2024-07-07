@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\CSDB;
 use Ptdi\Mpub\Helper;
-
+use Ptdi\Mpub\Main\CSDBObject;
+use Ptdi\Mpub\Main\CSDBStatic;
+use Illuminate\Support\Facades\Storage;
 use function PHPUnit\Framework\directoryExists;
+use Carbon\Carbon;
 
 class Dml extends ModelsCsdb
 {
@@ -18,15 +21,32 @@ class Dml extends ModelsCsdb
 
   protected $with = ['initiator'];
 
-  public function tes()
+  public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
-    return 'foo';
-  }
+    $this->CSDBObject = new CSDBObject('5.0');
+    $this->CSDBObject->setPath(CSDB_STORAGE_PATH);
+    $this->CSDBObject->createDML($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
 
+    $ident = $this->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
+    $filename = CSDBStatic::resolve_dmlIdent($ident);
+    
+    $this->filename = $filename;
+    $this->path = "csdb";
+    $this->editable = 1;
+    $this->initiator_id = Auth::user()->id;
+
+    return $ident ? true : false;
+    // $save = Storage::disk('csdb')->put($filename, $this->CSDBObject->document->saveXML());
+    // if($save){
+    //   $this->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$filename}.;{$request->user()->name}");
+    // }
+    // $this->saveModelAndDOM();
+
+  }
   /**
    * fungsi ini akan merecord di sql
    */
-  public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
+  public function create_xml_xx(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
     $identAndStatusSection = $this->create_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
     

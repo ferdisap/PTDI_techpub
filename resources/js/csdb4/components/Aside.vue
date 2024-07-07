@@ -50,8 +50,8 @@ export default {
     </div>
 
     <div class="relative p-2 flex items-center space-x-3 mb-3">
-      <a href="#" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
-        data-tooltip="Approval">approval</a>
+      <a @click.prevent="go('ManagementData')" :href="href('ManagementData', {filename:'', viewType:''})" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
+        data-tooltip="Management">approval</a>
     </div>
 
     <div class="relative p-2 flex items-center space-x-3 mb-3">

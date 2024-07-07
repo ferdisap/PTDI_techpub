@@ -337,11 +337,15 @@ class DmlController extends Controller
     // $dml_model->setWith(['initiator']);
     $dml_model->direct_save = false;
     $otherOptions = [];
-    $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+    $isCreated = $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+    if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
     $dml_model->initiator; // supaya ada initiator saat return
     
-    $dml_model->saveModelAndDOM();
-    return $this->ret2(200, ["{$dml_model->filename} has been created."], ['dml' => $dml_model]);
+    if($dml_model->saveModelAndDOM()){
+      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['dml' => $dml_model]);
+    } else {
+      return $this->ret2(400, ["fail to create and save DML."]);
+    }
   }
 
   public function addEntry(Request $request)
