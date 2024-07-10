@@ -18,6 +18,7 @@ use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Main\CSDBObject;
+use Ptdi\Mpub\Main\CSDBStatic;
 use Ptdi\Mpub\Pdf2\Applicability;
 
 /**
@@ -267,6 +268,9 @@ class Csdb extends Model
       case 'ident':
         $values = $this->setRemarks_ident($value);
         break;
+      case 'status':
+        $values = $this->setRemarks_status($value);
+        break;
       case 'history':
         $values = $this->setRemarks_history($value);
         break;
@@ -290,17 +294,35 @@ class Csdb extends Model
     return $history;
   }
 
-  private function setRemarks_ident($filename = '')
+  private function setRemarks_ident()
   {
-    if(!$filename){
-      $filename = $this->filename;
-    }
-    $ident = (Helper::decode_ident($filename));
+    $ident = (CSDBStatic::decode_ident($this->filename));
     unset($ident['xml_string']);
     return $ident;
   }
 
+  /**
+   * hanya untuk document instanceof \DOMDocument
+   */
+  private function setRemarks_status()
+  {
+    // $brex = ($this->CSDBObject->getBrexDm());
+    // dd($brex->getFilename());
+    $status = [
+      'securityClassification' => $this->CSDBObject->getSC('text'),
+      'brexDmRef' => $this->CSDBObject->getBrexDm()->getFilename(),
+    ];
+    $doctypeName = $this->CSDBObject->document->doctype->nodeName;
+    if($doctypeName === 'comment'){
+      $status['commentPriority'] = '';
+    } elseif($doctypeName === 'dmodule' OR $doctypeName === 'pm'){
+      $status['qualityAssurance'] = $this->CSDBObject->getQA();
+    }
+    return $status;
+  }
+
   /** 
+   * DEPRECIATED. diganti ke setRemarks_status
    * untuk set remarks sesuai xpath //identAndStatusSection/descendant::remarks/simplePara
    * @param mixed $value bisa berupa string, atau DOM Document
    * @return string 
@@ -337,27 +359,28 @@ class Csdb extends Model
     return MpubCSDB::resolve_DocTitle($dom);
   }
 
+  /**
+   * sudah termasuk revert save
+   * save file dulu, kemudian model
+   * sudah bisa save file ICN. Mungkin namanya tidak relevan lagi, jadi nanti didepreciated
+   */
   public function saveModelAndDOM()
   {
-    // coba2 | hasil: tidak berpengaruh
-    // if(isset($this->DOMDocument)){
-    //   $this->DOMDocument->formatOutput = false;
-    // }
-    // dd($this->DOMDocument);
-
-    // if (isset($this->DOMDocument) and $this->DOMDocument->C14NFile(storage_path($this->path) . DIRECTORY_SEPARATOR . $this->filename)) {
-    // dd($this->filename, $this->CSDBObject->document->saveXML());
-    // dd(Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML()));
-    // dd(($this->CSDBObject), isset($this->CSDBObject->document));
-
-    // saat buat DML, isset($this->CSDBObject->document) = false padahal documentnya ada dan sudah dibuat
-    // dd($this->CSDBObject->document instanceof \DOMDocument, isset($this->CSDBObject->document));
-    // dd(isset($this->CSDBObject->document), ($this->CSDBObject->document));
-    // dd(isset($this->CSDBObject->document));
-    if (($this->CSDBObject->document instanceof \DOMDocument) AND Storage::disk('csdb')->put($this->filename, $this->CSDBObject->document->saveXML())) {
-      $this->setRemarks('ident');
-      if ($this->save()) {
-        return true;
+    $fileContents = Storage::disk('csdb')->get($this->filename);
+    $save_file = fn() => Storage::disk('csdb')->put($this->filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
+    $revert_save_file = 
+      fn() => $fileContents 
+        ? Storage::disk('csdb')->put($this->filename, $fileContents)
+        : Storage::disk('csdb')->delete($this->filename);
+    if ($save_file()) {
+      if($this->CSDBObject->document instanceof \DOMDocument){
+        $this->setRemarks('ident');
+        $this->setRemarks('status');
+      }
+      if ($this->save()) return true;
+      else {
+        $revert_save_file();
+        return false;
       }
     }
     return false;

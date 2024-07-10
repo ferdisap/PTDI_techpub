@@ -103,6 +103,7 @@ class CsdbServiceController extends CsdbController
     // $dom = MpubCSDB::importDocument(storage_path('csdb'), 'DMC-MALE-A-00-00-00-00A-00QA-D_000-01_EN-EN.xml');
     $model = Csdb::where('filename', $filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $model->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $transformed = $model->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/Container.xsl", ["configuration" => 'ForIdentStatusVue']);
     
     if($error = CSDBError::getErrors(false) AND (int)$request->get('ignoreError')){
@@ -157,6 +158,7 @@ class CsdbServiceController extends CsdbController
 
     $model = Csdb::where('filename', $csdb->filename)->first();
     $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $model->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $model->showCGMArkElement();
 
     CSDBStatic::$footnotePositionStore[$model->filename] = [];    
@@ -177,7 +179,6 @@ class CsdbServiceController extends CsdbController
         'Last-Modified' => $csdb->updated_at
       ]);
     } else {
-      dd($pdf, $fo);
       return abort(400);
     }
 

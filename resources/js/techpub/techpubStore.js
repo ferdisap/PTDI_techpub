@@ -33,15 +33,31 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     return {
       Auth: {},
       WebRoutes: {},
+
+      /**
+       * DEPRECIATED
+       */
       Project: [],
+
+      /**
+       * DEPRECIATED
+       */
       Errors: [],
 
       showLoadingBar: false,
+
+      /**
+       * DEPRECIATED
+       */
       showIdentSection: true,
 
+      /**
+       * DEPRECIATED
+       */
       isOpenICNDetailContainer: false,
 
       /**
+       * DEPRECIATED
        * awalnya digunakan untuk mengirim data dari ObjectDetail to ObjectUpdate.
        * Selanjutnya diharapkan bisa dipakai untuk menggantikan transformedObject
        */
@@ -54,12 +70,14 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       }, // blob object
 
       /**
+       * DEPRECIATED
        * untuk DML app, csdb3
        * kayaknya ini tidak dipakai karena nanti pakai DMLList di IndexDML.vue
        */
       DMLList: [], // tidak  digunakan lagi
 
       /**
+       * DEPRECIATED
        * untuk csdb3
        */
       BREXList: [], // tidak  digunakan lagi
@@ -67,19 +85,38 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       // BRList:[],
 
       /**
+       * DEPRECIATED
        * untuk csdb3
        */
       OBJECTList: {},
 
       /**
+       * DEPRECIATED
        * digunakan saat Upload.vue ke Editor.vue
        */
       readText: '',
 
-      /** pengganti fitur di App.vue */
+      /** 
+       * DEPRECIATED
+       * pengganti fitur di App.vue 
+       */
       isSuccess: true,
+      
+      /**
+       * DEPRECIATED
+       */
       errors: undefined,
+
+      /**
+       * DEPRECIATED
+       */
       message: undefined,
+
+      /**
+       * digunakan untuk setiap component yang ada route.param filename nya
+       */
+      currentObjectModel: {}
+
 
     }
   },
@@ -254,13 +291,21 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     //     // return this[`${type}_list`];
     //   }
     // },
+
+    /**
+     * DEPRECIATED
+     */
     async goto(type, page = undefined) {
       this.get_list(type, { page: page });
     },
 
+    /**
+     * DEPRECIATED
+     */
     isEmpty(value) {
       return (value == null || value === '' || (typeof value === "string" && value.trim().length === 0));
     },
+
     date(str) {
       return (new Date(str)).toLocaleDateString('en-EN', {
         year: 'numeric', month: 'short', day: 'numeric'
@@ -447,7 +492,10 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       // }
     },
 
-    /** pengganti fitur pada App.vue */
+    /** 
+     * DEPRECIATED
+     * pengganti fitur pada App.vue 
+     * */
     async set_error(axiosError) {
       axiosError.response.data.errors ? (this.errors = axiosError.response.data.errors) : (this.errors = undefined);
       axiosError.response.data.message ? (this.message = axiosError.message + ': ' + axiosError.response.data.message) : (this.message = axiosError.message);
@@ -488,6 +536,9 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       // })();
     },
 
+    /**
+     * DEPRECIATED
+     */
     async setCurrentDetailObject_blob() {
       this.showLoadingBar = true;
       const route = this.getWebRoute('api.get_transform_csdb', { project_name: this.currentDetailObject['projectName'], filename: this.currentDetailObject.model['filename'] });
@@ -503,6 +554,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     },
 
     /**
+     * DEPRECIATED
      * object = {model: ..., blob: ...}
      * */
     async setCurrentObject_model(object, projectName, filename) {
@@ -526,6 +578,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     },
 
     /**
+     * DEPRECIATED
      * get one dml from DMLList
      * @param {string} filename 
      */

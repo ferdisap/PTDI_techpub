@@ -70,8 +70,10 @@ require __Dir__."/project/general.php";
 require __Dir__."/ietm/general.php";
 require __Dir__."/ietm/repo.php";
 require __Dir__."/csdb4/general.php";
+require __Dir__."/csdb4/dml.php";
+require __Dir__."/csdb4/comment.php";
 // require __Dir__."/csdb3/general.php";
-require __Dir__."/dml/general.php";
+// require __Dir__."/dml/general.php";
 // require __Dir__."/br/general.php";
 // require __Dir__."/dm/general.php";
 // require __Dir__."/icn/general.php";
@@ -106,7 +108,7 @@ Route::get("/tes", function(Request $request){
   dd((new Controller())->getAllRoutesNamed());
 });
 
-Route::get('/worker', [Controller::class, 'getWorkerJs']);
+Route::get('/worker/{filename}', [Controller::class, 'getWorker'])->middleware('auth');
 Route::get('/axios', [Controller::class, 'getAxiosJs']);
 
 Route::get('tes123', function(){

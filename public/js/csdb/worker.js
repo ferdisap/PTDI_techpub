@@ -10,7 +10,7 @@ const ListTree = {
     return new Promise(async (resolve, reject) => {
       if (response.ok) {
         let json = await response.json();
-        resolve(this.setListTreeData(json.data));
+        resolve(setListTreeData(json.data));
       } else {
         reject([]);
       }
@@ -20,9 +20,9 @@ const ListTree = {
  * @return {Array}
  * @param {Object} response from axios Response 
  */
-  setListTreeData: function (data){
-    return setListTreeData(data);
-  }
+  // setListTreeData: function (data){
+  //   return setListTreeData(data);
+  // }
 }
 
 onmessage = async function (e) {
@@ -31,5 +31,6 @@ onmessage = async function (e) {
   if (component && component.name === 'ListTree') {
     ret = await ListTree.request(e);
   }
+  // else if(component && )
   postMessage(ret);
 }

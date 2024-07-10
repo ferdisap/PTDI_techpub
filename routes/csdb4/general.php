@@ -76,6 +76,6 @@ Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'g
 Route::get('/api/{filename}/get/path', [CsdbServiceController::class, 'get_object_path'])->middleware('auth')->name('api.get_object_path');
 
 #### DmlController ####
-Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');
+// Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');
 
 Route::get('/tes_deliver-file', [CsdbServiceController::class, 'tes_deliverFile']);

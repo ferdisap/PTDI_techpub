@@ -16,6 +16,7 @@ export default {
   components: {ContinuousLoadingCircle},
   props: {
     type: String,
+    routeName: String,
   },
   methods: {
     /**
@@ -26,7 +27,7 @@ export default {
     async get_list(type, params = {}) {
       params.listtree = 1;
       
-      let worker = this.createWorker();
+      const worker = this.createWorker("WorkerListTree.js");
       if(worker){
         let route = this.techpubStore.getWebRoute(`api.get_${type}_list`, params);
         let prom = new Promise((resolve, reject) =>{
@@ -39,10 +40,7 @@ export default {
           };
         });
         worker.postMessage({
-          component: {
-            name: 'ListTree',
-            route: route,
-          },
+          route:route,
         });
         this.showLoadingProgress = true;
         return prom;
@@ -70,7 +68,7 @@ export default {
     },
     clickFilename(data) {
       this.$router.push({
-          name: 'Explorer',
+          name: this.$props.routeName,
           params: {
               filename: data.filename,
               viewType: 'html'
@@ -86,7 +84,7 @@ export default {
         if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
           for (const model of models) {
             let logo = model.filename.substr(0, 3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
-            let href = this.techpubStore.getWebRoute('',{filename:model.filename,viewType:'html'},Object.assign({},this.$router.getRoutes().find(r => r.name === 'Explorer')))['path'];
+            let href = this.techpubStore.getWebRoute('',{filename:model.filename,viewType:'html'},Object.assign({},this.$router.getRoutes().find(r => r.name === this.$props.routeName)))['path'];
             listobj = listobj + `
                   <div class="obj" style="${style}">
                     ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
@@ -115,7 +113,6 @@ export default {
               continue;
             }
             let isOpen = this.data.open ? this.data.open[path] : false;
-            console.log(this.data.open);
             isOpen = isOpen ? 'open' : '';
 
             // generating folder list

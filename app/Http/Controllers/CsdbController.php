@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Csdb as ModelsCsdb;
 use App\Models\Project;
 use App\Models\User;
+use App\Rules\Csdb\Path as PathRules;
 use BREXValidator;
 use Carbon\Carbon;
 use Closure;
@@ -98,7 +99,16 @@ class CsdbController extends Controller
     // $tes = ModelsCsdb::where('filename', 'DMC-1_foo')->get(['updated_at']);
     // dd(now()->toString(), $tes[0]->updated_at->toString());
     if($request->get('listtree')){
-      return $this->ret2(200, ["data" => ModelsCsdb::get(['filename', 'path', 'updated_at'])->toArray()]);
+      return $this->ret2(200, 
+      [
+        "data" => 
+          ModelsCsdb::
+          where('filename', 'like', 'DMC-%')
+          ->orWhere('filename', 'like', 'PMC-%')
+          ->orWhere('filename', 'like', 'ICN-%')
+          ->get(['filename', 'path', 'updated_at'])
+          ->toArray()
+      ]);
       // return $this->ret2(200, ModelsCsdb::selectRaw("filename, path")->paginate(200)->toArray()); // hanya untuk dump karena database isinya ribuan rows
     }
     $this->model = ModelsCsdb::with('initiator');    
@@ -154,7 +164,7 @@ class CsdbController extends Controller
   public function get_object_model(Request $request, string $filename)
   {
     $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
-    return $model ? $this->ret2(200, ["data" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
+    return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
   }
 
   public function forfolder_get_allobjects_list(Request $request)
@@ -222,42 +232,41 @@ class CsdbController extends Controller
   public function create(Request $request)
   {    
     // #0 sama dengan CsdbServiceController@change_object_path
-    $path = $request->path;
-    if($path){
-      preg_match('/[^a-zA-Z1-9\/\s]+/', $path, $matches, PREG_OFFSET_CAPTURE, 0);
-      if(!empty($matches)){
-        return $this->ret2(400, ['Path must match to /[^a-zA-Z1-9\/\s]+/']);
-      };
-    } else {
-      $path = 'csdb';
-    }    
+    $validator = Validator::make($request->all(), [
+      'path' => ['required', new PathRules]
+    ]);
+    if($validator->fails()) return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+    $validated = $validator->validated();
+    
+    $new_csdb_model = new ModelsCsdb();
+    $new_csdb_model->direct_save = false;
 
     // #1. create dom
     $proccessid = CSDBError::$processId = self::class . "::create";
-    $CSDBObject = new CSDBObject("5.0");
-    $CSDBObject->loadByString(trim($request->get('xmleditor')));
-    if (!$CSDBObject->isS1000DDoctype()) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDBError::getErrors(true, $proccessid)]);
+    $new_csdb_model->CSDBObject = new CSDBObject("5.0");
+    $new_csdb_model->CSDBObject->loadByString(trim($request->get('xmleditor')));
+    if (!$new_csdb_model->CSDBObject->isS1000DDoctype()) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDBError::getErrors(true, $proccessid)]);
     CSDBError::$processId = '';
 
     // #2. validasi filename,rootname dom
-    if ($CSDBObject->document instanceof \DOMDocument AND $CSDBObject->isS1000DDoctype()) {
-      $csdb_filename = $CSDBObject->filename;
-      $initial = $CSDBObject->getInitial();
+    if ($new_csdb_model->CSDBObject->document instanceof \DOMDocument AND $new_csdb_model->CSDBObject->isS1000DDoctype()) {
+      $csdb_filename = $new_csdb_model->CSDBObject->filename;
+      $initial = $new_csdb_model->CSDBObject->getInitial();
       if ($initial === 'dml') return $this->ret2(400, [['xmleditor' => ['You cannot create DML here.']]]);
     } else {
       return $this->ret2(400, ['Failed to create csdb Object.']);
     }
 
     // #3. validate Schema Xsd (optional). User boleh uncheck input checkbox xsi_validate
-    if (($CSDBObject->document instanceof \DOMDocument) AND $request->get('xsi_validate')) {
-      $CSDBValidator = new XSIValidator($CSDBObject);
+    if (($new_csdb_model->CSDBObject->document instanceof \DOMDocument) AND $request->get('xsi_validate')) {
+      $CSDBValidator = new XSIValidator($new_csdb_model->CSDBObject);
       if(!$CSDBValidator->validate()){
         return $this->ret2(400, [['xmleditor' => CSDBError::getErrors(true, 'validateBySchema')]]);
       }
     }
 
     // #4. assign inWork into '01' and issueNumber to the highest+1
-    $domXpath = new \DOMXPath($CSDBObject->document);
+    $domXpath = new \DOMXPath($new_csdb_model->CSDBObject->document);
     $code = preg_replace("/_.+/", '', $csdb_filename);
     $collection = Storage::disk('csdb')->files();
     // $collection = scandir(storage_path('csdb'));
@@ -292,39 +301,32 @@ class CsdbController extends Controller
       $issueInfo->setAttribute('issueNumber', str_pad($max_in, 3, '0', STR_PAD_LEFT));
       $issueInfo->setAttribute('inWork', str_pad($max_iw, 2, '0', STR_PAD_LEFT));
     }
-    $csdb_filename = $CSDBObject->getFilename();
+    $csdb_filename = $new_csdb_model->CSDBObject->getFilename();
 
     // #5. validate Brex (optional). User boleh uncheck input checkbox brex_validate
     // setiap create DML, tidak divalidasi BREX, validasi Brex harus dilakukan oleh user secara manual setelah di upload
     // sementara ini ICNDocument tidak di validasi oleh brex saat upload
     if (($initial != 'dml') AND $request->get('brex_validate') == 'on') {
-      $CSDBValidator = new BREXValidator($CSDBObject, $CSDBObject->getBrexDm());
+      $CSDBValidator = new BREXValidator($new_csdb_model->CSDBObject, $new_csdb_model->CSDBObject->getBrexDm());
       if($CSDBValidator->validate()){
         return $this->ret2(400, [['xmleditor' => CSDBError::getErrors(true, 'validateBySchema')]]);        
       }
     }
 
     // #6. saving dan menambahkan remarks stage dan remarks
-    $save = Storage::disk('csdb')->put($csdb_filename, $CSDBObject->document->saveXML());
-    if ($save) {
-      $new_csdb_model = ModelsCsdb::create([
-        'filename' => $csdb_filename,
-        'path' => $path,
-        'editable' => 1,
-        'initiator_id' => $request->user()->id,
-      ]);
-      if ($new_csdb_model) {
-        $new_csdb_model->setRemarks('stage', 'unstaged');
-        $new_csdb_model->setRemarks('remarks',$CSDBObject->document); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
-        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$csdb_filename}.;{$request->user()->name}");
-        $new_csdb_model->initiator = [
-          'name' => $request->user()->name,
-          'email' => $request->user()->email,
-        ];
-        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["data" => $new_csdb_model]);
-      }
-    }
-    return $this->ret2(400, ["{$csdb_filename} failed to issue."], ['object' => $new_csdb_model]);
+    $new_csdb_model->filename = $csdb_filename;
+    $new_csdb_model->path = $validated['path'];
+    $new_csdb_model->editable = 1;
+    $new_csdb_model->initiator_id = $request->user()->id;
+    // $new_csdb_model->setRemarks('stage', 'unstaged'); // kayaknya ini tidak diperlukan lagi jika sudah tidak ada fitur stage/unstaged/staging
+    $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$csdb_filename}.;{$request->user()->name}");
+    $new_csdb_model->setRemarks('status');
+
+    if($new_csdb_model->saveModelAndDOM()){
+      $new_csdb_model->initiator; // agar ada initiator nya
+      return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["model" => $new_csdb_model]);
+    } 
+    return $this->ret2(400, ["{$csdb_filename} failed to create."], CSDBError::getErrors(), ['model' => $new_csdb_model]);
   }
 
   /**
@@ -349,7 +351,6 @@ class CsdbController extends Controller
     if (!$CSDBModel->editable) {
       return $this->ret2(400, ["You cannot update object with the editable status is false."]);
     }
-
     if ($request->path){
       $serviceController = new CsdbServiceController();
       if(!($changePath = $serviceController->change_object_path($request, $CSDBModel))[0]){
@@ -362,7 +363,7 @@ class CsdbController extends Controller
     // $xmlstring = $request->get('xmleditor');
     // $CSDBModel->DOMDocument = CSDB::importDocument('', '', trim($xmlstring)); // akan false jika tidak bisa jad DOM
     // if (!$CSDBModel->DOMDocument) return $this->ret2(400, ['Failed to update object.'], ["xmleditor" => CSDB::get_errors(true, $proccessid)]);
-    $CSDBModel->CSDBObject = new CSDBObject("5.0");
+    // $CSDBModel->CSDBObject = new CSDBObject("5.0");
     $CSDBModel->CSDBObject->loadByString(trim($request->get('xmleditor')));
     if (!$CSDBModel->CSDBObject->isS1000DDoctype()) return $this->ret2(400, ['Failed to create csdb.'], ["xmleditor" => CSDBError::getErrors(true, $proccessid)]);
     CSDBError::$processId = '';
@@ -403,18 +404,18 @@ class CsdbController extends Controller
     // digabung ke step #7;
     
     // #7. saving
-    $save = Storage::disk('csdb')->put($new_filename, $CSDBModel->CSDBObject->document->saveXML());
-    if ($save) {
-      $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.;{$request->user()->name}");
-      $CSDBModel->setRemarks('remarks');
-      $CSDBModel->updated_at = now();
-      $CSDBModel->save();
-      return $this->ret2(200, ["{$new_filename} has been saved."], ["data" => $CSDBModel]);
+    $CSDBModel->direct_save = false;
+    $CSDBModel->setRemarks('status');
+    $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.;{$request->user()->name}");
+    $CSDBModel->updated_at = now();
+    if($CSDBModel->saveModelAndDOM()){
+      return $this->ret2(200, ["{$new_filename} has been saved."], ["model" => $CSDBModel]);
     }
     return $this->ret2(400, ["{$new_filename} failed to issue."]);
   }
 
   /**
+   * saat ini ICN tidak bisa di update, karena keterbatasan logic. Mungkin selanjutnya bisa, jadi setiap di update tidak ada erubahan di filenamenya karena tidak ada attribute inWork. Jadi setiap kali ICN di issue, editable menjadi 0
    * sudah dicoba terkait penerapan CSDBObject class, tapi baru hanya sekali dan berhasil
    * untuk ICN. 
    * Filename = auto generated, based CAGE Codes // ini catatan lama
@@ -426,7 +427,7 @@ class CsdbController extends Controller
   public function uploadICN(Request $request)
   {
     // #1 validation input form
-    $request->validate([
+    $validatedData = $request->validate([
       // "filename" => '', // lakukan validasi ICN filename berdasarkan aturan S1000D dan atau aturan kita
       "filename" => [function(string $attribute, mixed $value,  Closure $fail){
         if($value){
@@ -449,56 +450,25 @@ class CsdbController extends Controller
           $fail("You should put the non-text file in {$attribute}.");
         }
       }],
+      'path' => ['required', new PathRules]
     ]);
     $file = $request->file('entity');
-    $filename = $request->filename ?? (function($filename){
-      CSDBError::$processId = 'ICNFilenameValidation';
-      $validator = new CSDBValidator('ICNName', ["validatee" => $filename]);
-      $validator->setStoragePath(CSDB_STORAGE_PATH);
-      return $validator->validate() ? $filename : '';
-    })($file->getClientOriginalName());
-    
-    // #2. validation storage + autogenerated uniqueIdentifier
-    // tambahkan fitur jika ingin autogenerated uniqueIdentifier image jika file_exist
-    $isFileExist = true;
-    if(file_exists(storage_path("csdb/$filename"))){
-      if($request->autoGeneratedUniqueIdentifier){
-        // $filename = ... gunakan/buatkan fungsi di class CSDBObject atau ICNDocument
-        $filename = $filename; // SEMENTARA saja ini;
-        $isFileExist = false;
-        // $save =  Storage::disk('csdb')->put($filename, $file->getContent()); // akan fail jika filename = '';
-      } else {
-        // $save = false;
-        $isFileExist = true;
-      }
-    } else {
-      // $save =  Storage::disk('csdb')->put($filename, $file->getContent()); // akan fail jika filename = '';
-      $isFileExist = false;
-    }
 
     // #3. saving
-    if($filename AND 
-      !ModelsCsdb::where('filename', $filename)->first() AND 
-      !$isFileExist AND 
-      Storage::disk('csdb')->put($filename, $file->getContent())) 
-    {
-      $new_csdb_model = ModelsCsdb::create([
-        'filename' => $filename,
-        'path' => 'csdb',
-        'editable' => '1',
-        'initiator_id' => $request->user()->id,
-      ]);
-      if ($new_csdb_model) {
-        $new_csdb_model->setRemarks('stage', 'unstaged');
-        $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$filename}.;{$request->user()->name}");
-        $new_csdb_model->initiator = [
-          'name' => $request->user()->name,
-          'email' => $request->user()->email,
-        ];
-        return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["data" => $new_csdb_model]);
-      }
+    $new_csdb_model = new ModelsCsdb();
+    $new_csdb_model->CSDBObject->load($file->path());
+    $new_csdb_model->direct_save = false;
+    $new_csdb_model->filename = $validatedData['filename'];
+    $new_csdb_model->path = $validatedData['path'];
+    $new_csdb_model->editable = 0;
+    $new_csdb_model->initiator_id = $request->user()->id;
+    $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$validatedData['filename']}.;{$request->user()->name}");
+    if($new_csdb_model->saveModelAndDOM()){
+      $new_csdb_model->initiator; // agar ada initiator nya
+      return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["model" => $new_csdb_model]);
+    } else {
+      return $this->ret2(400, ["{$validatedData['filename']} failed to upload."], CSDBError::getErrors(), ["model" => $new_csdb_model]);
     }
-    return $this->ret2(400, ["{$filename} failed to upload."], CSDBError::getErrors());
   }
 
   /**

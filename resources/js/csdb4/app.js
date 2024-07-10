@@ -11,6 +11,7 @@ import { useTechpubStore } from '../techpub/techpubStore';
 import mitt from 'mitt';
 import routes from '../../others/routes.json';
 
+// import WorkerListTree from './worker/WorkerListTree';
 
 // ####### start here
 
@@ -31,10 +32,10 @@ function find(pattern, subject) {
   return match;
 }
 
-function createWorker()
+const createWorker = function (filename)
 {
-  if(window.Worker){
-    return new Worker("/js/csdb/worker.js",{type:'module'}); 
+  if(window.Worker && filename){
+    return new Worker(`/worker/${filename}`, {type: "module"}); 
   } else {
     return false;
   }
@@ -59,7 +60,7 @@ csdb.use(router);
 csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.findText = find;
-csdb.config.globalProperties.createWorker = createWorker;
+csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
 
 // ga bisa npm build jika pakai await 
 axios.get('/auth/check')

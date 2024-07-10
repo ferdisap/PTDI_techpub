@@ -7,6 +7,8 @@
   <xsl:output method="xml" />
   
   <xsl:param name="filename"/>
+  <xsl:param name="ConfigXML_uri"/>
+  <!-- <xsl:param name="CSDBObject_serialize"/> -->
 
   <xsl:include href="./master/default-A4.xsl" />
   <xsl:include href="./master/header_default.xsl" />
@@ -86,7 +88,7 @@
   <xsl:include href="../generalXSL/other/id.xsl" />
   <xsl:include href="../generalXSL/other/position.xsl" />
   
-  <xsl:variable name="ConfigXML" select="document('../../Config.xml')"/>
+  <xsl:variable name="ConfigXML" select="document($ConfigXML_uri)"/>
 
   <xsl:variable name="masterName">
     <xsl:choose>

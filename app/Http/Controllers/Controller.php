@@ -26,10 +26,13 @@ class Controller extends BaseController
 
   public function authcheck()
   {
-    return response()->json([
-      'name' => Auth::user()->name,
-      'email' => Auth::user()->email,
-    ],200);
+    // dd(Auth::user()->toArray());
+    return response()->json(
+      Auth::user()->toArray(),200);
+    // return response()->json([
+    //   'name' => Auth::user()->name,
+    //   'email' => Auth::user()->email,
+    // ],200);
   }
 
   // public function getWorkerJs(Request $request)
@@ -104,6 +107,9 @@ class Controller extends BaseController
     }
   }
 
+  /**
+   * DEPRECIATED
+   */
   public function ret($code, $messages = [])
   {
     $data = [
@@ -202,15 +208,15 @@ class Controller extends BaseController
     return $list;
   }
 
-  public function route(Request $request, string $name)
-  {
-    return redirect()->route($name, $request->all());
-  }
+  // public function route(Request $request, string $name)
+  // {
+  //   return redirect()->route($name, $request->all());
+  // }
 
     /**
    * $model bisa berupa ModelsCsdb atau DB::table()
    */
-  public mixed $model;
+  // public mixed $model;
 
   /**
    * default search column db is filename
@@ -233,6 +239,20 @@ class Controller extends BaseController
       }
     }
     return $keywords;
+  }
+
+  /**
+   * jugo bisa ES6 module
+   */
+  public function getWorker(Request $request, string $filename)
+  {
+    $content = file_get_contents(resource_path("js/csdb4/worker/{$filename}"));
+    return response($content,200,[
+      "Content-Type" => "text/javascript",
+      "Date" => now()->toString(),
+      // "Cache-Control" => 'max-age=604800', // one week
+      // "Cache-Control" => 'max-age=60', // one minute
+    ]);
   }
   
 }

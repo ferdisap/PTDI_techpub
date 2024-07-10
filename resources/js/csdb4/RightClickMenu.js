@@ -15,9 +15,10 @@ window.onkeyup = function(e){
 class RightClickMenu{
   name= undefined;
   state = 0;
-  context= undefined;
+  context = undefined;
+  stopPropagation = false;
 
-  constructor(name, contextMenu, area){
+  constructor(name, contextMenu, area, stopPropagation = true){
     this.name = name;
     this.context = contextMenu;
     let run = function(event){
@@ -31,6 +32,9 @@ class RightClickMenu{
     document.addEventListener("rcm-close", () => {
       this.toggleOff;
     });
+    if(stopPropagation){
+      this.context.onclick = (e) => e.stopPropagation();
+    }
   }
 
   get toggleOn(){

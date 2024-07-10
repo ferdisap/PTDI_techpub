@@ -259,7 +259,7 @@ export default {
         <!-- col 1 -->
         <div class="flex" :style="[col1Width]">
           <div class="overflow-auto text-nowrap relative h-full w-full">
-            <ListTree type="allobjects" />
+            <ListTree type="allobjects" routeName="Explorer"/>
           </div>
           <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize" @mousedown.prevent="turnOnSizing($event, 'satu')"></div>
         </div>

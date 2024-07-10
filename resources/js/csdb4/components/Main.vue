@@ -1,10 +1,12 @@
 <script>
 // import ButtonMinimizeContainer from './subComponents/ButtonMinimizeContainer.vue';
 // import DetailAll from './subComponents/DetailAll.vue';
+import {useTechpubStore} from '../../techpub/techpubStore';
 
 export default {
   data() {
     return {
+      techpubStore: useTechpubStore(),
       showRightAside: false
     };
   },
@@ -61,6 +63,20 @@ export default {
       this.commitCSDBs(data)
     })
     
+    setTimeout(() => {
+      if(this.$route.params.filename){
+        const worker = this.createWorker('WorkerGetCsdbModel.js');
+        if(worker){
+          let route = this.techpubStore.getWebRoute('api.get_object_model', {filename: this.$route.params.filename});
+          worker.onmessage = (e) => {
+            this.techpubStore.currentObjectModel = e.data.model;
+            worker.terminate();
+          }
+          worker.postMessage({route: route});
+        }
+      }
+    }, 10);
+
     window.rt = this.$route;
     window.rtr = this.$router;
 

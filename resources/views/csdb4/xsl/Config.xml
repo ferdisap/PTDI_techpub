@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config [
-  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup, frontMatterGroup, pmGroup, maintenance, company)>
+  <!ELEMENT config (output, colors*, security, textElemGroup, controlAuthorityGroup, frontMatterGroup, pmGroup, maintenance, company, comment)>
 
   <!ELEMENT output (method+,(layout?)+)>
   <!ELEMENT method (path+,pathCache)>
@@ -98,6 +98,10 @@
   <!ELEMENT company (companyCode)*>
   <!ELEMENT companyCode (#PCDATA)>
 
+  <!ELEMENT comment (commentPriority|commentResponse)*>
+  <!ELEMENT commentPriority (#PCDATA)>
+  <!ELEMENT commentResponse (#PCDATA)>
+
   <!ATTLIST method type (html|pdf) #REQUIRED>
   <!ATTLIST path product-name CDATA #REQUIRED>
   <!ATTLIST layout master-name CDATA #REQUIRED>
@@ -112,6 +116,8 @@
   <!ATTLIST source type CDATA #REQUIRED>
   <!ATTLIST threshold uom CDATA #REQUIRED>
   <!ATTLIST companyCode code CDATA #REQUIRED>
+  <!ATTLIST commentPriority code CDATA #REQUIRED>
+  <!ATTLIST commentResponse type CDATA #REQUIRED>
 
   <!-- <!ATTLIST layout width CDATA #REQUIRED>
   <!ATTLIST layout height CDATA #REQUIRED>
@@ -656,4 +662,14 @@
     <companyCode code="0001Z">PT. Dirgantara Indonesia</companyCode>
   </company>
   
+  <!-- dipakai di CSDBObject -->
+  <comment>
+    <commentPriority code="cp01">Routine</commentPriority>
+    <commentPriority code="cp02">Emergency</commentPriority>
+    <commentPriority code="cp03">Safety critical</commentPriority>
+    <commentResponse type="rt01">Accepted</commentResponse>
+    <commentResponse type="rt02">Pending</commentResponse>
+    <commentResponse type="rt03">Partly accepted</commentResponse>
+    <commentResponse type="rt04">Rejected</commentResponse>
+  </comment>
 </config>

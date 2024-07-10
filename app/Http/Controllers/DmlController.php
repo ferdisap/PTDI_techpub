@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Csdb;
-use App\Models\Dml;
+use App\Models\Csdb\Dml;
 use App\Rules\Dml\EntryIdent;
 use App\Rules\Dml\EntryIssueType;
 use App\Rules\Dml\EntryType;
@@ -13,51 +13,120 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Ptdi\Mpub\CSDB as MpubCSDB;
 use Ptdi\Mpub\Helper;
+use Ptdi\Mpub\Main\CSDBError;
+use Ptdi\Mpub\Main\CSDBObject;
+use App\Rules\Csdb\BrexDmRef as BrexDmRefRules;
 
 class DmlController extends Controller
 {
   #### csdb4 ####
+
+  /**
+   * pada request, tinggal tambah dmlRef di frontend. Nanti tambahkan $otherOptions['dmlRef'] = ['DML-...', 'DML-...'];
+   * @return App\Models\Csdb
+   */
+  public function create(Request $request)
+  {
+    $validator = Validator::make($request->all(), [
+      'modelIdentCode' => 'required',
+      'originator' => 'required',
+      'dmlType' => 'required',
+      'securityClassification' => 'required',
+      // 'brexDmRef' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
+      //   if (count(explode("_", $value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
+      //   $decode = Helper::decode_dmIdent($value);
+      //   if ($decode and $decode['dmCode']['infoCode'] != '022') $fail("The {$attribute} infoCode must be '022'.");
+      // }],
+      'brexDmRef' => ['required', new BrexDmRefRules],
+      'remarks' => 'array',
+    ]);
+
+    if ($validator->fails()) {
+      return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+    }
+
+    $validator->validated();
+
+    $dml_model = new Dml();
+    // $dml_model->setWith(['initiator']);
+    $dml_model->direct_save = false;
+    $otherOptions = [];
+    $isCreated = $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+    if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
+    $dml_model->initiator; // supaya ada initiator saat return
+    
+    if($dml_model->saveModelAndDOM()){
+      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model]);
+    } else {
+      return $this->ret2(400, ["fail to create and save DML."]);
+    }
+  }
+
+  /**
+   * aturannya sama seperti CsdbController@get_allobjects_list
+   */
   public function get_dmrl_list(Request $request)
   {
-    // $this->model = Csdb::with('initiator');
-    // $this->model->orderBy('path');
-    // $ret = $this->model->paginate(100);
-    // $ret->setPath($request->getUri());
-    // return $this->ret2(200, $ret->toArray());
+    if($request->get('listtree')){
+      return $this->ret2(200, [
+        "data" => 
+        Dml::
+        where('filename', 'like', 'DML-%')
+        ->get(['filename', 'path'])
+        ->toArray()
+      ]);
+    }
+    $this->model = Csdb::with('initiator')->where('filename', 'like', 'DML-%');
+    return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
 
-    $obj1 = [
-      "filename" => 'cfoo1asasscsascscasas',
-      'path' => 'csdb'
-    ];
-    $obj1_1 = [
-      "filename" => 'cfoo1_1asasscsascscasas',
-      'path' => 'csdb'
-    ];
-    $obj11 = [
-      "filename" => 'cfoo11asasscsascscasas',
-      'path' => 'csdb/n219'
-    ];
-    $obj12 = [
-      "filename" => 'cfoo12asasscsascscasas',
-      'path' => 'csdb/n219'
-    ];
-    $obj111 = [
-      "filename" => 'cfoo111asasscsascscasas',
-      'path' => 'csdb/n219/amm'
-    ];
+    // $obj1 = [
+    //   "filename" => 'cfoo1asasscsascscasas',
+    //   'path' => 'csdb'
+    // ];
+    // $obj1_1 = [
+    //   "filename" => 'cfoo1_1asasscsascscasas',
+    //   'path' => 'csdb'
+    // ];
+    // $obj11 = [
+    //   "filename" => 'cfoo11asasscsascscasas',
+    //   'path' => 'csdb/n219'
+    // ];
+    // $obj12 = [
+    //   "filename" => 'cfoo12asasscsascscasas',
+    //   'path' => 'csdb/n219'
+    // ];
+    // $obj111 = [
+    //   "filename" => 'cfoo111asasscsascscasas',
+    //   'path' => 'csdb/n219/amm'
+    // ];
 
-    $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male'];
-    $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male'];
+    // $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male'];
+    // $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male'];
 
-    $obj3 = ["filename" => 'xafoo1', "path" => 'xxx'];
-    $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
-    $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
+    // $obj3 = ["filename" => 'xafoo1', "path" => 'xxx'];
+    // $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
+    // $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
 
-    $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
-    return $this->ret2(200, ['data' => $allobj]);
+    // $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
+    // return $this->ret2(200, ['data' => $allobj]);
+  }
+  
+  public function get_html_content(Request $request, string $filename)
+  {
+    if(!($DMLModel = Dml::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $filename);
+    $DMLModel->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
+    $transformed = $DMLModel->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/html_dml/dml.xsl", [
+      'filename' => $DMLModel->filename
+    ]);
+    if($error = CSDBError::getErrors(false)){
+      return $this->ret2(200, [$error], ['model' => $DMLModel->makeHidden(['id']),'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    }
+    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
   #### csdb3 ####
@@ -306,46 +375,6 @@ class DmlController extends Controller
       }
     }
     return $this->ret2(400, ["{$filename} failed to issue."]);
-  }
-
-  /**
-   * pada request, tinggal tambah dmlRef di frontend. Nanti tambahkan $otherOptions['dmlRef'] = ['DML-...', 'DML-...'];
-   * @return App\Models\Csdb
-   */
-  public function create(Request $request)
-  {
-    $validator = Validator::make($request->all(), [
-      'modelIdentCode' => 'required',
-      'originator' => 'required',
-      'dmlType' => 'required',
-      'securityClassification' => 'required',
-      'brexDmRef' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-        if (count(explode("_", $value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
-        $decode = Helper::decode_dmIdent($value);
-        if ($decode and $decode['dmCode']['infoCode'] != '022') $fail("The {$attribute} infoCode must be '022'.");
-      }],
-      'remarks' => 'array',
-    ]);
-
-    if ($validator->fails()) {
-      return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
-    }
-
-    $validator->validated();
-
-    $dml_model = new Dml();
-    // $dml_model->setWith(['initiator']);
-    $dml_model->direct_save = false;
-    $otherOptions = [];
-    $isCreated = $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
-    if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
-    $dml_model->initiator; // supaya ada initiator saat return
-    
-    if($dml_model->saveModelAndDOM()){
-      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['dml' => $dml_model]);
-    } else {
-      return $this->ret2(400, ["fail to create and save DML."]);
-    }
   }
 
   public function addEntry(Request $request)

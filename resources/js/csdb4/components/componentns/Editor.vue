@@ -1,5 +1,7 @@
 <!-- 
   props.filename is depreciated
+  saat ini ICN tidak bisa di update, karena keterbatasan logic. 
+  Mungkin selanjutnya bisa, jadi setiap di update tidak ada erubahan di filenamenya karena tidak ada attribute inWork. Jadi setiap kali ICN di issue, editable menjadi 0
  -->
 <script>
 import { EditorView, gutter, lineNumbers, GutterMarker, keymap } from "@codemirror/view";
@@ -96,7 +98,7 @@ export default {
           useMainLoadingBar: false,
         })
         if(response.statusText === 'OK'){
-          this.emitter.emit('createObjectFromEditor', { model: response.data.data });
+          this.emitter.emit('createObjectFromEditor', { model: response.data.model });
           // response harus ada SQL object model. 
         }
       } else {
@@ -110,7 +112,7 @@ export default {
           useMainLoadingBar: false,
         });
         if(response.statusText === 'OK'){
-          this.emitter.emit('createICNFromEditor', { model: response.data.data });
+          this.emitter.emit('createICNFromEditor', { model: response.data.model });
         }
       }
       this.showLoadingProgress = false;
@@ -135,7 +137,7 @@ export default {
         useMainLoadingBar: false,
       })
       if (response.statusText === 'OK') {
-        this.emitter.emit(emitName, { model: response.data.data });
+        this.emitter.emit(emitName, { model: response.data.model });
       }
       this.showLoadingProgress = false;
     },
@@ -256,9 +258,13 @@ export default {
         <div v-if="isUpdate"> {{ $props.filename }} </div>
         <div class="flex space-x-3 w-full mb-2">
           <div v-if="!isUpdate" class="block w-[70%]">
-            <label for="icn-filename" class="text-sm">Filename</label><br/>
-            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="py-1 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" /> 
+            <label for="icn-filename" class="text-sm font-bold">Filename</label><br/>
+            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
+          </div>
+          <div class="block w-[70%] mb-2">
+            <label for="icn-path" class="text-sm font-bold">Path</label><br/>
+            <input v-model="modelPath" id="icn-path" name="path" placeholder="type the fullpath eg. csdb/n219/amm" value="csdb" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           </div>
           <!-- <div v-if="!isUpdate" class="block w-auto">
             <label for="securityClassification" class="text-sm">Security Classification</label><br/>

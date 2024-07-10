@@ -27,7 +27,7 @@ export default {
         }
       })
       if (response.statusText === 'OK'){
-        this.H = response.data.data.remarks.history;
+        this.H = response.data.model.remarks.history;
       }
     }
   },

@@ -1,9 +1,11 @@
 <script>
 import BottomBar from '../subComponents/BottomBar.vue';
 import EditorDML from '../componentns/EditorDML.vue';
+import ListTree from '../componentns/ListTree.vue';
+import PreviewComment from '../componentns/PreviewComment.vue';
 export default {
   components:{
-    BottomBar, EditorDML
+    BottomBar, EditorDML, ListTree, PreviewComment
   },
   data(){
       return {
@@ -23,6 +25,12 @@ export default {
           Preview: {
             iconName: 'preview',
             tooltipName: 'Preview',
+            isShow: false,
+            data: {}
+          },
+          PreviewComment: {
+            iconName: 'comment',
+            tooltipName: 'Comment',
             isShow: false,
             data: {}
           },
@@ -75,6 +83,10 @@ export default {
       if(top.localStorage.colWidthManagemenData){
         this.colWidth = JSON.parse(top.localStorage.colWidthManagemenData);
       }
+      
+      this.emitter.on('add_comment', () => {
+        this.bottomBarItems.PreviewComment.isShow = true;
+      })
     }
   }
 </script>
@@ -90,7 +102,7 @@ export default {
           <!-- col 1 -->
           <div class="flex" :style="[col1Width]">
             <div class="overflow-auto text-nowrap relative h-full w-full">
-              <ListTree type="allobjects" />
+              <ListTree type="dmrl" routeName="ManagementData"/>
             </div>
             <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize" @mousedown.prevent="turnOnSizing($event, 'satu')"></div>
           </div>
@@ -106,7 +118,7 @@ export default {
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            bar
+            <PreviewComment v-if="bottomBarItems.PreviewComment.isShow" :filename="bottomBarItems.PreviewComment.data.filename"/>
           </div>
         </div>  
       </div>

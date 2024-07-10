@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Csdb;
 
 use App\Models\Csdb as ModelsCsdb;
 use DOMDocument;
@@ -36,43 +36,6 @@ class Dml extends ModelsCsdb
     $this->initiator_id = Auth::user()->id;
 
     return $ident ? true : false;
-    // $save = Storage::disk('csdb')->put($filename, $this->CSDBObject->document->saveXML());
-    // if($save){
-    //   $this->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$filename}.;{$request->user()->name}");
-    // }
-    // $this->saveModelAndDOM();
-
-  }
-  /**
-   * fungsi ini akan merecord di sql
-   */
-  public function create_xml_xx(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
-  {
-    $identAndStatusSection = $this->create_identAndStatusSection($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
-    
-    $this->DOMDocument = new \DOMDocument('1.0', 'UTF-8');
-    $dml = $this->DOMDocument->createElement('dml');
-    $dml->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation', './dml.xsd');
-    $this->DOMDocument->appendChild($dml);
-
-    $identAndStatusSection = $this->DOMDocument->importNode($identAndStatusSection->documentElement, true);
-    $dml->appendChild($identAndStatusSection);
-
-    $dmlContent = $this->DOMDocument->createElement('dmlContent');
-    $this->DOMDocument->documentElement->appendChild($dmlContent);
-    $this->DOMDocument->saveXML();
-
-    $filename = CSDB::resolve_DocIdent($this->DOMDocument);
-    $this->filename = $filename;
-    $this->path = "csdb";
-    $this->editable = 1;
-    $this->initiator_id = Auth::user()->id;
-    if ($this->direct_save) {
-      if ($this->DOMDocument->C14NFile(storage_path("csdb/{$filename}"))) {
-        $this->save();
-      }
-    }
-    return $this;
   }
 
   /**

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -20,9 +21,14 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'job_title',
+        'work_enterprise_id',
         'email',
         'password',
+        'address',
     ];
 
     /**
@@ -47,6 +53,15 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'address' => 'array',
     ];
+
+    protected $with = ['work_enterprise'];
+
+    public function work_enterprise() :HasOne
+    {
+      return $this->hasOne(Enterprise::class, 'id', 'work_enterprise_id');
+    }
+
 
 }
