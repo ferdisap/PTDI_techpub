@@ -4,6 +4,7 @@ import EditorDML from '../componentns/EditorDML.vue';
 import ListTree from '../componentns/ListTree.vue';
 import PreviewComment from '../componentns/PreviewComment.vue';
 export default {
+  name: 'ManagementData',
   components:{
     BottomBar, EditorDML, ListTree, PreviewComment
   },
@@ -77,9 +78,13 @@ export default {
       },
       turnOffSizing(callback){
         document.removeEventListener('mousemove', callback, false)
+      },
+      tesListtree(){
+        this.emitter.emit('tesListtree');
       }
     },
     mounted() {
+      top.tes = this.tesListtree;
       if(top.localStorage.colWidthManagemenData){
         this.colWidth = JSON.parse(top.localStorage.colWidthManagemenData);
       }
@@ -87,6 +92,11 @@ export default {
       this.emitter.on('add_comment', () => {
         this.bottomBarItems.PreviewComment.isShow = true;
       })
+
+      this.emitter.on('clickFilenameFromListTree', (data) => {
+        this.bottomBarItems.EditorDML.isShow = true;
+        this.bottomBarItems.EditorDML.data = data; // hanya ada filename dan path saja di data
+      });
     }
   }
 </script>

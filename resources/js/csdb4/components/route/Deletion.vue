@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 
 export default {
+  name: 'Deletion',
   data() {
     return {
       techpubStore: useTechpubStore(),

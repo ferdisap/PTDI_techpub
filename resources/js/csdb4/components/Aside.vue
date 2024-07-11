@@ -3,6 +3,7 @@ import { useTechpubStore } from '../../techpub/techpubStore';
 // import ButtonMinimizeContainer from './subComponents/ButtonMinimizeContainer.vue';
 
 export default {
+  name: 'Aside',
   data() {
     return {
       techpubStore: useTechpubStore(),

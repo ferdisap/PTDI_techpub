@@ -1,13 +1,16 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
+import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue'
 export default {
-  components: {Remarks},
+  components: {Remarks,ContinuousLoadingCircle},
   data(){
     return {
       techpubStore: useTechpubStore(),
       isNew: true,
       showSetting: false,
+      showLoadingProgress: false,
+      model: {},
 
       brexDmRef: '',
       enterpriseName: useTechpubStore().Auth.work_enterprise.name,
@@ -32,7 +35,7 @@ export default {
   methods: {
     async submit(event){
       // event.stopPropagation(); // jaga jaga jika parent commentFiled ini ada form juga 
-      // this.showLoadingProgress = true;
+      this.showLoadingProgress = true;
       let identFirstChild = Object.keys(this.techpubStore.currentObjectModel.remarks.ident)[0] // output= 'dmlCode'
       let modelIdentCode = this.techpubStore.currentObjectModel.remarks.ident[identFirstChild]['modelIdentCode'] // output = 'CN235'
       let senderIdent = this.techpubStore.Auth.work_enterprise.code; // senderIdent tidak boleh diambil dari techubStore.currentObjectModel (DML current) karena comment ini bersifat "SIAPA" yang menulis komentar
@@ -54,9 +57,11 @@ export default {
       if(response.statusText === 'OK')
       {
         // do something here
+        this.model = response.data.model;
       } else {
         if(response.data.errors) this.showSetting = true;
       }
+      this.showLoadingProgress = false;
     }
   },
   mounted() {
@@ -66,7 +71,10 @@ export default {
 </script>
 <template>
   <form class="w-full" @submit.prevent="submit($event)">
-    <div class="italic text-center">commentCode: </div>
+    <div v-if="model.filename" class="italic text-center" x-data="{open: false}" x-on:mouseover="open = true" x-on:mouseleave="open = false">
+      <span>{{ model.filename }}</span>
+      <a x-show="open" href="#" class="icon" @click="this.copyText(model.filename)"><i class="fas fa-copy"></i></a>
+    </div>
     <div class="w-full text-center flex justify-between items-end">
       <textarea name="commentContentSimplePara" class="w-[90%] mr-4 shadow-md">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Voluptas, laudantium.</textarea>
       <div>
@@ -236,4 +244,5 @@ export default {
       </div>
     </div>
   </form>
+  <ContinuousLoadingCircle :show="showLoadingProgress"/>
 </template>

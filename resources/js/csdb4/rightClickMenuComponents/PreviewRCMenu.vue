@@ -3,7 +3,7 @@ import RightClickMenu from '../RightClickMenu';
 export default {
   mounted(){
     let menu = document.querySelector('.preview-rcmenu');
-    let Menu = new RightClickMenu('preview right click menu', menu, menu.parentElement);
+    new RightClickMenu('preview right click menu', menu, menu.parentElement);
   }
 }
 </script>

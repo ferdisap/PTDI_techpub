@@ -129,6 +129,80 @@ class DmlController extends Controller
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
+  
+  /**
+   * CSL juga bisa di update di sini oleh user
+   */
+  public function dmlupdate(Request $request, string $filename)
+  {
+    // #0. validation
+    $DMLModel = Dml::where('filename', $filename)->first();
+    if ($request->user()->id != $DMLModel->initiator_id) return $this->ret(400, ["Only Initiator DML can do an update."]);
+    $validator = Validator::make($request->all(), [
+      'ident-securityClassification' => ['required', new SecurityClassification(true)],
+      'ident-brexDmRef' => ['required', function (string $attribute, mixed $value, Closure $fail) {
+        if (!Helper::decode_dmIdent($value)) {
+          $fail("The {$attribute} is wrong rule.");
+        }
+      }],
+      'entryIdent' => [fn (string $attribute, mixed $value, Closure $fail) => count($value) !== count(array_unique($value)) ? $fail("Entry Ident must be unique.") : ''],
+      'entryIdent.*' => ['required', new EntryIdent($filename)],
+      'dmlEntryType.*' => [new EntryType],
+      'issueType.*' => [new EntryIssueType],
+      'securityClassification.*' => [new SecurityClassification(false)],
+      'enterpriseCode.*' => [new EnterpriseCode(false)],
+      'enterpriseName.*' => ['required'],
+      'remarks' => 'array',
+    ]);
+    if ($validator->fails()) {
+      return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+    }
+    $DMLModel->CSDBObject->load(storage_path("csdb/$DMLModel->filename"));
+    $DMLModel->direct_save = false;
+    $DMLModel->updateIdentAndStatusSection($request->all());
+
+    $ident = [
+      'securityClassification' => $request->get('ident-securityClassification'),
+      'brexDmRef' => $request->get('ident-brexDmRef'),
+      'remarks' => $request->get('ident-remarks'),
+    ];
+    $DMLModel->updateIdentAndStatusSection($ident);
+
+    $entryIdents = $request->get('entryIdent');
+    $dmlEntryTypes = $request->get('dmlEntryType');
+    $issueTypes = $request->get('issueType');
+    $securityClassifications = $request->get('securityClassification');
+    $enterpriseNames = $request->get('enterpriseName');
+    $enterpriseCodes = $request->get('enterpriseCode');
+    $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan valida)i
+
+    
+    // #1. remove all dmlEntry
+    if($entryIdents){
+      $dmlContent = $DMLModel->CSDBObject->document->getElementsByTagName("dmlContent")[0];
+      while ($dmlContent->firstElementChild) {
+        $dmlContent->firstElementChild->remove();
+      }
+      $DMLModel->CSDBObject->document->saveXML();
+      foreach ($entryIdents as $pos => $entryIdent) {
+        $remarks = isset($remarkses[$pos]) ? [$remarkses[$pos]] : [];
+        $otherOptions = [
+          'issueType' => $issueTypes[$pos],
+          'dmlEntryType' => $dmlEntryTypes[$pos],
+        ];
+        $add = $DMLModel->add_dmlEntry($entryIdent, $securityClassifications[$pos], [$enterpriseNames[$pos], $enterpriseCodes[$pos]], $remarks, $otherOptions);
+        if (!$add[0]) return $this->ret2(400, [$add[1]]);
+      }
+      $DMLModel->CSDBObject->document->saveXML();
+    }
+
+    // #2. tambkan save remarks berdasarkan identAndStatusSection/descendant::remarks/para
+    $DMLModel->setRemarks('remarks');
+
+    $DMLModel->saveModelAndDOM();
+    return $this->ret2(200, ['Update Success.']);
+  }
+
   #### csdb3 ####
 
   public function app()
@@ -539,7 +613,7 @@ class DmlController extends Controller
   /**
    * CSL juga bisa di update di sini oleh user
    */
-  public function dmlupdate(Request $request, string $filename)
+  public function dmlupdate_xx(Request $request, string $filename)
   {
     // #0. validation
     $dml_model = Dml::where('filename', $filename)->first();

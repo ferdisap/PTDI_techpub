@@ -12,6 +12,7 @@ import Editor from '../componentns/Editor.vue';
 import History from '../componentns/History.vue';
 import Option from '../componentns/Option.vue';
 export default {
+  name: 'Explorer',
   components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor, History, Option},
   data() {
     return {

@@ -1,7 +1,8 @@
 <script>
-// import ButtonMinimizeContainer from './subComponents/ButtonMinimizeContainer.vue';
-// import DetailAll from './subComponents/DetailAll.vue';
 import {useTechpubStore} from '../../techpub/techpubStore';
+import ManagementData from './route/ManagementData.vue';
+import Explorer from './route/ManagementData.vue';
+
 
 export default {
   data() {
@@ -10,10 +11,7 @@ export default {
       showRightAside: false
     };
   },
-  components: { 
-    // DetailAll, 
-    // ButtonMinimizeContainer 
-  },
+  components: {ManagementData,Explorer},
   methods:{
     // available action towards CSDB
     /**
@@ -86,7 +84,7 @@ export default {
 <template>
   <div class="pt-5 pl-2 h-full w-full overflow-auto">
     <router-view v-slot="{ Component }">
-      <keep-alive>
+      <keep-alive exclude="Explorer,ManagementData">
         <component :is="Component" />
       </keep-alive>
     </router-view>

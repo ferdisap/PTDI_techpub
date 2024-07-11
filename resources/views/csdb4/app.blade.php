@@ -18,6 +18,7 @@
   
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script type="text/javascript" src="/js/jquery.maphilight.min.js"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 
   {{-- <script src="/js/csdb/worker.js" type="module"></script> --}}
 

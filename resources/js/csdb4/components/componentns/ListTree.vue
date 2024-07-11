@@ -217,6 +217,10 @@ export default {
 
     let list = await this.get_list(this.$props.type);
     if(list) this.createListTreeHTML();
+
+    this.emitter.on('tesListtree',() => {
+      console.log('tes Listtree');
+    })
   },
   computed: {
     listobject() {

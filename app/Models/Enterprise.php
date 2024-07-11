@@ -55,7 +55,7 @@ class Enterprise extends Model
   {
     return Attribute::make(
       set: function ($v) {
-        $v = json_decode($v);
+        $v = is_string($v) ? json_decode($v) : $v;
         $a = [
           "city" => $v->city ?? '',
           "country" => $v->country ?? '',

@@ -42,6 +42,7 @@ use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Main\XSIValidator;
 use Illuminate\Support\HtmlString;
+use PHPUnit\Framework\MockObject\Stub\ReturnCallback;
 
 class CsdbController extends Controller
 {
@@ -548,11 +549,13 @@ class CsdbController extends Controller
       return $fnRet(
         "Deleting {$filename} must be done by {$model->initiator->name}",
         false, 400, $model, null);
-      };
-    if (isset($model->remarks['stage']) AND $model->remarks['stage'] === 'staged') {
-      return $fnRet(
-        "{$filename} has been staged and cannot be deleted.", false, 400, $model, null);
-    }
+    };
+
+    // staged sudah tidak relevan karena nanti akan pakai konsep data dispatch note
+    // if (isset($model->remarks['stage']) AND $model->remarks['stage'] === 'staged') {
+    //   return $fnRet(
+    //     "{$filename} has been staged and cannot be deleted.", false, 400, $model, null);
+    // }
    
     $model->hide(false);
     $model->direct_save = false;
@@ -574,21 +577,18 @@ class CsdbController extends Controller
     $move_file = fn() => Storage::disk('csdb_deleted')->put($new_filename, Storage::disk('csdb')->get($filename)) AND Storage::disk('csdb')->delete($filename);
     $revert_move_file = fn() => Storage::disk('csdb')->put($filename, Storage::disk('csdb_deleted')->get($new_filename)) AND Storage::disk('csdb_deleted')->delete($new_filename);
 
-    if(!($move_file()) AND $create_deleted_db()) {
-      $revert_move_file();
-      return $fnRet(
-        "{$filename} fails to delete", false, 400, $model, null );
-    }
-    Storage::disk('csdb')->delete($filename);
-    if($model->delete()){
-      return $fnRet(
-        "{$new_filename} has been created as a result of deleting {$filename}.", true, 200, $model, $insert);
-    }; 
-
-    return $fnRet(
-      "{$new_filename} has been created as a result of deleting {$filename}.",
-      true, 200, $model, $insert
-    );
+    if($move_file()){
+      if($create_deleted_db()){
+        if($model->delete()){
+          Storage::disk('csdb')->delete($filename);
+          return $fnRet("{$new_filename} has been created as a result of deleting {$filename}.", true, 200, $model, $insert);
+        } else {
+          $revert_move_file();
+        }
+        $revert_move_file();
+      };
+    } 
+    return $fnRet("{$filename} fails to delete", false, 400, $model, null );
   }
 
   /**

@@ -10,6 +10,10 @@ import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
 import routes from '../../others/routes.json';
+import Alpine from 'alpinejs';
+
+top.Alpine = Alpine;
+Alpine.start();
 
 // import WorkerListTree from './worker/WorkerListTree';
 
@@ -41,6 +45,10 @@ const createWorker = function (filename)
   }
 }
 
+const copyText = function(text)
+{
+  if(text) navigator.clipboard.writeText(text);
+}
 
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -61,6 +69,7 @@ csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.findText = find;
 csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
+csdb.config.globalProperties.copyText = copyText;
 
 // ga bisa npm build jika pakai await 
 axios.get('/auth/check')

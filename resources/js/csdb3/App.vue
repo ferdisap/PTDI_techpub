@@ -7,8 +7,6 @@ import { useTechpubStore } from '../techpub/techpubStore';
 import { markdown } from 'markdown';
 import createAlert from '../alert';
 
-
-
 export default {
   data() {
     return {

@@ -39,11 +39,12 @@ class Dml extends ModelsCsdb
   }
 
   /**
+   * selanjutnya masukan fungsi ini ke CSDBobject atau jangan ditaruh di model
    * untuk update identAndStatusSection
    */
   public function updateIdentAndStatusSection($data = [])
   {
-    $domXpath = new \DOMXpath($this->DOMDocument);
+    $domXpath = new \DOMXpath($this->CSDBObject->document);
     foreach ($data as $key => $value) {
       if ($key == 'securityClassification') {
         $security = $domXpath->evaluate("//identAndStatusSection/dmlStatus/security")[0];
@@ -52,7 +53,7 @@ class Dml extends ModelsCsdb
         $new_dmRef_string = Helper::decode_dmIdent($value)['xml_string'];
         $new_dmRef = new \DOMDocument();
         $new_dmRef->loadXML($new_dmRef_string);
-        $new_dmRef = $this->DOMDocument->importNode($new_dmRef->documentElement, true);
+        $new_dmRef = $this->CSDBObject->document->importNode($new_dmRef->documentElement, true);
 
         $old_dmRef = $domXpath->evaluate("//identAndStatusSection/dmlStatus/brexDmRef/dmRef")[0];
         $old_dmRef->replaceWith($new_dmRef);
@@ -60,18 +61,18 @@ class Dml extends ModelsCsdb
         $paras = preg_split("/[\r\n]+/", $value);
         if (!empty($paras)) {
           $old_remarks = $domXpath->evaluate("//identAndStatusSection/dmlStatus/remarks")[0];
-          $new_remarks = $this->DOMDocument->createElement('remarks');
+          $new_remarks = $this->CSDBObject->document->createElement('remarks');
           foreach ($paras as $para) {
-            $simplePara = $this->DOMDocument->createElement('simplePara');
+            $simplePara = $this->CSDBObject->document->createElement('simplePara');
             $simplePara->nodeValue = $para;
             $new_remarks->appendChild($simplePara);
           }
           $old_remarks->replaceWith($new_remarks);
         }
       }
-      $filename = CSDB::resolve_DocIdent($this->DOMDocument);
+      $filename = CSDB::resolve_DocIdent($this->CSDBObject->document);
       if ($this->direct_save) {
-        if ($this->DOMDocument->C14NFile(storage_path("csdb/{$filename}"))) {
+        if (Storage::disk('csdb')->put($filename,$this->CSDBObject->document->saveXML())) {
           $this->save();
           return true;
         }

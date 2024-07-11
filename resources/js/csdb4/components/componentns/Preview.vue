@@ -167,8 +167,7 @@ export default {
         <div class="text-sm" @click="()=>this.emitter.emit('CommitCSDBObjectFromEveryWhere', {filename: filename})">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
           Commit</div>
-      </div>
-      
+      </div>      
     </PreviewRCMenu>
     <div class="h-[5%] flex mb-3">
       <h1 class="text-blue-500 w-full text-center">Preview</h1>

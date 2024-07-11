@@ -5,17 +5,25 @@ import Remarks from '../subComponents/Remarks.vue';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import DmlEntryForm from '../subComponents/DmlEntryFrom.vue';
 import Sort from '../../../techpub/components/Sort.vue';
+import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+
 export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
-      isUpdate: false,
       showLoadingProgress: false,
       transformed: '',
+      filename: ''
     }
   },
-  components:{Remarks, ContinuousLoadingCircle, DmlEntryForm},
+  components:{Remarks, ContinuousLoadingCircle, DmlEntryForm, PreviewRCMenu},
   computed:{
+    isUpdate(){
+      if(this.$route.params.filename){
+        this.showDMLContent();
+        return true;
+      }
+    },
     dynamic(){
       return {
         template: this.transformed,
@@ -49,12 +57,11 @@ export default {
           },
         }
       }
-    }
+    },
   },
   methods:{
     async submit(event){
-      // this.showLoadingProgress = true;
-
+      this.showLoadingProgress = true;
       const formData = new FormData(event.target);
       let response = await axios({
         route: {
@@ -67,6 +74,23 @@ export default {
         // this.emitter.emit('createDMLFromEditorDML', { model: response.data.data });
         // do something here
       }
+      this.showLoadingProgress = false;
+    },
+    async update(event){
+      this.showLoadingProgress = true;
+      const formData = new FormData(event.target);
+      let response = await axios({
+        route: {
+          name: 'api.dmlupdate',
+          data: formData,
+        },
+        useMainLoadingBar: false,
+      });
+      if(response.statusText === 'OK'){
+        // this.emitter.emit('createDMLFromEditorDML', { model: response.data.data });
+        // do something here
+      }
+      this.showLoadingProgress = false;
     },
     async showDMLContent(){
       this.showLoadingProgress = true;
@@ -86,54 +110,64 @@ export default {
     }
   },
   mounted(){
-    if(this.$route.params.filename){
-      this.isUpdate = true;
-      this.showDMLContent();
-    } 
+    // if(this.$route.params.filename){
+    //   this.isUpdate = true;
+    //   this.showDMLContent();
+    // } 
+    // this.showDMLContent;
   }
 }
 </script>
 <template>
-  <div class="EditorDML">
+  <div class="EditorDML px-3">
+    <h1 class="mt-2 mb-4 text-center underline">{{ isUpdate ? 'Update DML' : 'Create DML' }}</h1>
     <form @submit.prevent="submit($event)" v-if="!isUpdate">
       <!-- untuk DML Type -->
       <input type="hidden" value="p" name="dmlType"/>
 
       <!-- untuk Model Ident Code -->
-      <label for="modelIdentCode" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Model Ident Code (Project)</label>
-      <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" class="ml-3"/>
-      <div class="text-red-600" v-html="techpubStore.error('modelIdentCode')"></div>
+      <div class="mb-2">
+        <label for="modelIdentCode" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Model Ident Code (Project): </label>
+        <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" class="ml-3"/>
+        <div class="text-red-600" v-html="techpubStore.error('modelIdentCode')"></div>
+      </div>
 
       <!-- Originator -->
-      <label for="originator" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Sender / Originator CAGE Code</label>
-      <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" class="ml-3"/>
-      <div class="text-red-600" v-html="techpubStore.error('originator')"></div>
+      <div class="mb-2">
+        <label for="originator" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Sender / Originator CAGE Code: </label>
+        <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" class="ml-3"/>
+        <div class="text-red-600" v-html="techpubStore.error('originator')"></div>
+      </div>
   
       <!-- Security Classification -->
-      <label for="securityClassification" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">Choose Security Level</label>
-      <select name="securityClassification" id="securityClassification" class="ml-3">
-        <option value="">--Required to choose--</option>
-        <option value="01">Unclassified</option>
-        <option value="02">Restricted</option>
-        <option value="03">Confidential</option>
-        <option value="04">Secret</option>
-        <option value="05">Top Secret</option>
-      </select>
-      <div class="text-red-600" v-html="techpubStore.error('securityClassification')"></div>
+      <div class="mb-2">
+        <label for="securityClassification" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Security Level: </label>
+        <select name="securityClassification" id="securityClassification" class="ml-3">
+          <option value="01">Unclassified</option>
+          <option value="02">Restricted</option>
+          <option value="03">Confidential</option>
+          <option value="04">Secret</option>
+          <option value="05">Top Secret</option>
+        </select>
+        <div class="text-red-600" v-html="techpubStore.error('securityClassification')"></div>
+      </div>
   
       <!-- BREX -->
-      <br/>
-      <label for="brexDmRef" class="inline-block mb-2 text-gray-900 dark:text-white text-lg font-bold">BREX Data Module Ref</label>
-      <input type="text" value="" name="brexDmRef" id="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="ml-3" />
-      <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>
+      <div class="mb-2">
+        <label for="brexDmRef" class="inline-block text-gray-900 dark:text-white text-lg font-bold">BREX Data Module Ref</label>
+        <input type="text" value="" name="brexDmRef" id="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="ml-3" />
+        <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>
+      </div>
       
       <!-- Remarks -->
-      <Remarks/>
+      <div class="mb-2">
+        <Remarks/>
+      </div>
 
       <button type="submit" class="button-violet">Submit</button>
     </form>
 
-    <form id="dml" @submit.prevent="update" v-if="isUpdate">
+    <form id="dml" v-if="isUpdate" @submit.prevent="update($event)">
       <input type="hidden" name="filename" :value="$route.params.filename" />
 
       <component :is="dynamic" v-if="transformed" />
@@ -142,6 +176,24 @@ export default {
         <button class="button-violet" type="submit">Update</button>
       </div>
     </form>
+
+    <PreviewRCMenu v-if="isUpdate">
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: $route.params.filename})">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
+          Delete</div>
+      </div>
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-green-600">devices</span>
+          Issue</div>
+      </div>
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm" @click="()=>this.emitter.emit('CommitCSDBObjectFromEveryWhere', {filename: $route.params.filename})">
+          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
+          Commit</div>
+      </div>  
+    </PreviewRCMenu>
 
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
