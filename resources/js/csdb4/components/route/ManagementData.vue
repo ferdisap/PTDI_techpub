@@ -3,10 +3,12 @@ import BottomBar from '../subComponents/BottomBar.vue';
 import EditorDML from '../componentns/EditorDML.vue';
 import ListTree from '../componentns/ListTree.vue';
 import PreviewComment from '../componentns/PreviewComment.vue';
+import DispatchTo from '../componentns/DispatchTo.vue';
+import Folder from '../componentns/Folder.vue';
 export default {
   name: 'ManagementData',
   components:{
-    BottomBar, EditorDML, ListTree, PreviewComment
+    BottomBar, EditorDML, ListTree, PreviewComment, DispatchTo, Folder
   },
   data(){
       return {
@@ -23,6 +25,13 @@ export default {
             isShow: false,
             data: {},
           },
+          Folder: {
+            iconName: 'folder',
+            tooltipName: 'Folder',
+            isShow: false,
+            data: {},
+            type: undefined,
+          },
           Preview: {
             iconName: 'preview',
             tooltipName: 'Preview',
@@ -34,6 +43,12 @@ export default {
             tooltipName: 'Comment',
             isShow: false,
             data: {}
+          },
+          DispatchTo:{
+            iconName: 'local_shipping',
+            'tooltipName': 'Dispatch To',
+            isShow: false,
+            data:{}
           },
         },
         colWidth: {
@@ -121,6 +136,7 @@ export default {
         <div class="flex" :style="[col2Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
             <EditorDML v-if="bottomBarItems.EditorDML.isShow" :filename="bottomBarItems.EditorDML.data.filename" text="" />
+            <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" routeName="ManagementData"/>
           </div>
         </div>
         <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize" @mousedown.prevent="turnOnSizing($event, 'dua')"></div>
@@ -128,7 +144,8 @@ export default {
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            <PreviewComment v-if="bottomBarItems.PreviewComment.isShow" :filename="bottomBarItems.PreviewComment.data.filename"/>
+            <PreviewComment v-if="bottomBarItems.PreviewComment.isShow"/>
+            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow"/>
           </div>
         </div>  
       </div>

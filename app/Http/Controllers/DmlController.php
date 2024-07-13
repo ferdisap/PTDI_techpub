@@ -36,11 +36,6 @@ class DmlController extends Controller
       'originator' => 'required',
       'dmlType' => 'required',
       'securityClassification' => 'required',
-      // 'brexDmRef' => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-      //   if (count(explode("_", $value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
-      //   $decode = Helper::decode_dmIdent($value);
-      //   if ($decode and $decode['dmCode']['infoCode'] != '022') $fail("The {$attribute} infoCode must be '022'.");
-      // }],
       'brexDmRef' => ['required', new BrexDmRefRules],
       'remarks' => 'array',
     ]);

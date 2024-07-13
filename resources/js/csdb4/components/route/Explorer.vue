@@ -268,7 +268,7 @@ export default {
         <!-- col 2 -->
         <div class="flex" :style="[col2Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" />
+            <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" routeName="Explorer"/>
             <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
             <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data.filename" text="" />
             <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename"/>

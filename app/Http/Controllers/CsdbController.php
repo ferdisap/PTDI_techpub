@@ -170,6 +170,7 @@ class CsdbController extends Controller
 
   public function forfolder_get_allobjects_list(Request $request)
   {
+    // dd($request->all());
     // dd($request->ajax());
     // validasi. Jadi ketika tidak ada path ataupun filenameSearch, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
     if(!$request->get('filenameSearch') 
@@ -185,6 +186,7 @@ class CsdbController extends Controller
 
     $this->model = ModelsCsdb::with('initiator');    
     $keywords = $this->search($request->get('filenameSearch'), $m);
+    // dd($request->get('filenameSearch'),$keywords);
 
     // jika ada filename, maka akan menuju request path
     if($request->get("filename")){
@@ -203,6 +205,7 @@ class CsdbController extends Controller
     $this->model->orderBy('filename');
     $ret = $this->model->paginate(100);
     $ret->setPath($request->getUri());
+
 
     if($ret->isNotEmpty()){
       $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);

@@ -21,7 +21,7 @@ export default {
 
       <div class="mb-3">
         <CommentField/>
-      </div>`
+      </div>
 
   </div>
 </div>

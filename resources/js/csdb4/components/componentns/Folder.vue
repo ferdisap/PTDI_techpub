@@ -3,9 +3,10 @@ import { sorter } from "../../../helper.js";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
 import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
+import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
 
 export default {
-  components:{ Sort, ContinuousLoadingCircle },
+  components:{ Sort, ContinuousLoadingCircle, PreviewRCMenu },
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -16,7 +17,12 @@ export default {
       open: {},
 
       type: '', // kayaknya ga perlu
-      showLoadingProgress: false
+      showLoadingProgress: false,
+
+      selectionMode: false,
+      isShowRcMenu: false,
+      checkboxId: '',
+      isSelectAll: false,
     }
   },
   props: {
@@ -24,6 +30,9 @@ export default {
       type: Object,
       default: {},
     },
+    routeName: {
+      type: String
+    }
   },
   computed: {
     setObject() {
@@ -61,6 +70,18 @@ export default {
   methods: {
     async getObjs(data = {}){
       this.showLoadingProgress = true;
+      if(!data.filenameSearch) data.filenameSearch = '';
+      switch (this.$props.routeName) {
+        case 'Explorer':
+          data.filenameSearch += " typeonly::DMC,PMC,ICN";
+          break;      
+        case 'ManagementData':
+
+          data.filenameSearch += " typeonly::DML,COM";
+          break;      
+        default:
+          break;
+      }
       let response = await axios({
         route: {
           name: 'api.requestbyfolder.get_allobject_list',
@@ -96,20 +117,24 @@ export default {
       }
     },
     async back(path = undefined) {
-      if(!path){
-        path = this.currentPath.replace(/\/\w+\/?$/, "");
-      }
-      this.getObjs({path: path});
-      this.data.current_path = path;
-    },
-    clickFolder(path){
-      if(path){
-        this.back(path);
+      if(!this.selectionMode){
+        if(!path){
+          path = this.currentPath.replace(/\/\w+\/?$/, "");
+        }
+        this.getObjs({path: path});
+        this.data.current_path = path;
       }
     },
+    // clickFolder(path){
+    //   if(path){
+    //     this.back(path);
+    //   }
+    // },
     clickFilename(data){
-      this.$root.gotoExplorer(data.filename);
-      this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
+      if(!this.selectionMode){
+        this.$root.gotoExplorer(data.filename);
+        this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
+      }
     },
     sortTable(){
       const getCellValue = function (row, index) {
@@ -151,6 +176,64 @@ export default {
     search(){
       this.getObjs({path: this.currentPath, filenameSearch: this.filenameSearch});
     },
+    select(cbid){
+      this.isSelectAll = false;
+      this.selectionMode = true; 
+      this.isShowRcMenu = false;
+      setTimeout(()=>document.getElementById(cbid).checked = true,0);
+    },
+    selectAll(isSelect = true){
+      this.selectionMode = true; 
+      this.isShowRcMenu = false;
+      this.isSelectAll = isSelect;
+      setTimeout(() =>document.querySelectorAll(".folder input[type='checkbox']").forEach((input) => input.checked = isSelect), 0);
+    },
+    selectAllFiles(isSelect = true){
+      this.selectionMode = true; 
+      this.isShowRcMenu = false;
+      this.isSelectAll = isSelect;
+      setTimeout(() =>document.querySelectorAll(".folder input[file='true']").forEach((input) => input.checked = isSelect), 0);
+    },
+    async dispatch(){
+      let models = [];
+      let paths = [];
+      let o = undefined;
+      document.querySelectorAll('.folder input[type="checkbox"]:checked').forEach((input) => {
+        if(o = this.data.folders.find((folder) => folder.path === input.value)){
+          paths.push(o);
+        } 
+        else if(o = this.data.models.find((obj) => obj.filename === input.value)){
+          models.push(o);
+        }
+      });
+      if(paths.length !== 0){
+        let filenameSearch = 'path::';
+        paths.forEach(p => filenameSearch += ','+p.path);
+        switch (this.$props.routeName) {
+          case 'Explorer':
+            filenameSearch += " filename::DMC,PMC,ICN";
+            break;      
+          case 'ManagementData':
+
+            filenameSearch += " filename::DML,COM";
+            break;      
+          default:
+            break;
+        }
+        let response = await axios({
+          route: {
+            name: 'api.requestbyfolder.get_allobject_list',
+            data: {filenameSearch:filenameSearch}
+          },
+          useMainLoadingBar: false,
+        });
+        if(response.statusText === 'OK'){
+          models.concat(response.data);
+        }
+      }
+      console.log(window.models = models);
+      // this.emitter.emit('dispatchTo',{})
+    }
   },
   mounted(){
     this.emitter.on('Folder-refresh', (data) => {
@@ -162,38 +245,9 @@ export default {
     });
     if(this.$route.params.filename){
       this.getObjs({filename: this.$route.params.filename});
+    } else {
+      this.getObjs({path: 'csdb'});
     }
-    // this.emitter.on('Folder-updateModel', (data) => {
-    //   // #1. Check apakah path model terbaru sudah ada di this.data.folder atau belum. Tambahkan jika belum
-    //   let curr_folders = Object.assign({},this.data.folders);      
-    //   let curr_models = Object.assign({}, this.data.models);
-    //   let length = Object.values(curr_folders).length;
-    //   if(data.model.path !== this.currentPath){
-    //     Object.values(curr_folders).find(v => {
-    //       if(data.model.path.indexOf(this.currentPath) >= 0){
-    //         let folder = data.model.path.substr(this.currentPath.length + data.model.path.indexOf(this.currentPath) + 1); // ditambah satu untuk menghapus "/" di beginning string;
-    //         let split = folder.split("/");
-    //         if(split.length == 1){
-    //           curr_folders[length] = {path: curr_folders}; // jika nested 1 child saja
-    //         }
-    //         else if(split.length > 1){
-    //           curr_folders[length] = {path: this.currentPath + "/" + split[0]} // jika nested lebih dari 1 child, maka ditambahkan child pertama saja
-    //         }
-
-    //         // #2. removing this.data.model
-    //         let find = Object.entries(curr_models).find(v => v[1].filename === data.model.filename) // output array = [index,value];
-    //         if(find && find.length > 0){
-    //           delete curr_models[find[0]];
-    //         }
-    //       }
-    //       // jika data.model.path termasuk parent dari currentPath, maka tidak perlu ditambahkan ke this.data.folder 
-    //     });
-    //     // this.data.folders = curr_folders;
-    //     // this.data.models = curr_models;
-    //   }
-    //   console.log(window.folders = curr_folders, window.models = curr_models);
-
-    // })
   },
 }
 </script>
@@ -203,7 +257,7 @@ export default {
 }
 </style>
 <template>
-  <div class="relative">
+  <div class="folder relative">
     <div v-show="false">{{ setObject }}</div>
     <div class="folder overflow-auto h-[93%] w-full">
       <div class="h-[5%] flex mb-3">
@@ -222,6 +276,7 @@ export default {
         <table class="text-left">
           <thead class="text-sm">
             <tr class="leading-3 text-sm">
+              <th v-if="selectionMode"></th>
               <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
@@ -231,17 +286,27 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
+            <tr @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+obj.path" v-for="obj in folders" class="folder-row text-sm hover:bg-blue-500 hover:text-white">
+              <td v-if="selectionMode">
+                <input file="false" :id="'cb'+obj.path" type="checkbox" :value="obj.path">
+              </td>
               <td class="leading-3 text-sm" colspan="5">
-                <span class="material-symbols-outlined text-sm mr-1">folder</span>
-                <a href="#" @click.prevent="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </a> 
-                <!-- min -2 karena diujung folder ada '/' -->
+                <label :for="'cb'+obj.path">
+                  <span class="material-symbols-outlined text-sm mr-1">folder</span>
+                  <span @click="back(obj.path)" class="text-sm">{{ obj.path.split("/").at(-1) }} </span> 
+                  <!-- min -2 karena diujung folder ada '/' -->
+                </label>
               </td>
             </tr>
-            <tr v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
+            <tr @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-500 hover:text-white">
+              <td v-if="selectionMode">
+                <input file="true" :id="'cb'+obj.filename" type="checkbox" :value="obj.filename">
+              </td>
               <td class="leading-3 text-sm">
-                <span class="material-symbols-outlined text-sm mr-1">description</span>
-                <a href="#" class="text-sm" @click.prevent="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </a>
+                <label :for="'cb'+obj.filename">
+                  <span class="material-symbols-outlined text-sm mr-1">description</span>
+                  <span class="text-sm" @click="clickFilename({filename: obj.filename, path: obj.path})"> {{ obj.filename }} </span>
+                </label>
               </td>
               <td class="leading-3 text-sm"> {{ obj.path }} </td>
               <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
@@ -268,5 +333,24 @@ export default {
       </div>
     </div>
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
+    <PreviewRCMenu v-if="isShowRcMenu">
+      <div @click="select(checkboxId)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select</div>
+      </div>
+      <div @click="selectAll(!isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ isSelectAll ? 'Deselect' : 'Select' }} All</div>
+      </div>
+      <div @click="selectAllFiles(!isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click="dispatch" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Dispatch</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.prevent="()=>{selectAll(false); selectionMode = false}" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Cancel</div>
+      </div>
+    </PreviewRCMenu>
   </div>
 </template>

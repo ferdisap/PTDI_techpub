@@ -429,7 +429,7 @@
     <securityClassification code="03">CONFIDENTIAL</securityClassification>
     <securityClassification code="04">SECRET</securityClassification>
     <securityClassification code="05">TOP SECRET</securityClassification>
-    <commercialClassification code="cc51">FOO CC</commercialClassification>
+    <commercialClassification code="cc51">FOOBAR CC</commercialClassification>
     <caveat code="cv51">FOO CAVEAT</caveat>
     <derivativeClassification>
       <action code="ai01">Classified On</action>

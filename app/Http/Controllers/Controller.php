@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
-use Ptdi\Mpub\Helper;
+use Ptdi\Mpub\Main\Helper;
 
 class Controller extends BaseController
 {
@@ -222,22 +222,139 @@ class Controller extends BaseController
    * default search column db is filename
    * harus set $this->model terlebih dahulu baru bisa jalankan fungsi ini
    */
-  public function search($keyword, &$messages = [])
+  public function search_xx($keyword, &$messages = [])
   {
     $keywords = Helper::explodeSearchKey(str_replace("_",'\_',$keyword));
+    // dd($keywords);
     foreach($keywords as $k => $kyword){
       if((int)$k OR $k == 0){ // jika $kyword == eg.: 'MALE-0001Z-P', ini tidak ada separator '::' jadi default pencarian column filename
-        $this->model->whereRaw("filename LIKE '%{$kyword}%' ESCAPE '\'");
+        $kywords = Helper::exploreSearchValue($kyword);
+        $this->model->whereRaw("filename LIKE '%{$kywords[0]}%' ESCAPE '\'");
+        for ($i=1; $i < count($kywords); $i++) { 
+          $this->model->orWhereRaw("filename LIKE '%{$kywords[$i]}%' ESCAPE '\'");
+        }
       } else {
-        $column = Csdb::columnNameMatching($k, 'csdb');
+        if($k === 'typeonly'){
+          $column = 'filename';
+          // $column = '';
+        } else {
+          $column = Csdb::columnNameMatching($k, 'csdb');
+        }
         if($column){
-          $this->model->whereRaw("{$column} LIKE '%{$kyword}%' ESCAPE '\'");
+          $kywords = Helper::exploreSearchValue($kyword);
+          $this->model->whereRaw("{$column} LIKE '%{$kywords[0]}%' ESCAPE '\'");
+          for ($i=1; $i < count($kywords); $i++) {
+            $this->model->orWhereRaw("{$column} LIKE '%{$kywords[$i]}%' ESCAPE '\'");
+          }
+          // if($k == 'typeonly'){
+          //   $this->model->whereRaw("path LIKE '%male%' ESCAPE '\'");
+          // }
         }
         else {
           $messages[] = "'{$keyword}' cannot be parsed.";
         }
       }
     }
+    // dd($this->model);
+    // dd($keywords);
+    return $keywords;
+  }
+  public function search($keyword, &$messages = [])
+  {
+    // $keywords = [
+    //   'path' => ['A','B'],
+    //   'filename' => ['C','D', 'E'],
+    //   'editable' => ['F','G'],
+    // ];
+    $keywords = Helper::explodeSearchKeyAndValue(str_replace("_",'\_',$keyword));
+    $keys = array_keys($keywords);
+    $k = 0;
+    $str = '';
+
+    // dd($keywords);
+        
+    // create space
+    $createSpace = function($k, $space = '', $cb)use($keywords, $keys, ){
+      // create space
+      $queryArr = $keywords[$keys[$k]];
+      $l = count($queryArr);
+      $isNextCol = isset($keys[$k+1]);      
+      $isNextTwoCol = isset($keys[$k+2]);
+      $squareOpen = 0;
+      $curvOpen = 0;
+      if($l-1 > 0 AND $isNextCol){
+        $space .= "{";
+        $curvOpen++;
+      }
+      elseif($l-1 > 0) {
+        $space .= "[";
+        $squareOpen++;
+      }
+      else {
+        $space .= "{";
+        $curvOpen++;
+      };
+      for ($i=0; $i < $l; $i++) { 
+        $isNextIndex = $i+1 < $l;
+        $space .= '"COL'.$k.'_'.$i.'"';
+        if($isNextCol){
+          $space .= ":";
+          $space .= $cb($k+1, '', $cb);
+        }
+        if($isNextIndex) $space .= ",";
+      }
+      while($curvOpen > 0){
+        $space .= "}";
+        $curvOpen--;
+      }
+      while($squareOpen > 0){
+        $space .= "]";
+        $squareOpen--;
+      }
+      return $space;
+    };
+    $space = $createSpace(0,'', $createSpace);
+
+    // fill the space
+    $dictionary = [];
+    foreach($keywords as $col => $queryArr){
+      $colnum = array_search($col,$keys);
+      if($col === 'typeonly') $col = 'filename';
+      foreach($queryArr as $i => $v){
+        $indexString = "COL{$colnum}_{$i}";
+        $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$v}%' ESCAPE '\'";
+        $space = str_replace($indexString, "<<".$v.">>", $space);
+      }
+    }
+    
+    // change the filled space to the final string query
+    $arr = json_decode($space,true);
+    $str = '';
+    $merge = function($prevVal, $arr, $cb){
+      $str = '';
+      if(array_is_list($arr)){
+        foreach($arr as $i => $v){
+          if($prevVal) $arr[$i] = "$prevVal AND $v";
+          else $arr[$i] = "$v";
+        }
+        $str = join(" OR ", $arr);
+      } else {
+        foreach($arr as $i => $v){
+          $arr[$i] = $cb($prevVal . $i, $v, $cb);
+        }
+        $str = join(" OR ", $arr);
+      }
+      return $str;
+    };
+    $str = $merge($str, $arr, $merge);
+
+    foreach($dictionary as $k => $v){
+      $str = str_replace($k,$v, $str);
+    }
+
+    // dump($str);
+    // eg. $str = "path LIKE '%male%' ESCAPE '\' AND filename LIKE '%DML%' ESCAPE '\' OR path LIKE '%male%' ESCAPE '\' AND filename LIKE '%ICN%' ESCAPE '\'";
+    $this->model->whereRaw($str);
     return $keywords;
   }
 
