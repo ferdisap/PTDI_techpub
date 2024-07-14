@@ -8,7 +8,8 @@ export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      showRightAside: false
+      showRightAside: false,
+      TO: 0,
     };
   },
   components: {ManagementData,Explorer},
@@ -49,6 +50,22 @@ export default {
         }
       });
       this.emitter.emit('CommitMultipleCSDBObject', response.data.models);
+    },
+    getCSDBObjectModel(data){
+      if(data.filename){
+        clearTimeout(this.to);
+        this.to = setTimeout(()=>{
+          const worker = this.createWorker('WorkerGetCsdbModel.js');
+          if(worker){
+            let route = this.techpubStore.getWebRoute('api.get_object_model', {filename: data.filename});
+            worker.onmessage = (e) => {
+              this.techpubStore.currentObjectModel = e.data.model;
+              worker.terminate();
+            }
+            worker.postMessage({route: route});
+          }
+        },1000);
+      }
     }
   },
   mounted() {
@@ -60,18 +77,12 @@ export default {
     this.emitter.on('CommitCSDBObjectFromEveryWhere', (data) => {
       this.commitCSDBs(data)
     })
+
+    this.emitter.on('RequireCSDBObjectModel', (data) => this.getCSDBObjectModel(data));
     
     setTimeout(() => {
       if(this.$route.params.filename){
-        const worker = this.createWorker('WorkerGetCsdbModel.js');
-        if(worker){
-          let route = this.techpubStore.getWebRoute('api.get_object_model', {filename: this.$route.params.filename});
-          worker.onmessage = (e) => {
-            this.techpubStore.currentObjectModel = e.data.model;
-            worker.terminate();
-          }
-          worker.postMessage({route: route});
-        }
+        this.getCSDBObjectModel({filename: this.$route.params.filename});
       }
     }, 10);
 

@@ -170,6 +170,51 @@ class CsdbController extends Controller
 
   public function forfolder_get_allobjects_list(Request $request)
   {
+    // validasi. Jadi ketika tidak ada path ataupun sc, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
+    if($request->path === "/") $request->merge(['path' => 'csdb']);
+
+    $this->model = ModelsCsdb::with('initiator');    
+    $keywords = $this->search($request->get('sc'));
+
+    // menyiapkan csdb object
+    $this->model->orderBy('filename');
+    $ret = $this->model->paginate(100);
+    $ret->setPath($request->getUri());
+
+    $m = '';
+    // menyiapkan folder
+    if($ret->isNotEmpty()){
+      $minLengthPath = 999;
+      if(isset($keywords['path'])){
+        $this->model = new ModelsCsdb();
+        $this->search($request->get('sc'), false);
+        $folder = $this->model->get(['path'])->toArray();
+        // if(empty($folder)) $m = "Folder can not be loaded"; // sepertinya tidak perlu message karena kalau tidak ada folder lagi, ya tidak perlu di infokan
+        $folder = array_unique($folder,SORT_REGULAR);
+        $folder = array_map(function($v) use ($keywords, &$minLengthPath){
+          $v = join("",$v); // saat didapat dari database, bentuknya array berisi satu path saja
+          $minLength = substr_count($v, "/", 0, strlen($v)) + 1; // plus satu karena saat menghitung '/', 'csdb/male/amm' dihitung 2
+          if($minLength < $minLengthPath) $minLengthPath = $minLength;
+          // foreach($keywords['path'] as $p){$v = preg_replace("/($p)(.+)/",'${2}',$v,1);} // jika $v = 'male/csdb/cn235/csdb/ke1' maka path 'csdb' yang terhapus hanya yang pertama
+          // $v = preg_replace("/\/{2,}/", "/", $v); // mengganti multiple slash menjadi '/'; tapi ini kayaknya tidak perlu biar lebih cepat karena ujung2nya cuma diambil 1 folder (tanpa sub-folder nya)
+          // if(substr($v,0,1) === '/') $v = substr_replace($v, '', 0,1); // membuang slash di depan
+          return $v;
+        }, $folder);
+        if($minLengthPath === 1) $folder = []; // jika 1 artinya folder cuma 1 level, eg: 'csdb'. Artinya tidak perlu ditampung karena sama dengan request di search
+        $folder = array_filter($folder, fn($v) => substr_count($v, "/", 0, strlen($v))+1 === $minLengthPath); // plus satu karena saat menghitung '/', 'csdb/male/amm' dihitung 2
+        $folder = array_values($folder); // supaya tidak assoc atau supaya indexnya teratur
+        sort($folder);
+      }
+    } else $m = "CSDB objects can not be found.";
+
+    if(isset($keywords['path']) AND count($keywords['path']) === 1){
+      $current_path = $keywords['path'][0];
+    }
+
+    return $this->ret2(200, $ret->toArray(), ['message' => $m, 'infotype' => "caution", 'folder' => $folder ?? [], "current_path" => $current_path ?? '']);
+  }
+  public function forfolder_get_allobjects_list_xx(Request $request)
+  {
     // dd($request->all());
     // dd($request->ajax());
     // validasi. Jadi ketika tidak ada path ataupun filenameSearch, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
@@ -206,9 +251,9 @@ class CsdbController extends Controller
     $ret = $this->model->paginate(100);
     $ret->setPath($request->getUri());
 
-
     if($ret->isNotEmpty()){
-      $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);
+      // $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}'")->get()->unique('path', true);
+      $folder = ModelsCsdb::selectRaw('path')->whereRaw("path LIKE '{$path}' AND initiator_id = ". Auth::user()->id)->get()->unique('path', true);
       $folder = $folder->toArray();
       $folder = array_filter($folder, function($obj) use($request){
         if($obj['path'] === $request->path){

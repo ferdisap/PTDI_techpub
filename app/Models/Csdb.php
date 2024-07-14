@@ -103,6 +103,7 @@ class Csdb extends Model
   {
     return Attribute::make(
       set: fn(string $v) => substr($v,-1,1) === '/' ? rtrim($v, "/") : $v,
+      // set: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
       // get: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
     );
     // dd(substr($str,-1,1 ));

@@ -112,6 +112,12 @@ export default {
         this.bottomBarItems.EditorDML.isShow = true;
         this.bottomBarItems.EditorDML.data = data; // hanya ada filename dan path saja di data
       });
+
+      this.emitter.on('dispatchTo', (data) => {
+        // data berisi array contains models
+        this.bottomBarItems.DispatchTo.isShow = true;
+        this.bottomBarItems.DispatchTo.data = data;
+      })
     }
   }
 </script>
@@ -145,7 +151,7 @@ export default {
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
             <PreviewComment v-if="bottomBarItems.PreviewComment.isShow"/>
-            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow"/>
+            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow" :objectsToDispatch="bottomBarItems.DispatchTo.data"/>
           </div>
         </div>  
       </div>

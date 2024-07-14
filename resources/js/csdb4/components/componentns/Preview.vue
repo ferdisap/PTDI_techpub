@@ -93,7 +93,9 @@ export default {
       if (routeName) {
         this.data.mime = this.view === 'html' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
         let src = await this.blobRequestTransformed(routeName, { filename: data.filename }, this.data.mime);
-        this.data.src = src // blob:http://127.0.0.1:8000/1a7cdf64-c7f7-4dd3-b4b2-0d26a3f0bb52
+        if(src){
+          this.data.src = src // blob:http://127.0.0.1:8000/1a7cdf64-c7f7-4dd3-b4b2-0d26a3f0bb52
+        }
       }
       this.showLoadingProgress = false;
     },

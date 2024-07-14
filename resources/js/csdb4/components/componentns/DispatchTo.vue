@@ -94,9 +94,9 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>foo</td>
-              <td>bar</td>
+            <tr v-for="(model, i) in $props.objectsToDispatch">
+              <td>{{ i+1 }}</td>
+              <td>{{ model.filename }}</td>
               <td>baz</td>
             </tr>
           </tbody>

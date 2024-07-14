@@ -259,27 +259,38 @@ class Controller extends BaseController
     // dd($keywords);
     return $keywords;
   }
-  public function search($keyword, &$messages = [])
+  public function search($keyword, bool $getObjects = true)
   {
+    // contoh1
     // $keywords = [
     //   'path' => ['A','B'],
     //   'filename' => ['C','D', 'E'],
     //   'editable' => ['F','G'],
     // ];
+    // contoh2
+    // $keywords = [
+    //   'path' => ['A','B'],
+    //   'filename' => ['C'],
+    // ];
+    // contoh3
+    // $keywords = [
+    //   'path' => ['A'],
+    //   'filename' => ['B','C','D'],
+    //   'editable' => ['E'],
+    // ];
     $keywords = Helper::explodeSearchKeyAndValue(str_replace("_",'\_',$keyword));
+    // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
+    $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id];
     $keys = array_keys($keywords);
     $k = 0;
     $str = '';
-
-    // dd($keywords);
         
     // create space
     $createSpace = function($k, $space = '', $cb)use($keywords, $keys, ){
       // create space
       $queryArr = $keywords[$keys[$k]];
       $l = count($queryArr);
-      $isNextCol = isset($keys[$k+1]);      
-      $isNextTwoCol = isset($keys[$k+2]);
+      $isNextCol = isset($keys[$k+1]);   
       $squareOpen = 0;
       $curvOpen = 0;
       if($l-1 > 0 AND $isNextCol){
@@ -287,6 +298,11 @@ class Controller extends BaseController
         $curvOpen++;
       }
       elseif($l-1 > 0) {
+        $space .= "[";
+        $squareOpen++;
+      }
+      // untuk perbaikan contoh3 dan contoh3
+      elseif($l === 1 AND !$isNextCol) {
         $space .= "[";
         $squareOpen++;
       }
@@ -322,7 +338,8 @@ class Controller extends BaseController
       if($col === 'typeonly') $col = 'filename';
       foreach($queryArr as $i => $v){
         $indexString = "COL{$colnum}_{$i}";
-        $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$v}%' ESCAPE '\'";
+        if($col === 'path') $dictionary["<<".$v.">>"] = $getObjects ? " {$col} = '{$v}'" : "{$col} LIKE '{$v}/%' ESCAPE '\'";
+        else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$v}%' ESCAPE '\'";
         $space = str_replace($indexString, "<<".$v.">>", $space);
       }
     }
@@ -340,7 +357,8 @@ class Controller extends BaseController
         $str = join(" OR ", $arr);
       } else {
         foreach($arr as $i => $v){
-          $arr[$i] = $cb($prevVal . $i, $v, $cb);
+          if($prevVal) $arr[$i] = $cb($prevVal .' AND '. $i, $v, $cb);
+          else $arr[$i] = $cb($prevVal . $i, $v, $cb);
         }
         $str = join(" OR ", $arr);
       }
