@@ -85,7 +85,7 @@ Route::get('/api/checkavailableobject',[CsdbController::class, 'checkAvailableOb
 
 
 // get user model
-Route::get('/api/usersearch', [UserController::class, 'searchModel'])->middleware('auth')->name('api.user_search');
+Route::get('/api/usersearch', [UserController::class, 'searchModel'])->middleware('auth')->name('api.user_search_model');
 
 
 

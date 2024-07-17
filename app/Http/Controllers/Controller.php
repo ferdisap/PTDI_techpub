@@ -263,6 +263,10 @@ class Controller extends BaseController
   }
 
   /**
+   * jika "?sc=DMC" => maka querynya WHERE each.column like %DMC% , joined by 'OR';
+   * jika "?sc=filename::DMC%20path::csdb" => maka querynya WHERE filename LIKE '%DMC%' AND path LIKE '%csdb%';
+   * jika "?sc=filename::DMC,PMC" => maka querynya WHERE filename LIKE '%DMC%' OR filename LIKE '%PMC%';
+   * jika "?sc=filename::DMC%20filename::022" => maka querynya WHERE filename LIKE '%DMC%' AND filename LIKE '%022%';
    * @param {$strictString} keep the &#value as it is, and add your SQL pattern
    */
   public function generateWhereRawQueryString($keyword, string $strictString = "%#&value;%", string $table = '')
@@ -286,6 +290,7 @@ class Controller extends BaseController
       // 'editable' => ['E'],
     // ];
     $keywords = Helper::explodeSearchKeyAndValue($keyword);
+    // dd($keywords);
 
     // jika $keyword tidak ada column namenya, maka akan mengambil seluruh column name database
     // contoh $request->sc = "Senchou";. Kita tidak tahu 'Senchou' ini dicari di column mana, jadi cari di semua column di database
@@ -378,6 +383,7 @@ class Controller extends BaseController
         // if($col === 'path') $dictionary["<<".$v.">>"] = $strict ? " {$col} = '{$escapedV}'" : "{$col} LIKE '{$escapedV}/%' ESCAPE '\'";
         // else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$escapedV}%' ESCAPE '\'";
         $strictStr = str_replace('#&value;', $escapedV, $strictString); // variable $strictString jangan di re asign
+        $col = preg_replace("/___[0-9]+$/", "", $col); // menghilangkan suffix "___XXX" yang ditambahkan di fungsi ...Main\Helper::class@explodeSearchKeyAndValue
         $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'";
         $space = str_replace($indexString, "<<".$v.$id.">>", $space);
       }
@@ -426,6 +432,7 @@ class Controller extends BaseController
     // $this->model->whereRaw($str);
     // dd($this->model->get()->toArray());
     // return $keywords;
+    // dd($str, $keywords);
     return [$str, $keywords];
   }
 

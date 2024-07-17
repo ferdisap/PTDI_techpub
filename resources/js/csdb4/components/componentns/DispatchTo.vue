@@ -16,7 +16,8 @@ export default {
       techpubStore: useTechpubStore(),
       CbSelector: new CheckboxSelector,
       objects: [], // berisi filenames
-      DropdownInputSearch: new DropdownInputSearch('email')
+      DropdownUserSearch: new DropdownInputSearch('email'),
+      DropdownBrexSearch: new DropdownInputSearch('filename')
     }
   },
   components:{ContinuousLoadingCircle, RCMenu},
@@ -89,10 +90,15 @@ export default {
       this.CbSelector.isShowTriggerPanel = false;
     },
     async searchUser(event){
-      console.log('searchUser');
-      if(event.target.id === this.DropdownInputSearch.idInputText){
-        let route = this.techpubStore.getWebRoute('api.user_search', {sc: event.target.value, limit:5});
-        this.DropdownInputSearch.keypress(event, route);
+      if(event.target.id === this.DropdownUserSearch.idInputText){
+        let route = this.techpubStore.getWebRoute('api.user_search_model', {sc: event.target.value, limit:5});
+        this.DropdownUserSearch.keypress(event, route);
+      }
+    },
+    async searchBrex(event){
+      if(event.target.id === this.DropdownBrexSearch.idInputText){
+        let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
+        this.DropdownBrexSearch.keypress(event, route);
       }
     },
     assignObject(data, by = ''){
@@ -128,7 +134,7 @@ export default {
       this.assignObject(this.$props.objectsToDispatch);
     }
 
-    window.DropdownInputSearch = this.DropdownInputSearch;
+    window.DropdownUserSearch = this.DropdownUserSearch;
   }
 }
 </script>
@@ -162,17 +168,33 @@ export default {
       </div>
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
-          <label class="font-bold" :for="DropdownInputSearch.idInputText">To:&#160;</label>
+          <label class="font-bold" :for="DropdownUserSearch.idInputText">To:&#160;</label>
         </div>
         <div class="w-80 relative">
           <div class="h-[30px]">
-            <div v-show="!DropdownInputSearch.isDone" class="mini_loading_buffer_dark right-[5px] top-[5px]"></div>
-            <input @keyup.prevent="searchUser($event)" :id="DropdownInputSearch.idInputText" name="personmainemail" class="block mb-0 w-full p-1"/>
+            <div v-show="!DropdownUserSearch.isDone" class="mini_loading_buffer_dark right-[5px] top-[5px]"></div>
+            <input @keyup.prevent="searchUser($event)" :id="DropdownUserSearch.idInputText" name="personmainemail" class="block mb-0 w-full p-1"/>
           </div>
-          <div class="w-full" :id="DropdownInputSearch.idDropdownListContainer">
-            <div class="text-sm border-b px-2" v-show="DropdownInputSearch.showList" v-for="(user) in DropdownInputSearch.result" :email="user.email" @click.prevent="DropdownInputSearch.keypress($event)" @keyup.prevent="DropdownInputSearch.keypress($event)">
+          <div class="w-full" :id="DropdownUserSearch.idDropdownListContainer">
+            <div class="text-sm border-b px-2" v-show="DropdownUserSearch.showList" v-for="(user) in DropdownUserSearch.result" :email="user.email" @click.prevent="DropdownUserSearch.keypress($event)" @keyup.prevent="DropdownUserSearch.keypress($event)">
               {{ user.first_name + " " + user.middle_name + " " + user.last_name}}
               <span class="text-xs">{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-2 mt-2 flex">
+        <div class="mr-2">
+          <label class="font-bold" :for="DropdownBrexSearch.idInputText">Brex:&#160;</label>
+        </div>
+        <div class="w-80 relative">
+          <div class="h-[30px]">
+            <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[5px] top-[5px]"></div>
+            <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexfilename" class="block mb-0 w-full p-1"/>
+          </div>
+          <div class="w-full" :id="DropdownBrexSearch.idDropdownListContainer">
+            <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" @click.prevent="DropdownBrexSearch.keypress($event)" @keyup.prevent="DropdownBrexSearch.keypress($event)">
+              {{ dmc.filename}}
             </div>
           </div>
         </div>
