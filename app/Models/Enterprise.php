@@ -51,6 +51,8 @@ class Enterprise extends Model
     'address' => 'array'
   ];
 
+  protected $hidden = ['id'];
+
   protected function address(): Attribute
   {
     return Attribute::make(

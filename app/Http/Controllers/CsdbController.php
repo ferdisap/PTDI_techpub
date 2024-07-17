@@ -318,9 +318,6 @@ class CsdbController extends Controller
     $domXpath = new \DOMXPath($new_csdb_model->CSDBObject->document);
     $code = preg_replace("/_.+/", '', $csdb_filename);
     $collection = Storage::disk('csdb')->files();
-    // $collection = scandir(storage_path('csdb'));
-    // dd(storage_path('csdb'));
-    // dd($collection);
     $collection = array_filter($collection, fn ($file) => str_contains($file, $code));
     if (empty($collection)) {
       $issueInfo = $domXpath->evaluate("//identAndStatusSection/{$initial}Address/{$initial}Ident/issueInfo")[0];
@@ -362,18 +359,20 @@ class CsdbController extends Controller
       }
     }
 
+    
+
     // #6. saving dan menambahkan remarks stage dan remarks
     $new_csdb_model->filename = $csdb_filename;
     $new_csdb_model->path = $validated['path'];
-    $new_csdb_model->editable = 1;
+    // $new_csdb_model->editable = 1;
     $new_csdb_model->initiator_id = $request->user()->id;
     // $new_csdb_model->setRemarks('stage', 'unstaged'); // kayaknya ini tidak diperlukan lagi jika sudah tidak ada fitur stage/unstaged/staging
-    $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$csdb_filename}.;{$request->user()->name}");
-    $new_csdb_model->setRemarks('status');
+    // $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$csdb_filename}.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
+    // $new_csdb_model->setRemarks('status');
 
     if($new_csdb_model->saveModelAndDOM()){
       $new_csdb_model->initiator; // agar ada initiator nya
-      return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["model" => $new_csdb_model]);
+      return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["model" => $new_csdb_model], ['infotype' => 'info']);
     } 
     return $this->ret2(400, ["{$csdb_filename} failed to create."], CSDBError::getErrors(), ['model' => $new_csdb_model]);
   }
@@ -454,8 +453,8 @@ class CsdbController extends Controller
     
     // #7. saving
     $CSDBModel->direct_save = false;
-    $CSDBModel->setRemarks('status');
-    $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.;{$request->user()->name}");
+    // $CSDBModel->setRemarks('status');
+    // $CSDBModel->setRemarks('history', Carbon::now().";UPDT;Object updated with filename {$new_filename}.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
     $CSDBModel->updated_at = now();
     if($CSDBModel->saveModelAndDOM()){
       return $this->ret2(200, ["{$new_filename} has been saved."], ["model" => $CSDBModel]);
@@ -511,7 +510,7 @@ class CsdbController extends Controller
     $new_csdb_model->path = $validatedData['path'];
     $new_csdb_model->editable = 0;
     $new_csdb_model->initiator_id = $request->user()->id;
-    $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$validatedData['filename']}.;{$request->user()->name}");
+    // $new_csdb_model->setRemarks('history', Carbon::now().";CRBT;Object create with filename {$validatedData['filename']}.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
     if($new_csdb_model->saveModelAndDOM()){
       $new_csdb_model->initiator; // agar ada initiator nya
       return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."], ["model" => $new_csdb_model]);
@@ -610,7 +609,7 @@ class CsdbController extends Controller
     $time = Carbon::now()->timezone(7);
     $new_filename = ($filename . '__' . $time->timestamp . '-' . $time->microsecond);    
 
-    $model->setRemarks('history', Carbon::now().";DELL;Object with filename {$filename} is deleted.;{$request->user()->name}");
+    // $model->setRemarks('history', Carbon::now().";DELL;Object with filename {$filename} is deleted.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
     $model->save();
 
     $model_meta = $model->toArray();
@@ -649,7 +648,7 @@ class CsdbController extends Controller
     $deleted_QB = DB::table('csdb_deleted')->where('filename', $filename);
     $deleted_model = $deleted_QB->first();
     if(!$deleted_model) return $this->ret2(400, ["{$filename} failed to restore."]);
-    if($request->user()->id != $deleted_model->deleter_id) return $this->ret2(400, ["Only {$request->user()->name} can restore."]);
+    if($request->user()->id != $deleted_model->deleter_id) return $this->ret2(400, ["Only {$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name} can restore."]);
     
     $meta = function($stdClass, $fn){ // untuk mengubah seluruh stdClass menjadi array
       $stdClass = get_object_vars($stdClass);
@@ -695,7 +694,7 @@ class CsdbController extends Controller
       };
 
       $message = "{$filename} has been restored";
-      $model->setRemarks('history', Carbon::now().";RSTR;Object with filename {$filename} is deleted.;{$request->user()->name}");
+      // $model->setRemarks('history', Carbon::now().";RSTR;Object with filename {$filename} is deleted.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
       $model->save();
       return $new_filename;
     };
@@ -825,7 +824,7 @@ class CsdbController extends Controller
     $newFilename = $newCSDBObject->getFilename();
 
     $CSDBModel->editable = 0;
-    $CSDBModel->setRemarks('history', Carbon::now().";CMMT;Object is commited with new filename {$newFilename}.;{$request->user()->name}");
+    // $CSDBModel->setRemarks('history', Carbon::now().";CMMT;Object is commited with new filename {$newFilename}.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
 
     //# save old and new DOM
     $save = fn() => Storage::disk('csdb')->put($newFilename, $newCSDBObject->document->saveXML());
@@ -842,8 +841,8 @@ class CsdbController extends Controller
         $revert_save();
         return $fnRet("Fail to create new CSDB Model.", false, 400, $CSDBModel, null);
       }
-      $newCSDBModel->setRemarks('stage', 'unstaged');
-      $newCSDBModel->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$newFilename}.;{$request->user()->name}");
+      // $newCSDBModel->setRemarks('stage', 'unstaged');
+      // $newCSDBModel->setRemarks('history', Carbon::now().";CRBT;Object is created with filename {$newFilename}.;{$request->user()->first_name} {$request->user()->middle_name} {$request->user()->last_name}");
       if(!($CSDBModel->save())){
         $revert_save();
         $newCSDBModel->delete();
@@ -970,8 +969,8 @@ class CsdbController extends Controller
   //       'initiator_id' => $request->user()->id,
   //     ]);
   //     if ($new_csdb_model) {
-  //       $new_csdb_model->setRemarks('stage', 'unstaged');
-  //       $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
+        // $new_csdb_model->setRemarks('stage', 'unstaged');
+        // $new_csdb_model->setRemarks('remarks',$dom); // tambahkan remarks table berdasarkan identAndStatusSection/descendant::remarks
   //       return $this->ret2(200, ["New {$new_csdb_model->filename} has been created."]);
   //     }
   //   }
@@ -1248,7 +1247,7 @@ class CsdbController extends Controller
         'initiator_id' => $model->initiator_id,
         'remarks' => $model->remarks,
       ]);
-      $new_model->setRemarks('stage', 'unstaged');
+      // $new_model->setRemarks('stage', 'unstaged');
       return $this->ret2(200, ["New {$new_model->filename} has been created."]);
     }
     return $this->ret2(400, ["{$filename} failed to commit."]);
@@ -1301,7 +1300,7 @@ class CsdbController extends Controller
     $new_model->editable = 0;
     $new_model->initiator_id = $model->initiator_id;
     $new_model->remarks = $model->remarks;
-    $new_model->setRemarks('securityClassification', CSDB::resolve_securityClassification($new_model->DOMDocument, 'number'));
+    // $new_model->setRemarks('securityClassification', CSDB::resolve_securityClassification($new_model->DOMDocument, 'number'));
     $save = $new_model->saveModelAndDOM();
     if ($save) {
       return $this->ret2(200, ["Object is issued named {$new_filename}"]);
@@ -1344,7 +1343,7 @@ class CsdbController extends Controller
         'remarks' => $model->remarks,
       ]);
       if ($new_model) {
-        $new_model->setRemarks('stage', 'unstaged');
+        // $new_model->setRemarks('stage', 'unstaged');
         return $this->ret2(200, ["New {$new_model->filename} has been created."]);
       }
     }

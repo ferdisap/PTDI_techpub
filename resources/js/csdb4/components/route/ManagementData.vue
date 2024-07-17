@@ -99,6 +99,7 @@ export default {
       }
     },
     mounted() {
+      window.emitter = this.emitter;
       top.tes = this.tesListtree;
       if(top.localStorage.colWidthManagemenData){
         this.colWidth = JSON.parse(top.localStorage.colWidthManagemenData);
@@ -114,9 +115,10 @@ export default {
       });
 
       this.emitter.on('dispatchTo', (data) => {
+        // console.log(data);
         // data berisi array contains models
-        this.bottomBarItems.DispatchTo.isShow = true;
         this.bottomBarItems.DispatchTo.data = data;
+        this.bottomBarItems.DispatchTo.isShow = true;
       })
     }
   }

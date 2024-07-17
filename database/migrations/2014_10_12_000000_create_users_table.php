@@ -15,7 +15,6 @@ return new class extends Migration
    */
   public function up(): void
   {
-    // Schema::connection('users_sqlite')->create('users', function (Blueprint $table) {
     Schema::connection('sqlite')->create('users', function (Blueprint $table) {
       $table->id();
       $table->string('first_name')->nullable();
@@ -26,9 +25,10 @@ return new class extends Migration
       $table->string('email')->unique();
       $table->timestamp('email_verified_at')->nullable();
       $table->string('password');
+      $table->string('storage');
       $table->json('address');
       $table->rememberToken();
-      $table->timestamps();
+    $table->timestamps();
     });
   }
 

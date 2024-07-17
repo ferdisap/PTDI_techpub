@@ -5,6 +5,7 @@ namespace App\Rules\Dml;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Ptdi\Mpub\Helper;
+use Ptdi\Mpub\Main\CSDBStatic;
 
 class EntryIdent implements ValidationRule
 {
@@ -23,11 +24,15 @@ class EntryIdent implements ValidationRule
   public function validate(string $attribute, mixed $entryIdent, Closure $fail): void
   {
     // validasi pakai decode_ident
-    $ident = Helper::decode_ident($entryIdent);
-    if(!$ident) {
+    $ident = CSDBStatic::decode_ident($entryIdent);
+    if(empty($ident)) {
       $fail("{$entryIdent} cannot be decoded.");
       return;
     };
+
+    return;
+
+    // sementara ini validasi entry ident sampai disini saja, 16 juli 2024;
 
     $filename = $this->filename;
     // jika entryIdent == 'DML/CSL' maka tidak perlu ada language di namanya

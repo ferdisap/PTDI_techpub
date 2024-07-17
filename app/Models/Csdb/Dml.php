@@ -14,6 +14,7 @@ use Ptdi\Mpub\Main\CSDBStatic;
 use Illuminate\Support\Facades\Storage;
 use function PHPUnit\Framework\directoryExists;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Dml extends ModelsCsdb
 {
@@ -21,21 +22,16 @@ class Dml extends ModelsCsdb
 
   protected $with = ['initiator'];
 
-  public function create_xml(string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
+  public function create_xml(string $storagePath, string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
     $this->CSDBObject = new CSDBObject('5.0');
-    $this->CSDBObject->setPath(CSDB_STORAGE_PATH);
+    $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
     $this->CSDBObject->createDML($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
 
-    $ident = $this->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
-    $filename = CSDBStatic::resolve_dmlIdent($ident);
-    
-    $this->filename = $filename;
-    $this->path = "csdb";
-    $this->editable = 1;
-    $this->initiator_id = Auth::user()->id;
-
-    return $ident ? true : false;
+    if($this->CSDBObject->document){
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -411,5 +407,95 @@ class Dml extends ModelsCsdb
     $identAndStatusSection = preg_replace("/\n\s+/m", '', $identAndStatusSection);
     $dom->loadXML(trim($identAndStatusSection));
     return $dom;
+  }
+
+  public static function fillTable(CSDBObject $CSDBObject)
+  {
+    $filename = $CSDBObject->filename;
+    $decode_ident = CSDBStatic::decode_dmlIdent($filename,false);
+
+    $domXpath = new \DOMXpath($CSDBObject->document);
+    $sc = $domXpath->evaluate("string(//identAndStatusSection/descendant::security/@securityClassification)");
+    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
+    $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
+    $dmlRefElement = $domXpath->evaluate("//identAndStatusSection/descendant::dmlRef");
+    $dmlRef = '';
+    foreach($dmlRefElement as $refElement){
+      $ref = CSDBStatic::resolve_dmlIdent($refElement->firstElementChild);
+      if($ref) $dmlRef .= ", ".$ref;
+    }
+    $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
+
+    $arr = [
+      'filename' => $filename,
+      'modelIdentCode' => $decode_ident['dmlCode']['modelIdentCode'],
+      'senderIdent' => $decode_ident['dmlCode']['senderIdent'],
+      'dmlType' => $decode_ident['dmlCode']['dmlType'],
+      'yearOfDataIssue' => $decode_ident['dmlCode']['yearOfDataIssue'],
+      'seqNumber' => $decode_ident['dmlCode']['seqNumber'],
+      'securityClassification' => $sc,
+      'brexDmRef' => $brexDmRef,
+      'dmlRef' => $dmlRef,
+      'remarks' => $remarks,
+      // 'content' => null,
+    ];
+
+    // if($dml = DB::table('dml')->where('filename', $filename)->first()){
+    //   foreach($arr as $prop => $v){
+    //     $dml->$prop = $v;
+    //   }
+    //   return $dml->save();
+    // }
+    $fillable = [
+      'filename',
+      'modelIdentCode',
+      'senderIdent',
+      'dmlType',
+      'yearOfDataIssue',
+      'seqNumber',
+      'securityClassification',
+      'brexDmRef',
+      'dmlRef',
+      'remarks',
+    ];
+    $dml = new self();
+    $dml->setProtected([
+      'table' => 'dml',
+      'fillable' => $fillable,
+      'casts' => [],
+      'attributes' => [],
+      'timestamps' => false
+    ]);
+    $dml = $dml->where('filename', $filename)->first() ?? $dml;
+    $dml->timestamps = false;
+    foreach($arr as $prop => $v){
+      $dml->$prop = $v;
+    }
+    return $dml->save();
+  }
+
+  public static function instanceModel()
+  {
+    $self = new self();
+    $fillable = [
+      'filename',
+      'modelIdentCode',
+      'senderIdent',
+      'dmlType',
+      'yearOfDataIssue',
+      'seqNumber',
+      'securityClassification',
+      'brexDmRef',
+      'dmlRef',
+      'remarks',
+    ];
+    $self->setProtected([
+      'table' => 'dml',
+      'fillable' => $fillable,
+      'casts' => [],
+      'attributes' => [],
+      'timestamps' => false
+    ]);
+    return $self;
   }
 }

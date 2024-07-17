@@ -2,11 +2,12 @@
 import { sorter } from "../../../helper.js";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
-import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
-import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
+import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
+import CheckboxSelector from "../../CheckboxSelector";
 
 export default {
-  components:{ Sort, ContinuousLoadingCircle, PreviewRCMenu },
+  components:{ Sort, ContinuousLoadingCircle, RCMenu },
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -19,10 +20,11 @@ export default {
       type: '', // kayaknya ga perlu
       showLoadingProgress: false,
 
-      selectionMode: false,
-      isShowRcMenu: false,
-      checkboxId: '',
-      isSelectAll: false,
+      // selectionMode: false,
+      // isShowRcMenu: false,
+      // checkboxId: '',
+      // isSelectAll: false,
+      CbSelector: new CheckboxSelector
     }
   },
   props: {
@@ -81,7 +83,7 @@ export default {
           data.sc += " typeonly::DMC,PMC,ICN";
           break;      
         case 'ManagementData':
-          data.sc += " typeonly::DML,COM";
+          data.sc += " typeonly::DML";
           break;      
         default:
           break;
@@ -130,35 +132,19 @@ export default {
       }
     },
     clickFolder(event, path){
-      if(!this.selectionMode) this.back(path);
+      if(!this.CbSelector.selectionMode) this.back(path);
       else {
-        switch (event.target.parentElement.tagName) {
-          case 'TR':
-            event.target.parentElement.firstElementChild.firstElementChild.checked = true;
-            break;
-          case 'TD':
-            event.target.parentElement.previousElementSibling.firstElementChild. checked = true;
-            break;
-        }
+        this.CbSelector.select();
       }
     },
     clickFilename(event, data){
-      if(!this.selectionMode){
+      if(!this.CbSelector.selectionMode){
         this.techpubStore.currentObjectModel = data; // sementara karena data hanya ada filename dan path
         this.emitter.emit('RequireCSDBObjectModel', data); // masih perlu minta karena data tidak valid
         this.$root.gotoExplorer(data.filename);
         this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
       } else {
-        // bisa juga ini diganti dengan fungsi select() dibawah, tapi harus mengirimkan idnya
-        // dugaan saya code switch ini lebih cepat dari pada selector
-        switch (event.target.parentElement.tagName) {
-          case 'TR':
-            event.target.parentElement.firstElementChild.firstElementChild.checked = true;
-            break;
-          case 'TD':
-            event.target.parentElement.previousElementSibling.firstElementChild. checked = true;
-            break;
-        }        
+        this.CbSelector.select();
       }
     },
     sortTable(){
@@ -201,63 +187,79 @@ export default {
     search(){
       this.getObjs({sc: this.sc});
     },
-    select(cbid){
-      this.isSelectAll = false;
-      this.selectionMode = true; 
-      this.isShowRcMenu = false;
-      setTimeout(()=>document.getElementById(cbid).checked = true,0);
-    },
-    selectAll(isSelect = true){
-      this.selectionMode = true; 
-      this.isShowRcMenu = false;
-      this.isSelectAll = isSelect;
-      setTimeout(() =>this.$el.querySelectorAll(".folder input[type='checkbox']").forEach((input) => input.checked = isSelect), 0);
-    },
-    selectAllFiles(isSelect = true){
-      this.selectionMode = true; 
-      this.isShowRcMenu = false;
-      this.isSelectAll = isSelect;
-      setTimeout(() =>this.$el.querySelectorAll(".folder input[file='true']").forEach((input) => input.checked = isSelect), 0);
-    },
+    // select(cbid){
+    //   this.isSelectAll = false;
+    //   this.selectionMode = true; 
+    //   this.isShowRcMenu = false;
+    //   setTimeout(()=>document.getElementById(cbid).checked = true,0);
+    // },
+    // selectAll(isSelect = true){
+    //   this.selectionMode = true; 
+    //   this.isShowRcMenu = false;
+    //   this.isSelectAll = isSelect;
+    //   setTimeout(() =>this.$el.querySelectorAll(".folder input[type='checkbox']").forEach((input) => input.checked = isSelect), 0);
+    // },
+    // selectAllFiles(isSelect = true){
+    //   this.selectionMode = true; 
+    //   this.isShowRcMenu = false;
+    //   this.isSelectAll = isSelect;
+    //   setTimeout(() =>this.$el.querySelectorAll(".folder input[file='true']").forEach((input) => input.checked = isSelect), 0);
+    // },
     async dispatch(){
-      let models = [];
-      let paths = [];
+      let models = []; // berisi string filename
+      let paths = []; // berisii string path
       let o = undefined;
-      this.$el.querySelectorAll('.folder input[type="checkbox"]:checked').forEach((input) => {
-        if(o = this.data.folders.find((path) => path === input.value)){
-          paths.push(o);
-        } 
-        else if(o = this.data.models.find((obj) => obj.filename === input.value)){
-          models.push(o);
-        }
-      });
-      if(paths.length !== 0){
-        let sc = 'path::';
-        paths.forEach(p => sc += p);
-        switch (this.$props.routeName) {
-          case 'Explorer':
-            sc += " typeonly::DMC,PMC,ICN";
-            break;      
-          case 'ManagementData':
-            sc += " typeonly::DML,COM";
-            break;      
-          default:
-            break;
-        }
-        let response = await axios({
-          route: {
-            name: 'api.requestbyfolder.get_allobject_list',
-            data: {sc:sc}
-          },
-          useMainLoadingBar: false,
-        });
-        if(response.statusText === 'OK'){
-          models = models.concat(response.data.data);
-        }
+      if(this.CbSelector.selectionMode){
+        this.CbSelector.getAllSelectionElement(true, `.folder input[type="checkbox"]:checked`).forEach((input)=>{
+          if(o = this.data.folders.find((path) => path === input.value)){
+            paths.push(o);
+          } 
+          else if(o = this.data.models.find((obj) => obj.filename === input.value)){
+            models.push(o.filename);
+          }
+        })
+      } else {
+        let cbid = this.CbSelector.cbHovered;
+        this.CbSelector.selectionMode = true;
+        await new Promise(res => 
+        setTimeout(()=>{
+          let value = (document.getElementById(cbid).value);
+          this.CbSelector.selectionMode = false;
+          Object.values(this.data.models).forEach((obj) => {
+            if(obj.filename === value){
+              models.push(obj.filename);
+              res(true);
+            }
+          })
+        },0));
       }
-      console.log(window.models = models, window.paths = paths);
-      this.emitter.emit('dispatchTo', models);
-      // this.emitter.emit('dispatchTo',{})
+      // if(paths.length !== 0){
+      //   let sc = 'path::';
+      //   paths.forEach(p => sc += p);
+      //   switch (this.$props.routeName) {
+      //     case 'Explorer':
+      //       sc += " typeonly::DMC,PMC,ICN";
+      //       break;      
+      //     case 'ManagementData':
+      //       sc += " typeonly::DML";
+      //       break;      
+      //     default:
+      //       break;
+      //   }
+      //   let response = await axios({
+      //     route: {
+      //       name: 'api.requestbyfolder.get_allobject_list',
+      //       data: {sc:sc}
+      //     },
+      //     useMainLoadingBar: false,
+      //   });
+      //   if(response.statusText === 'OK'){
+      //     models = models.concat(response.data.data);
+      //   }
+      // }
+      this.emitter.emit('dispatchTo', {filenames: models, paths: paths});
+      this.CbSelector.isShowTriggerPanel = false;
+      
     }
   },
   mounted(){
@@ -299,10 +301,11 @@ export default {
       </div>
 
       <div class="h-[75%] block relative overflow-scroll">
-        <table class="table">
+        <table class="table" :id="CbSelector.id">
           <thead class="text-sm">
             <tr class="leading-3 text-sm">
-              <th v-if="selectionMode"></th>
+              <!-- <th v-if="selectionMode"></th> -->
+              <th v-if="CbSelector.selectionMode"></th>
               <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
@@ -312,21 +315,28 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <tr @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+path" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300">
-              <td v-if="selectionMode" class="flex">
+            <!-- <tr @click="clickFolder($event, path)" @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+path" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300"> -->
+              <!-- <tr @click="clickFolder($event, path)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="CbSelector.cbHovered = 'cb'+path" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300"> -->
+              <tr @click="clickFolder($event, path)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+path}" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300">
+              <!-- <td v-if="selectionMode" class="flex"> -->
+              <td v-if="CbSelector.selectionMode" class="flex">
                 <input file="false" :id="'cb'+path" type="checkbox" :value="path">
               </td>
-              <td class="leading-3 text-sm" colspan="6" @click="clickFolder($event, path)">
+              <td class="leading-3 text-sm" colspan="6">
                 <span class="material-symbols-outlined text-sm mr-1">folder</span>
                 <span class="text-sm">{{ path.split("/").at(-1) }} </span> 
                 <!-- min -2 karena diujung folder ada '/' -->
               </td>
             </tr>
-            <tr @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-300">
-              <td v-if="selectionMode" class="flex">
+            <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
+              <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>CbSelector.cbHovered = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
+            <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300">
+            <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
+              <!-- <td v-if="selectionMode" class="flex"> -->
+              <td v-if="CbSelector.selectionMode" class="flex">
                 <input file="true" :id="'cb'+obj.filename" type="checkbox" :value="obj.filename">
               </td>
-              <td class="leading-3 text-sm" @click="clickFilename($event, {filename: obj.filename, path: obj.path})">
+              <td class="leading-3 text-sm">
                 <span class="material-symbols-outlined text-sm mr-1">description</span>
                 <span class="text-sm"> {{ obj.filename }} </span>
               </td>
@@ -354,24 +364,25 @@ export default {
     </div>
   
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
-    <PreviewRCMenu v-if="isShowRcMenu">
-      <div @click="select(checkboxId)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+    <RCMenu v-if="CbSelector.isShowTriggerPanel">
+      <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
       </div>
-      <div @click="selectAll(!isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ isSelectAll ? 'Deselect' : 'Select' }} All</div>
+      <!-- <div @click="selectAll(!isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900"> -->
+      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All</div>
       </div>
-      <div @click="selectAllFiles(!isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
+      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll, `.folder input[file='true']`)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
       <div @click="dispatch" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Dispatch</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.prevent="()=>{selectAll(false); selectionMode = false}" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.prevent="()=>{CbSelector.selectAll(false); CbSelector.selectionMode = false}" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
       </div>
-    </PreviewRCMenu>
+    </RCMenu>
   </div>
 </template>

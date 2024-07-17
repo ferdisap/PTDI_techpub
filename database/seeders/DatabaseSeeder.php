@@ -15,40 +15,28 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
-    // \App\Models\User::factory(10)->create();
-
-    Schema::connection('sqlite')->dropIfExists('users');
-
-    Schema::connection('sqlite')->create('users', function (Blueprint $table) {
-      $table->id();
-      $table->string('first_name');
-      $table->string('middle_name')->nullable();
-      $table->string('last_name')->nullable();
-      $table->string('job_title');
-      $table->integer('work_enterprise_id')->nullable();
-      $table->string('email')->unique();
-      $table->timestamp('email_verified_at')->nullable();
-      $table->string('password');
-      $table->json('address');
-      $table->rememberToken();
-      $table->timestamps();
-    });
-
-    \App\Models\User::factory()->create([
-      'first_name' => 'Luffy',
-      'middle_name' => 'Baka',
-      'last_name' => 'Sencho',
-      'job_title' => 'Captain',
-      'work_enterprise_id' => 2,
-      'email' => 'luffy@example.com',
-      'password' => '$2y$10$BkzZhuRUrW2UWnGzQmGWLOIMj4P17o9lRH1HoSx7qHubAyYH8T/7q', // 'password'
-      'address' => json_encode([
-        "city" => 'fusa',
-        "country" => "greenland"
-      ]),
-      'remember_token' => Str::random(10)
-    ]);
-
-    \App\Models\User::factory()->count(3)->create();
+   Schema::connection('sqlite')->dropIfExists('dml'); 
+   Schema::connection('sqlite')->create('dml', function (Blueprint $table) {
+    $table->id();
+    $table->tinyText('filename')->unique();
+    $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
+    $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
+    $table->tinyText('dmlType'); // merujuk ke @dmlType yang sudah di transform, 'Partial DML', 'Complete DML', 'CSL'
+    $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue
+    $table->tinyText('seqNumber'); // merujuk ke @seqNumber
+    $table->string('securityClassification');
+    $table->bigInteger('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
+    $table->text('dmlRef')->nullable(); //merujuk ke dmlStatus/dmlRef
+    $table->text('remarks')->nullable();
+    /**
+     * merujuk ke dmlEntry. cara tulis: 
+     * [
+     *  { "dmlEntryType":{$dmlEntryType},"issueType":{$issueType},"ref":{$ref},"securityClassification":{$sc},"responsiblePartnerCompany":{$responsiblePartnerCompany},"answer":{$answer},"remarks":{$remarks}}
+     *  { "dmlEntryType":{$dmlEntryType},"issueType":{$issueType},"ref":{$ref},"securityClassification":{$sc},"responsiblePartnerCompany":{$responsiblePartnerCompany},"answer":{$answer},"remarks":{$remarks}}
+     * ]
+     * jika tidak ada, isi dengan null
+     */
+    $table->json('content')->nullable(); 
+  });
   }
 }

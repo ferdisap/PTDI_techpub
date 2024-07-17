@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Jobs\Csdb\DmcTableFiller;
+use App\Models\Csdb\Dmc;
+use App\Models\Csdb\Dml;
+use App\Models\Csdb\Pmc;
 use Carbon\Carbon;
 use DOMDocument;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,7 +23,7 @@ use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
-use Ptdi\Mpub\Pdf2\Applicability;
+// use Ptdi\Mpub\Pdf2\Applicability;
 
 /**
  * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted; 
@@ -27,7 +31,9 @@ use Ptdi\Mpub\Pdf2\Applicability;
  */
 class Csdb extends Model
 {
-  use HasFactory, HasUlids, Applicability;
+  use HasFactory;
+  // HasUlids, 
+  // Applicability;
 
   /**
    * The table associated with the model.
@@ -48,7 +54,7 @@ class Csdb extends Model
    *
    * @var bool
    */
-  public $incrementing = false;
+  public $incrementing = true;
 
   /**
    * The attributes that are mass assignable.
@@ -56,7 +62,8 @@ class Csdb extends Model
    * @var array
    */
   // protected $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
-  protected $fillable = ['filename', 'path', 'editable', 'initiator_id', 'remarks'];
+  // protected $fillable = ['filename', 'path', 'editable', 'initiator_id', 'remarks'];
+  protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -72,6 +79,23 @@ class Csdb extends Model
   protected $casts = [
     'remarks' => 'array'
   ];
+
+  /**
+   * The model's default values for attributes.
+   *
+   * @var array
+   */
+  protected $attributes = [
+    'deleter_id' => 0,
+    // 'available_storage' => 'foo',
+  ];
+
+  /**
+   * Indicates if the modul should be timestamped
+   * 
+   * @var bool
+   */
+  public $timestamps = true;
 
   /**
    * Set the model created_at touse current timezone.
@@ -91,7 +115,7 @@ class Csdb extends Model
   {
     return Attribute::make(
       set: fn (string $v) => now()->toString(),
-      get:fn (string $v) => now()->toString(),
+      get: fn (string $v) => now()->toString(),
     );
   }
 
@@ -102,7 +126,7 @@ class Csdb extends Model
   protected function path(): Attribute
   {
     return Attribute::make(
-      set: fn(string $v) => substr($v,-1,1) === '/' ? rtrim($v, "/") : $v,
+      set: fn (string $v) => substr($v, -1, 1) === '/' ? rtrim($v, "/") : $v,
       // set: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
       // get: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
     );
@@ -126,9 +150,29 @@ class Csdb extends Model
   /**
    * Get the initiator for the csdb object
    */
-  public function initiator(): BelongsTo
+  public function initiator() :belongsTo
   {
+    // if(get_class($this) !== 'App\Models\Csdb'){
+      // dd($this->belongsTo(User::class));
+      // return $this->belongsTo(User::class, 'id', 'Csdb:initiator_id');
+      // return $this->belongsTo(User::class, 'id', 'Csdb:initiator_id');
+      // $csdb = $this->belongsTo(Csdb::class,'filename','filename')->getQuery()->first();
+      // $csdb = $this->belongsTo(Csdb::class,'filename','filename')->first();
+      // dd($csdb->initiator(), $csdb->initiator());
+      // dd($csdb->initiator()->getQuery()->first()); //berhasil
+      // return $csdb->initiator();
+      // return $csdb->belongsTo(User::class,'initiator_id','id');
+      // return $csdb->belongsTo(User::class,'id','initiator_id');
+    // }
+    // dd($this->belongsTo(User::class));
+    // dd($this->belongsTo(User::class)->getQuery()->first()); // berhasil
     return $this->belongsTo(User::class);
+    // return $this->belongsTo(User::class,'initiator_id','id');
+  }
+
+  public function csdb() :belongsTo
+  {
+    return $this->belongsTo(Csdb::class,'filename','filename');
   }
 
   /**
@@ -142,11 +186,12 @@ class Csdb extends Model
   ###### CUSTOM #######
   public CSDBObject $CSDBObject;
 
-  public function __construct(){
+  public function __construct()
+  {
     $this->usesUniqueIds = true; // agar sama jika pakai/tanpa __construct
     $this->CSDBObject = new CSDBObject("5.0");
   }
-  
+
   /**
    * DEPRECIATED. Dipindah ke Mpub CSDBObject class
    * helper function untuk crew.xsl
@@ -173,7 +218,7 @@ class Csdb extends Model
    * DEPRECIATED. diganti oleh $CSDBObject
    */
   public \DOMDocument $DOMDocument;
-  
+
   /**
    * DEPRECIATED. karena fungsi transform_to_xml dipindah ke Mpub CSDBObject class
    */
@@ -219,10 +264,10 @@ class Csdb extends Model
     // $schemaFilename = MpubCSDB::getSchemaUsed($this->DOMDocument,'filename');
     // $xsltproc->setParameter('', 'schema', $schemaFilename);
     $xsltproc->setParameter('', 'configuration', $configuration);
-    if($this->filename){
+    if ($this->filename) {
       $decode_ident = Helper::decode_ident($this->filename);
       $object_code = $decode_ident[array_key_first($decode_ident)];
-      $object_code = array_filter($object_code, fn($v) => $v);
+      $object_code = array_filter($object_code, fn ($v) => $v);
       $object_code = join("-", $object_code);
       $xsltproc->setParameter('', 'object_code', $object_code);
     }
@@ -245,6 +290,121 @@ class Csdb extends Model
   }
 
   /**
+   * jika $column tersedia di database 'csdb' atau 'csdb_deleted'.
+   * jika ada dua column yang sama, tetap akan diambil column pertama yang found.
+   * @return string 
+   */
+  public static function columnNameMatching(string $column, string $dbName = '')
+  {
+    if (!$dbName) {
+      $found = array_unique(array_merge(DB::getSchemaBuilder()->getColumnListing($dbName), DB::getSchemaBuilder()->getColumnListing('csdb_deleted')));
+    } else {
+      $found = DB::getSchemaBuilder()->getColumnListing($dbName);
+    }
+    $found = array_filter($found, function ($v) use ($column) {
+      $v = str_contains($v, $column) ? $column : (str_contains($column, $v) ? $column : false
+      );
+      return $v;
+    });
+    $found = !empty($found) ? $found[array_key_first($found)] : '';
+    return $found;
+  }
+
+  /**
+   * sudah termasuk revert save
+   * save file dulu, kemudian model
+   * sudah bisa save file ICN. Mungkin namanya tidak relevan lagi, jadi nanti didepreciated
+   * @return bool
+   */
+  public function saveDOMandModel(string $storageName = '')
+  {
+    if(!$storageName) {
+      if($name = User::find($this->initiator_id)) $storageName = $name->storage;
+      else return false;
+    } 
+    $fileContents = Storage::disk('csdb')->get($storageName . "/" . $this->filename);
+    $save_file = fn () => Storage::disk('csdb')->put($storageName . "/" . $this->filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
+    $revert_save_file =
+      fn () => $fileContents
+        ? Storage::disk('csdb')->put($storageName . "/" . $this->filename, $fileContents)
+        : Storage::disk('csdb')->delete($storageName . "/" . $this->filename);
+    if ($save_file()) {
+      if ($this->save()) {
+        // sengaja menaruh code pengisian table csdb metafile karena table inti adalah table.csdb. Table metafile ini bisa di update kapanpun
+        if ($this->CSDBObject->document instanceof \DOMDocument) {
+          $doctype = $this->CSDBObject->document->doctype->nodeName;
+          $csdbobject = '';
+          switch ($doctype) {
+            case 'dmodule':
+              $csdbobject = Dmc::fillTable($this->CSDBObject);
+              break;
+            case 'pm':
+              $csdbobject = Pmc::fillTable($this->CSDBObject);
+              break;
+            case 'dml':
+              $csdbobject = Dml::fillTable($this->CSDBObject);
+              break;
+            default:
+              # code...
+              break;
+          }
+          if (!$csdbobject) {
+            $revert_save_file();
+            return false;
+          }
+        }
+        return true;
+      } else {
+        $revert_save_file();
+        return false;
+      }
+    }
+    return false;
+  }
+
+  public function appendAvailableStorage(string $storage)
+  {
+    if(!str_contains($this->available_storage, $storage)) $this->available_storage .= ",".$storage;
+  }
+
+  /**
+   * awalnya diperlukan untuk Dmc@fillTable
+   */
+  public function setProtected(array $props){
+    foreach($props as $prop => $v){
+      $this->$prop = $v;
+    }
+  }
+
+  /**
+   * 
+   */
+  public static function getModelClass(string $table)
+  {
+    $class = "\App\Models\Csdb\\".$table;
+    $method = "instanceModel";
+    
+    // $class = call_user_func($class."::".$method);
+    // $class->setProtected(['with' => 'csdb.initiator']);
+    // $class = $class->where('filename', 'DML-CN235-0001Z-P-2024-00006_000-01.xml')->first();
+    // dd($class->toArray()); // output lengkap, ada csdb->initiator->workenterprise
+
+    return class_exists($class) ? call_user_func($class."::".$method) : false;
+    
+    
+    // $class = "\App\Models\Csdb\\".$table;
+    // $method = "instanceModel";
+    // return class_exists($class) ? call_user_func($class) : false
+    // $class = "\App\Models\Csdb\\".$table."::instanceModel";
+    // $class = call_user_func($class);
+    // dd($class);
+    // $class = $class->where('filename', 'DML-CN235-0001Z-P-2024-00006_000-01.xml')->first();
+  } 
+
+  // ##################### DEPRECIATED below #####################
+
+  /**
+   * DEPRECIATED karena sudah beda schema database, tidak ada lagi remarks
    * syaratnya harus manggil id agar bisa di save. Sengaja tidak dibuat manual agar tidak asal isi
    * biasanya, securityClassification, stage, crud
    * @return void
@@ -290,7 +450,7 @@ class Csdb extends Model
   private function setRemarks_history($value)
   {
     $history = $this->remarks['history'] ?? [];
-    if(!$value) return $history;
+    if (!$value) return $history;
     array_push($history, $value);
     return $history;
   }
@@ -314,9 +474,9 @@ class Csdb extends Model
       'brexDmRef' => $this->CSDBObject->getBrexDm()->getFilename(),
     ];
     $doctypeName = $this->CSDBObject->document->doctype->nodeName;
-    if($doctypeName === 'comment'){
+    if ($doctypeName === 'comment') {
       $status['commentPriority'] = '';
-    } elseif($doctypeName === 'dmodule' OR $doctypeName === 'pm'){
+    } elseif ($doctypeName === 'dmodule' or $doctypeName === 'pm') {
       $status['qualityAssurance'] = $this->CSDBObject->getQA();
     }
     return $status;
@@ -328,9 +488,10 @@ class Csdb extends Model
    * @param mixed $value bisa berupa string, atau DOM Document
    * @return string 
    * */
-  private function setRemarks_remarks($value = ''){
+  private function setRemarks_remarks($value = '')
+  {
     $remarks_string = [];
-    if($value instanceof \DOMDocument){
+    if ($value instanceof \DOMDocument) {
       $domXpath = new \DOMXPath($value);
     } else {
       $domXpath = new \DOMXPath($this->CSDBObject->document);
@@ -342,14 +503,14 @@ class Csdb extends Model
     $remarks_string = join(PHP_EOL, $remarks_string);
     return !empty($remarks_string) ? $remarks_string : '';
   }
-  
+
 
   /**
    * @return string
    */
   private function setRemarks_title($dom = '')
   {
-    if(!$dom){
+    if (!$dom) {
       $dom = MpubCSDB::importDocument(storage_path('csdb'), $this->filename);
     }
     if ($dom instanceof ICNDocument) {
@@ -361,6 +522,7 @@ class Csdb extends Model
   }
 
   /**
+   * DEPRECIATED, diganti dengan saveDOMandModel
    * sudah termasuk revert save
    * save file dulu, kemudian model
    * sudah bisa save file ICN. Mungkin namanya tidak relevan lagi, jadi nanti didepreciated
@@ -368,15 +530,19 @@ class Csdb extends Model
   public function saveModelAndDOM()
   {
     $fileContents = Storage::disk('csdb')->get($this->filename);
-    $save_file = fn() => Storage::disk('csdb')->put($this->filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
-    $revert_save_file = 
-      fn() => $fileContents 
+    $save_file = fn () => Storage::disk('csdb')->put($this->filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
+    $revert_save_file =
+      fn () => $fileContents
         ? Storage::disk('csdb')->put($this->filename, $fileContents)
         : Storage::disk('csdb')->delete($this->filename);
     if ($save_file()) {
-      if($this->CSDBObject->document instanceof \DOMDocument){
+      if ($this->CSDBObject->document instanceof \DOMDocument) {
         $this->setRemarks('ident');
         $this->setRemarks('status');
+        if (!$csdbobject) {
+          $revert_save_file();
+          return false;
+        }
       }
       if ($this->save()) return true;
       else {
@@ -386,31 +552,6 @@ class Csdb extends Model
     }
     return false;
   }
-
-  /**
-   * jika $column tersedia di database 'csdb' atau 'csdb_deleted'.
-   * jika ada dua column yang sama, tetap akan diambil column pertama yang found.
-   * @return string 
-   */
-  public static function columnNameMatching(string $column , string $dbName = '')
-  {
-    if(!$dbName){
-      $found = array_unique(array_merge(DB::getSchemaBuilder()->getColumnListing('csdb'), DB::getSchemaBuilder()->getColumnListing('csdb_deleted')));
-    } else {
-      $found = DB::getSchemaBuilder()->getColumnListing($dbName);
-    }
-    $found = array_filter($found, function($v) use($column){
-      $v = str_contains($v, $column) ? $column : (
-        str_contains($column, $v) ? $column : false
-      );
-      return $v;
-    });
-    $found = !empty($found) ? $found[array_key_first($found)] : '';
-    return $found;
-  }
-
-
-
   /**
    * untuk menambah namespace pada DOMDocument xsl
    */
@@ -428,10 +569,10 @@ class Csdb extends Model
   /**
    * akan mengubah URI nya dari file:...../csdb/DMC-aaaa.xml menjadi file:...../csdb/
    */
-  public function showCGMArkElement() :void
+  public function showCGMArkElement(): void
   {
     // dd($this->CSDBObject->document->documentElement->getAttributeNS('noNamespaceSchemaLocation', 'http://www.w3.org/2001/XMLSchema-instance'));
-    if(str_contains($this->CSDBObject->document->documentElement->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'noNamespaceSchemaLocation'),'crew.xsd')) return;
+    if (str_contains($this->CSDBObject->document->documentElement->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'noNamespaceSchemaLocation'), 'crew.xsd')) return;
     $xsltString = <<<XSLT
     <?xml version="1.0" encoding="UTF-8"?>
     <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -454,17 +595,17 @@ class Csdb extends Model
 
     $xslDoc = new DOMDocument();
     $xslDoc->loadXML($xsltString);
-    
+
     $xsltProc = new \XSLTProcessor();
     $xsltProc->importStylesheet($xslDoc);
 
-    $newDoc= $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
+    $newDoc = $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
     $root = $newDoc->documentElement->cloneNode(true);
     $importRoot = $this->CSDBObject->document->importNode($root, true);
     $this->CSDBObject->document->documentElement->replaceWith($importRoot);
   }
 
-  public function hideCGMArkElement() :void
+  public function hideCGMArkElement(): void
   {
     $xsltString = <<<XSLT
     <?xml version="1.0" encoding="UTF-8"?>
@@ -482,20 +623,18 @@ class Csdb extends Model
         <xsl:copy-of select="child::*"/>
       </xsl:template>
     </xsl:transform>
-    XSLT; 
+    XSLT;
 
     $xslDoc = new DOMDocument();
     $xslDoc->loadXML($xsltString);
-    
+
     $xsltProc = new \XSLTProcessor();
     $xsltProc->importStylesheet($xslDoc);
 
-    $newDoc= $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
+    $newDoc = $xsltProc->transformToDoc($this->CSDBObject->document->cloneNode(true)); // di clone agar DOCTYPE tidak hilang, // baseURInya kosong
     $root = $newDoc->documentElement->cloneNode(true);
     $importRoot = $this->CSDBObject->document->importNode($root, true);
     $this->CSDBObject->document->documentElement->replaceWith($importRoot);
     return;
   }
 }
-
-

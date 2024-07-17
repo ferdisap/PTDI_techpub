@@ -20,6 +20,7 @@ use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use App\Rules\Csdb\BrexDmRef as BrexDmRefRules;
+use Ptdi\Mpub\Main\CSDBStatic;
 
 class DmlController extends Controller
 {
@@ -48,14 +49,21 @@ class DmlController extends Controller
 
     $dml_model = new Dml();
     // $dml_model->setWith(['initiator']);
-    $dml_model->direct_save = false;
+    // $dml_model->direct_save = false;
     $otherOptions = [];
-    $isCreated = $dml_model->create_xml($request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+    $isCreated = $dml_model->create_xml($request->user()->storage,$request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
     if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
-    $dml_model->initiator; // supaya ada initiator saat return
+
+    $ident = $dml_model->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
+    $filename = CSDBStatic::resolve_dmlIdent($ident);
+    $dml_model->filename = $filename;
+    $dml_model->path = "csdb";
+    $dml_model->available_storage = $request->user()->storage;
+    $dml_model->initiator_id = $request->user()->id;
     
-    if($dml_model->saveModelAndDOM()){
-      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model]);
+    if($dml_model->saveDOMandModel($request->user()->storage)){
+      $dml_model->initiator; // supaya ada initiator saat return
+      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model, 'infotype' => 'info']);
     } else {
       return $this->ret2(400, ["fail to create and save DML."]);
     }
@@ -110,10 +118,10 @@ class DmlController extends Controller
     // return $this->ret2(200, ['data' => $allobj]);
   }
   
-  public function get_html_content(Request $request, string $filename)
+  public function read_html_content(Request $request, string $filename)
   {
     if(!($DMLModel = Dml::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
-    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $filename);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
     $DMLModel->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $transformed = $DMLModel->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/html_dml/dml.xsl", [
       'filename' => $DMLModel->filename
@@ -124,10 +132,6 @@ class DmlController extends Controller
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
-  
-  /**
-   * CSL juga bisa di update di sini oleh user
-   */
   public function dmlupdate(Request $request, string $filename)
   {
     // #0. validation
@@ -136,7 +140,7 @@ class DmlController extends Controller
     $validator = Validator::make($request->all(), [
       'ident-securityClassification' => ['required', new SecurityClassification(true)],
       'ident-brexDmRef' => ['required', function (string $attribute, mixed $value, Closure $fail) {
-        if (!Helper::decode_dmIdent($value)) {
+        if (empty(CSDBStatic::decode_dmIdent($value))) {
           $fail("The {$attribute} is wrong rule.");
         }
       }],
@@ -152,8 +156,7 @@ class DmlController extends Controller
     if ($validator->fails()) {
       return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
     }
-    $DMLModel->CSDBObject->load(storage_path("csdb/$DMLModel->filename"));
-    $DMLModel->direct_save = false;
+    $DMLModel->CSDBObject->load(storage_path("csdb/{$request->user()->storage}/{$DMLModel->filename}"));
     $DMLModel->updateIdentAndStatusSection($request->all());
 
     $ident = [
@@ -170,7 +173,6 @@ class DmlController extends Controller
     $enterpriseNames = $request->get('enterpriseName');
     $enterpriseCodes = $request->get('enterpriseCode');
     $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan valida)i
-
     
     // #1. remove all dmlEntry
     if($entryIdents){
@@ -191,11 +193,8 @@ class DmlController extends Controller
       $DMLModel->CSDBObject->document->saveXML();
     }
 
-    // #2. tambkan save remarks berdasarkan identAndStatusSection/descendant::remarks/para
-    $DMLModel->setRemarks('remarks');
-
-    $DMLModel->saveModelAndDOM();
-    return $this->ret2(200, ['Update Success.']);
+    $DMLModel->saveDOMandModel();
+    return $this->ret2(200, ['Update Success.', 'infotype' => 'info']);
   }
 
   #### csdb3 ####

@@ -6,9 +6,11 @@ namespace App\Http\Controllers;
 // use Illuminate\Foundation\Validation\ValidatesRequests;
 
 use App\Models\Csdb;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -259,8 +261,13 @@ class Controller extends BaseController
     // dd($keywords);
     return $keywords;
   }
-  public function search($keyword, bool $getObjects = true)
+
+  /**
+   * @param {$strictString} keep the &#value as it is, and add your SQL pattern
+   */
+  public function generateWhereRawQueryString($keyword, string $strictString = "%#&value;%", string $table = '')
   {
+    $isFitted = false;
     // contoh1
     // $keywords = [
     //   'path' => ['A','B'],
@@ -274,13 +281,41 @@ class Controller extends BaseController
     // ];
     // contoh3
     // $keywords = [
-    //   'path' => ['A'],
-    //   'filename' => ['B','C','D'],
-    //   'editable' => ['E'],
+      // 'path' => ['A'],
+      // 'filename' => ['B','C','D'],
+      // 'editable' => ['E'],
     // ];
-    $keywords = Helper::explodeSearchKeyAndValue(str_replace("_",'\_',$keyword));
-    // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
-    $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id];
+    $keywords = Helper::explodeSearchKeyAndValue($keyword);
+
+    // jika $keyword tidak ada column namenya, maka akan mengambil seluruh column name database
+    // contoh $request->sc = "Senchou";. Kita tidak tahu 'Senchou' ini dicari di column mana, jadi cari di semua column di database
+    $fitToColumn = function($keywordsExploded)use($table){
+      $table = $table ? $table : $this->model->getTable();
+      $column = DB::getSchemaBuilder()->getColumnListing($table);
+      for ($i=0; (int)$i < count($column); $i++) { 
+        $k = $column[$i];
+        $column[$k] = $keywordsExploded;
+        unset($column[$i]);
+      }
+      return $column;
+    };
+    
+    if(isset($this->model) && $this->model instanceof Csdb){
+      if(array_is_list($keywords)){
+        $keywords = $fitToColumn($keywords);
+        $isFitted = true;
+      }
+      // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
+      $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id];
+      $keywords['available_storage'] = [Auth::user()->storage];
+    } else {
+      if(array_is_list($keywords)){
+        $keywords = $fitToColumn($keywords);
+        $isFitted = true;
+      }
+    }
+    // dump($keywords);
+
     $keys = array_keys($keywords);
     $k = 0;
     $str = '';
@@ -338,26 +373,34 @@ class Controller extends BaseController
       if($col === 'typeonly') $col = 'filename';
       foreach($queryArr as $i => $v){
         $indexString = "COL{$colnum}_{$i}";
-        if($col === 'path') $dictionary["<<".$v.">>"] = $getObjects ? " {$col} = '{$v}'" : "{$col} LIKE '{$v}/%' ESCAPE '\'";
-        else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$v}%' ESCAPE '\'";
-        $space = str_replace($indexString, "<<".$v.">>", $space);
+        $id = rand(0,9999); // mencegah kalau kalau ada value yang sama antar column
+        $escapedV = str_replace("_", "\_",$v);
+        // if($col === 'path') $dictionary["<<".$v.">>"] = $strict ? " {$col} = '{$escapedV}'" : "{$col} LIKE '{$escapedV}/%' ESCAPE '\'";
+        // else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$escapedV}%' ESCAPE '\'";
+        $strictStr = str_replace('#&value;', $escapedV, $strictString); // variable $strictString jangan di re asign
+        $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'";
+        $space = str_replace($indexString, "<<".$v.$id.">>", $space);
       }
     }
+    // dump($dictionary);
     
     // change the filled space to the final string query
     $arr = json_decode($space,true);
+    // dump($arr);
+    // dd($dictionary, $arr, $space);
     $str = '';
-    $merge = function($prevVal, $arr, $cb){
+    $merge = function($prevVal, $arr, $cb)use($isFitted){
       $str = '';
+      $joinAND = !$isFitted ? ' AND ' : ' OR '; // kalau di fittedkan artinya satu keyword untuk mencari semua column. Artinya query SQL akan join pakai OR
       if(array_is_list($arr)){
         foreach($arr as $i => $v){
-          if($prevVal) $arr[$i] = "$prevVal AND $v";
+          if($prevVal) $arr[$i] = "$prevVal".$joinAND."$v";
           else $arr[$i] = "$v";
         }
         $str = join(" OR ", $arr);
       } else {
         foreach($arr as $i => $v){
-          if($prevVal) $arr[$i] = $cb($prevVal .' AND '. $i, $v, $cb);
+          if($prevVal) $arr[$i] = $cb($prevVal . $joinAND . $i, $v, $cb);
           else $arr[$i] = $cb($prevVal . $i, $v, $cb);
         }
         $str = join(" OR ", $arr);
@@ -365,15 +408,25 @@ class Controller extends BaseController
       return $str;
     };
     $str = $merge($str, $arr, $merge);
+    // dump($str);
 
     foreach($dictionary as $k => $v){
       $str = str_replace($k,$v, $str);
     }
 
+    // dd($str);
+
+    // dump($dictionary, $str);
+    // $this->model = new User();
+    // $this->model = User::query();
+    // $this->model = User::with(['work_enterprise']);
+    
     // dump($str);
     // eg. $str = "path LIKE '%male%' ESCAPE '\' AND filename LIKE '%DML%' ESCAPE '\' OR path LIKE '%male%' ESCAPE '\' AND filename LIKE '%ICN%' ESCAPE '\'";
-    $this->model->whereRaw($str);
-    return $keywords;
+    // $this->model->whereRaw($str);
+    // dd($this->model->get()->toArray());
+    // return $keywords;
+    return [$str, $keywords];
   }
 
   /**

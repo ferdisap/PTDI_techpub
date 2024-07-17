@@ -18,15 +18,15 @@ class EnterpriseSeeder extends Seeder
   {
     // \App\Models\User::factory(10)->create();
 
-    Schema::connection('sqlite')->dropIfExists('enterprises');
+    // Schema::connection('sqlite')->dropIfExists('enterprises');
 
-    Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
-      $table->id();
-      $table->string('name');
-      $table->string('code');
-      $table->json('address');
-      $table->json('remarks')->nullable();
-    });
+    // Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
+    //   $table->id();
+    //   $table->string('name');
+    //   $table->string('code');
+    //   $table->json('address');
+    //   $table->json('remarks')->nullable();
+    // });
 
     DB::connection('sqlite')->table('enterprises')->insert([
       'name' => 'PT Dirgantara Indonesia',

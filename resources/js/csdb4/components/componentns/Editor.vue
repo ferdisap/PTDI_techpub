@@ -292,9 +292,9 @@ export default {
                 <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
               </div>
               <div class="block w-1/4">
-                <input type="checkbox" id="xsi_validate" name="xsi_validate" checked />
+                <input type="checkbox" id="xsi_validate" name="xsi_validate" checked value="1"/>
                 <br />
-                <input type="checkbox" id="brex_validate" name="brex_validate" />
+                <input type="checkbox" id="brex_validate" name="brex_validate" value="1"/>
               </div>
             </div>
           </div>

@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\CsdbController;
+use App\Http\Controllers\Csdb\CsdbController;
 use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\DmlController;
+use App\Http\Controllers\UserController;
+use App\Models\Csdb;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
@@ -70,12 +72,28 @@ Route::get('/api/{filename}/change/path', [CsdbServiceController::class, 'change
 Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
 
 // get PDF
-Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
+// Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
+Route::get('/api/content/{CSDBModel:filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware('auth')->name('api.get_pdf_object');
 
 // get path
 Route::get('/api/{filename}/get/path', [CsdbServiceController::class, 'get_object_path'])->middleware('auth')->name('api.get_object_path');
 
+Route::get('/api/checkavailableobject',[CsdbController::class, 'checkAvailableObject'])->middleware('auth')->name('api.check_available_object');
+
 #### DmlController ####
 // Route::get("/api/dmrl/all",[DmlController::class, 'get_dmrl_list'])->middleware('auth')->name('api.get_dmrl_list');
 
+
+// get user model
+Route::get('/api/usersearch', [UserController::class, 'searchModel'])->middleware('auth')->name('api.user_search');
+
+
+
+
+
+
 Route::get('/tes_deliver-file', [CsdbServiceController::class, 'tes_deliverFile']);
+
+Route::get('/tes_get_model',function(){
+  dd(Csdb::getModelClass('Dml'));
+});

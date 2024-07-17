@@ -157,9 +157,10 @@ class CsdbServiceController extends CsdbController
     if(!$pathxsl) return Response::make('', 200, ['Content-Type' => 'application/pdf']);
 
     $model = Csdb::where('filename', $csdb->filename)->first();
-    $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    // $model->CSDBObject->load(storage_path("csdb/$model->filename"));
+    $model->CSDBObject->load(storage_path("csdb/{$request->user()->storage}/$model->filename"));
     $model->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
-    $model->showCGMArkElement();
+    // $model->showCGMArkElement();
 
     CSDBStatic::$footnotePositionStore[$model->filename] = [];    
 

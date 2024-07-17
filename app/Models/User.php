@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'work_enterprise_id',
         'email',
         'password',
+        'storage',
         'address',
     ];
 
@@ -61,6 +62,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function work_enterprise() :HasOne
     {
       return $this->hasOne(Enterprise::class, 'id', 'work_enterprise_id');
+    }
+
+    /**
+     * awalnya diperlukan untuk Dmc@fillTable
+     */
+    public function setProtected(array $props){
+      foreach($props as $prop => $v){
+        $this->$prop = $v;
+      }
     }
 
 

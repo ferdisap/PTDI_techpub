@@ -1,6 +1,6 @@
 @import "https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css";
-@import 'bulma-floating-button/dist/css/bulma-floating-button.min.css';
-@import "https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css";
+/* @import 'bulma-floating-button/dist/css/bulma-floating-button.min.css'; */
+/* @import "https://cdn.jsdelivr.net/npm/bulma@1.0.1/css/bulma.min.css"; */
 
 @tailwind base;
 @tailwind components;
@@ -19,6 +19,7 @@
 } */
 
 .loading_buffer {
+  z-index: 100;
   border: 16px solid #f3f3f3; /* Light grey */
   border-top: 16px solid #3498db; /* Blue */
   border-radius: 50%;
@@ -28,6 +29,26 @@
   height:100px;
   top:calc(25% + 100px);
   left:calc(50% - 50px);
+}
+.mini_loading_buffer_light {
+  z-index: 100;
+  border: 5px solid #f3f3f3; /* dark */
+  border-top: 5px solid #3498db; /* Blue */
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  width:20px;
+  height:20px;
+}
+.mini_loading_buffer_dark {
+  z-index: 100;
+  border: 5px solid #272626; /* dark */
+  border-top: 5px solid #3498db; /* Blue */
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  width:20px;
+  height:20px;
 }
 
 @keyframes spin {
