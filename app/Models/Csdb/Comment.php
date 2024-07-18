@@ -8,25 +8,176 @@ use App\Models\Csdb;
 use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Ptdi\Mpub\Main\Helper;
 
 class Comment extends Csdb
 {
   use HasFactory;
 
-  public function create_xml(Array $params)
+  /**
+   * saat create
+   * jika tidak kita masukkan valunya maka ini berjalan DAN fungsi :Attribute TIDAK berjalan
+   * jika kita masukin valuenya walaupun NULL, maka ini TIDAK berjalan DAN fungsi :Attribute berjalan
+   */
+  protected $attributes = [
+    'commentRefs' => '[]',
+  ];
+
+  /**
+   * The attributes that should be cast.
+   * @var array
+   */
+  // protected $casts = [
+  //   'commentRefs' => 'array', // tidak perlu kalau columnnya json
+  // ];
+
+  /**
+   * harus json string
+   * set value akan menjadi json string curly atau json string array []
+   * get value akan menjadi array
+   */
+  protected function commentRefs(): Attribute
   {
-    $this->CSDBObject->setPath(CSDB_STORAGE_PATH);
+    return Attribute::make(
+      set: fn($v) => is_array($v) ? json_encode($v) :(
+        $v && Helper::isJsonString($v) ? $v : json_encode($v ? [$v] : [])
+      ),
+      get: fn($v) => json_decode($v, true),
+    );
+  }
+
+  public function create_xml(string $storagePath, Array $params)
+  {
+    $this->CSDBObject = new CSDBObject('5.0');
+    $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
     $this->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $this->CSDBObject->createCOM($params);
 
-    $ident = $this->CSDBObject->document->getElementsByTagName('commentIdent')[0];
-    $filename = CSDBStatic::resolve_commentIdent($ident);
+    if($this->CSDBObject->document){
+      return true;
+    }
+    return false;
+  }
 
-    $this->filename = $filename;
-    $this->path = "csdb";
-    $this->editable = 1;
-    $this->initiator_id = Auth::user()->id;
+  public static function fillTable(CSDBObject $CSDBObject)
+  {
+    $filename = $CSDBObject->filename;
+    // $decode_ident = CSDBStatic::decode_commentIdent($filename,false); 
+    // $commentAddressItems = $CSDBObject->document->getElementsByTagName('commentAddressItems')[0];
 
-    return $ident ? true : false;
+    $domXpath = new \DOMXpath($CSDBObject->document);
+    $modelIdentCode = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@modelIdentCode)");
+    $senderIdent = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@senderIdent)");
+    $yearOfDataIssue = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@yearOfDataIssue)");
+    $seqNumber = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@seqNumber)");
+
+    $languageIsoCode = $domXpath->evaluate("string(//commentAddress/commentIdent/language/@languageIsoCode)");
+    $countryIsoCode = $domXpath->evaluate("string(//commentAddress/commentIdent/language/@countryIsoCode)");
+    $commentTitle = $domXpath->evaluate("string(//commentAddress/commentAddressItems/@commentTitle)");
+    $year = $domXpath->evaluate("string(//commentAddress/commentAddressItems/issueDate/@year)");
+    $month = $domXpath->evaluate("string(//commentAddress/commentAddressItems/issueDate/@month)");
+    $day = $domXpath->evaluate("string(//commentAddress/commentAddressItems/issueDate/@day)");
+
+    $securityClassification = $domXpath->evaluate("string(//commentStatus/security/@securityClassification)");
+    $commentPriority = $domXpath->evaluate("string(//commentStatus/commentPriority/@commentPriorityCode)");
+    $commentResponse = $domXpath->evaluate("string(//commentStatus/commentResponse/@responseType)");
+    $commentRefs = $domXpath->evaluate("//commentStatus/commentRefs/*/*");
+    if(!empty($commentRefs)){
+      $r = [];
+      foreach($commentRefs as $refsGroup){
+        $r[] = CSDBStatic::resolve_ident($refsGroup->firstElementChild);
+      }
+      $commentRefs = $r;
+    } else {
+      $commentRefs = [];
+    }
+    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
+    $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
+    $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
+
+    $commentContent = $domXpath->evaluate("//commentContent/*");
+    if(!empty($commentContent)){
+      $r = '';
+      foreach($commentContent as $content){
+        switch ($content->tagName) {
+          case 'simplePara':
+            $r .= $content->nodeValue;
+            break;
+          case 'attachmentRef':
+            $r .= "\n\r Refer to attachment no. ".$filename."-".$content->getAttribute('attachmentNumber').".".strtolower($content->getAttribute('fileExtension'))."\n\r";
+            break;
+        }
+      }
+      $commentContent = $r;
+    } else {
+      $commentContent = '';
+    }
+    
+    $arr = [
+      'filename' => $filename,
+      'modelIdentCode' => $modelIdentCode,
+      'senderIdent' => $senderIdent,
+      'yearOfDataIssue' => $yearOfDataIssue,
+      'seqNumber' => $seqNumber,
+
+      "languageIsoCode" => $languageIsoCode,
+      "countryIsoCode" => $countryIsoCode,
+
+      'commentTitle' => $commentTitle,
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
+
+      'securityClassification' => $securityClassification,
+      'commentPriority' => $commentPriority,
+      'commentResponse' => $commentResponse,
+      'commentRefs' => $commentRefs,
+      'brexDmRef' => $brexDmRef,
+      'remarks' => $remarks,
+
+      'commentContent' => $commentContent,
+    ];
+
+    $fillable = [
+      'filename',
+      'modelIdentCode',
+      'senderIdent',
+      'yearOfDataIssue',
+      'seqNumber',
+
+      "languageIsoCode",
+      "countryIsoCode",
+
+      'commentTitle',
+      'year',
+      'month',
+      'day',
+
+      'securityClassification',
+      'commentPriority',
+      'commentResponse',
+      'commentRefs',
+      'brexDmRef',
+      'remarks',
+
+      'commentContent',
+    ];
+    
+    $comment = new self();
+    $comment->setProtected([
+      'table' => 'comment',
+      'fillable' => $fillable,
+      'casts' => [],
+      // 'attributes' => [],
+      'timestamps' => false
+    ]);
+    $comment = $comment->where('filename', $filename)->first() ?? $comment;
+    $comment->timestamps = false;
+    foreach($arr as $prop => $v){
+      $comment->$prop = $v;
+    }
+    return $comment->save();
+    
   }
 }

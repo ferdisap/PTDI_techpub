@@ -17,7 +17,7 @@ return new class extends Migration
     Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
       $table->id();
       $table->string('name');
-      $table->string('code');
+      $table->string('code')->unique();
       $table->json('address');
       $table->json('remarks')->nullable();
     });

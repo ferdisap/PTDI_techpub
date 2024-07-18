@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Csdb\CsdbCreateByXMLEditor;
 use App\Http\Requests\Csdb\CsdbUpdateByXMLEditor;
 use App\Models\Csdb;
+use App\Models\Csdb\Dmc;
 use App\Rules\Csdb\Path as PathRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -33,6 +34,8 @@ class CsdbController extends Controller
     $CSDBModel->path = $request->validated()['path'];
     $CSDBModel->initiator_id = $request->user()->id;
     $CSDBModel->appendAvailableStorage($request->user()->storage);
+    // dd('aa');
+    $CSDBModel->saveDOMandModel($request->user()->storage);
     if($CSDBModel->saveDOMandModel($request->user()->storage)){
       $CSDBModel->initiator; // agar ada initiator nya
       return $this->ret2(200, ["New {$CSDBModel->filename} has been created."], ["model" => $CSDBModel], ['infotype' => 'info']);
@@ -177,7 +180,8 @@ class CsdbController extends Controller
     // $model = Csdb::with('initiator')->where('filename', $filename)->first();
     // return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
     $type = substr($filename, 0,3);
-    $model = Csdb::getModel(ucfirst($type));
+    // $model = Csdb::getModel(ucfirst($type));
+    $model = Csdb::getModelClass(ucfirst($type));
     $model->setProtected(['with' => 'csdb.initiator']);
     $model = $model->where('filename', $filename)->first();
     // $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();

@@ -5,8 +5,10 @@ use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\DmlController;
 use App\Http\Controllers\UserController;
 use App\Models\Csdb;
+use App\Models\Enterprise;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Ptdi\Mpub\Main\Helper;
 
 Route::get("/csdb4/{view?}",[CsdbController::class, 'app'])->where('view','(.*)')->middleware('auth');
 Route::get("/api/allobjects",[CsdbController::class, 'get_allobjects_list'])->middleware('auth')->name('api.get_allobjects_list');
@@ -96,4 +98,55 @@ Route::get('/tes_deliver-file', [CsdbServiceController::class, 'tes_deliverFile'
 
 Route::get('/tes_get_model',function(){
   dd(Csdb::getModelClass('Dml'));
+});
+
+Route::get('/tesapaja',function(){
+  // $json_str = '{"foo":"bar"}';
+  // $arr = ["foo" => "bar"];
+  // $json_str2 = '"{\"foo\": \"bar\"}"';
+  // json_decode($json_str2,true) return {"foo":"bar"}
+  // json_decode($json_str,true) return array assoc
+  // json_decode($json_str,true) return array assoc
+  // json_decode($json_str,false) return StdClass
+  // json_encode($json_str) return {\"foo\":\"bar\"}
+  // json_encode($arr) return {"foo":"bar"}
+  // dd($json_str, json_decode($json_str,true), json_encode($json_str), json_decode(json_encode($json_str)));
+
+  // $json_str = '{}';
+  // // $json_str = '[]';
+  // // dd(json_encode($json_str));
+  // dd(json_decode($json_str,true));
+
+  // $json_str = '{"foo":"bar"}'; isJson TRUE
+  // $json_str = '{\"foo\":\"bar\"}'; isJson FALSE
+  // $isJson = function ($string) {
+  //   json_decode($string);
+  //   return json_last_error() === JSON_ERROR_NONE;
+  // };
+  // dd($isJson($json_str));
+
+  // $arr = ["lorem ipsum","dolor sit amet"];
+  // $json_str = json_encode($arr);
+  // dd($json_str, Helper::isJsonString($json_str));
+
+  // $e = (Enterprise::find(6));
+  // dd($e->address, $e->remarks);
+
+  $name = fake()->company();
+  $code = rand(11111,99999);
+  $address = [
+    'city' => 'Bandung',
+    'country' => 'Indonesia',
+    'phoneNumber' => ['08124839295746','08538493057594'],
+  ];
+  $remarks = null;
+  $enterprise = Enterprise::create([
+    'name' => $name,
+    'code' => $code,
+    'address' => $address,
+    'remarks' => 'tes null'
+    // 'remarks_tes' => 'tes null'
+    // 'remarksTes' => 'null tes'
+  ]);
+  dd($enterprise);
 });

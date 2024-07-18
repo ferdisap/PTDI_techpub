@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Jobs\Csdb\DmcTableFiller;
+use App\Models\Csdb\Comment;
+use App\Models\Csdb\Ddn;
 use App\Models\Csdb\Dmc;
 use App\Models\Csdb\Dml;
 use App\Models\Csdb\Pmc;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpParser\Node\Stmt\TryCatch;
@@ -61,8 +64,6 @@ class Csdb extends Model
    *
    * @var array
    */
-  // protected $fillable = ['filename', 'path', 'status', 'description', 'initiator_id', 'project_name', 'remarks'];
-  // protected $fillable = ['filename', 'path', 'editable', 'initiator_id', 'remarks'];
   protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id'];
 
   /**
@@ -181,6 +182,30 @@ class Csdb extends Model
   public function project(): BelongsTo
   {
     return $this->belongsTo(Project::class, 'project_name');
+  }
+
+  public function meta(): HasOne
+  {
+    $type = substr($this->filename,0,3);
+    $class= '';
+    switch ($type) { 
+      case 'DML':
+        $class = Dmc::class;
+        break;  
+      case 'COM':
+        $class = Com::class;
+        break;  
+      case 'DDN':
+        $class = Ddn::class;
+        break;
+      case 'PMC':
+        $class = Pmc::class;
+        break; 
+      default:
+        $class = Dmc::class;
+        break;
+    }
+    return $this->hasOne($class,'filename','filename');
   }
 
   ###### CUSTOM #######
@@ -333,7 +358,7 @@ class Csdb extends Model
         // sengaja menaruh code pengisian table csdb metafile karena table inti adalah table.csdb. Table metafile ini bisa di update kapanpun
         if ($this->CSDBObject->document instanceof \DOMDocument) {
           $doctype = $this->CSDBObject->document->doctype->nodeName;
-          $csdbobject = '';
+          $csdbobject = false;
           switch ($doctype) {
             case 'dmodule':
               $csdbobject = Dmc::fillTable($this->CSDBObject);
@@ -343,6 +368,12 @@ class Csdb extends Model
               break;
             case 'dml':
               $csdbobject = Dml::fillTable($this->CSDBObject);
+              break;
+            case 'ddn':
+              $csdbobject = Ddn::fillTable($this->CSDBObject);
+              break;
+            case 'comment':
+              $csdbobject = Comment::fillTable($this->CSDBObject);
               break;
             default:
               # code...
@@ -376,6 +407,10 @@ class Csdb extends Model
     }
   }
 
+  public function getProtected(string $props){
+    return $this->$props;
+  }
+
   /**
    * 
    */
@@ -383,23 +418,39 @@ class Csdb extends Model
   {
     $class = "\App\Models\Csdb\\".$table;
     $method = "instanceModel";
-    
-    // $class = call_user_func($class."::".$method);
-    // $class->setProtected(['with' => 'csdb.initiator']);
-    // $class = $class->where('filename', 'DML-CN235-0001Z-P-2024-00006_000-01.xml')->first();
-    // dd($class->toArray()); // output lengkap, ada csdb->initiator->workenterprise
-
     return class_exists($class) ? call_user_func($class."::".$method) : false;
-    
-    
-    // $class = "\App\Models\Csdb\\".$table;
-    // $method = "instanceModel";
-    // return class_exists($class) ? call_user_func($class) : false
-    // $class = "\App\Models\Csdb\\".$table."::instanceModel";
-    // $class = call_user_func($class);
-    // dd($class);
-    // $class = $class->where('filename', 'DML-CN235-0001Z-P-2024-00006_000-01.xml')->first();
-  } 
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ##################### DEPRECIATED below #####################
 

@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\Enterprise;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -28,7 +30,16 @@ class EnterpriseSeeder extends Seeder
     //   $table->json('remarks')->nullable();
     // });
 
-    DB::connection('sqlite')->table('enterprises')->insert([
+    Schema::connection('sqlite')->dropIfExists('enterprises');
+    Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
+      $table->id();
+      $table->string('name');
+      $table->string('code')->unique();
+      $table->json('address');
+      $table->json('remarks')->nullable();
+    });
+
+    Enterprise::create([
       'name' => 'PT Dirgantara Indonesia',
       'code' => '0001Z',
       'address' => json_encode([

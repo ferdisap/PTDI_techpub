@@ -413,6 +413,8 @@ class Dml extends ModelsCsdb
   {
     $filename = $CSDBObject->filename;
     $decode_ident = CSDBStatic::decode_dmlIdent($filename,false);
+    $dmlAddressItems = $CSDBObject->document->getElementsByTagName('dmlAddressItems')[0];
+    $issueDate = $dmlAddressItems->firstElementChild;
 
     $domXpath = new \DOMXpath($CSDBObject->document);
     $sc = $domXpath->evaluate("string(//identAndStatusSection/descendant::security/@securityClassification)");
@@ -438,6 +440,11 @@ class Dml extends ModelsCsdb
       'dmlRef' => $dmlRef,
       'remarks' => $remarks,
       // 'content' => null,
+
+      
+      "year" => $issueDate->getAttribute('year'),
+      "month" => $issueDate->getAttribute('month'),
+      "day" => $issueDate->getAttribute('day'),
     ];
 
     // if($dml = DB::table('dml')->where('filename', $filename)->first()){

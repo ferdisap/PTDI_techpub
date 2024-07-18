@@ -2,8 +2,10 @@
 
 namespace App\Rules\Csdb;
 
+use App\Models\Csdb;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\Main\CSDBStatic;
 
 class BrexDmRef implements ValidationRule
@@ -19,5 +21,11 @@ class BrexDmRef implements ValidationRule
     if (count(explode("_", $value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
     $decode = CSDBStatic::decode_dmIdent($value);
     if ($decode and $decode['dmCode']['infoCode'] != '022') $fail("The {$attribute} infoCode must be '022'.");
+    if($brex = Csdb::where('filename','filename')->first()){
+      if(!str_contains($brex->available_storage, Auth::user()->storage)){
+        $fail('The BREX are not available in your own storage.');
+      }
+      $fail('The BREX are not available in storage application.');
+    }
   }
 }

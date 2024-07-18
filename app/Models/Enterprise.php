@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Casts\RemarksTes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Ptdi\Mpub\Main\Helper;
 
 class Enterprise extends Model
 {
@@ -47,39 +49,74 @@ class Enterprise extends Model
    * The attributes that should be cast.
    * @var array
    */
-  protected $casts = [
-    'address' => 'array'
+  // protected $casts = [
+    // 'address' => 'array', // tidak perlu kalau columnnya json
+    // 'remarks' => 'array' // tidak perlu kalau columnnya json karna otomatis ke array saat 
+  // ];
+
+  /**
+   * saat create
+   * jika tidak kita masukkan valunya maka ini berjalan DAN fungsi :Attribute TIDAK berjalan
+   * jika kita masukin valuenya walaupun NULL, maka ini TIDAK berjalan DAN fungsi :Attribute berjalan
+   */
+  protected $attributes = [
+    'remarks' => "[]",
   ];
 
   protected $hidden = ['id'];
 
+  /**
+   * harus json string
+   * set value akan menjadi json string curly atau json string array []
+   * get value akan menjadi array
+   */
   protected function address(): Attribute
   {
     return Attribute::make(
       set: function ($v) {
-        $v = is_string($v) ? json_decode($v) : $v;
+        $v = is_array($v) ? $v :(
+          Helper::isJsonString($v) ? json_decode($v, true) : [$v]
+        ); // output array;
+        
         $a = [
-          "city" => $v->city ?? '',
-          "country" => $v->country ?? '',
-          'department' => $v->department ?? '',
-          'street' => $v->street ?? '',
-          'postOfficeBox' => $v->postOfficeBox ?? '',
-          'postalZipCode' => $v->postalZipCode ?? '',
-          'city' => $v->city ?? '',
-          'country' => $v->country ?? '',
-          'state' => $v->state ?? '',
-          'province' => $v->province ?? '',
-          'building' => $v->building ?? '',
-          'room' => $v->room ?? '',
-          'phoneNumber' => $v->phoneNumber ?? [],
-          'faxNumber' => $v->faxNumber ?? [],
-          'email' => $v->email ?? [],
-          'internet' => $v->internet ?? [],
-          'SITA' => $v->SITA ?? '',
+          "city" => $v['city'] ?? '',
+          "country" => $v['country'] ?? '',
+          'department' => $v['department'] ?? '',
+          'street' => $v['street'] ?? '',
+          'postOfficeBox' => $v['postOfficeBox'] ?? '',
+          'postalZipCode' => $v['postalZipCode'] ?? '',
+          'city' => $v['city'] ?? '',
+          'country' => $v['country'] ?? '',
+          'state' => $v['state'] ?? '',
+          'province' => $v['province'] ?? '',
+          'building' => $v['building'] ?? '',
+          'room' => $v['room'] ?? '',
+          'phoneNumber' => $v['phoneNumber'] ?? [],
+          'faxNumber' => $v['faxNumber'] ?? [],
+          'email' => $v['email'] ?? [],
+          'internet' => $v['internet'] ?? [],
+          'SITA' => $v['SITA'] ?? '',
         ];
+        
         return json_encode($a);
       },
-      get: fn ($v) => json_decode($v),
+      get: fn($v) => json_decode($v, true),
     );
   }
+
+  /**
+   * harus json string
+   * set value akan menjadi json string curly atau json string array []
+   * get value akan menjadi array
+   */
+  protected function remarks(): Attribute
+  {
+    return Attribute::make(
+      set: fn($v) => is_array($v) ? json_encode($v) :(
+        $v && Helper::isJsonString($v) ? $v : json_encode($v ? [$v] : [])
+      ),
+      get: fn($v) => json_decode($v, true),
+    );
+  }
+  
 }

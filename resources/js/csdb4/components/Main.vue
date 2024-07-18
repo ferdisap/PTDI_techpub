@@ -66,7 +66,7 @@ export default {
           }
         },1000);
       }
-    }
+    },
   },
   mounted() {
     this.emitter.on('openfile', () =>  this.showRightAside = true)
@@ -82,7 +82,7 @@ export default {
     
     setTimeout(() => {
       if(this.$route.params.filename){
-        this.getCSDBObjectModel({filename: this.$route.params.filename});
+        this.getCSDBObjectModel({filename: this.$route.params.filename})
       }
     }, 10);
 

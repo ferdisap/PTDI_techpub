@@ -115,7 +115,12 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       /**
        * digunakan untuk setiap component yang ada route.param filename nya
        */
-      currentObjectModel: {}
+      currentObjectModel: {},
+
+      /**
+       * digunakan untuk setiap component yang ada route.param filename nya
+       */
+      currentObjectMeta: {}
 
 
     }

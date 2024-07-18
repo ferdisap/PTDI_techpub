@@ -61,7 +61,7 @@ class DropdownInputSearch {
     event.preventDefault();
     event.stopPropagation();
     this.showList = true;
-    console.log(isEnterKeyPress(event), isLeftClick(event));
+    // console.log(isEnterKeyPress(event), isLeftClick(event));
     if(isCharacterKeyPress(event)) this.searching(techpubRoute);
     else if(isArrowDownKeyPress(event)) this.moveDown(event);
     else if(isArrowUpKeyPress(event)) this.moveUp(event);
@@ -71,7 +71,7 @@ class DropdownInputSearch {
   }
 
   searching(techpubRoute) {
-    console.log(techpubRoute);
+    // console.log(techpubRoute);
     this.process = new Promise((r, j) => {
       clearTimeout(this.timeout);
       this.isDone = false;

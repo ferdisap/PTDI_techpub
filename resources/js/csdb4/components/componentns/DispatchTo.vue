@@ -4,6 +4,7 @@ import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCirc
 import CheckboxSelector from '../../CheckboxSelector';
 import DropdownInputSearch from '../../DropdownInputSearch';
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import Remarks from '../subComponents/Remarks.vue';
 export default {
   data() {
     return {
@@ -20,7 +21,7 @@ export default {
       DropdownBrexSearch: new DropdownInputSearch('filename')
     }
   },
-  components:{ContinuousLoadingCircle, RCMenu},
+  components:{ContinuousLoadingCircle, RCMenu, Remarks},
   props:{
     objectsToDispatch:{
       type: Object,
@@ -46,22 +47,34 @@ export default {
       // this.showLoadingProgress = false;
     },
     async submit(event){
-      console.log('submit');
+      window.e = event;
+      // console.log('submit');
       // this.showLoadingProgress = true;
-      // let fd = new FormData(event.target);
+      let fd = new FormData(event.target);
 
-      // let response = await axios({
-      //   route: {
-      //     name: 'api.create_ddn',
-      //     data: fd,
-      //   },
-      //   useMainLoadingBar: false,
+      fd.set('dispatchFromPersonEmail', this.techpubStore.Auth.email);
+
+      for (var i = 0; i < this.objects.length; i++) {
+        fd.append('deliveryListItemsFilename[]', this.objects[i]);
+      }
+      // let deliveryListItemsFilename = [];
+      // this.objects.forEach(filename => {
+      //   deliveryListItemsFilename.push(filename);
       // });
+      // if(deliveryListItemsFilename.length > 0) fd.set('deliveryListItemsFilename[]',this.objects);
 
-      // if (response.statusText === 'OK') {
-      //   // do something here
-      //   // this.model = response.data.model;
-      // }
+      let response = await axios({
+        route: {
+          name: 'api.create_ddn',
+          data: fd,
+        },
+        useMainLoadingBar: false,
+      });
+
+      if (response.statusText === 'OK') {
+        // do something here
+        // this.model = response.data.model;
+      }
       // this.showLoadingProgress = false;
     },
     clickFilename(event){
@@ -141,10 +154,14 @@ export default {
 <template>
   <div class="dispatchTo overflow-auto h-[93%] w-full relative px-3">
 
-    <form @click.prevent="submit($event)">
+    <form @submit.prevent="submit($event)">
       <!-- List of filename to dispatch -->
+      <h2 class="text-center text-3xl mb-3">Dispatched Object</h2>
+      <div class="flex items-center mt-1">
+        <label for="securityClassification" class="text-sm mr-3 font-bold">Security Classification:</label>
+        <input name="securityClassification" id="securityClassification" placeholder="eg:. 05" value="01" class="w-[50px]"/>
+      </div>
       <div class="mb-3">
-        <h2 class="text-center text-3xl">Dispatched Object</h2>
         <table class="text-left" :id="CbSelector.id">
           <thead>
             <tr>
@@ -166,14 +183,15 @@ export default {
           </tbody>
         </table>
       </div>
+      <hr/>
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
-          <label class="font-bold" :for="DropdownUserSearch.idInputText">To:&#160;</label>
+          <label class="font-bold text-sm" :for="DropdownUserSearch.idInputText">Send To:&#160;</label>
         </div>
         <div class="w-80 relative">
           <div class="h-[30px]">
             <div v-show="!DropdownUserSearch.isDone" class="mini_loading_buffer_dark right-[5px] top-[5px]"></div>
-            <input @keyup.prevent="searchUser($event)" :id="DropdownUserSearch.idInputText" name="personmainemail" class="block mb-0 w-full p-1"/>
+            <input  @keyup.prevent="searchUser($event)" :id="DropdownUserSearch.idInputText" name="dispatchToPersonEmail" class="block mb-0 w-full p-1" autocomplete="off" aria-autocomplete="none"/>
           </div>
           <div class="w-full" :id="DropdownUserSearch.idDropdownListContainer">
             <div class="text-sm border-b px-2" v-show="DropdownUserSearch.showList" v-for="(user) in DropdownUserSearch.result" :email="user.email" @click.prevent="DropdownUserSearch.keypress($event)" @keyup.prevent="DropdownUserSearch.keypress($event)">
@@ -185,12 +203,12 @@ export default {
       </div>
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
-          <label class="font-bold" :for="DropdownBrexSearch.idInputText">Brex:&#160;</label>
+          <label class="font-bold text-sm" :for="DropdownBrexSearch.idInputText">Brex:&#160;</label>
         </div>
         <div class="w-80 relative">
           <div class="h-[30px]">
             <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[5px] top-[5px]"></div>
-            <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexfilename" class="block mb-0 w-full p-1"/>
+            <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexDmRef" class="block mb-0 w-full p-1" autocomplete="off" aria-autocomplete="none"/>
           </div>
           <div class="w-full" :id="DropdownBrexSearch.idDropdownListContainer">
             <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" @click.prevent="DropdownBrexSearch.keypress($event)" @keyup.prevent="DropdownBrexSearch.keypress($event)">
@@ -199,8 +217,11 @@ export default {
           </div>
         </div>
       </div>
+      <div class="blok items-center mt-1 mb-2">
+        <Remarks class_label="text-sm font-bold" placeholder="eg.: this comment answer the COM-...xml"/>
+      </div>
       <div class="w-full text-center">
-        <button type="button" class="button bg-violet-400 text-white hover:bg-violet-600">Submit</button>
+        <button type="submit" class="button bg-violet-400 text-white hover:bg-violet-600">Submit</button>
       </div>
     </form>
     <ContinuousLoadingCircle :show="showLoadingProgress"/>

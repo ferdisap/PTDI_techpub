@@ -48,6 +48,13 @@ class DmlController extends Controller
     $validator->validated();
 
     $dml_model = new Dml();
+    $csdb = new Csdb();
+    $dml_model->setProtected([
+      'table' => $csdb->getProtected('table'),
+      'fillable'=> $csdb->getProtected('fillable'),
+      'casts'=> $csdb->getProtected('casts'),
+      'attributes'=> $csdb->getProtected('attributes'),
+    ]);
     // $dml_model->setWith(['initiator']);
     // $dml_model->direct_save = false;
     $otherOptions = [];

@@ -20,12 +20,12 @@ class Dmc extends Model
     'systemCode',
     'subSystemCode',
     'subSubSystemCode',
-    'assycode',
+    'assyCode',
     'disassyCode',
     'disassyCodeVariant',
     'infoCode',
     'infoCodeVariant',
-    'itemLocationCOde',
+    'itemLocationCode',
     'languageIsoCode',
     'countryIsoCode',
     'issueNumber',
@@ -63,55 +63,73 @@ class Dmc extends Model
   public static function fillTable(CSDBObject $CSDBObject){
 
     $filename = $CSDBObject->filename;
-    $decode_ident = CSDBStatic::decode_dmIdent($filename,false);
-    $dmAddressItems = $CSDBObject->document->getElementsByTagName('dmAddressItems')[0];
-    $issueDate = $dmAddressItems->firstElementChild;
-    $dmTitle = $issueDate->nextElementSibling;
-    $techName = $dmTitle->firstElementChild;
-    $infoName = $techName->nextElementSibling;
-    $infoNameVariant = $infoName ? $infoName->nextElementSibling : null;
-
     $domXpath = new \DOMXpath($CSDBObject->document);
-    $sc = $domXpath->evaluate("string(//identAndStatusSection/descendant::security/@securityClassification)");
+
+    $modelIdentCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@modelIdentCode)");
+    $systemDiffCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@systemDiffCode)");
+    $systemCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@systemCode)");
+    $subSystemCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@subSystemCode)");
+    $subSubSystemCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@subSubSystemCode)");
+    $assyCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@assyCode)");
+    $disassyCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@disassyCode)");
+    $disassyCodeVariant = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@disassyCodeVariant)");
+    $infoCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@infoCode)");
+    $infoCodeVariant = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@infoCodeVariant)");
+    $itemLocationCode = $domXpath->evaluate("string(//dmAddress/dmIdent/dmCode/@itemLocationCode)");
+    $languageIsoCode = $domXpath->evaluate("string(//dmAddress/dmIdent/language/@languageIsoCode)");
+    $countryIsoCode = $domXpath->evaluate("string(//dmAddress/dmIdent/language/@countryIsoCode)");
+
+    $issueNumber = $domXpath->evaluate("string(//dmAddress/dmIdent/issueInfo/@issueNumber)");
+    $inWork = $domXpath->evaluate("string(//dmAddress/dmIdent/issueInfo/@inWork)");
+
+    $year = $domXpath->evaluate("string(//dmAddress/dmAddressItems/issueDate/@year)");
+    $month = $domXpath->evaluate("string(//dmAddress/dmAddressItems/issueDate/@month)");
+    $day = $domXpath->evaluate("string(//dmAddress/dmAddressItems/issueDate/@day)");
+
+    $techName = $domXpath->evaluate("string(//dmAddress/dmAddressItems/dmTitle/techName)");
+    $infoName = $domXpath->evaluate("string(//dmAddress/dmAddressItems/dmTitle/infoName)");
+    $infoNameVariant = $domXpath->evaluate("string(//dmAddress/dmAddressItems/dmTitle/infoNameVariant)");
+
+    $securityClassification = $domXpath->evaluate("string(//dmStatus/security/@securityClassification)");
+    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
+    $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
     $rsp = $domXpath->evaluate("string(//identAndStatusSection/descendant::responsiblePartnerCompany/enterpriseName)");
     $originator = $domXpath->evaluate("string(//identAndStatusSection/descendant::originator/enterpriseName)");
     $applicEl = $domXpath->evaluate("//identAndStatusSection/descendant::applic")[0];
     $applic = $CSDBObject->getApplicability($applicEl);
-    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
-    $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
+
     $QA = $domXpath->evaluate("//identAndStatusSection/descendant::qualityAssurance/*[last()]")[0];
     $QAtext = $CSDBObject->getQA(null, $QA);
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
     $arr = [
       "filename" => $filename,
-      "modelIdentCode" => $decode_ident['dmCode']['modelIdentCode'],
-      "systemDiffCode" => $decode_ident['dmCode']['systemDiffCode'],
-      "systemCode" => $decode_ident['dmCode']['systemCode'],
-      "subSystemCode" => $decode_ident['dmCode']['subSystemCode'],
-      "subSubSystemCode" => $decode_ident['dmCode']['subSubSystemCode'],
-      "assycode" => $decode_ident['dmCode']['assyCode'],
-      "disassyCode" => $decode_ident['dmCode']['disassyCode'],
-      "disassyCodeVariant" => $decode_ident['dmCode']['disassyCodeVariant'],
-      "infoCode" => $decode_ident['dmCode']['infoCode'],
-      "infoCodeVariant" => $decode_ident['dmCode']['infoCodeVariant'],
-      "itemLocationCOde" => $decode_ident['dmCode']['itemLocationCode'],
+      "modelIdentCode" => $modelIdentCode,
+      "systemDiffCode" => $systemDiffCode,
+      "systemCode" => $systemCode,
+      "subSystemCode" => $subSystemCode,
+      "subSubSystemCode" => $subSubSystemCode,
+      "assyCode" => $assyCode,
+      'disassyCode' => $disassyCode,
+      'disassyCodeVariant' => $disassyCodeVariant,
+      'infoCode' => $infoCode,
+      'infoCodeVariant' => $infoCodeVariant,
+      'itemLocationCode' => $itemLocationCode,
+      'languageIsoCode' => $languageIsoCode,
+      'countryIsoCode' => $countryIsoCode,
       
-      "languageIsoCode" => $decode_ident['language']['languageIsoCode'],
-      "countryIsoCode" => $decode_ident['language']['countryIsoCode'],
-      
-      "issueNumber" => $decode_ident['issueInfo']['issueNumber'],
-      "inWork" => $decode_ident['issueInfo']['inWork'],
+      'issueNumber' => $issueNumber,
+      'inWork' => $inWork,
 
-      "year" => $issueDate->getAttribute('year'),
-      "month" => $issueDate->getAttribute('month'),
-      "day" => $issueDate->getAttribute('day'),
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
 
-      "techName" => $techName->nodeValue,
-      "infoName" => $infoName ? $infoName->nodeValue : '',
-      "infoNameVariant" => $infoNameVariant ? $infoNameVariant->nodeValue : '',
+      "techName" => $techName,
+      "infoName" => $infoName,
+      "infoNameVariant" => $infoNameVariant,
 
-      'securityClassification' => $sc,
+      'securityClassification' => $securityClassification,
       'responsiblePartnerCompany' => $rsp,
       'originator' => $originator,
       'applicability' => $applic,
@@ -130,7 +148,6 @@ class Dmc extends Model
     // dispatch(Dmc::create($arr))->delay(now()->addMinutes(5));
     // self::create($arr);
     // dispatch(Dmc::create($arr))->delay(now()->addMinutes(5));
-
 
     $dmc = self::where('filename', $filename)->first();
     if($dmc) {

@@ -19,6 +19,11 @@ return new class extends Migration
       $table->tinyText('dmlType'); // merujuk ke @dmlType yang sudah di transform, 'Partial DML', 'Complete DML', 'CSL'
       $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue
       $table->tinyText('seqNumber'); // merujuk ke @seqNumber
+
+      $table->tinyText('year');
+      $table->tinyText('month');
+      $table->tinyText('day');
+
       $table->string('securityClassification');
       $table->bigInteger('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
       $table->text('dmlRef')->nullable(); //merujuk ke dmlStatus/dmlRef
