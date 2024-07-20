@@ -180,15 +180,19 @@ export default {
       this.bottomBarItems.Option.data = data.model;
     })
 
-    this.emitter.on('createICNFromEditor', (data) => {
-      this.emitter.emit('ListTree-add', data.model);
+    // this.emitter.on('createICNFromEditor', (data) => {
+    //   this.emitter.emit('ListTree-add', data.model);
+    //   this.$root.gotoExplorer(data.model.filename);
+    // });
+    this.emitter.on('uploadICNFromEditor', (data) => {
+      this.emitter.emit('ListTree-refresh', data.model);
       this.$root.gotoExplorer(data.model.filename);
     });
 
-    this.emitter.on('updateICNFromEditor', (data) => {
-      console.log('explorer emitted by editor updateICNFromEditor');
-      this.emitter.emit('Preview-refresh', data.model)
-    });    
+    // this.emitter.on('updateICNFromEditor', (data) => {
+    //   console.log('explorer emitted by editor updateICNFromEditor');
+    //   this.emitter.emit('Preview-refresh', data.model)
+    // });    
 
     this.emitter.on('updateObjectFromEditor', (data) => {
       // data berupa model

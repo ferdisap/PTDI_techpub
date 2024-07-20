@@ -1,9 +1,12 @@
 // jika ingin pakai modul, begini
 // import setListTreeData from './setListTreeData.js';
+
 const ListTree = {
-  request: async function (e) {
+  data: {},
+  // request: async function (data) {
+  request: async function () {
     let response;
-    let route = e.data.route;
+    let route = this.data.route;
     if (Object.values(route.method).includes('GET') || route.method.includes('HEAD')) {
       response = await fetch(route.url);
     }
@@ -22,15 +25,15 @@ const ListTree = {
    * @return {Array}
    * @param {Object} response from axios Response 
    */
-  setListTreeData: function (data) {
+  setListTreeData: function (responseData) {
     // sortir berdasarkan path
-    data = data.sort((a, b) => {
+    responseData = responseData.sort((a, b) => {
       return a.path > b.path ? 1 : (a.path < b.path ? -1 : 0);
     });
     // sortir object dan level path nya eg: "/csdb/n219/amm" berarti level 3
     let obj = {};
     let levels = {};
-    for (const v of data) {
+    for (const v of responseData) {
       let path = v.path
       let split = path.split("/");
       let l = split.length;
@@ -48,10 +51,86 @@ const ListTree = {
 
     }
     return [obj, levels];
+  },
+
+  createHTMLString: function(start_l, data_list_level, data_list){
+    const gen_objlist = function (models, style = '') {
+      let listobj = '';
+      if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
+        for (const model of models) {
+          let logo = model.filename.substr(0, 3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+          let href = this.data.hrefForFile;
+          href.replace(':filename', model.filename);
+          listobj = listobj + `
+                <div class="obj" style="${style}">
+                  ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
+                </div>`
+        }
+      }
+      return listobj
+    };
+    const path_yang_sudah = [];
+    const fn = (start_l = 1, leveldata = {}, dataobj = {}, callback, parentPath = '') => {
+      let details = '';
+      let defaultMarginLeft = 5;
+      if (leveldata[start_l]) {
+
+        for (const path of leveldata[start_l]) { // untuk setiap path 'csdb' dan 'xxx'
+
+          let pathSplit = path.split("/");
+          let currFolder = pathSplit[start_l - 1];
+          pathSplit.splice(pathSplit.indexOf(currFolder), 1);
+          let parentP = pathSplit.join("/");
+
+          if (path_yang_sudah.indexOf(path) >= 0
+            || path_yang_sudah.indexOf(parentP) >= 0
+            || parentP !== parentPath // expresi ini membuat path tidak di render
+          ) {
+            continue;
+          }
+          let isOpen = this.data.open ? this.data.open[path] : false;
+          isOpen = isOpen ? 'open' : '';
+
+          // generating folder list
+          // <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
+          details = details + `
+          <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}">
+            <summary class="list-none flex">
+              <span @click.prevent="expandCollapse('${path}')" class="material-symbols-outlined cursor-pointer text-sm content-center">chevron_right</span> 
+              <a href="#" @click.prevent="$parent.clickFolder({path: '${path}'})">${currFolder}</a>
+            </summary>`;
+
+          if (leveldata[start_l + 1]) {
+            details = details + (callback.bind(this, start_l + 1, leveldata, dataobj, callback, path))();
+          }
+
+          // generating obj list
+          details = details + (gen_objlist.bind(this,dataobj[path], `margin-left:${start_l * 3 + defaultMarginLeft + 2}px;`))();
+
+          details = details + "</details>"
+
+          path_yang_sudah.push(path);
+        }
+      }
+      return details
+    };
+
+    return fn(this.data.start_l, this.data.list_level, this.data.list, fn);
   }
 }
 
 onmessage = async function (e) {
-  let ret = await ListTree.request(e);
+  ListTree.data = e.data.data;
+  let ret;
+  switch (e.data.mode) {
+    case 'fetchData':
+      ret = await ListTree.request(e.data.data);
+      break;  
+    case 'createHTMLString':
+      ret = ListTree.createHTMLString(e.data.data.start_l, e.data.data.data_list_level, e.data.data.data_list)
+      break;  
+    default:
+      break;
+  }
   postMessage(ret);
 }

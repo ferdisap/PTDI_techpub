@@ -2,12 +2,13 @@
 
 namespace App\Models\Csdb;
 
+use App\Models\Csdb;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 
-class Pmc extends Model
+class Pmc extends Csdb
 {
   use HasFactory;
 
@@ -57,20 +58,35 @@ class Pmc extends Model
   public static function fillTable(CSDBObject $CSDBObject)
   {
     $filename = $CSDBObject->filename;
-    $decode_ident = CSDBStatic::decode_pmIdent($filename,false);
-    $pmAddressItems = $CSDBObject->document->getElementsByTagName('pmAddressItems')[0];
-    $issueDate = $pmAddressItems->firstElementChild;
-    $pmTitle = $issueDate->nextElementSibling;
-    $shortPmTitle = $pmTitle->nextElementSibling;
-
     $domXpath = new \DOMXpath($CSDBObject->document);
-    $sc = $domXpath->evaluate("string(//identAndStatusSection/descendant::security/@securityClassification)");
+
+
+    $modelIdentCode = $domXpath->evaluate("string(//pmAddress/pmIdent/pmCode/@modelIdentCode)");
+    $pmIssuer = $domXpath->evaluate("string(//pmAddress/pmIdent/pmCode/@pmIssuer)");
+    $pmNumber = $domXpath->evaluate("string(//pmAddress/pmIdent/pmCode/@pmNumber)");
+    $pmVolume = $domXpath->evaluate("string(//pmAddress/pmIdent/pmCode/@pmVolume)");
+    
+    $languageIsoCode = $domXpath->evaluate("string(//pmAddress/pmIdent/language/@languageIsoCode)");
+    $countryIsoCode = $domXpath->evaluate("string(//pmAddress/pmIdent/language/@countryIsoCode)");
+
+    $issueNumber = $domXpath->evaluate("string(//pmAddress/pmIdent/issueInfo/@issueNumber)");
+    $inWork = $domXpath->evaluate("string(//pmAddress/pmIdent/issueInfo/@inWork)");
+
+    $year = $domXpath->evaluate("string(//pmAddress/pmAddressItems/issueDate/@year)");
+    $month = $domXpath->evaluate("string(//pmAddress/pmAddressItems/issueDate/@month)");
+    $day = $domXpath->evaluate("string(//pmAddress/pmAddressItems/issueDate/@day)");
+
+    $pmTitle = $domXpath->evaluate("string(//pmAddress/pmAddressItems/pmTitle)");
+    $shortPmTitle = $domXpath->evaluate("string(//pmAddress/pmAddressItems/shortPmTitle)");
+
+    $securityClassification = $domXpath->evaluate("string(//pmStatus/security/@securityClassification)");
+    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
+    $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
     $rsp = $domXpath->evaluate("string(//identAndStatusSection/descendant::responsiblePartnerCompany/enterpriseName)");
     $originator = $domXpath->evaluate("string(//identAndStatusSection/descendant::originator/enterpriseName)");
     $applicEl = $domXpath->evaluate("//identAndStatusSection/descendant::applic")[0];
     $applic = $CSDBObject->getApplicability($applicEl);
-    $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
-    $brexDmRef = CSDBStatic::resolve_pmIdent($brexElement);
+
     $QA = $domXpath->evaluate("//identAndStatusSection/descendant::qualityAssurance/*[last()]")[0];
     $QAtext = $CSDBObject->getQA(null, $QA);
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
@@ -78,25 +94,25 @@ class Pmc extends Model
     $arr = [
       "filename" => $filename,
       
-      "modelIdentCode" => $decode_ident['pmCode']['modelIdentCode'],
-      "pmIssuer" => $decode_ident['pmCode']['pmIssuer'],
-      "pmNumber" => $decode_ident['pmCode']['pmNumber'],
-      "pmVolume" => $decode_ident['pmCode']['pmVolume'],
+      "modelIdentCode" => $modelIdentCode,
+      "pmIssuer" => $pmIssuer,
+      "pmNumber" => $pmNumber,
+      "pmVolume" => $pmVolume,
       
-      "languageIsoCode" => $decode_ident['language']['languageIsoCode'],
-      "countryIsoCode" => $decode_ident['language']['countryIsoCode'],
+      "languageIsoCode" => $languageIsoCode,
+      "countryIsoCode" => $countryIsoCode,
       
-      "issueNumber" => $decode_ident['issueInfo']['issueNumber'],
-      "inWork" => $decode_ident['issueInfo']['inWork'],
+      "issueNumber" => $issueNumber,
+      "inWork" => $inWork,
 
-      "year" => $issueDate->getAttribute('year'),
-      "month" => $issueDate->getAttribute('month'),
-      "day" => $issueDate->getAttribute('day'),
+      "year" => $year,
+      "month" => $month,
+      "day" => $day,
 
-      "pmTitle" => $pmTitle->nodeValue,
-      "shortPmTitle" => $shortPmTitle ? $shortPmTitle->nodeValue : '',
+      "pmTitle" => $pmTitle,
+      "shortPmTitle" => $shortPmTitle,
 
-      'securityClassification' => $sc,
+      'securityClassification' => $securityClassification,
       'responsiblePartnerCompany' => $rsp,
       'originator' => $originator,
       'applicability' => $applic,

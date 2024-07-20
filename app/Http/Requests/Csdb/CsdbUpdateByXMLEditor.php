@@ -8,6 +8,7 @@ use BREXValidator;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\XSIValidator;
@@ -35,6 +36,15 @@ class CsdbUpdateByXMLEditor extends FormRequest
       'xmleditor' => ['required', function(string $attribute, mixed $value, Closure $fail){
         if(!($value[0]->document instanceof \DOMDocument)) return $fail('Document must be in XML form.'); // harus return agar script dibawah tidak di eksekusi
         if(!$value[0]->document) $fail('Fail to recognize xml file as CSDB object.');
+
+        // validate with old
+        $oldModel = Csdb::where('filename', $value[0]->filename)->first();
+        $oldXMLString = Storage::disk('csdb')->get($this->user()->storage."/".$value[0]->filename);
+        if(
+          $oldXMLString == $value[0]->document->saveXML()
+          && $this->path == $oldModel->path
+        ) $fail('There is no changes');
+
         if(!in_array($value[0]->document->doctype->nodeName,['dmodule', 'pm', 'icnMetadataFile'])) return $fail('Document type must be dmodule, pm, or icnMetadataFile.'); // harus return agar script dibawah tidak di eksekusi
         if($this->xsi_validate) {
           $CSDBValidator = new XSIValidator($value[0]);

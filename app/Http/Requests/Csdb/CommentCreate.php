@@ -4,6 +4,7 @@ namespace App\Http\Requests\Csdb;
 
 use App\Models\Csdb;
 use App\Rules\Csdb\BrexDmRef;
+use App\Rules\Csdb\SecurityClassification;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +69,7 @@ class CommentCreate extends FormRequest
       'SITA' => '',
 
       // status
-      'securityClassification' => 'required',
+      'securityClassification' => ['required', new SecurityClassification],
       'commentPriorityCode' => 'required',
       'responseType' => '',
       'commentRefs' => ['array', function(string $attribute, mixed $commentRefsArray, Closure $fail){

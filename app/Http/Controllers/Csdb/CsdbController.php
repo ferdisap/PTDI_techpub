@@ -5,17 +5,21 @@ namespace App\Http\Controllers\Csdb;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Csdb\CsdbCreateByXMLEditor;
 use App\Http\Requests\Csdb\CsdbUpdateByXMLEditor;
+use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
 use App\Models\Csdb\Dmc;
 use App\Rules\Csdb\Path as PathRules;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use PrettyXml\Formatter;
 use Ptdi\Mpub\Fop\Fop;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
+use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Main\Helper;
 use SimpleXMLElement;
 
@@ -30,7 +34,7 @@ class CsdbController extends Controller
   {
     $CSDBModel = new Csdb();
     $CSDBModel->CSDBObject = $request->validated()['xmleditor'][0];
-    $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
+    $CSDBModel->filename = $CSDBModel->CSDBObject->getFilename();
     $CSDBModel->path = $request->validated()['path'];
     $CSDBModel->initiator_id = $request->user()->id;
     $CSDBModel->appendAvailableStorage($request->user()->storage);
@@ -54,9 +58,9 @@ class CsdbController extends Controller
     $CSDBModel->path = $request->validated()['path'];
     if($CSDBModel->saveDOMandModel($request->user()->storage)){
       $CSDBModel->initiator; // agar ada initiator nya
-      return $this->ret2(200, ["New {$CSDBModel->filename} has been created."], ["model" => $CSDBModel], ['infotype' => 'info']);
+      return $this->ret2(200, ["New {$CSDBModel->filename} has been update."], ["model" => $CSDBModel], ['infotype' => 'info']);
     }
-    return $this->ret2(400, ["{$CSDBModel->filename} failed to create."], CSDBError::getErrors(), ['model' => $CSDBModel]);
+    return $this->ret2(400, ["{$CSDBModel->filename} failed to update."], CSDBError::getErrors(), ['model' => $CSDBModel]);
   }
 
   public function read_pdf_object(Request $request, Csdb $CSDBModel)
@@ -89,7 +93,6 @@ class CsdbController extends Controller
         'Last-Modified' => $CSDBModel->updated_at
       ]);
     }
-    dd($transformed);
     abort(400);
   }
 
@@ -150,6 +153,26 @@ class CsdbController extends Controller
     return $this->ret2(200, ['analyze' => $analyze, 'unavailable' => $unavailable]);
   }
 
+  public function get_object_raw(Request $request, Csdb $CSDBModel)
+  {
+    $CSDBModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$CSDBModel->filename);
+    if($CSDBModel->CSDBObject->document){
+      $formatter = new Formatter();
+      return Response::make($formatter->format($CSDBModel->CSDBObject->document->saveXML()), 200, ['Content-Type' => 'text/xml']);
+    }
+    return $this->ret2(200, "There is no such of {$CSDBModel->filename}", ['headers' => ['Content-Type' => 'text/xml']]);
+  }
+
+  public function get_icn_raw(Request $request, Csdb $CSDBModel)
+  {
+    $CSDBModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$CSDBModel->filename);
+    // if($CSDBModel->CSDBObject->document){
+    //   $formatter = new Formatter();
+    //   return Response::make($formatter->format($CSDBModel->CSDBObject->document->saveXML()), 200, ['Content-Type' => 'text/xml']);
+    // }
+    return $this->ret2(200, "There is no such of {$CSDBModel->filename}", ['headers' => ['Content-Type' => 'text/xml']]);
+  }
+
   ###### semua fungsi lama taruh dibawah ######
 
     /**
@@ -177,14 +200,10 @@ class CsdbController extends Controller
 
   public function get_object_model(Request $request, string $filename)
   {
-    // $model = Csdb::with('initiator')->where('filename', $filename)->first();
-    // return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
     $type = substr($filename, 0,3);
-    // $model = Csdb::getModel(ucfirst($type));
     $model = Csdb::getModelClass(ucfirst($type));
     $model->setProtected(['with' => 'csdb.initiator']);
     $model = $model->where('filename', $filename)->first();
-    // $model = ModelsCsdb::with('initiator')->where('filename', $filename)->first();
     return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
   }
 
@@ -235,5 +254,29 @@ class CsdbController extends Controller
     }
 
     return $this->ret2(200, $ret->toArray(), ['message' => $m, 'infotype' => "caution", 'folder' => $folder ?? [], "current_path" => $current_path ?? '']);
+  }
+
+  /**
+   * ini bisa update dan create
+   * @return Response JSON contain SQL object model with initiator data
+   */
+  public function uploadICN(UploadICN $request)
+  {
+    // #1 validation input form
+    $validatedData = $request->validated();
+    $file = $validatedData['entity'];
+    $CSDBModel = Csdb::where('filename', $validatedData['filename'])->first() ?? new Csdb();
+    $CSDBModel->CSDBObject->load($file->path());
+    $CSDBModel->filename = $validatedData['filename'];
+    $CSDBModel->path = $validatedData['path'];
+    $CSDBModel->initiator_id = $request->user()->id;
+    $CSDBModel->appendAvailableStorage($request->user()->storage);
+    if($CSDBModel->saveDOMandModel($request->user()->storage)){
+      $CSDBModel->initiator; // agar ada initiator nya
+      $message = $request->isUpdate ? "{$CSDBModel->filename} has been updated." : "New {$CSDBModel->filename} has been uploaded." ;
+      return $this->ret2(200, [$message], ["model" => $CSDBModel,'infotype'=>'info']);
+    } else {
+      return $this->ret2(400, ["{$validatedData['filename']} failed to upload."], CSDBError::getErrors(), ["model" => $CSDBModel]);
+    }
   }
 }

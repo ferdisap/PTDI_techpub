@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Ptdi\Mpub\Main\Helper;
+use SimpleXMLElement;
 
 class Controller extends BaseController
 {
@@ -44,14 +45,14 @@ class Controller extends BaseController
   //     'content-type' => 'application/javascript'
   //   ]);
   // }
-  public function getAxiosJs(Request $request)
-  {
-    $axoiospath = realpath(getcwd().'../../node_modules/axios/dist/axios.js');
-    $axios = file_get_contents($axoiospath);
-    return Response::make($axios,200,[
-      'content-type' => 'application/javascript'
-    ]);
-  }
+  // public function getAxiosJs(Request $request)
+  // {
+  //   $axoiospath = realpath(getcwd().'../../node_modules/axios/dist/axios.js');
+  //   $axios = file_get_contents($axoiospath);
+  //   return Response::make($axios,200,[
+  //     'content-type' => 'application/javascript'
+  //   ]);
+  // }
 
   public static function getAllRoutesNamed()
   {
@@ -178,7 +179,36 @@ class Controller extends BaseController
       $message =  $args[$i];
       $isArr($message, $isArr);
     }
-    return response()->json($data, $code);
+    // return response()->json($data, $code);
+    $headers = $data['headers'] ?? ['Content-Type' => 'application/json'];
+    unset($data['headers']);
+    $contentType = $headers['Content-Type'] ?? $headers['content-Type'] ?? $headers['Content-type'] ?? $headers['content-type'];
+    if($contentType === 'text/xml'){
+      $xml = new SimpleXMLElement('<responsedata/>');
+      $this->arrayToXml($data, $xml);
+      return Response::make($xml->saveXML(),$code,$headers);
+    }
+    return Response::make($data,$code,$headers);
+  }
+
+    /**
+   * Convert an array to XML
+   * @param array $array
+   * @param SimpleXMLElement $xml
+   */
+  private function arrayToXml($array, &$xml){
+    foreach ($array as $key => $value) {
+        if(is_int($key)){
+            $key = "e";
+        }
+        if(is_array($value)){
+            $label = $xml->addChild($key);
+            $this->arrayToXml($value, $label);
+        }
+        else {
+            $xml->addChild($key, $value);
+        }
+    }
   }
 
 

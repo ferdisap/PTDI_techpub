@@ -481,28 +481,31 @@ class Dml extends ModelsCsdb
     return $dml->save();
   }
 
-  public static function instanceModel()
-  {
-    $self = new self();
-    $fillable = [
-      'filename',
-      'modelIdentCode',
-      'senderIdent',
-      'dmlType',
-      'yearOfDataIssue',
-      'seqNumber',
-      'securityClassification',
-      'brexDmRef',
-      'dmlRef',
-      'remarks',
-    ];
-    $self->setProtected([
-      'table' => 'dml',
-      'fillable' => $fillable,
-      'casts' => [],
-      'attributes' => [],
-      'timestamps' => false
-    ]);
-    return $self;
-  }
+  /**
+   * dilakukan di parent class
+   */
+  // public static function instanceModel()
+  // {
+  //   $self = new self();
+  //   $fillable = [
+  //     'filename',
+  //     'modelIdentCode',
+  //     'senderIdent',
+  //     'dmlType',
+  //     'yearOfDataIssue',
+  //     'seqNumber',
+  //     'securityClassification',
+  //     'brexDmRef',
+  //     'dmlRef',
+  //     'remarks',
+  //   ];
+  //   $self->setProtected([
+  //     'table' => 'dml',
+  //     'fillable' => $fillable,
+  //     'casts' => [],
+  //     'attributes' => [],
+  //     'timestamps' => false
+  //   ]);
+  //   return $self;
+  // }
 }

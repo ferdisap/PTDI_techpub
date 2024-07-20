@@ -104,7 +104,7 @@ axios.interceptors.request.use(
         config.method = route.method[0];
         config.data = route.params;
       } catch (error) {
-        console.log(error);
+        console.error(error);
         // throw new Error(error); 
       }
     }
@@ -142,7 +142,7 @@ axios.interceptors.response.use(
         message: `<i>${axiosError.message}</i>` + '<br/>' + axiosError.response.data.message
       });
     } else {
-      console.log(axiosError.stack);
+      console.error(axiosError.stack);
     }
     return axiosError.response;
   }

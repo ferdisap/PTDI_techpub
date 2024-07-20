@@ -207,6 +207,7 @@ class CsdbServiceController extends CsdbController
   }
 
   /**
+   * DEPRECIATED, diganti oleh Csdb\CsdbController@get_object_raw
    * $request->get('output') = "'model'|default:''";
    * @return Illuminate\Support\Facades\Response;
    */

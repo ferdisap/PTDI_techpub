@@ -65,10 +65,10 @@ Route::get('/brex', [BrexController::class, 'indexBrex']);
 
 // require __Dir__."/tcpdf/tcpdf.php";
 // require __Dir__."/csdb/general.php";
-require __Dir__."/csdb/service.php";
-require __Dir__."/project/general.php";
-require __Dir__."/ietm/general.php";
-require __Dir__."/ietm/repo.php";
+// require __Dir__."/csdb/service.php";
+// require __Dir__."/project/general.php";
+// require __Dir__."/ietm/general.php";
+// require __Dir__."/ietm/repo.php";
 require __Dir__."/csdb4/general.php";
 require __Dir__."/csdb4/dml.php";
 require __Dir__."/csdb4/comment.php";
@@ -106,16 +106,5 @@ Route::get("/api/alert/{name}", function(Request $request, string $name){
   ]);
 })->middleware('auth')->name('api.alert');
 
-Route::get("/tes", function(Request $request){
-  dd((new Controller())->getAllRoutesNamed());
-});
-
 Route::get('/worker/{filename}', [Controller::class, 'getWorker'])->middleware('auth');
-Route::get('/axios', [Controller::class, 'getAxiosJs']);
-
-Route::get('tes123', function(){
-  $inWork = 'AA';
-  $inWork = str_pad($inWork, 2, '0', STR_PAD_LEFT);
-  $inWork++;
-  dd($inWork);
-});
+// Route::get('/axios', [Controller::class, 'getAxiosJs']);

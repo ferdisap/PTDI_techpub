@@ -10,18 +10,23 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Ptdi\Mpub\Main\Helper;
 
+// ### Route utama ###
 Route::get("/csdb4/{view?}",[CsdbController::class, 'app'])->where('view','(.*)')->middleware('auth');
 Route::get("/api/allobjects",[CsdbController::class, 'get_allobjects_list'])->middleware('auth')->name('api.get_allobjects_list');
-Route::get("/api/object/all",[CsdbController::class, 'get_objects_list'])->middleware('auth')->name('api.get_objects_list');
-
-
-Route::get("/api/csdbtransform/{filename}", [CsdbServiceController::class, 'provide_csdb_transform3'])->middleware('auth')->name('api.transform_csdb');
 Route::post("/api/csdbcreate",[CsdbController::class, 'create'])->middleware('auth')->name('api.create_object');
+Route::get('/api/raw/{CSDBModel:filename}', [CsdbController::class, 'get_object_raw'])->middleware('auth')->name('api.get_object_raw');
+
+// ### Route yang masih dipakai, tapi tidak diaktifkan sementara ini
+
+
+
+// Route::get("/api/object/all",[CsdbController::class, 'get_objects_list'])->middleware('auth')->name('api.get_objects_list');
+// Route::get("/api/csdbtransform/{filename}", [CsdbServiceController::class, 'provide_csdb_transform3'])->middleware('auth')->name('api.transform_csdb');
 Route::post("/api/uploadICN", [CsdbController::class, 'uploadICN'])->middleware('auth')->name('api.upload_ICN');
 Route::get("/api/deletion/all",[CsdbController::class, 'get_deletion_list'])->middleware('auth')->name('api.get_deletion_list');
 
 Route::post("/api/updateobject/{filename}", [CsdbController::class, 'update'])->middleware('auth')->name('api.update_object');
-Route::post("/api/updateICN/{csdb:filename}", [CsdbController::class, 'updateICN'])->middleware('auth')->name('api.update_ICN');
+// Route::post("/api/updateICN/{csdb:filename}", [CsdbController::class, 'updateICN'])->middleware('auth')->name('api.update_ICN');
 
 Route::get('/api/getobject/{filename}', [CsdbController::class, 'getFile'])->middleware('auth')->name('api.get_object'); // dipindah ke CsdbServiceController@request_csdb_bject
 Route::get('/api/getdmcstaged/all', [CsdbController::class, 'get_dmc_staged_list'])->middleware('auth')->name('api.get_dmc_staged_list');
@@ -32,8 +37,6 @@ Route::get("/api/commit/{filename}",[CsdbController::class, 'commit'])->middlewa
 Route::post("/api/multiplecommitcsdbobject",[CsdbController::class, 'commit_multiple'])->middleware('auth')->name("api.commit_objects");
 Route::get("/api/issue/{filename}", [CsdbController::class, 'issue'])->middleware('auth')->name('api.issue_object');
 Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware('auth')->name('api.edit_object');
-// Route::post('api/pushtostage',)
-
 
 
 Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');

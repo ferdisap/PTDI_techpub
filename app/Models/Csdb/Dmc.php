@@ -3,12 +3,13 @@
 namespace App\Models\Csdb;
 
 use App\Jobs\Csdb\DmcTableFiller;
+use App\Models\Csdb;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 
-class Dmc extends Model
+class Dmc extends Csdb
 {
   use HasFactory;
 
@@ -156,4 +157,17 @@ class Dmc extends Model
     }
     return self::create($arr);
   }
+
+  // public static function instanceModel()
+  // {
+  //   $self = new self();
+  //   $self->setProtected([
+  //     'table' => $self->getProtected('table') ?? [],
+  //     'fillable' => $self->getProtected('fillable') ?? [],
+  //     'casts' => $self->getProtected('casts') ?? [],
+  //     'attributes' => $self->getProtected('attributes') ?? [],
+  //     'timestamps' => $self->getProtected('timestamps') ?? false,
+  //   ]);
+  //   return $self;
+  // }
 }

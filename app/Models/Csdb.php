@@ -412,14 +412,40 @@ class Csdb extends Model
   }
 
   /**
-   * 
+   * masih terbatas pada object yang ada classnya masing2 seperti Dmc, Pmc, Ddn, Comment, Dml. Tapi belum untuk Icn
    */
   public static function getModelClass(string $table)
   {
     $class = "\App\Models\Csdb\\".$table;
-    $method = "instanceModel";
-    return class_exists($class) ? call_user_func($class."::".$method) : false;
+    if(class_exists($class)){
+      $self = new $class;
+      $self->setProtected([
+        'table' => $self->getProtected('table') ?? [],
+        'fillable' => $self->getProtected('fillable') ?? [],
+        'casts' => $self->getProtected('casts') ?? [],
+        'attributes' => $self->getProtected('attributes') ?? [],
+        'timestamps' => $self->getProtected('timestamps') ?? false,
+      ]);
+      return $self;
+    }
+    return new self();
   }
+  
+  /**
+   * DEPRECIATED Tidak diperlukan lagi karena sudah di instance di class ini @getModelClass
+   */
+  // public static function instanceModel()
+  // {
+  //   $self = new self();
+  //   $self->setProtected([
+  //     'table' => $self->getProtected('table') ?? [],
+  //     'fillable' => $self->getProtected('fillable') ?? [],
+  //     'casts' => $self->getProtected('casts') ?? [],
+  //     'attributes' => $self->getProtected('attributes') ?? [],
+  //     'timestamps' => $self->getProtected('timestamps') ?? false,
+  //   ]);
+  //   return $self;
+  // }
 
 
 

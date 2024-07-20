@@ -1,173 +1,75 @@
-<!-- 
-  props.filename is depreciated
-  saat ini ICN tidak bisa di update, karena keterbatasan logic. 
-  Mungkin selanjutnya bisa, jadi setiap di update tidak ada erubahan di filenamenya karena tidak ada attribute inWork. Jadi setiap kali ICN di issue, editable menjadi 0
- -->
 <script>
-import { EditorView, gutter, lineNumbers, GutterMarker, keymap } from "@codemirror/view";
-import { defaultKeymap } from "@codemirror/commands";
+import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import axios from "axios";
-import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
-
+import XMLEditor from '../../XMLEditor';
+// import { isProxy, toRaw } from 'vue';
+import ContinuousLoadingCircle from '../../loadingProgress/Continuousloadingcircle.vue';
 export default {
-  data() {
+  data(){
     return {
       techpubStore: useTechpubStore(),
-      editor: undefined, // editor.state.doc.toString() // untuk ngambil isi text nya
       isUpdate: false,
       isFile: false,
-      rn_update: 'api.update_object',
-      rn_create: 'api.create_object',
+      route: {},
+      XMLEditor: new XMLEditor('xml-editor-container'),
       showLoadingProgress: false,
-      modelPath: '',
+
+      // helper
+      pathForInputUploadFile: '',
+      pathForInputXMLFile: '',
+      filenameForInputUploadFile: '',
     }
   },
-  components: {ContinuousLoadingCircle},
-  props: ['filename'],
-  computed: {
-    getEditor(){
-      if(this.editor){
-        return this.editor.dom.outerHTML;
-      }
+  components:{ContinuousLoadingCircle},
+  computed:{
+    pathInputUploadFile(){
+      return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.path : this.pathForInputUploadFile) : this.pathForInputUploadFile;
     },
-    isFileUpload(){
-      if( this.isFile 
-          && (
-            (this.$props.filename && this.$props.filename.slice(0,3) === 'ICN')
-            || !this.isUpdate
-          )
-      ){
-      // if(!this.$props.filename || (this.isFile && this.$props.filename.slice(0,3) === 'ICN')){
-      // if(this.isFile && this.$props.filename.slice(0,3) === 'ICN'){
-        return true;
-      }
+    pathInputXMLFile(){
+      return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.path : this.pathForInputUploadFile) : this.pathForInputUploadFile;
+    },
+    filenameInputUploadFile(){
+      return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.filename : this.filenameForInputUploadFile) : this.filenameForInputUploadFile;
     },
   },
   methods: {
-    changeText(text = '', from = 0, to = undefined){
-      if(!to){
-        to = this.editor.state.doc.toString().length;
-      }
-      this.editor.dispatch({changes:{from:from, to:to, insert:text}});
-    },
-    async setUpdate(){
-      this.isUpdate = true;
-      if(this.$props.filename.slice(0,3) === 'ICN'){
+    setUpdate(filename){
+      this.isUpdate = true; 
+      if(filename.slice(0,3) === 'ICN'){
         this.isFile = true;
-        this.rn_update = 'api.update_ICN';
       } else {
         this.isFile = false;
-        this.rn_update = 'api.update_object';
-        // let raw = await this.getRaw(this.$props.filename);
-        let raw = await this.getRaw(this.$route.params.filename);
-        this.changeText(raw);
+        this.XMLEditor.setRoute(this.techpubStore.getWebRoute('api.get_object_raw',{filename: filename}));
+        this.XMLEditor.fetchRaw();
       }
     },
     setCreate(){
       this.isUpdate = false;
       this.isFile = false;
-      this.changeText('');
+      this.XMLEditor.changeText('');
     },
-    async getRaw(filename){
-      this.showLoadingProgress = true;
-      let response = await axios({
-        route: {
-          name: 'api.request_csdb_object',
-          data: {
-            filename: filename
-          }
-        },
-        useMainLoadingBar: false,
-      });
-      this.showLoadingProgress = false;
-      if(response.statusText === 'OK'){
-        return response.data
-      }
-    },
-    async create(event) {
-      this.showLoadingProgress = true;
-      if(!this.isFileUpload){
-        const formData = new FormData(event.target);
-        formData.append('xmleditor', this.editor.state.doc.toString());
-        let response = await axios({
-          route: {
-            name: this.rn_create,
-            data: formData,
-          },
-          useMainLoadingBar: false,
-        })
-        if(response.statusText === 'OK'){
-          this.emitter.emit('createObjectFromEditor', { model: response.data.model });
-          // response harus ada SQL object model. 
-        }
-      } else {
-        const formData = new FormData(event.target);
-        // console.log(window.fd = formData);
-        let response = await axios({
-          route: {
-            name: 'api.upload_ICN',
-            data: formData
-          },
-          useMainLoadingBar: false,
-        });
-        if(response.statusText === 'OK'){
-          this.emitter.emit('createICNFromEditor', { model: response.data.model });
-        }
-      }
-      this.showLoadingProgress = false;
-    },
-    async update(event) {
-      this.showLoadingProgress = true;
-      let emitName;
-      const formData = new FormData(event.target);
-      if(!this.isFileUpload){
-        formData.append('xmleditor', this.editor.state.doc.toString());
-        formData.append('filename', this.$route.params.filename);
-        emitName = 'updateObjectFromEditor';
-      } else {
-        formData.append('filename', this.$route.params.filename);
-        emitName = 'updateICNFromEditor';
-      }
-      let response = await axios({
-        route: {
-          name: this.rn_update,
-          data: formData
-        },
-        useMainLoadingBar: false,
-      })
-      if (response.statusText === 'OK') {
-        this.emitter.emit(emitName, { model: response.data.model });
-      }
-      this.showLoadingProgress = false;
-    },
-    submit(event) {
-      return !this.isUpdate ? this.create(event) : this.update(event);
-    },
-    switchTo(name){
+    switchEditor(name){
       switch (name) {
-        case 'editor':
-          this.isFile = false; 
-          setTimeout(() => {
-            document.querySelector('#xml-editor-container').innerHTML = this.editor.dom.outerHTML;
-          });
+        case 'XMLEditor':
+          this.isFile = false;
+          if(this.$route.params.filename.substring(0,3) === 'ICN') this.isUpdate = false;
+          setTimeout(()=>document.getElementById(this.XMLEditor.id).innerHTML = this.XMLEditor.editor.dom.outerHTML,0);
           break;
-        case 'file-upload':
-          this.isFile = true
-          break;
-        default:
+        case 'FILEUpload':
+          this.isFile = true;
+          if(this.$route.params.filename && this.$route.params.filename.slice(0,3) != 'ICN') this.isUpdate = false;
           break;
       }
     },
-    readURL(evt) {
-      let file = evt.target.files[0];
+    readEntity(event){
+      let file = event.target.files[0];
       if (file) {
-        if (file.type == 'text/xml') {
+        if (file.type === 'text/xml') {
           alert('you will be moved to xml editor.');
           // push route to editor page here
           const reader = new FileReader();
           reader.onload = () => {
-            this.switchTo('editor');
+            this.switchEditor('XMLEditor');
             this.changeText(reader.result);
             this.emitter.emit('readTextFileFromEditor');
           }
@@ -175,141 +77,114 @@ export default {
         }
         else {
           this.emitter.emit('readFileURLFromEditor', {
-              mime: file.type,
-              sourceType: 'url',
-              source: URL.createObjectURL(file),
-            });
+            mime: file.type,
+            sourceType: 'url',
+            source: URL.createObjectURL(file),
+          });
         }
       }
     },
-    async getPath(filename){
+    submit(event){
       this.showLoadingProgress = true;
-      let response = await axios({
-        route: {
-          name: 'api.get_object_path',
-          data: {
-            filename: filename
-          }
-        },
-        useMainLoadingBar: false,
-      });
+      this.isFile ? (this.submitUploadFile(event)) : (
+        this.isUpdate ? (this.submitUpdateXml) : (this.submitCreateXml)
+      );
       this.showLoadingProgress = false;
-      if(response.statusText === 'OK'){
-        this.modelPath = response.data
-      }
-    }
+    },
+    async submitUploadFile(event){
+      const fd = new FormData(event.target);
+      const response = await axios({
+        route: {
+          name: 'api.upload_ICN',
+          data: fd
+        }, useMainLoadingBar: false,
+      });
+      if(response.statusText === 'OK') this.emitter.emit('uploadICNFromEditor', { model: response.data.model });
+    },
+    async submitCreateXml(event){
+      const fd = new FormData(event.target);
+      const response = await axios({
+        route: {
+          name: 'api.create_object',
+          data: fd
+        }, useMainLoadingBar: false,
+      });
+      if(response.statusText === 'OK') this.emitter.emit('createObjectFromEditor', { model: response.data.model });
+    },
+    async submitUpdateXml(event){
+      const fd = new FormData(event.target);
+      fd.set('xmleditor', this.XMLEditor.editor.state.doc.toString());
+      const response = await axios({
+        route: {
+          name: 'api.update_object',
+          data: fd
+        }, useMainLoadingBar: false,
+      });
+      console.log(response);
+      if(response.statusText === 'OK') this.emitter.emit('updateObjectFromEditor', { model: response.data.model });
+    },
   },
-  async mounted() {
-    this.editor = new EditorView({
-      doc: '',
-      extensions: [keymap.of(defaultKeymap), EditorView.lineWrapping, lineNumbers(), gutter({ class: "cm-mygutter" })],
-      parent: document.querySelector('#xml-editor-container')
-    });
-    // this.editor.state.doc.toString() // untuk ngambil isi text nya
-
-    // if(this.$props.filename){
-    //   this.setUpdate();
-    //   if(this.$props.filename.slice(0,3) !== 'ICN') {
-    //     let raw = await this.getRaw(this.$props.filename);
-    //     this.changeText(raw);
-    //     this.getPath(this.$route.params.filename);
-    //   }
-    // }
-
-    if(this.$route.params.filename){
-      let raw = await this.getRaw(this.$route.params.filename);
-      this.changeText(raw);
-      this.getPath(this.$route.params.filename);
-      this.isUpdate = true;
-    }
-
-
-
+  mounted(){
+    console.log('aaa');
+    window.XMLEditor = XMLEditor;
+    window.ed = this.XMLEditor;
+    this.XMLEditor.attachEditor()
+    if(this.$route.params.filename) this.setUpdate(this.$route.params.filename);
   }
 }
 </script>
 <style>
-#xml-editor-container {
-  background-color: rgba(0, 0, 0, 0); 
-}
-.cm-editor {
-  height: 600px;
+#xml-editor-container > div{
+  height: 350px;
 }
 </style>
 <template>
   <div class="editor px-3 relative">
+
     <div class="h-[5%] mb-3">
       <h1 class="text-blue-500 w-full text-center">Editor</h1>
-      <a href="#" v-if="!isUpdate" @click.prevent="setUpdate()" class="block text-center text-sm underline text-blue-600">Switch to Update</a>
-      <a href="#" v-else @click.prevent="setCreate()" class="block text-center text-sm underline text-blue-600">Switch to Create</a>
+      <a href="#" @click.prevent="isUpdate? setCreate() : setUpdate($route.params.filename)" class="block text-center text-sm underline text-blue-600">Switch to {{ isUpdate ? 'Create' : 'Update' }}</a>
     </div>
 
-    <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" @submit.prevent="submit($event)">
-    <!-- <form v-if="isFileUpload" class="mb-3" enctype="multipart/form-data" method="POST" action="/api/uploadICN"> -->
-      <h1>File Upload
-        <a @click="switchTo('editor')" href="#" class="font-normal text-sm underline text-blue-600">Switch to XML editor</a><br/>
-      </h1>
-      <span class="text-sm">The file can be anything as csdb object.</span>
-      <div class="mb-5">
-        <div class="flex space-x-3">
-          <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
-          <input type="checkbox" id="brex_validate" name="brex_validate" />
+    <form @submit.prevent="submit($event)">
+      <div v-if="isFile">
+        <div>
+          <h2>File Upload</h2>
+        <a href="#" @click.prevent="switchEditor('XMLEditor')" class="text-sm underline text-blue-500">Switch to text editor</a>
         </div>
-        <div v-if="isUpdate"> {{ $props.filename }} </div>
-        <div class="flex space-x-3 w-full mb-2">
-          <div v-if="!isUpdate" class="block w-[70%]">
-            <label for="icn-filename" class="text-sm font-bold">Filename</label><br/>
-            <input type="text" id="icn-filename" name="filename" placeholder="filename without extension" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
-          </div>
-          <div class="block w-[70%] mb-2">
-            <label for="icn-path" class="text-sm font-bold">Path</label><br/>
-            <input v-model="modelPath" id="icn-path" name="path" placeholder="type the fullpath eg. csdb/n219/amm" value="csdb" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-          </div>
-          <!-- <div v-if="!isUpdate" class="block w-auto">
-            <label for="securityClassification" class="text-sm">Security Classification</label><br/>
-            <input type="text" name="securityClassification" placeholder="type the SC code" class="py-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" />
-            <div class="error text-sm text-red-600" v-html="techpubStore.error('securityClassification')"></div>
-          </div> -->
+        <div>
+          <label for="icn-filename" class="text-sm font-bold">Filename</label><br/>
+          <input type="text" id="icn-filename" name="filename" :value="filenameInputUploadFile" @change.prevent="filenameForInputUploadFile = $event.target.value" placeholder="filename without extension" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
-        <input type="file" id="entity" name="entity" @change="readURL($event)" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+        <div class="error text-sm text-red-600" v-html="techpubStore.error('filename')"></div>
+        <div class="w-2/3 inline-block">
+          <label for="icn-path" class="text-sm font-bold">Path</label><br/>
+          <input id="icn-path" name="path" :value="pathInputUploadFile" @change.prevent="pathForInputUploadFile = $event.target.value" placeholder="type the fullpath eg. csdb/n219/amm" value="csdb" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="w-1/3 inline-block">
+          <label for="icn-path" class="text-sm font-bold">Browse</label><br/>
+          <input type="file" id="entity" name="entity" @change="readEntity($event)" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+        </div>
+        <div class="error text-sm text-red-600" v-html="techpubStore.error('path')"></div>
         <div class="error text-sm text-red-600" v-html="techpubStore.error('entity')"></div>
       </div>
-      <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
-    </form>
-    <form v-else @submit.prevent="submit($event)">
-      <h1 class="">XML Editor
-        <a @click="switchTo('file-upload')" href="#" class="font-normal text-sm underline text-blue-600">Switch to file upload</a><br/>
-      </h1>
-      <span class="text-sm">Only text in XML form can be processed.</span>
-      <div class="h-max">
-        <div class="mb-2 flex space-x-3">
-          <div class="w-1/2">
-            <div class="flex px-3">
-              <div class="block w-2/4">
-                <label for="xsi_validate" class="text-gray-900 dark:text-white text-sm font-light">XSI Validate</label>
-                <br />
-                <label for="brex_validate" class="text-gray-900 dark:text-white text-sm font-light">BREX Validate</label>
-              </div>
-              <div class="block w-1/4">
-                <input type="checkbox" id="xsi_validate" name="xsi_validate" checked value="1"/>
-                <br />
-                <input type="checkbox" id="brex_validate" name="brex_validate" value="1"/>
-              </div>
-            </div>
-          </div>
+      <div v-else>
+        <h2>Text Editor</h2>
+        <a href="#" @click.prevent="switchEditor('FILEUpload')" class="text-sm underline text-blue-500">Switch to file upload</a>
+        <div class="mb-1" v-if="$route.params.filename && isUpdate">
+          <label for="object-filename" class="text-sm font-bold mr-2">Filename:</label>
+          <input id="object-filename" name="filename" type="text" readonly="true" :value="$route.params.filename" class="w-96 py-0 px-1 rounded-sm"/>
         </div>
-        <div class="my-3">
-          <div class="text-sm text-gray-400">Path: eg. csdb/n219/amm</div>
-          <!-- <input :value="modelPath" name="path" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"> -->
-          <input v-model="modelPath" name="path" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <div class="mb-1">
+          <label for="object-path" class="text-sm font-bold mr-2">Path:</label>
+          <input id="object-path" name="path" :value="pathInputXMLFile" @change.prevent="pathForInputXMLFile = $event.target.value" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="py-0 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
-        <!-- editor -->
-        <div id="xml-editor-container" class="text-xl mb-2"></div>
+        <div :id="XMLEditor.id" class="text-xl mb-2"></div>
         <div class="error text-sm text-red-600" v-html="techpubStore.error('xmleditor')"></div>
-        <br />
       </div>
-      <button type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">{{ !this.isUpdate ? 'create' : 'update' }}</button>
+      <button v-if="!isUpdate && !isFile" type="submit" name="button" class="button bg-green-400 text-white hover:bg-green-600">Create</button>
+      <button v-else-if="isFile" type="submit" name="button" class="button bg-blue-400 text-white hover:bg-blue-600">Upload</button>
+      <button v-else type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">Update</button>
     </form>
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>

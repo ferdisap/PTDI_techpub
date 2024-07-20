@@ -5,6 +5,7 @@ namespace App\Http\Requests\Csdb;
 use App\Models\Csdb;
 use App\Models\User;
 use App\Rules\Csdb\BrexDmRef;
+use App\Rules\Csdb\SecurityClassification;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class DdnCreate extends FormRequest
       'senderIdent' => 'required',
       'receiverIdent' => 'required',
       
-      'securityClassification' => 'required', // nanti harus divalidasi valuenya harus dua digit dan nanti keynya harus dibedakan antara DDN dan COM jika dibuat dalam satu request yang sama
+      'securityClassification' => ['required',new SecurityClassification], // nanti harus divalidasi valuenya harus dua digit dan nanti keynya harus dibedakan antara DDN dan COM jika dibuat dalam satu request yang sama
       'authorization' => 'required',
       'brexDmRef' => ['required', new BrexDmRef],
       'remarks' => '',
