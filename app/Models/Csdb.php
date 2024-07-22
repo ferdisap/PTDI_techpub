@@ -64,7 +64,7 @@ class Csdb extends Model
    *
    * @var array
    */
-  protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id'];
+  protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id', 'deleted_at'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -105,7 +105,7 @@ class Csdb extends Model
   {
     return Attribute::make(
       set: fn (string $v) => now()->toString(),
-      get: fn (string $v) => now()->toString(),
+      // get: fn (string $v) => Carbon::parse($v)->timezone(7)->toString(),
     );
   }
 
@@ -116,7 +116,9 @@ class Csdb extends Model
   {
     return Attribute::make(
       set: fn (string $v) => now()->toString(),
-      get: fn (string $v) => now()->toString(),
+      // get: fn (string $v) => Carbon::parse($v)->timezone(7)->toString()
+      // get: fn (string $v) => 
+      // get: fn (string $v) => Carbon::createFromFormat('D M d Y H:i:s O+', $v)->toString()
     );
   }
 
@@ -362,6 +364,7 @@ class Csdb extends Model
           switch ($doctype) {
             case 'dmodule':
               $csdbobject = Dmc::fillTable($this->CSDBObject);
+              // $csdbobject = true;
               break;
             case 'pm':
               $csdbobject = Pmc::fillTable($this->CSDBObject);
@@ -395,7 +398,8 @@ class Csdb extends Model
 
   public function appendAvailableStorage(string $storage)
   {
-    if(!str_contains($this->available_storage, $storage)) $this->available_storage .= ",".$storage;
+    if(!($this->available_storage)) $this->available_storage = $storage;
+    elseif(!str_contains($this->available_storage, $storage)) $this->available_storage .= ",".$storage;
   }
 
   /**
@@ -414,9 +418,9 @@ class Csdb extends Model
   /**
    * masih terbatas pada object yang ada classnya masing2 seperti Dmc, Pmc, Ddn, Comment, Dml. Tapi belum untuk Icn
    */
-  public static function getModelClass(string $table)
+  public static function getModelClass(string $model)
   {
-    $class = "\App\Models\Csdb\\".$table;
+    $class = "\App\Models\Csdb\\".$model;
     if(class_exists($class)){
       $self = new $class;
       $self->setProtected([

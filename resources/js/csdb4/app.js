@@ -95,10 +95,11 @@ axios.interceptors.request.use(
       useTechpubStore().showLoadingBar = config.useMainLoadingBar == false ? false : true;
       try {
         let data = config.route.data;
-        if(data && (data.updated_at || (data instanceof FormData && data.get('updated_at')))){
-          headers['If-Modified-Since'] = data.updated_at;
-          data.delete ? data.delete('updated_at') : delete data.updated_at;
-        }
+        // if(data && (data.updated_at || (data instanceof FormData && data.get('updated_at')))){
+        //   headers['If-Modified-Since'] = data.updated_at;
+        //   // headers['If-Unmodified-Since'] = data.updated_at;
+        //   data.delete ? data.delete('updated_at') : delete data.updated_at;
+        // }
         const route = useTechpubStore().getWebRoute(config.route.name, data);
         config.url = route.url;
         config.method = route.method[0];

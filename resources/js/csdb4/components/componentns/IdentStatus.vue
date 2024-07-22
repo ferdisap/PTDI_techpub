@@ -1,4 +1,5 @@
 <!-- 
+  VUE ini DEPRECIATED karena IdentStatus tidak dipakai lagi di frontend (sebelumnya di Explorer.vue)
   props.filename is depreciated
  -->
 <script>

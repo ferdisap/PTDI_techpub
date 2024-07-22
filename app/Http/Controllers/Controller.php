@@ -297,9 +297,9 @@ class Controller extends BaseController
    * jika "?sc=filename::DMC%20path::csdb" => maka querynya WHERE filename LIKE '%DMC%' AND path LIKE '%csdb%';
    * jika "?sc=filename::DMC,PMC" => maka querynya WHERE filename LIKE '%DMC%' OR filename LIKE '%PMC%';
    * jika "?sc=filename::DMC%20filename::022" => maka querynya WHERE filename LIKE '%DMC%' AND filename LIKE '%022%';
-   * @param {$strictString} keep the &#value as it is, and add your SQL pattern
+   * @param Array, index0 = query string, index1 = exploded keywords
    */
-  public function generateWhereRawQueryString($keyword, string $strictString = "%#&value;%", string $table = '')
+  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '')
   {
     $isFitted = false;
     // contoh1
@@ -335,7 +335,7 @@ class Controller extends BaseController
       return $column;
     };
     
-    if(isset($this->model) && $this->model instanceof Csdb){
+    if(isset($this->model) && (get_class($this->model) === Csdb::class)){
       if(array_is_list($keywords)){
         $keywords = $fitToColumn($keywords);
         $isFitted = true;
@@ -412,7 +412,8 @@ class Controller extends BaseController
         $escapedV = str_replace("_", "\_",$v);
         // if($col === 'path') $dictionary["<<".$v.">>"] = $strict ? " {$col} = '{$escapedV}'" : "{$col} LIKE '{$escapedV}/%' ESCAPE '\'";
         // else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$escapedV}%' ESCAPE '\'";
-        $strictStr = str_replace('#&value;', $escapedV, $strictString); // variable $strictString jangan di re asign
+        $strictStr = str_replace('#&value;', $escapedV, $strictString[$col] ?? "%#&value;%"); // variable $strictString jangan di re asign
+        // $strictStr = str_replace('#&value;', $escapedV, "%#&value;%"); // variable $strictString jangan di re asign
         $col = preg_replace("/___[0-9]+$/", "", $col); // menghilangkan suffix "___XXX" yang ditambahkan di fungsi ...Main\Helper::class@explodeSearchKeyAndValue
         $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'";
         $space = str_replace($indexString, "<<".$v.$id.">>", $space);

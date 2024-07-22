@@ -66,23 +66,34 @@ export default {
     async goto(type, page = undefined) {
       this.get_list(type, { page: page });
     },
+    /**
+     * data itu isinya path doang, lihat di WorkerListTree.js
+    */
     clickFolder(data) {
       this.emitter.emit('clickFolderFromListTree', data);
     },
+    /**
+     * data itu isinya path, filename, viewType
+    */
     clickFilename(data) {
       this.$router.push({
           name: this.$props.routeName,
           params: {
               filename: data.filename,
-              viewType: 'pdf'
+              viewType: data.viewType
           },
           query: this.$route.query
       });
       this.emitter.emit('clickFilenameFromListTree', data); // key path dan filename
 
     },
+    /**
+     * di workernya belum mendukung untuk html karena memang saya belum membuat XSL/ IETM untuk object nya
+    */
     createListTreeHTML() {
-      let href = this.techpubStore.getWebRoute('',{filename:':filename',viewType:'pdf'},Object.assign({},this.$router.getRoutes().find(r => r.name === this.$props.routeName)))['path'];
+      let hrefForPdf = this.techpubStore.getWebRoute('',{filename:':filename',viewType:'pdf'},Object.assign({},this.$router.getRoutes().find(r => r.name === this.$props.routeName)))['path'];
+      let hrefForHtml = hrefForPdf.replace('pdf','html');
+      let hrefForOther = hrefForPdf.replace('pdf','other');
       const worker = this.createWorker("WorkerListTree.js");
       if(worker){
         worker.onmessage = (e) => {
@@ -96,7 +107,9 @@ export default {
             list_level: isProxy(this.data[`${this.$props.type}_list_level`]) ? toRaw(this.data[`${this.$props.type}_list_level`]) : this.data[`${this.$props.type}_list_level`],
             list: isProxy(this.data[`${this.$props.type}_list`]) ? toRaw(this.data[`${this.$props.type}_list`]) : this.data[`${this.$props.type}_list`],
             open: isProxy(this.data.open) ? toRaw(this.data.open) : this.data.open,
-            hrefForFile : href,
+            hrefForPdf : hrefForPdf,
+            hrefForHtml : hrefForHtml,
+            hrefForOther : hrefForOther,
           }
         });
       }
@@ -136,11 +149,14 @@ export default {
   async mounted() {
     this.data.open = JSON.parse(top.localStorage.getItem('expandCollapseListTree'))
     this.emitter.on('ListTree-refresh', (data) => {
-      //data adalah model SQL Csdb Object
-      if (data) {
-        if (this.deleteList(data.filename)) {
-          this.pushList(data);
-        }
+      //data adalah model SQL Csdb Object atau array contain csdb object (bukan meta objek nya)
+      if(Array.isArray(data)){
+        data.forEach((obj) => {
+          if (this.deleteList(obj.filename)) this.pushList(obj);
+        });
+      }
+      else if (data) {
+        if (this.deleteList(data.filename)) this.pushList(data);
       } else {
         this.get_list(this.$props.type);
       }
@@ -161,6 +177,9 @@ export default {
       this.createListTreeHTML();
     })
 
+    /*
+     *  DEPRECIATED, diganti oleh ListTree-refresh  
+     */ 
     this.emitter.on('ListTree-add', (data) => {
       //data adalah model SQL Csdb Object
       this.pushList(data);

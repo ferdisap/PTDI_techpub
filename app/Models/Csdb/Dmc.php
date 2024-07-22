@@ -55,6 +55,13 @@ class Dmc extends Csdb
   protected $table = 'dmc';
 
   /**
+   * The model's default values for attributes.
+   *
+   * @var array
+   */
+  protected $attributes = [];
+
+  /**
    * Indicates if the modul should be timestamped
    * 
    * @var bool
@@ -150,12 +157,34 @@ class Dmc extends Csdb
     // self::create($arr);
     // dispatch(Dmc::create($arr))->delay(now()->addMinutes(5));
 
-    $dmc = self::where('filename', $filename)->first();
-    if($dmc) {
-      $dmc->update($arr);
-      return $dmc->save();
+    // $dmc = self::where('filename', $filename)->first();
+    // if($dmc) {
+    //   $dmc->update($arr);
+    //   return $dmc->save();
+    // }
+    // return self::create($arr);
+    $dmc = Csdb::getModelClass('Dmc');
+    $dmc = $dmc->where('filename', $filename)->first() ?? $dmc;
+    $dmc->timestamps = false;
+    foreach($arr as $prop => $v){
+      $dmc->$prop = $v;
     }
-    return self::create($arr);
+    return $dmc->save();
+
+    // $ddn = new self();
+    // $ddn->setProtected([
+    //   'table' => 'ddn',
+    //   'fillable' => $fillable,
+    //   'casts' => [],
+    //   // 'attributes' => [],
+    //   'timestamps' => false
+    // ]);
+    // $ddn = $ddn->where('filename', $filename)->first() ?? $ddn;
+    // $ddn->timestamps = false;
+    // foreach($arr as $prop => $v){
+    //   $ddn->$prop = $v;
+    // }
+    // return $ddn->save();
   }
 
   // public static function instanceModel()

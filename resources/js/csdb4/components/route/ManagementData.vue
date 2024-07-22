@@ -104,18 +104,46 @@ export default {
       if(top.localStorage.colWidthManagemenData){
         this.colWidth = JSON.parse(top.localStorage.colWidthManagemenData);
       }
-      
-      this.emitter.on('add_comment', () => {
-        this.bottomBarItems.PreviewComment.isShow = true;
-      })
 
       this.emitter.on('clickFilenameFromListTree', (data) => {
         this.bottomBarItems.EditorDML.isShow = true;
         this.bottomBarItems.EditorDML.data = data; // hanya ada filename dan path saja di data
       });
 
+      this.emitter.on('clickFolderFromListTree', (data) => {
+        // Folder
+        this.bottomBarItems.Folder.isShow = true;
+        this.bottomBarItems.Folder.data = data; // hanya ada path saja di data
+      });
+
+      this.emitter.on('clickFilenameFromFolder', (data) => {
+        this.bottomBarItems.EditorDML.data = data; // hanya ada filename dan path di data
+        this.bottomBarItems.History.data = data; // hanya ada filename dan path di data
+      });
+
+      this.emitter.on('createDMLFromEditor', (data) => { 
+        this.emitter.emit('ListTree-refresh', data.model);
+        this.$root.gotoExplorer(data.model.filename);
+        this.bottomBarItems.History.data = data.model;
+      })
+
+      this.emitter.on('updateDMLFromEditor', (data) => {
+        // data berupa model
+        this.emitter.emit('History-refresh', data.model); // sepertinya ini tidak usah. Biar ga kebanyakan request
+      });
+
+      // this.emitter.on('DeleteCSDBObjectFromOption', (data) => {
+      //   // data adalah array. data[0] adalah model SQL CSDB Object
+      //   // data adalah array. data[1] adalah model Deletion Object
+      //   this.emitter.emit('ListTree-remove', data[0]);
+      //   this.emitter.emit('Deletion-refresh', data[1]);
+      // })
+
+      this.emitter.on('add_comment', () => {
+        this.bottomBarItems.PreviewComment.isShow = true;
+      });
+
       this.emitter.on('dispatchTo', (data) => {
-        // console.log(data);
         // data berisi array contains models
         this.bottomBarItems.DispatchTo.data = data;
         this.bottomBarItems.DispatchTo.isShow = true;

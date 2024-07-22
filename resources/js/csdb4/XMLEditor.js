@@ -11,11 +11,10 @@ import {isProxy, toRaw} from 'vue';
  * 3. fetchRaw() or changeText()
 */
 
-const privateData = new WeakMap();
-
 class XMLEditor{
 
   process = undefined;
+  stop = false;
   timeout = 0;
 
   route = {};
@@ -41,7 +40,12 @@ class XMLEditor{
     })
   }
 
+  stopFetch = (isStop = true) => {
+    this.stop = isStop;
+  }
+
   setRoute = (techpubRoute) => {
+    this.stop = false;
     this.route = techpubRoute;
     // ubah formData to object
     if(techpubRoute.params instanceof FormData){
@@ -69,16 +73,18 @@ class XMLEditor{
   fetchRaw = () => {
     this.changeText(' ON LOADING...');
     this.process = new Promise((r, j) => {
+      this.stop = false;
       clearTimeout(this.timeout);
       this.isDone = false;
       this.timeout = setTimeout(()=>{
+        if(Object.keys(this.route) < 1) return j(false);
         let worker;
         if(window.Worker){
           worker = new Worker('/worker/WorkerXMLEditor.js',{type: "module"});
         }
         if(!worker) return false;
         worker.onmessage = (e) => {
-          this.changeText(e.data);
+          if(!this.stop) this.changeText(e.data);
           worker.terminate();
         }
         worker.postMessage({route: this.route});

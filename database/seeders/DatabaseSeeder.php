@@ -15,6 +15,14 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
+    // Schema::connection('sqlite')->table('csdb', function(Blueprint $table){
+    //   $table->dropColumn('deleted_at');
+    // });
+    // Schema::connection('sqlite')->table('csdb', function(Blueprint $table){
+    //   $table->dateTimeTz('deleted_at')->nullable();
+    // });
+
+    
     // Schema::connection('sqlite')->dropIfExists('ddn');
     // Schema::connection('sqlite')->create('ddn', function (Blueprint $table) {
     //   $table->id();

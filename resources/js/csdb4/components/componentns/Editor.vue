@@ -46,6 +46,7 @@ export default {
     setCreate(){
       this.isUpdate = false;
       this.isFile = false;
+      this.XMLEditor.stopFetch();
       this.XMLEditor.changeText('');
     },
     switchEditor(name){
@@ -78,16 +79,16 @@ export default {
         else {
           this.emitter.emit('readFileURLFromEditor', {
             mime: file.type,
-            sourceType: 'url',
-            source: URL.createObjectURL(file),
+            sourceType: 'blobURL',
+            src: URL.createObjectURL(file),
           });
         }
       }
     },
-    submit(event){
+    async submit(event){
       this.showLoadingProgress = true;
-      this.isFile ? (this.submitUploadFile(event)) : (
-        this.isUpdate ? (this.submitUpdateXml) : (this.submitCreateXml)
+      this.isFile ? (await this.submitUploadFile(event)) : (
+        this.isUpdate ? (await this.submitUpdateXml(event)) : (await this.submitCreateXml(event))
       );
       this.showLoadingProgress = false;
     },
@@ -99,17 +100,18 @@ export default {
           data: fd
         }, useMainLoadingBar: false,
       });
-      if(response.statusText === 'OK') this.emitter.emit('uploadICNFromEditor', { model: response.data.model });
+      if(response.statusText === 'OK') this.emitter.emit('uploadICNFromEditor', response.data.csdb);
     },
     async submitCreateXml(event){
       const fd = new FormData(event.target);
+      fd.set('xmleditor', this.XMLEditor.editor.state.doc.toString());
       const response = await axios({
         route: {
           name: 'api.create_object',
           data: fd
         }, useMainLoadingBar: false,
       });
-      if(response.statusText === 'OK') this.emitter.emit('createObjectFromEditor', { model: response.data.model });
+      if(response.statusText === 'OK') this.emitter.emit('createObjectFromEditor', response.data.csdb);
     },
     async submitUpdateXml(event){
       const fd = new FormData(event.target);
@@ -121,7 +123,7 @@ export default {
         }, useMainLoadingBar: false,
       });
       console.log(response);
-      if(response.statusText === 'OK') this.emitter.emit('updateObjectFromEditor', { model: response.data.model });
+      if(response.statusText === 'OK') this.emitter.emit('updateObjectFromEditor', response.data.csdb);
     },
   },
   mounted(){

@@ -1,7 +1,7 @@
 <script>
 import RCMenu from '../../rightClickMenuComponents/RCMenu.vue';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
-import CheckboxSelector from '../../CheckboxSelector';
+import {CheckboxSelector} from '../../CheckboxSelector';
 import DropdownInputSearch from '../../DropdownInputSearch';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
@@ -146,8 +146,6 @@ export default {
     if((this.$props.objectsToDispatch.filenames && this.$props.objectsToDispatch.filenames.length > 0) || (this.$props.objectsToDispatch.paths && this.$props.objectsToDispatch.paths.length > 0)){
       this.assignObject(this.$props.objectsToDispatch);
     }
-
-    window.DropdownUserSearch = this.DropdownUserSearch;
   }
 }
 </script>
@@ -184,6 +182,7 @@ export default {
         </table>
       </div>
       <hr/>
+      <!-- Dropdown User Search -->
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
           <label class="font-bold text-sm" :for="DropdownUserSearch.idInputText">Send To:&#160;</label>
@@ -201,6 +200,7 @@ export default {
           </div>
         </div>
       </div>
+      <!-- Dropdown BREX Search -->
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
           <label class="font-bold text-sm" :for="DropdownBrexSearch.idInputText">Brex:&#160;</label>

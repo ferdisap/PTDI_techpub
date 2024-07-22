@@ -142,8 +142,9 @@ export default {
           <table class="w-full">
             <thead class="h-10 border-b-4 border-black">
               <tr>
-                <th class="w-[50%]">Filename</th>
-                <th class="w-[30%]">Date</th>
+                <th class="w-[40%]">Filename</th>
+                <th class="w-[20%]">Created</th>
+                <th class="w-[20%]">Deleted</th>
                 <th class="w-[20%]">Action</th>
               </tr>
             </thead>
@@ -151,6 +152,7 @@ export default {
               <tr v-for="object in list">
                 <td><a href="#" @click="filenameAnalysis = object.filename">{{ object.filename }}</a></td>
                 <td>{{ techpubStore.date(object.created_at) }}</td>
+                <td>{{ techpubStore.date(object.deleted_at) }}</td>
                 <td>
                   <button @click="restore(object.filename)" class="material-icons text-green-700 has-tooltip-arrow"
                     data-tooltip="Restore">restore_from_trash</button>

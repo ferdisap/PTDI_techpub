@@ -58,12 +58,14 @@ const ListTree = {
       let listobj = '';
       if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
         for (const model of models) {
-          let logo = model.filename.substr(0, 3) === 'ICN' ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
-          let href = this.data.hrefForFile;
-          href.replace(':filename', model.filename);
+          let isICN = model.filename.substr(0, 3) === 'ICN';
+          let logo = isICN ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+          let href = isICN ? this.data.hrefForOther : this.data.hrefForPdf ;
+          href = href.replace(':filename', model.filename);
+          let viewType = isICN ? 'other' : 'pdf';
           listobj = listobj + `
                 <div class="obj" style="${style}">
-                  ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}'})">${model.filename}</a>
+                  ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}', viewType:'${viewType}'})">${model.filename}</a>
                 </div>`
         }
       }

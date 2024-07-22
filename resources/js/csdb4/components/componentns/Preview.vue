@@ -1,104 +1,84 @@
-<!-- 
-  props.filename is depreciated
- -->
- <script>
+<script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import path from 'path';
 import { contentType } from 'es-mime-types';
-import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+import path from 'path';
 import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
-
 export default {
-  data() {
+  data(){
     return {
       techpubStore: useTechpubStore(),
-      view: 'html',
-      isICN: false,
-      data: {},
-      path: path,
-      filename: '',
+      pathHelper: path,
       showLoadingProgress: false,
+      inIframe: undefined,
+      mime: undefined, // ini bisa PDF, HTML, IMG, VIDEO, mungkin FLASH, etc
+      src: undefined
     }
   },
-  components:{
-    PreviewRCMenu, ContinuousLoadingCircle
-  },
-  props: {
-    dataProps: {
-      type: Object,
-      required: true
-    }
-  },
-  methods: {
-    /**
-     * return string blob url
-     * return false
-    */
-    async blobRequestTransformed(routename, data, type) {
-      data = Object.assign(data);
-      delete (data.update_at);
-      let responseType = !type.includes('text') ? 'arraybuffer' : 'json';
-      data.updated_at = 'Thu Mar 14 2024 15:29:29 GMT+0700';
-      let response = await axios({
-        route: {
-          name: routename,
-          data: data,
-        },
-        useMainLoadingBar: false,
-        responseType: responseType,
-      });
-      if (response.statusText === 'OK') {
-        let blob = new Blob([response.data], { type: type });
-        let url = URL.createObjectURL(blob);
-        return url;
-      } else {
-        return false
+  components:{ContinuousLoadingCircle},
+  methods:{
+    async render(filename, viewType){
+      URL.revokeObjectURL(this.src);
+      this.mime, this.src = undefined;
+      let routename;
+      let extension = filename.substring(filename.length,filename.length-4);
+      let doctype = filename.substring(0,3);
+
+      // eg. DMC viewtype == 'html' (ietm);
+      if(extension === '.xml' && viewType === 'html') {
+        routename = 'api.read_html_object';
+        this.mime = 'text/html';
+        this.inIframe = true;
       }
-    },
-    /*
-     * data bisa berisi tentang mime, source, sourceType, filename
-     * jika ada filename, maka akan request ke server
-    */
-    icnRenderer(data = {}) {
-      this.showLoadingProgress = true;
-      this.isICN = true;
-      this.filename = data.filename;
-      // jika dari readFileURLFromEditor
-      if (data.sourceType === 'url') {
-        setTimeout(() => {
-          this.data.mime = data.mime;
-          this.data.src = data.source;
-        }, 0);
+      // eg. DMC viewType == 'pdf'
+      else if(extension === '.xml' && viewType === 'pdf') {
+        routename = 'api.read_pdf_object';
+        this.mime = 'application/pdf';
+        this.inIframe = true;
       }
+      // eg. ICN
+      else if(doctype === 'ICN' && (viewType === 'html' || viewType === 'other')) {
+        routename = 'api.get_icn_raw';
+        let path = this.pathHelper.extname(filename);
+        this.mime = contentType(path);
+        this.inIframe = false;
+      }
+      // eg. externalpubRef pdf
+      else if(doctype != 'ICN' && extension != '.xml' && viewType === 'pdf') {
+        routename = 'api.read_pdf_object';
+        this.mime = 'application/pdf';
+        this.inIframe = true;
+      }
+      // eg. external pubRef non pdf
+      else if(doctype != 'ICN' && extension != '.xml' && viewType != 'pdf') {
+        routename = 'api.read_other_object';
+        let path = this.pathHelper.extname(filename);
+        this.mime = contentType(path);
+        this.inIframe = false;
+      }
+      // eg. ICN tapi viewType === 'pdf'
+      else return Promise.reject(false);
+
+      let route = this.techpubStore.getWebRoute(routename, {filename: filename});
+      // ini untuk embed
+      if(!this.inIframe) this.src = route.url.toString();
+      // ini untuk iframe HTML dan PDF
       else {
-        URL.revokeObjectURL(this.data.src);
-        const route = this.techpubStore.getWebRoute('api.request_icn_object', { filename: data.filename });
-        setTimeout(() => {
-          let path = this.path.extname(data.filename);
-          this.data.mime = contentType(path);
-          this.data.src = route.url.toString();
-        }, 100);
-      }
-      this.showLoadingProgress = false;
+        this.showLoadingProgress = true;
+        this.src = await this.blobRequestTransformed(routename, { filename: filename }, this.mime)
+        this.showLoadingProgress = false;
+      };
+      
+      return Promise.reject(true);
     },
-    async datamoduleRenderer(data = {}) {
-      this.showLoadingProgress = true;
-      this.isICN = false;
-      this.filename = data.filename;
-      let routeName;
-      if(data.viewType === 'html') routeName = 'api.get_transformed_contentpreview';
-      else if(data.viewType === 'pdf') routeName = 'api.get_pdf_object';
-      else if(this.view === 'html') routeName = 'api.get_transformed_contentpreview';
-      else if(this.view === 'pdf') routeName = 'api.get_pdf_object';
-      if (routeName) {
-        this.data.mime = this.view === 'html' ? 'text/html' : (this.view === 'pdf' ? 'application/pdf' : '');
-        let src = await this.blobRequestTransformed(routeName, { filename: data.filename }, this.data.mime);
-        if(src){
-          this.data.src = src // blob:http://127.0.0.1:8000/1a7cdf64-c7f7-4dd3-b4b2-0d26a3f0bb52
-        }
-      }
-      this.showLoadingProgress = false;
+    renderFromBlob(src, mime){
+      setTimeout(()=>{
+        this.src = src;
+        this.mime = mime;
+      },0);
     },
+    /**
+     * aat ini belum dipakai karena halaman untuk ietm(html) belum difungsikan
+     */
     switchView(name){
       this.view = name;
       this.datamoduleRenderer({filename: this.filename});
@@ -111,47 +91,69 @@ export default {
           query: this.$route.query
       });
     },
-  },
-  mounted() {
-    if (this.$props.dataProps.filename) {
-      this.filename = this.$props.dataProps.filename;
-      this.$props.dataProps.filename.slice(0, 3) !== 'ICN' ? this.datamoduleRenderer(this.$props.dataProps) : this.icnRenderer(this.$props.dataProps);
-    }
-
-    this.emitter.on('Preview-refresh', async (data) => {
-      if (data.sourceType) {
-        this.icnRenderer(data);
+    /**
+     * nanti ini diganti oleh worker
+     * kalo worker cuma untuk fetch saja, tidak perlu pakai worker, kecuali ada proses pengolahan data response nya. Tapi karna blobURL yang dibuat di worker tidak bisa ditampilkan di window maka worker tidak perlu
+    */
+    async blobRequestTransformed(routename, data, mime) {
+      data = Object.assign(data);
+      delete (data.update_at);
+      let responseType = !mime.includes('text') ? 'arraybuffer' : 'json';
+      // masukkan cache If-None-Match jika perlu, di server sudah siap
+      let response = await axios({
+        route: {
+          name: routename,
+          data: data,
+        },
+        useMainLoadingBar: false,
+        responseType: responseType,
+      });
+      if (response.statusText === 'OK') {
+        let blob = new Blob([response.data], { type: mime });
+        let url = URL.createObjectURL(blob);
+        return url;
       } else {
-        (data.filename && data.filename.slice(0, 3) !== 'ICN') ? this.datamoduleRenderer(data) : this.icnRenderer(data);          
+        return false
+      }
+    },
+  },
+  mounted(){
+    this.render(this.$route.params.filename, this.$route.params.viewType);
+    this.emitter.on('Preview-refresh', async (data) => {
+      if (data.sourceType === 'blobURL') {
+        this.renderFromBlob(data.src, data.mime)
+      } else {
+        this.render(data.filename, data.viewType ? data.viewType : this.$route.params.viewType);
       }
     });
-    
-    if(this.$route.params.filename){
-      this.filename = this.$route.params.filename;
-      let data = {
-        filename: this.$route.params.filename
-      }
-      if(this.$route.params.viewType) {
-        data.view = this.$route.params.viewType;
-        this.view = this.$route.params.viewType;
-      }
-      this.$route.params.filename.slice(0, 3) !== 'ICN' ? this.datamoduleRenderer(data) : this.icnRenderer(data);
-    }
   }
 }
 </script>
 <template>
   <div class="Preview overflow-auto h-[93%] w-full relative">
-    <PreviewRCMenu v-if="!isICN">
+    <div class="h-[5%] flex mb-3">
+      <h1 class="text-blue-500 w-full text-center">Preview</h1>
+    </div>
+    <div class="flex justify-center w-full px-3 h-[95%]">
+      <!-- untuk HTML dan PDF-->
+      <div v-if="inIframe" id="datamodule-container" class="w-full h-full">
+        <iframe id="datamodule-frame" class="w-full h-full" :src="src" />
+      </div>
+      <!-- untuk non HTML dan non PDF-->
+      <div v-else id="icn-container">
+        <embed class="w-full h-full" :src="src" :type="mime" />
+      </div>
+    </div>
+    <PreviewRCMenu>
       <!-- view IETM or PDF -->
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div v-if="view !== 'pdf'" href="#" class="text-sm" @click="switchView('pdf')">
+      <div v-if="inIframe" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div v-if="$route.params.viewType === 'html'" href="#" class="text-sm" @click="switchView('pdf')">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">book_2</span>
           Switch to PDF
         </div>
-        <div v-if="view !== 'html'" href="#" class="text-sm" @click="switchView('html')">
+        <div v-else-if="$route.params.viewType === 'pdf'" href="#" class="text-sm" @click="switchView('html')">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">devices</span>
-          Switch to IETM</div>        
+          Switch to HTML</div>        
       </div>
 
       <!-- Action to be accomplished (delete, issue, commit) -->
@@ -171,28 +173,6 @@ export default {
           Commit</div>
       </div>      
     </PreviewRCMenu>
-    <div class="h-[5%] flex mb-3">
-      <h1 class="text-blue-500 w-full text-center">Preview</h1>
-    </div>
-    <div class="flex justify-center w-full px-3 h-[95%]">
-      <div v-if="!isICN" id="datamodule-container" class="w-full h-full">
-        <iframe id="datamodule-frame" class="w-full h-full" :src="data.src" />
-      </div>
-      <div v-else id="icn-container">
-        <embed v-if="isICN" class="w-full h-full" :src="data.src" :type="data.mime" />
-      </div>
-    </div>
-    <!-- <div v-if="loadingbar" class="top-0 left-0 h-[100vh] w-[100%] z-50 absolute">
-      <div style="
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      background:rgba(0,0,0,0.5);
-      ">
-        <div class="loading_buffer"></div>
-      </div>
-    </div> -->
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

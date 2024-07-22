@@ -65,7 +65,7 @@ class BrdpController extends Controller
     return Response::make($transformed,200,['Content-Type' => 'text/html']);
   }
 
-  public function search_xx(Request $request)
+  public function search(Request $request)
   {
     $projectName = $request->route('project_name');
     $filename = $request->route('filename');

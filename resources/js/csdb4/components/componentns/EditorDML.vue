@@ -6,14 +6,15 @@ import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCirc
 import DmlEntryForm from '../subComponents/DmlEntryFrom.vue';
 import Sort from '../../../techpub/components/Sort.vue';
 import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
-
+import DropdownInputSearch from '../../DropdownInputSearch';
 export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
       showLoadingProgress: false,
       transformed: '',
-      filename: ''
+      filename: '',
+      DropdownBrexSearch: new DropdownInputSearch('filename')
     }
   },
   components:{Remarks, ContinuousLoadingCircle, DmlEntryForm, PreviewRCMenu},
@@ -107,7 +108,13 @@ export default {
         this.showLoadingProgress = false;
         this.techpubStore.currentObjectModel = response.data.model;
       }
-    }
+    },
+    async searchBrex(event){
+      if(event.target.id === this.DropdownBrexSearch.idInputText){
+        let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
+        this.DropdownBrexSearch.keypress(event, route);
+      }
+    },
   },
   mounted(){
     // if(this.$route.params.filename){
@@ -153,10 +160,22 @@ export default {
       </div>
   
       <!-- BREX -->
-      <div class="mb-2">
-        <label for="brexDmRef" class="inline-block text-gray-900 dark:text-white text-lg font-bold">BREX Data Module Ref</label>
-        <input type="text" value="" name="brexDmRef" id="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="ml-3" />
-        <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>
+      <div class="mb-2 mt-2 flex">
+        <div class="mr-2">
+          <label :for="DropdownBrexSearch.idInputText" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Brex:&#160;</label>
+        </div>
+        <div class="mr-2 w-80 relative">
+          <div class="w-80">
+            <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[10px] top-[10px]"></div>
+            <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="w-full" autocomplete="off" aria-autocomplete="none"/>
+          </div>
+          <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>  
+          <div class="w-full" :id="DropdownBrexSearch.idDropdownListContainer">
+            <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" @click.prevent="DropdownBrexSearch.keypress($event)" @keyup.prevent="DropdownBrexSearch.keypress($event)">
+              {{ dmc.filename}}
+            </div>
+          </div>
+        </div>
       </div>
       
       <!-- Remarks -->

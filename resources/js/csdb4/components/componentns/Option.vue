@@ -1,3 +1,6 @@
+<!-- 
+  VUE ini DEPRECIATED karena Option tidak lagi dipakai difrontEnd (terkahir di Explorer.vue) karena diganti oleh right click menu
+ -->
 <script>
 import axios from 'axios';
 

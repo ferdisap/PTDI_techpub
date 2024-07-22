@@ -3,7 +3,9 @@
 namespace App\Http;
 
 use App\Http\Middleware\AddHeaderToResponse;
+use App\Http\Middleware\LastModifiedCache;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Werk365\EtagConditionals\Middleware\SetEtag;
 
 class Kernel extends HttpKernel
 {
@@ -38,6 +40,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // SetEtag::class,
+            // \Abordage\LastModified\Middleware\LastModifiedHandling::class
         ],
 
         'api' => [
@@ -66,5 +70,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        'ETagGeneralContent' => SetEtag::class,
+        'ETagCsdbPDF' => \App\Http\Middleware\ETagForPDF::class,
     ];
 }

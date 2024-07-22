@@ -4,7 +4,13 @@ import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
 import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
 import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
-import CheckboxSelector from "../../CheckboxSelector";
+import {CsdbObjectCheckboxSelector} from "../../CheckboxSelector";
+import { isProxy, toRaw } from "vue";
+
+function findAncestor (el, sel) {
+    while ((el = el.parentElement) && !((el.matches || el.matchesSelector).call(el,sel)));
+    return el;
+}
 
 export default {
   components:{ Sort, ContinuousLoadingCircle, RCMenu },
@@ -24,7 +30,10 @@ export default {
       // isShowRcMenu: false,
       // checkboxId: '',
       // isSelectAll: false,
-      CbSelector: new CheckboxSelector
+      CbSelector: new CsdbObjectCheckboxSelector(this),
+
+      // selection view (becasuse clicked by user)
+      selectedRow: undefined,
     }
   },
   props: {
@@ -43,7 +52,7 @@ export default {
       }
     },
     models() {
-      return this.data.models;
+      return this.data.csdb;
     },
     folders() {
       return this.data.folders;
@@ -100,7 +109,7 @@ export default {
     },
     storingResponse(response) {
       if (response.statusText === 'OK') {
-        this.data.models = response.data.data; // array contain object model
+        this.data.csdb = response.data.csdb; // array contain object model
         this.data.folders = response.data.folder; // array contain string path
         this.data.current_path = response.data.current_path ?? this.$props.dataProps.path;
         delete response.data.data;
@@ -137,12 +146,11 @@ export default {
         this.CbSelector.select();
       }
     },
-    clickFilename(event, data){
+    clickFilename(event, filename){
       if(!this.CbSelector.selectionMode){
-        this.techpubStore.currentObjectModel = data; // sementara karena data hanya ada filename dan path
-        this.emitter.emit('RequireCSDBObjectModel', data); // masih perlu minta karena data tidak valid
-        this.$root.gotoExplorer(data.filename);
-        this.emitter.emit('clickFilenameFromFolder', data) // key path dan filename
+        this.techpubStore.currentObjectModel = Object.values(this.data.csdb).find((obj) => obj.filename === filename);
+        this.$root.gotoExplorer(filename, 'pdf');
+        this.emitter.emit('clickFilenameFromFolder', {filename: filename}) // key filename saja karena bisa diambil dari techpubstore atau server jika perlu
       } else {
         this.CbSelector.select();
       }
@@ -187,24 +195,7 @@ export default {
     search(){
       this.getObjs({sc: this.sc});
     },
-    // select(cbid){
-    //   this.isSelectAll = false;
-    //   this.selectionMode = true; 
-    //   this.isShowRcMenu = false;
-    //   setTimeout(()=>document.getElementById(cbid).checked = true,0);
-    // },
-    // selectAll(isSelect = true){
-    //   this.selectionMode = true; 
-    //   this.isShowRcMenu = false;
-    //   this.isSelectAll = isSelect;
-    //   setTimeout(() =>this.$el.querySelectorAll(".folder input[type='checkbox']").forEach((input) => input.checked = isSelect), 0);
-    // },
-    // selectAllFiles(isSelect = true){
-    //   this.selectionMode = true; 
-    //   this.isShowRcMenu = false;
-    //   this.isSelectAll = isSelect;
-    //   setTimeout(() =>this.$el.querySelectorAll(".folder input[file='true']").forEach((input) => input.checked = isSelect), 0);
-    // },
+    // sepertinya ini bisa dipindah ke CsdbObjectCheckboxSelector class
     async dispatch(){
       let models = []; // berisi string filename
       let paths = []; // berisii string path
@@ -214,24 +205,34 @@ export default {
           if(o = this.data.folders.find((path) => path === input.value)){
             paths.push(o);
           } 
-          else if(o = this.data.models.find((obj) => obj.filename === input.value)){
+          else if(o = this.data.csdb.find((obj) => obj.filename === input.value)){
             models.push(o.filename);
           }
         })
       } else {
         let cbid = this.CbSelector.cbHovered;
-        this.CbSelector.selectionMode = true;
-        await new Promise(res => 
-        setTimeout(()=>{
+        await new Promise(res => {
           let value = (document.getElementById(cbid).value);
-          this.CbSelector.selectionMode = false;
-          Object.values(this.data.models).forEach((obj) => {
+          Object.values(this.data.csdb).forEach((obj) => {
             if(obj.filename === value){
               models.push(obj.filename);
               res(true);
             }
-          })
-        },0));
+          });
+        });
+        // let cbid = this.CbSelector.cbHovered;
+        // this.CbSelector.selectionMode = true;
+        // await new Promise(res => 
+        // setTimeout(()=>{
+        //   let value = (document.getElementById(cbid).value);
+        //   this.CbSelector.selectionMode = false;
+        //   Object.values(this.data.csdb).forEach((obj) => {
+        //     if(obj.filename === value){
+        //       models.push(obj.filename);
+        //       res(true);
+        //     }
+        //   })
+        // },0));
       }
       // if(paths.length !== 0){
       //   let sc = 'path::';
@@ -258,20 +259,57 @@ export default {
       //   }
       // }
       this.emitter.emit('dispatchTo', {filenames: models, paths: paths});
-      this.CbSelector.isShowTriggerPanel = false;
+      this.CbSelector.isShowTriggerPanel = false;      
+    },
+    /**
+     * hanya untuk membirukan background table row
+    */
+    select(event){
+      let el;
+      if(this.CbSelector.selectionMode) {
+        this.CbSelector.select();
+        el = document.getElementById(this.CbSelector.cbHovered);
+      } else el = event.target;
+      this.selectedRow ? this.selectedRow.classList.remove('bg-blue-300') : null;
+      this.selectedRow = findAncestor(el, 'tr');
+      this.selectedRow.classList.add('bg-blue-300');
+    },
+    async changePath(event){
+      const fd = new FormData(event.target)
+      const path = fd.get('path');
+
+      // change Path
+      let values = await this.CbSelector.changePath(event, {data: fd}, this.CbSelector.cancel); // output array contains filename
+      if(!values) return;
       
+      // hapus list di folder, tidak seperti listtree yang ada level dan list model
+      const csdbChangedPath = [];
+      values.forEach((filename) => {
+        let csdb = this.data.csdb.find((obj) => obj.filename === filename);
+        let index = this.data.csdb.indexOf(csdb);
+        this.data.csdb.splice(index,1);
+        csdb.path = path;
+        csdbChangedPath.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+      });
+
+      // emit
+      this.emitter.emit('ChangePathCSDBObjectFromFolder',csdbChangedPath);
     }
   },
   mounted(){
+    this.emitter.on('TES', (data) => {
+      alert('TES emit')
+    });
+    
+    // dari Listtree via Explorer/Management data data berisi path doang,
     this.emitter.on('Folder-refresh', (data) => {
       if(data.path === this.data.current_path){
         this.getObjs({path: data.current_path})
       }
     });
-    if(this.$route.params.filename){
-      // this.getObjs({filename: this.$route.params.filename});
-      this.getObjs({path: this.techpubStore.currentObjectModel.path});
-      this.data.current_path = this.techpubStore.currentObjectModel.path;
+    if(this.$route.params.filename && this.techpubStore.currentObjectModel.csdb){
+      this.getObjs({path: this.techpubStore.currentObjectModel.csdb.path});
+      this.data.current_path = this.techpubStore.currentObjectModel.csdb.path;
     } else {
       this.getObjs({path: 'csdb'});
       this.data.current_path = 'csdb';
@@ -304,22 +342,16 @@ export default {
         <table class="table" :id="CbSelector.id">
           <thead class="text-sm">
             <tr class="leading-3 text-sm">
-              <!-- <th v-if="selectionMode"></th> -->
-              <th v-if="CbSelector.selectionMode"></th>
+              <th v-show="CbSelector.selectionMode"></th>
               <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
-              <th class="text-sm">Initiator <Sort :function="sortTable"></Sort></th>
-              <th class="text-sm">Editable <Sort :function="sortTable"></Sort></th>
             </tr>
           </thead>
           <tbody>
-            <!-- <tr @click="clickFolder($event, path)" @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+path" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300"> -->
-              <!-- <tr @click="clickFolder($event, path)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="CbSelector.cbHovered = 'cb'+path" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300"> -->
-              <tr @click="clickFolder($event, path)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+path}" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300">
-              <!-- <td v-if="selectionMode" class="flex"> -->
-              <td v-if="CbSelector.selectionMode" class="flex">
+            <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFolder($event, path)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+path}" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300 cursor-pointer">
+              <td v-show="CbSelector.selectionMode" class="flex" @click.stop.prevent>
                 <input file="false" :id="'cb'+path" type="checkbox" :value="path">
               </td>
               <td class="leading-3 text-sm" colspan="6">
@@ -328,12 +360,9 @@ export default {
                 <!-- min -2 karena diujung folder ada '/' -->
               </td>
             </tr>
-            <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="isShowRcMenu = true" @mouseover="checkboxId = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
-              <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>CbSelector.cbHovered = 'cb'+obj.filename" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
-            <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300">
-            <!-- <tr @click="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300"> -->
-              <!-- <td v-if="selectionMode" class="flex"> -->
-              <td v-if="CbSelector.selectionMode" class="flex">
+            <!-- <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, {filename: obj.filename, path: obj.path})" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300 cursor-pointer"> -->
+            <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, obj.filename)" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true" @mouseover="()=>{if(!CbSelector.isShowTriggerPanel) CbSelector.cbHovered = 'cb'+obj.filename}" v-for="obj in models" class="file-row text-sm hover:bg-blue-300 cursor-pointer">
+              <td v-show="CbSelector.selectionMode" class="flex">
                 <input file="true" :id="'cb'+obj.filename" type="checkbox" :value="obj.filename">
               </td>
               <td class="leading-3 text-sm">
@@ -343,15 +372,13 @@ export default {
               <td class="leading-3 text-sm"> {{ obj.path }} </td>
               <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
               <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
-              <td class="leading-3 text-sm"> {{ obj.initiator.name }} </td>
-              <td class="leading-3 text-sm"> {{ obj.editable ? 'yes' : 'no' }} </td>
             </tr>        
           </tbody>
         </table>
       </div>
             
       <!-- pagination -->
-      <div class="w-full text-black absolute bottom-[30px] h-[30px] px-3 flex justify-center">
+      <div class="w-full text-black absolute bottom-[10px] h-[30px] px-3 flex justify-center">
         <div v-if="pagination" class="flex justify-center items-center text-lg bg-gray-100 rounded-lg px-2 w-[300px]">
           <button @click="goto(pageless)" class="material-symbols-outlined">navigate_before</button>
           <form @submit.prevent="goto('', pagination['current_page'])" class="flex">
@@ -379,8 +406,15 @@ export default {
       <div @click="dispatch" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Dispatch</div>
       </div>
+      <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <form class="text-sm" @submit.prevent="changePath($event)">
+          <label class="text-sm">Move&#160;</label>
+          <input type="text" class="w-[65%] rounded-sm h-0" name="path" @keydown.enter.prevent/>
+          <button class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
+        </form>
+      </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.prevent="()=>{CbSelector.selectAll(false); CbSelector.selectionMode = false}" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.prevent="CbSelector.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
       </div>
     </RCMenu>

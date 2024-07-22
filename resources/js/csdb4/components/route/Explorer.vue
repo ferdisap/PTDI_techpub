@@ -7,13 +7,12 @@ import ListTree from '../componentns/ListTree.vue'
 import Folder from '../componentns/Folder.vue';
 import { objectType } from '../../../helper.js';
 import Preview from '../componentns/Preview.vue';
-import IdentStatus from '../componentns/IdentStatus.vue';
 import Editor from '../componentns/Editor.vue';
 import History from '../componentns/History.vue';
-import Option from '../componentns/Option.vue';
+// import Option from '../componentns/Option.vue';
 export default {
   name: 'Explorer',
-  components: { BottomBar, ListTree, Folder, Preview, IdentStatus, Editor, History, Option},
+  components: { BottomBar, ListTree, Folder, Preview, Editor, History},
   data() {
     return {
       bottomBarItems: {
@@ -23,16 +22,6 @@ export default {
           isShow: false,
           data: {},
           type: undefined,
-        },
-        IdentStatus: {
-          iconName: 'badge',
-          tooltipName: 'Ident-Status',
-          isShow: false,
-        },
-        Analyzer: {
-          iconName: 'pie_chart',
-          tooltipName: 'Anlayzer',
-          isShow: false,
         },
         Editor: {
           iconName: 'ink_pen',
@@ -52,13 +41,6 @@ export default {
           isShow: false,
           data: {}
         },
-        Option: {
-          iconName: 'settings',
-          tooltipName: 'Option',
-          isShow: false,
-          data:{},
-        }
-        ,
       },
       colWidth: {
         satu: { portion: 0.15 },
@@ -111,121 +93,63 @@ export default {
     }
 
     this.emitter.on('clickFilenameFromListTree', (data) => {
-      // Folder
-      this.bottomBarItems.Folder.data = data; // hanya ada filename dan path di data
-      // this.bottomBarItems.Folder.isShow = true; // hanya dumping
-
-      // identStatus
-      this.bottomBarItems.IdentStatus.isShow = data.filename.slice(0,3) === 'ICN' ? false : true;
-      // this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
-
-      // Preview
-      this.bottomBarItems.Preview.isShow = true;
-      setTimeout(()=>{
-        this.emitter.emit('Preview-refresh', data); // hanya ada filename dan path di data
-      },0);
-
-      // Editor
-      this.bottomBarItems.Editor.data = data; // hanya ada filename dan path saja di data
-      
-      // History
-      this.bottomBarItems.History.data = data; // hanya ada filename dan path saja di data
-
-      // Option
-      this.bottomBarItems.Option.data = data; // hanya ada filename dan path saja di data
+      // hanya ada filename dan path di data
+      this.bottomBarItems.Folder.data = data;
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : (this.bottomBarItems.Preview.isShow = true);
+      this.bottomBarItems.Editor.data = data;
+      this.bottomBarItems.History.data = data;
     });
 
     this.emitter.on('clickFolderFromListTree', (data) => {
-      // Folder
+      this.emitter.emit('Folder-refresh', data);
       this.bottomBarItems.Folder.isShow = true;
       this.bottomBarItems.Folder.data = data; // hanya ada path saja di data
     });
 
     this.emitter.on('clickFilenameFromFolder', (data) => {
-      // identStatus
-      this.bottomBarItems.IdentStatus.data = data; // hanya ada filename dan path di data
-
-      // Preview
-      this.bottomBarItems.Preview.isShow = true;
-      // this.bottomBarItems.Preview.data = data; // hanya ada filename dan path di data
+      // hanya ada filename di data, bisa berguna jika perlu ambil data terbaru dari server
       this.emitter.emit('Preview-refresh', data);
-
-
-      // Editor
-      this.bottomBarItems.Editor.data = data; // hanya ada filename dan path di data
-      
-      // History
-      this.bottomBarItems.History.data = data; // hanya ada filename dan path di data
-
-      // Option
-      this.bottomBarItems.Option.data = data; // hanya ada filename dan path di data
+      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.History.data = data; 
     });
 
     this.emitter.on('createObjectFromEditor', (data) => { 
-      // data hanya mengandung model. data.model = {}
-      // kemudian model di push ke Listtree object untuk di update listtree nya
-      // kemudian preview akan reload sesuai dengan model tersebut
-      // kemudian history di reload sesuai model
-      // kemudian Ident status di reload sesuai model
-      // kemudian Folder di reload sesuai path model. Tapi ini kayaknya tidak perlu. Bikin ribet saja
-      // item bottomBar yang lain di set false (hide)
-      // alert('emitting to refresh list tree');
-      this.emitter.emit('ListTree-add', data.model);
-      this.$root.gotoExplorer(data.model.filename);
-      this.bottomBarItems.IdentStatus.data = data.model;
+      // data adalah csdb file sql, bukan model/meta object
+      this.emitter.emit('ListTree-refresh', data);
+      this.$root.gotoExplorer(data.filename);
       this.bottomBarItems.Preview.isShow = true;
-      this.bottomBarItems.Preview.data = data.model;
-      this.bottomBarItems.IdentStatus.data = data.model;
-      this.bottomBarItems.History.data = data.model;
-      this.bottomBarItems.Option.data = data.model;
+      this.bottomBarItems.Preview.data = data;
+      this.bottomBarItems.History.data = data;
     })
 
-    // this.emitter.on('createICNFromEditor', (data) => {
-    //   this.emitter.emit('ListTree-add', data.model);
-    //   this.$root.gotoExplorer(data.model.filename);
-    // });
     this.emitter.on('uploadICNFromEditor', (data) => {
-      this.emitter.emit('ListTree-refresh', data.model);
-      this.$root.gotoExplorer(data.model.filename);
+      // data adalah csdb file sql, bukan model/meta object
+      this.emitter.emit('ListTree-refresh', data);
+      this.$root.gotoExplorer(data.filename);
     });
-
-    // this.emitter.on('updateICNFromEditor', (data) => {
-    //   console.log('explorer emitted by editor updateICNFromEditor');
-    //   this.emitter.emit('Preview-refresh', data.model)
-    // });    
 
     this.emitter.on('updateObjectFromEditor', (data) => {
-      // data berupa model
-      // history, identStatus di set false (hide) agar tidak memberatkan saat live preview
-      // preview refresh view
-      this.emitter.emit('Preview-refresh', data.model);
-      this.emitter.emit('IdentStatus-refresh', data.model);
-      // this.emitter.on('History-refresh', data.model); // sepertinya ini tidak usah. Biar ga kebanyakan request
+      // data adalah csdb file sql, bukan model/meta object
+      this.emitter.emit('Preview-refresh', data);
+      this.emitter.emit('History-refresh', data); // sepertinya ini tidak usah. Biar ga kebanyakan request
     });
 
-    this.emitter.on('readFileURLFromEditor', (data) => { // data berisi mime, source, sourceType
+    this.emitter.on('readFileURLFromEditor', (data) => { 
+      // data berisi mime, source, sourceType
       this.bottomBarItems.Preview.isShow = true;
-      setTimeout(() => {
-        this.emitter.emit('Preview-refresh', data);
-      },0);
-      this.bottomBarItems.IdentStatus.isShow = false;
+      setTimeout(() => this.emitter.emit('Preview-refresh', data),0);
       this.bottomBarItems.History.isShow = false;
       this.bottomBarItems.Analyzer.isShow = false;
     });
 
     this.emitter.on('readTextFileFromEditor', () => {
       this.bottomBarItems.Preview.isShow = false;
-      this.bottomBarItems.IdentStatus.isShow = false;
       this.bottomBarItems.History.isShow = false;
-      this.bottomBarItems.Analyzer.isShow = false;
     });
 
-    this.emitter.on('ChangePathCSDBObjectFromOption', (data) => {
-      // data adalah model SQL CSDB Object
-      this.emitter.emit('Folder-refresh', data);
+    this.emitter.on('ChangePathCSDBObjectFromFolder', (data) => {
+      // data adalah array berisis model SQL CSDB Object
       this.emitter.emit('ListTree-refresh', data); // tidak perlu kirim data karena nanti request ke server
-      // console.log(data);
-      // this.emitter.emit('Folder-updateModel', data);
     })
 
     this.emitter.on('DeleteCSDBObjectFromOption', (data) => {
@@ -273,7 +197,6 @@ export default {
         <div class="flex" :style="[col2Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
             <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" routeName="Explorer"/>
-            <IdentStatus v-if="bottomBarItems.IdentStatus.isShow" :dataProps="bottomBarItems.IdentStatus.data" />
             <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data.filename" text="" />
             <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename"/>
           </div>
@@ -283,7 +206,6 @@ export default {
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            <Option v-if="bottomBarItems.Option.isShow" :dataProps="bottomBarItems.Option.data"/>
             <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
           </div>
         </div>

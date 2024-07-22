@@ -112,6 +112,9 @@ class CsdbServiceController extends CsdbController
     return $this->ret2(200, null, ['transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
+  /**
+   * DEPRECIATED, diganti oleh Csdb/CsdbController@read_html_object
+   */
   public function get_transformed_contentpreview(Request $request, Csdb $csdb)
   {
     $csdb->CSDBObject->load(storage_path("csdb/$csdb->filename"));
@@ -200,7 +203,9 @@ class CsdbServiceController extends CsdbController
   {
     // otomatis abort 404 jika $csdb null
     $icn = new CSDBObject("5.0");
-    $icn->load(storage_path("csdb/$csdb->filename"));
+    // $icn->load(storage_path("csdb/$csdb->filename"));
+    $icn->load(storage_path("csdb/{$request->user()->storage}/$csdb->filename"));
+    dd($icn->document->getFile());
     return Response::make($icn->document->getFile(),200, [
       'Content-Type' => $icn->document->getFileinfo()['mime_type'],
     ]);
@@ -271,6 +276,7 @@ class CsdbServiceController extends CsdbController
   }
 
   /**
+   * DEPRECIATED diganti oleh @get_transformed_contentpreview
    * $ignoreError=1 is needed when you want to send message if any error exist while transforming is success
    */
   public function provide_csdb_transform3(Request $request, string $filename)
