@@ -2,6 +2,7 @@ import Randomstring from "randomstring";
 import { useTechpubStore } from "../techpub/techpubStore";
 import axios from "axios";
 import mitt from 'mitt';
+import { array_unique } from "./helper";
 
 class CheckboxSelector{
   cbHovered = ''; // checkbox input id
@@ -79,7 +80,7 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
 
   constructor(component){
     super();
-    this.context = component
+    this.context = component; // berupa Proxy ComponentVue
   }
 
   /**
@@ -119,6 +120,52 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
       reject(false);
     }
     return prom;
+  }
+
+  /**
+   * @returns {Promise} contain csdbs
+   */
+  async getCsdbFilenameFromFolderVue(){
+    let resolve,reject;
+    const prom = new Promise((r,j) => {
+      resolve = r; reject = j;
+    })
+
+    let csdbs = [];
+    let paths = [];
+    let o = undefined;
+    let values = []; // bisa berupa filename atau path
+    if(this.selectionMode) values = this.getAllSelectionValue(true);
+    else values = [document.getElementById(this.cbHovered).value];
+    values.forEach((v) => {
+      if(o = this.context.data.folders.find((path) => path === v)) paths.push(o);
+      else if(o = this.context.data.csdb.find((obj) => obj.filename === v)) csdbs.push(o.filename);
+    })
+
+    if(paths.length > 0){
+      // here for request to server, pakai this.getCsdbModelsFromStringPath
+      // await response for csdb and it must be appended to csdbs
+      const route = useTechpubStore().getWebRoute('api.get_object_csdbs',{sc: "path::"+paths.join(",")});
+      const response = await axios({
+        url:route.url,
+        method: route.method[0],
+        data: route.params,
+      });
+      if(response.statusText === 'OK'){
+        csdbs = array_unique(csdbs.concat(response.data.csdbs));
+      }
+    }
+    
+    if(csdbs.length > 0) resolve(csdbs) 
+    else reject(false);
+    return prom;
+  }
+
+  /**
+   * @returns {Promise} contains csdbs
+   */
+  async getCsdbModelsFromStringPath(paths = []){
+
   }
 }
 

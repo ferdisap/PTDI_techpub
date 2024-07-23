@@ -195,71 +195,12 @@ export default {
     search(){
       this.getObjs({sc: this.sc});
     },
-    // sepertinya ini bisa dipindah ke CsdbObjectCheckboxSelector class
-    async dispatch(){
-      let models = []; // berisi string filename
-      let paths = []; // berisii string path
-      let o = undefined;
-      if(this.CbSelector.selectionMode){
-        this.CbSelector.getAllSelectionElement(true, `.folder input[type="checkbox"]:checked`).forEach((input)=>{
-          if(o = this.data.folders.find((path) => path === input.value)){
-            paths.push(o);
-          } 
-          else if(o = this.data.csdb.find((obj) => obj.filename === input.value)){
-            models.push(o.filename);
-          }
-        })
-      } else {
-        let cbid = this.CbSelector.cbHovered;
-        await new Promise(res => {
-          let value = (document.getElementById(cbid).value);
-          Object.values(this.data.csdb).forEach((obj) => {
-            if(obj.filename === value){
-              models.push(obj.filename);
-              res(true);
-            }
-          });
-        });
-        // let cbid = this.CbSelector.cbHovered;
-        // this.CbSelector.selectionMode = true;
-        // await new Promise(res => 
-        // setTimeout(()=>{
-        //   let value = (document.getElementById(cbid).value);
-        //   this.CbSelector.selectionMode = false;
-        //   Object.values(this.data.csdb).forEach((obj) => {
-        //     if(obj.filename === value){
-        //       models.push(obj.filename);
-        //       res(true);
-        //     }
-        //   })
-        // },0));
-      }
-      // if(paths.length !== 0){
-      //   let sc = 'path::';
-      //   paths.forEach(p => sc += p);
-      //   switch (this.$props.routeName) {
-      //     case 'Explorer':
-      //       sc += " typeonly::DMC,PMC,ICN";
-      //       break;      
-      //     case 'ManagementData':
-      //       sc += " typeonly::DML";
-      //       break;      
-      //     default:
-      //       break;
-      //   }
-      //   let response = await axios({
-      //     route: {
-      //       name: 'api.requestbyfolder.get_allobject_list',
-      //       data: {sc:sc}
-      //     },
-      //     useMainLoadingBar: false,
-      //   });
-      //   if(response.statusText === 'OK'){
-      //     models = models.concat(response.data.data);
-      //   }
-      // }
-      this.emitter.emit('dispatchTo', {filenames: models, paths: paths});
-      this.CbSelector.isShowTriggerPanel = false;      
+    async dispatch(cond = 0){
+      const emitName = !cond ? 'dispatchTo' : (cond === 1 ? 'AddDispatchTo' : (cond === 2 ? 'RemoveDispatchTo' : ('dispatchTo')));
+      const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue();
+      if(!csdbs) return;
+      this.emitter.emit(emitName, csdbs);
+      this.CbSelector.isShowTriggerPanel = false;
     },
     /**
      * hanya untuk membirukan background table row
@@ -403,7 +344,13 @@ export default {
         <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click="dispatch" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click="dispatch(1)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Add Dispatch</div>
+      </div>
+      <div @click="dispatch(2)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Remove Dispatch</div>
+      </div>
+      <div @click="dispatch(0)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Dispatch</div>
       </div>
       <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">

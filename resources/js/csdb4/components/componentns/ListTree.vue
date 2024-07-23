@@ -55,7 +55,7 @@ export default {
           }
         })
         if (response.statusText === 'OK') {
-          let data = setListTreeData(response.data.data);
+          let data = setListTreeData(response.data.csdbs);
           this.data[`${type}_list`] = data[0];
           this.data[`${type}_list_level`] = data[1];
           return Promise.resolve(true);

@@ -5,6 +5,7 @@ import {CheckboxSelector} from '../../CheckboxSelector';
 import DropdownInputSearch from '../../DropdownInputSearch';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
+import {isObject} from '../../helper'
 export default {
   data() {
     return {
@@ -24,8 +25,8 @@ export default {
   components:{ContinuousLoadingCircle, RCMenu, Remarks},
   props:{
     objectsToDispatch:{
-      type: Object,
-      default: {},
+      type: Array,
+      default: [],
       // type: Array,
       // default: [],
     }
@@ -114,37 +115,50 @@ export default {
         this.DropdownBrexSearch.keypress(event, route);
       }
     },
-    assignObject(data, by = ''){
-      console.log(data);
-      if(by === 'filenames'){
-        this.objects = data.filenames;
-      } else if(by === 'paths'){
-        this.objects = data.paths;
-      } else {
+    setObject(data){
+      if(Array.isArray(data)){
         this.objects = [];
-        this.addObjectsByPaths(data);
-        this.addObjectsByFilenames(data);
+        data.forEach((v) => {
+          if(isObject(v)) this.objects.push(v.filename);
+          else this.objects.push(v);
+        });
       }
     },
-    addObjectsByFilenames(data){
-      if(data.filenames && data.filenames.length > 0){
-        this.objects = this.objects.concat(data.filenames);
-        this.objects = this.objects.filter((item, i, ar) => ar.indexOf(item) === i); // unique array     
+    addObject(data){
+      if(Array.isArray(data)){
+        data.forEach((v) => {
+          if(isObject(v)) this.objects.push(v.filename);
+          else this.objects.push(v);
+        });
       }
     },
-    addObjectsByPaths(data){
-      if(data.paths && data.paths.length > 0){
-        // do axios here
+    removeObject(data){
+      if(Array.isArray(data)){
+        data.forEach((v) => {
+          let filename;
+          if(isObject(v)) filename = v.filename;
+          else filename = v;
+          let index = this.objects.indexOf(filename);
+          if(index >= 0) this.objects.splice(index,1);
+        });
       }
-    }
+    },
   },
   mounted() {
-    let arr =  this.emitter.all.get('dispatchTo'); // 'arr.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
-    let indexEmitter = arr.indexOf(arr.find((v) => v.name === 'bound assignObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-    if(arr.length < 2 && indexEmitter < 0) this.emitter.on('dispatchTo', this.assignObject); 
+    let emitters =  this.emitter.all.get('dispatchTo'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound setObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('dispatchTo', this.setObject); 
 
-    if((this.$props.objectsToDispatch.filenames && this.$props.objectsToDispatch.filenames.length > 0) || (this.$props.objectsToDispatch.paths && this.$props.objectsToDispatch.paths.length > 0)){
-      this.assignObject(this.$props.objectsToDispatch);
+    emitters =  this.emitter.all.get('AddDispatchTo'); // 'emitter.length < 1' artinya emitter baru sekali di instance/emit, yakni cuma di Dispatch.vue saja
+    indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound addObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('AddDispatchTo', this.addObject); 
+
+    emitters =  this.emitter.all.get('RemoveDispatchTo'); // 'emitter.length < 1' artinya emitter baru sekali di instance/emit, yakni cuma di Dispatch.vue saja
+    indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound removeObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('RemoveDispatchTo', this.removeObject); 
+
+    if((this.$props.objectsToDispatch.length > 0)){
+      this.setObject(this.$props.objectsToDispatch);
     }
   }
 }

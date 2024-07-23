@@ -14,8 +14,9 @@ const ListTree = {
       // tes;
       if (response.ok) {
         let json = await response.json();
-        // resolve(setListTreeData(json.data)); // jika ingin pakai modul
-        resolve(this.setListTreeData(json.data));
+        // resolve(setListTreeData(json.csdbs)); // jika ingin pakai modul
+        // resolve(this.setListTreeData(json.csdbs));
+        resolve(this.setListTreeData(json.csdbs));
       } else {
         reject([]);
       }

@@ -8,6 +8,7 @@ use App\Http\Requests\Csdb\CsdbChangePath;
 use App\Http\Requests\Csdb\CsdbCreateByXMLEditor;
 use App\Http\Requests\Csdb\CsdbDelete;
 use App\Http\Requests\Csdb\CsdbUpdateByXMLEditor;
+use App\Http\Requests\Csdb\GetObjectModels;
 use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
 use App\Models\Csdb\Dmc;
@@ -233,7 +234,7 @@ class CsdbController extends Controller
       return $this->ret2(
         200,
         [
-          "data" =>
+          "csdbs" =>
           Csdb::where('filename', 'like', 'DMC-%')
             ->orWhere('filename', 'like', 'PMC-%')
             ->orWhere('filename', 'like', 'ICN-%')
@@ -243,9 +244,12 @@ class CsdbController extends Controller
       );
     }
     $this->model = Csdb::with('initiator');
-    return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
+    return $this->ret2(200, ['csdbs' => $this->model->get()->toArray()]);
   }
 
+  /**
+   * return model which instance of Dmc,Pmc, Dml, other
+   */
   public function get_object_model(Request $request, string $filename)
   {
     $type = substr($filename, 0, 3);
@@ -253,6 +257,17 @@ class CsdbController extends Controller
     $model->setProtected(['with' => 'csdb.initiator']);
     $model = $model->where('filename', $filename)->first();
     return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
+  }
+
+  /**
+   * return csdbs which return instance of Csdb::class
+   */
+  public function get_object_csdbs(Request $request)
+  {
+    $this->model = new Csdb();
+    $res = $this->generateWhereRawQueryString($request->get('sc'));
+    $ret = $this->model->whereRaw($res[0])->orderBy('filename')->get();
+    return $this->ret2(200,['csdbs' => $ret->toArray()]);
   }
 
   public function forfolder_get_allobjects_list(Request $request)

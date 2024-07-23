@@ -29,8 +29,10 @@ use Ptdi\Mpub\Main\CSDBStatic;
 // use Ptdi\Mpub\Pdf2\Applicability;
 
 /**
- * remark ['stage'] itu cuma ada unstaged, staging, staged, deleted; 
- * kayaknya 'deleted' tidak terpakai
+ * yang dimaksud CSDBModel adalah instance class ini.
+ * yangd dimaksud 'Csdb'(s) adalah instance class.
+ * yang dimaksud CSDBObject atau CSDBMeta adalah instance class Dmc, Pmc, dll extends class ini.
+ * yangd dimaksud 'Model' adalah instance class Dmc, Pmc, dll extends class ini.
  */
 class Csdb extends Model
 {
@@ -71,7 +73,7 @@ class Csdb extends Model
    *
    * @var array<int, string>
    */
-  protected $hidden = ['initiator_id'];
+  protected $hidden = ['initiator_id', 'id', 'deleter_id'];
 
   /**
    * The attributes that should be cast.

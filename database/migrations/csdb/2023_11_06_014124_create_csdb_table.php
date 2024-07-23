@@ -23,7 +23,7 @@ return new class extends Migration
       $table->integer('initiator_id');
       $table->integer('deleter_id');
       $table->timestampsTz(7);
-      $table->dateTimeTz('deleted_at')->nullable();
+      // $table->dateTimeTz('deleted_at')->nullable();
     });
   }
 

@@ -341,7 +341,7 @@ class Controller extends BaseController
         $isFitted = true;
       }
       // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
-      $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id];
+      // $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id]; // kayaknya ini ga perlu karena suatu saat ada orang yang import csdb object pakai DDN
       $keywords['available_storage'] = [Auth::user()->storage];
     } else {
       if(array_is_list($keywords)){

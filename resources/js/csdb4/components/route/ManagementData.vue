@@ -144,7 +144,7 @@ export default {
       });
 
       this.emitter.on('dispatchTo', (data) => {
-        // data berisi array contains models
+        // data adalah array contains models
         this.bottomBarItems.DispatchTo.data = data;
         this.bottomBarItems.DispatchTo.isShow = true;
       })

@@ -9,10 +9,10 @@ import { objectType } from '../../../helper.js';
 import Preview from '../componentns/Preview.vue';
 import Editor from '../componentns/Editor.vue';
 import History from '../componentns/History.vue';
-// import Option from '../componentns/Option.vue';
+import DispatchTo from '../componentns/DispatchTo.vue';
 export default {
   name: 'Explorer',
-  components: { BottomBar, ListTree, Folder, Preview, Editor, History},
+  components: { BottomBar, ListTree, Folder, Preview, Editor, History, DispatchTo},
   data() {
     return {
       bottomBarItems: {
@@ -40,6 +40,12 @@ export default {
           tooltipName: 'Preview',
           isShow: false,
           data: {}
+        },
+        DispatchTo:{
+          iconName: 'local_shipping',
+          'tooltipName': 'Dispatch To',
+          isShow: false,
+          data:{}
         },
       },
       colWidth: {
@@ -152,6 +158,24 @@ export default {
       this.emitter.emit('ListTree-refresh', data); // tidak perlu kirim data karena nanti request ke server
     })
 
+    this.emitter.on('dispatchTo', (data) => {
+      // data adalah array contains models
+      this.bottomBarItems.DispatchTo.data = data;
+      this.bottomBarItems.DispatchTo.isShow = true;
+    })
+
+    this.emitter.on('AddDispatchTo', (data) => {
+      // data adalah array contains models
+      this.bottomBarItems.DispatchTo.data = data;
+      this.bottomBarItems.DispatchTo.isShow = true;
+    })
+
+    this.emitter.on('RemoveDispatchTo', (data) => {
+      // data adalah array contains models
+      this.bottomBarItems.DispatchTo.data = data;
+      this.bottomBarItems.DispatchTo.isShow = true;
+    })
+
     this.emitter.on('DeleteCSDBObjectFromOption', (data) => {
       // data adalah array. data[0] adalah model SQL CSDB Object
       // data adalah array. data[1] adalah model Deletion Object
@@ -207,6 +231,7 @@ export default {
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
             <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
+            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow" :objectsToDispatch="bottomBarItems.DispatchTo.data"/>
           </div>
         </div>
       </div>
