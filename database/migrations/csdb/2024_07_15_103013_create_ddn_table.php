@@ -11,9 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('sqlite')->create('ddn', function (Blueprint $table) {
+    Schema::dropIfExists('ddn');
+    Schema::create('ddn', function (Blueprint $table) {
       $table->id();
-      $table->tinyText('filename')->unique();
+      $table->string('filename')->unique(false);
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
       $table->tinyText('receiverIdent'); // merujuk ke receiver code atau sudah di transform codenya, gunakan file config jika ingin transform
@@ -25,7 +26,7 @@ return new class extends Migration
       $table->tinyText('day');
       
       $table->string('securityClassification');
-      $table->bigInteger('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
+      $table->string('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
       $table->text('authorization'); //merujuk ke ddnStatus/authorization
       $table->text('remarks')->nullable(); //merujuk ke ddnStatus/remarks
       /**
@@ -42,6 +43,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    //
+    Schema::dropIfExists('ddn');
   }
 };

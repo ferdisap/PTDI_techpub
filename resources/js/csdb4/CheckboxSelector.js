@@ -5,7 +5,7 @@ import mitt from 'mitt';
 import { array_unique } from "./helper";
 
 class CheckboxSelector{
-  cbHovered = ''; // checkbox input id
+  cbHovered = ''; // checkbox input id;
   isSelectAll = false;
   selectionMode = false;
   id = ''; 
@@ -13,6 +13,13 @@ class CheckboxSelector{
 
   constructor(){
     this.id = Randomstring.generate({charset:'alphabetic'});
+  }
+
+  setCbHovered(id)
+  {
+    clearTimeout(this._toSetCbHovered);
+    if(!this.isShowTriggerPanel) this.cbHovered = id;
+    this._toSetCbHovered = setTimeout(()=> (!this.isShowTriggerPanel) ? (this.cbHovered = '') : null ,1000);
   }
 
   select(cbid = ''){
@@ -23,8 +30,11 @@ class CheckboxSelector{
     setTimeout(()=>{
       let input = document.getElementById(cbid);
       input.checked = !input.checked
-    },100);
-    // setTimeout(()=>document.getElementById(cbid).checked = true,100);
+    },10);
+  }
+
+  copy(text){
+    return navigator.clipboard.writeText(text);
   }
 
   selectAll(isSelect = true, cssInputSelector = ''){
@@ -84,30 +94,16 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
   }
 
   /**
-   * makesure value checkbox is filename to put to server
-   * @return {Promise} berisi string filename yang di change path 
+   * @returns {object} resolve config.data
    */
-  async changePath(event, config, callback){
+  async fetch(routeName, config, callback){
     let resolve,reject;
     const prom = new Promise((r,j) => {
       resolve = r; reject = j;
     })
 
-    if(!(config)){
-      config = {};
-      config.data = new FormData(event.target);
-    }
-
-    const data = config.data;
-    const routeName = config.routeName ? config.routeName : 'api.change_object_path';
-
-    let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
-    if(data instanceof FormData) data.set('filename', value);
-    else data.filename = value;
-    
-    const route = useTechpubStore().getWebRoute(routeName,data);
-    
-    let response = await axios({
+    const route = useTechpubStore().getWebRoute(routeName,config.data);
+    const response = await axios({
       url: route.url,
       method: route.method[0],
       data: route.params,
@@ -115,7 +111,7 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
 
     if(response.statusText === 'OK'){
       (callback.bind(this))();
-      resolve(value);
+      resolve(config.data);
     } else {
       reject(false);
     }
@@ -123,6 +119,42 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
   }
 
   /**
+   * masih terbatas pada checkbox value, yakni filename atau path
+   */
+  copy(){
+    try {
+      super.copy(document.getElementById(this.cbHovered).value);
+      console.log("copy success");
+    } catch (error) {
+      console.error("copy fails");
+    }
+    this.isShowTriggerPanel = false;
+  }
+  
+  /**
+   * makesure value checkbox is filename to put to server
+   * @return {Promise} berisi string filename yang di change path 
+   */
+  async changePath(event, config, callback){
+    if(!(config)){
+      config = {};
+      config.data = new FormData(event.target);
+    }
+
+    let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
+    if(config.data instanceof FormData) config.data.set('filename', value); // payload = 'xxx,yyy,zzz'
+    else config.data.filename = value.join(","); // payload = 'xxx,yyy,zzz';
+
+    return await this.fetch(config.routeName ? config.routeName : 'api.change_object_path', config, callback);
+  }
+
+  async delete(callback){
+    let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
+    return await this.fetch('api.delete_objects', {data:{filename: value}}, callback);
+  }
+
+  /**
+   * DEPRECIATED, nanti dipindah ke Folder.js
    * @returns {Promise} contain csdbs
    */
   async getCsdbFilenameFromFolderVue(){
@@ -162,6 +194,7 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
   }
 
   /**
+   * * DEPRECIATED, nanti dipindah ke Folder.js
    * @returns {Promise} contains csdbs
    */
   async getCsdbModelsFromStringPath(paths = []){

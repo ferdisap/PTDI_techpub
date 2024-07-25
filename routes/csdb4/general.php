@@ -28,6 +28,9 @@ Route::get("/api/content/{CSDBModel:filename}/html",[CsdbController::class, 'rea
 Route::get("/api/content/{CSDBModel:filename}/other",[CsdbController::class, 'read_html_object'])->middleware('auth')->name('api.read_other_object');
 Route::get("/api/icn/raw/{CSDBModel:filename}", [CsdbController::class, 'get_icn_raw'])->middleware('auth')->name('api.get_icn_raw');
 
+// delete
+Route::post("/api/csdbdelete", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_objects');
+
 // get user model
 Route::get('/api/usersearch', [UserController::class, 'searchModel'])->middleware('auth')->name('api.user_search_model');
 
@@ -62,8 +65,8 @@ Route::get("/api/issue/{filename}", [CsdbController::class, 'issue'])->middlewar
 Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware('auth')->name('api.edit_object');
 
 
-Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');
-Route::post("/api/multipledeletecsdbobject", [CsdbController::class, 'delete_multiple'])->middleware('auth')->name('api.delete_objects');
+// Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');
+// Route::post("/api/multipledeletecsdbobject", [CsdbController::class, 'delete_multiple'])->middleware('auth')->name('api.delete_objects');
 Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
 Route::post("/api/permanentdelete", [CsdbController::class, 'permanentDelete'])->middleware('auth')->name('api.permanentdelete_object');
 Route::get("/api/harddelete/{filename}", [CsdbController::class, 'harddelete'])->middleware('auth'); // untuk developer saja
@@ -155,21 +158,24 @@ Route::get('/tesapaja',function(){
   // $e = (Enterprise::find(6));
   // dd($e->address, $e->remarks);
 
-  $name = fake()->company();
-  $code = rand(11111,99999);
-  $address = [
-    'city' => 'Bandung',
-    'country' => 'Indonesia',
-    'phoneNumber' => ['08124839295746','08538493057594'],
-  ];
-  $remarks = null;
-  $enterprise = Enterprise::create([
-    'name' => $name,
-    'code' => $code,
-    'address' => $address,
-    'remarks' => 'tes null'
-    // 'remarks_tes' => 'tes null'
-    // 'remarksTes' => 'null tes'
-  ]);
-  dd($enterprise);
+  // $name = fake()->company();
+  // $code = rand(11111,99999);
+  // $address = [
+  //   'city' => 'Bandung',
+  //   'country' => 'Indonesia',
+  //   'phoneNumber' => ['08124839295746','08538493057594'],
+  // ];
+  // $remarks = null;
+  // $enterprise = Enterprise::create([
+  //   'name' => $name,
+  //   'code' => $code,
+  //   'address' => $address,
+  //   'remarks' => 'tes null'
+  //   // 'remarks_tes' => 'tes null'
+  //   // 'remarksTes' => 'null tes'
+  // ]);
+  // dd($enterprise);
+
+  // $enterprise = (Enterprise::find(1));
+  // dd($enterprise->code->name);
 });

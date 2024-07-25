@@ -73,5 +73,24 @@ class User extends Authenticatable implements MustVerifyEmail
       }
     }
 
+    /**
+     * @return string
+     */
+    public function name($firstToLast = true)
+    {
+      if($firstToLast){
+        $this->name = 
+        ($this->first_name ? $this->first_name . " " : '') . 
+        ($this->middle_name ? $this->middle_name . " " : '').
+        ($this->last_name);
+      } else {
+        $this->name = 
+        ($this->last_name . ", ");
+        ($this->first_name ? $this->first_name . " " : '').
+        ($this->middle_name);
+      }
+      return $this->name;
+    }
+
 
 }

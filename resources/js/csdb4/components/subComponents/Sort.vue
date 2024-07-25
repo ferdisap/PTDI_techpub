@@ -35,6 +35,6 @@ export default {
 </script>
 <template>
   <!-- <a href="javascript:void(0)" @click="$props.function ? $props.function : sort()"><span class="material-icons text-sm ">swap_vert</span></a> -->
-  <button v-if="$props.function" @click="$props.function" type="button" class="has-tooltip-arrow" data-tooltip="Sort"><span class="material-icons text-sm">swap_vert</span></button>
+  <button v-if="$props.function" @click="$props.function.bind($event)" type="button" class="has-tooltip-arrow" data-tooltip="Sort"><span class="material-icons text-sm">swap_vert</span></button>
   <button v-else @click="sortDefault" type="button" class="has-tooltip-arrow" data-tooltip="Sort"><span class="material-icons text-sm ">swap_vert</span></button>
 </template>

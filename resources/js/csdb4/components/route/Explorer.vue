@@ -120,6 +120,7 @@ export default {
     });
 
     this.emitter.on('createObjectFromEditor', (data) => { 
+      console.log('here in explorerVue');
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
       this.$root.gotoExplorer(data.filename);
@@ -176,27 +177,23 @@ export default {
       this.bottomBarItems.DispatchTo.isShow = true;
     })
 
-    this.emitter.on('DeleteCSDBObjectFromOption', (data) => {
-      // data adalah array. data[0] adalah model SQL CSDB Object
-      // data adalah array. data[1] adalah model Deletion Object
-      this.emitter.emit('ListTree-remove', data[0]);
-      this.emitter.emit('Deletion-refresh', data[1]);
+    this.emitter.on('DeleteCSDBObjectFromFolder', (data) => {
+      // data adalah array berisi csdb SQL CSDB Object
+      this.emitter.emit('ListTree-remove', data);
+      // this.emitter.emit('Deletion-refresh', data[1]);
     })
 
-    this.emitter.on('DeleteMultipleCSDBObject', (data) => {
-      // data is array models contained several model
-      this.emitter.emit('ListTree-removeMultiple', data);
-      this.emitter.emit('Deletion-refresh');
-    })
+    // this.emitter.on('DeleteMultipleCSDBObject', (data) => {
+    //   // data is array contained several model
+    //   this.emitter.emit('ListTree-remove', data);
+    //   this.emitter.emit('Deletion-refresh');
+    // })
 
     this.emitter.on('RestoreCSDBobejctFromDeletion', (data) => {
       // data adalah model SQL CSDB Object
-      this.emitter.emit('ListTree-add', data);
+      this.emitter.emit('ListTree-refresh', data);
     })
 
-    this.emitter.on('CommitMultipleCSDBObject', (data) => {
-      this.emitter.emit('ListTree-addMultiple', data);
-    })
   }
 }
 </script>

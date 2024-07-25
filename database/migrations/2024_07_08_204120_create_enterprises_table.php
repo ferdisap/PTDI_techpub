@@ -14,10 +14,11 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
+    Schema::create('enterprises', function (Blueprint $table) {
       $table->id();
       $table->string('name');
-      $table->string('code')->unique();
+      // $table->string('code')->unique();
+      $table->integer('code_id')->unique();
       $table->json('address');
       $table->json('remarks')->nullable();
     });
@@ -28,6 +29,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::connection('sqlite')->dropIfExists('enterprises');
+    Schema::dropIfExists('enterprises');
   }
 };

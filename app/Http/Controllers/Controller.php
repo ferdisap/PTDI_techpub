@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Csdb;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
@@ -292,6 +293,8 @@ class Controller extends BaseController
     return $keywords;
   }
 
+  // QUERY untuk undeleted
+  // SELECT * FROM csdb WHERE id IN ( SELECT history.owner_id FROM history WHERE history.owner_class = 'App\\Models\\Csdb' AND (history.code <> 'CSDB-DELL' OR history.code <> 'CRBT-PDEL') AND history.created_at = (SELECT max(history.created_at) from history) )
   /**
    * jika "?sc=DMC" => maka querynya WHERE each.column like %DMC% , joined by 'OR';
    * jika "?sc=filename::DMC%20path::csdb" => maka querynya WHERE filename LIKE '%DMC%' AND path LIKE '%csdb%';
@@ -299,7 +302,7 @@ class Controller extends BaseController
    * jika "?sc=filename::DMC%20filename::022" => maka querynya WHERE filename LIKE '%DMC%' AND filename LIKE '%022%';
    * @param Array, index0 = query string, index1 = exploded keywords
    */
-  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '')
+  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = ['CSDB-DELL', 'CSDB-PDEL'])
   {
     $isFitted = false;
     // contoh1
@@ -315,17 +318,16 @@ class Controller extends BaseController
     // ];
     // contoh3
     // $keywords = [
-      // 'path' => ['A'],
-      // 'filename' => ['B','C','D'],
-      // 'editable' => ['E'],
+    //   'path' => ['A'],
+    //   'filename' => ['B','C','D'],
+    //   'editable' => ['E'],
     // ];
-    $keywords = Helper::explodeSearchKeyAndValue($keyword);
-    // dd($keywords);
+    $keywords = is_array($keyword) ? $keyword : Helper::explodeSearchKeyAndValue($keyword);
 
     // jika $keyword tidak ada column namenya, maka akan mengambil seluruh column name database
     // contoh $request->sc = "Senchou";. Kita tidak tahu 'Senchou' ini dicari di column mana, jadi cari di semua column di database
+    $table = $table ? $table : ($this->model instanceof Builder ? $this->model->getModel()->getTable() : $this->model->getTable());
     $fitToColumn = function($keywordsExploded)use($table){
-      $table = $table ? $table : $this->model->getTable();
       $column = DB::getSchemaBuilder()->getColumnListing($table);
       for ($i=0; (int)$i < count($column); $i++) { 
         $k = $column[$i];
@@ -406,20 +408,22 @@ class Controller extends BaseController
     foreach($keywords as $col => $queryArr){
       $colnum = array_search($col,$keys);
       if($col === 'typeonly') $col = 'filename';
+      // $col = $table.".".$col; // tambahan agar query tidak bingung karena ada table name sebelum column
       foreach($queryArr as $i => $v){
         $indexString = "COL{$colnum}_{$i}";
         $id = rand(0,9999); // mencegah kalau kalau ada value yang sama antar column
-        $escapedV = str_replace("_", "\_",$v);
-        // if($col === 'path') $dictionary["<<".$v.">>"] = $strict ? " {$col} = '{$escapedV}'" : "{$col} LIKE '{$escapedV}/%' ESCAPE '\'";
-        // else $dictionary["<<".$v.">>"] = " {$col} LIKE '%{$escapedV}%' ESCAPE '\'";
+        // $escapedV = str_replace("_", "\_",$v); // sudah dicoba di SQLITE tapi error di MySQL
+        $escapedV = str_replace("_", "|_",$v); // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/6000
         $strictStr = str_replace('#&value;', $escapedV, $strictString[$col] ?? "%#&value;%"); // variable $strictString jangan di re asign
-        // $strictStr = str_replace('#&value;', $escapedV, "%#&value;%"); // variable $strictString jangan di re asign
         $col = preg_replace("/___[0-9]+$/", "", $col); // menghilangkan suffix "___XXX" yang ditambahkan di fungsi ...Main\Helper::class@explodeSearchKeyAndValue
-        $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'";
+        // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'"; // // sudah dicoba di SQLITE tapi error di MySQL
+        // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
+        // ditambah $table.$col agar query tidak bingung karena ada table name sebelum column
+        $dictionary["<<".$v.$id.">>"] = " {$table}.{$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
         $space = str_replace($indexString, "<<".$v.$id.">>", $space);
       }
     }
-    // dump($dictionary);
+    // dd($dictionary);
     
     // change the filled space to the final string query
     $arr = json_decode($space,true);
@@ -433,9 +437,10 @@ class Controller extends BaseController
         foreach($arr as $i => $v){
           if($prevVal) $arr[$i] = "$prevVal".$joinAND."$v";
           else $arr[$i] = "$v";
+          $arr[$i] = "(" . $arr[$i] . ")"; // tambahan agar setiap setelah AND akan di kurung
         }
         $str = join(" OR ", $arr);
-      } else {
+      } else { // jika bukan aray assoc maka berarti ini adalah kolom terakhir
         foreach($arr as $i => $v){
           if($prevVal) $arr[$i] = $cb($prevVal . $joinAND . $i, $v, $cb);
           else $arr[$i] = $cb($prevVal . $i, $v, $cb);
@@ -444,14 +449,42 @@ class Controller extends BaseController
       }
       return $str;
     };
-    $str = $merge($str, $arr, $merge);
-    // dump($str);
+    $str = "(".$merge($str, $arr, $merge). ")"; // dikurung agar tidak tergabung dengan variable $options
 
     foreach($dictionary as $k => $v){
       $str = str_replace($k,$v, $str);
     }
 
-    // dd($str);
+    // handling options
+    // contoh kurang tepat =  eg: SELECT * FROM csdb WHERE id IN ( SELECT history.owner_id FROM history WHERE history.owner_class = 'App\\Models\\Csdb' AND (history.code <> 'CSDB-DELL' OR history.code <> 'CRBT-PDEL') AND history.created_at = (SELECT MAX(history.created_at) from history) )
+    // contoh yang kurang tepat = 
+    //  SELECT * FROM csdb WHERE id IN ( 
+    // 	  SELECT history.owner_id FROM history WHERE (history.code <> 'CSDB-DELL' OR history.code <> 'CSDB-PDEL') AND history.created_at = (
+    // 		  SELECT MAX(history.created_at) FROM history
+    //    )
+    //  )
+    // contoh yang tepat = 
+    // -- berhasil jika csdb.id last record = CSDB-DELL
+    // -- query ini digunakan untuk mencari CSDBObject yang last record nya bukan CSDB-DELL
+    // -- sudah dicoba untuk mencari CSDBObject jumlah 5 record, 2 CSDB-DELL dan 3 lain-lain
+    // SELECT * FROM csdb WHERE csdb.id NOT IN (
+    // 	  SELECT history.owner_id FROM history WHERE (history.code = 'CSDB-DELL' OR history.code = 'CSDB-PDEL') AND history.created_at = (
+    //         SELECT MAX(history.created_at) FROM history WHERE history.owner_id = csdb.id
+    //    )
+    // )
+    if(count($historyCodeExeception) > 0){
+      $str .= " AND (";
+      $str .= "(".$table.".id NOT IN (SELECT history.owner_id FROM history WHERE (";
+      foreach($historyCodeExeception as $i => $historyCode){
+        $str .= "history.code = '{$historyCode}'";
+        if(isset($historyCodeExeception[$i+1])) $str .= " OR ";
+      }
+      $str .= ") AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = ".
+        $table
+        .".id AND history.owner_class = '"
+        .str_replace("\\", "\\\\",get_class($this->model instanceof Builder ? $this->model->getModel() : $this->model))
+        ."'))))";
+    }
 
     // dump($dictionary, $str);
     // $this->model = new User();

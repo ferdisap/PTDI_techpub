@@ -146,16 +146,22 @@ export default {
   },
   mounted() {
     let emitters =  this.emitter.all.get('dispatchTo'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
-    let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound setObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('dispatchTo', this.setObject); 
+    if(emitters){
+      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound setObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('dispatchTo', this.setObject); 
+    }
 
     emitters =  this.emitter.all.get('AddDispatchTo'); // 'emitter.length < 1' artinya emitter baru sekali di instance/emit, yakni cuma di Dispatch.vue saja
-    indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound addObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('AddDispatchTo', this.addObject); 
+    if(emitters){
+      indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound addObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('AddDispatchTo', this.addObject); 
+    }
 
     emitters =  this.emitter.all.get('RemoveDispatchTo'); // 'emitter.length < 1' artinya emitter baru sekali di instance/emit, yakni cuma di Dispatch.vue saja
-    indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound removeObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-    if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('RemoveDispatchTo', this.removeObject); 
+    if(emitters){
+      indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound removeObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('RemoveDispatchTo', this.removeObject); 
+    }
 
     if((this.$props.objectsToDispatch.length > 0)){
       this.setObject(this.$props.objectsToDispatch);

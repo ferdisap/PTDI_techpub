@@ -12,6 +12,7 @@ use App\Http\Requests\Csdb\GetObjectModels;
 use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
 use App\Models\Csdb\Dmc;
+use App\Models\Csdb\History;
 use App\Rules\Csdb\Path as PathRules;
 use Carbon\Carbon;
 use Closure;
@@ -46,7 +47,12 @@ class CsdbController extends Controller
     $CSDBModel->appendAvailableStorage($request->user()->storage);
     $this->created_at = now()->toString();
     $this->updated_at = now()->toString();
-    if ($CSDBModel->saveDOMandModel($request->user()->storage)) {
+    if ($CSDBModel->saveDOMandModel($request->user()->storage,
+        [ 
+          ['MAKE_CSDB_CRBT_History',[Csdb::class]], 
+          ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
+        ]
+    )) {
       $CSDBModel->initiator; // agar ada initiator nya
       return $this->ret2(200, ["New {$CSDBModel->filename} has been created."], ["csdb" => $CSDBModel], ['infotype' => 'info']);
     }
@@ -231,20 +237,13 @@ class CsdbController extends Controller
   public function get_allobjects_list(Request $request)
   {
     if ($request->get('listtree')) {
-      return $this->ret2(
-        200,
-        [
-          "csdbs" =>
-          Csdb::where('filename', 'like', 'DMC-%')
-            ->orWhere('filename', 'like', 'PMC-%')
-            ->orWhere('filename', 'like', 'ICN-%')
-            ->get(['filename', 'path', 'updated_at'])
-            ->toArray()
-        ]
-      );
+      $this->model = new Csdb();
+      $query = $this->generateWhereRawQueryString("filename::DMC,PMC,ICN&initiator_id={$request->user()->id}")[0];
+      $ret = $this->model->whereRaw($query)->get(['filename','path', 'updated_at'])->toArray();
+      return $this->ret2(200, ["csdbs" => $ret]);
     }
-    $this->model = Csdb::with('initiator');
-    return $this->ret2(200, ['csdbs' => $this->model->get()->toArray()]);
+    // $this->model = Csdb::with('initiator');
+    // return $this->ret2(200, ['csdbs' => $this->model->get()->toArray()]);
   }
 
   /**
@@ -266,6 +265,7 @@ class CsdbController extends Controller
   {
     $this->model = new Csdb();
     $res = $this->generateWhereRawQueryString($request->get('sc'));
+    // dd($res);
     $ret = $this->model->whereRaw($res[0])->orderBy('filename')->get();
     return $this->ret2(200,['csdbs' => $ret->toArray()]);
   }
@@ -276,8 +276,8 @@ class CsdbController extends Controller
     if ($request->path === "/") $request->merge(['path' => 'csdb']);
 
     $this->model = Csdb::with('initiator');
-    // $res = $this->generateWhereRawQueryString($request->get('sc'));
-    $res = $this->generateWhereRawQueryString($request->get('sc'),['path' => "#&value;"]);
+    $keywords = Helper::explodeSearchKeyAndValue($request->get('sc'), 'filename',["typeonly"=>"filename"]);
+    $res = $this->generateWhereRawQueryString($keywords,['path' => "#&value;"]);
     $keywords = $res[1];
 
     // menyiapkan csdb object
@@ -285,6 +285,7 @@ class CsdbController extends Controller
     // $ret = $this->model->paginate(100);
     $ret = $this->model->whereRaw($res[0])->orderBy('filename')->paginate(100);
     $ret->setPath($request->getUri());
+    // dd($res, $ret->toArray());
     
     
     $m = '';
@@ -318,10 +319,10 @@ class CsdbController extends Controller
     }
 
     $ret = $ret->toArray();
-    $ret['csdb'] = $ret['data'];
+    $ret['csdbs'] = $ret['data'];
     unset($ret['data']);
 
-    return $this->ret2(200, $ret, ['message' => $m, 'infotype' => "caution", 'folder' => $folder ?? [], "current_path" => $current_path ?? '']);
+    return $this->ret2(200, $ret, ['message' => $m, 'infotype' => "caution", 'folders' => $folder ?? [], "current_path" => $current_path ?? '']);
   }
 
   /**
@@ -378,6 +379,27 @@ class CsdbController extends Controller
 
   public function delete(CsdbDelete $request)
   {
-    dd($request->validated());
+    $result = [
+      'success' => [],
+      'fail' => [],
+    ];
+    $validatedData = $request->validated();
+    $CSDBModels = $validatedData['CSDBModelArray'];
+    unset($validatedData['CSDBModelArray']);
+    $qtyCSDBs = count($CSDBModels);
+    for ($i=0; $i < $qtyCSDBs; $i++) { 
+      $CSDB_HISTORYModel = History::MAKE_CSDB_DELL_History($CSDBModels[$i]);
+      $USER_HISTORYModel = History::MAKE_USER_DELL_History($request->user(),'', $CSDBModels[$i]->filename);
+      if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
+        $result['success'][] = $CSDBModels[$i]->filename;
+      } else {
+        $result['fail'][] = $CSDBModels[$i]->filename;
+      }
+    }
+    $totalFail = count($result['fail']);
+    $totalSuccess = count($result['success']);
+    $infotype = $totalSuccess < 1 ? "warning" : ($totalFail > 0 ? 'caution' : 'info');
+    $m = ($totalSuccess > 0 ? 'Success delete to ' . join(", ", $result['success']) : '') . ($totalFail > 0 ? " and Fail delete to " . join(", ", $result['fail']) : '');
+    return $this->ret2(200, ['message' => $m,'infotype' => $infotype]);
   }
 }

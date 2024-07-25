@@ -7,6 +7,7 @@ use App\Models\Csdb\Comment;
 use App\Models\Csdb\Ddn;
 use App\Models\Csdb\Dmc;
 use App\Models\Csdb\Dml;
+use App\Models\Csdb\History;
 use App\Models\Csdb\Pmc;
 use Carbon\Carbon;
 use DOMDocument;
@@ -66,7 +67,8 @@ class Csdb extends Model
    *
    * @var array
    */
-  protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id', 'deleted_at'];
+  // protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id', 'deleted_at'];
+  protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleted_at'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -89,7 +91,7 @@ class Csdb extends Model
    * @var array
    */
   protected $attributes = [
-    'deleter_id' => 0,
+    // 'deleter_id' => 0,
     // 'available_storage' => 'foo',
   ];
 
@@ -106,7 +108,9 @@ class Csdb extends Model
   protected function createdAt(): Attribute
   {
     return Attribute::make(
-      set: fn (string $v) => now()->toString(),
+      // set: fn (string $v) => now()->toString(),
+      set: fn (string $v) => now()->format('Y-m-d H:i:s'),
+      // set: fn (string $v) => date('Y-m-d H:i:s', $v),
       // get: fn (string $v) => Carbon::parse($v)->timezone(7)->toString(),
     );
   }
@@ -117,7 +121,9 @@ class Csdb extends Model
   protected function updatedAt(): Attribute
   {
     return Attribute::make(
-      set: fn (string $v) => now()->toString(),
+      // set: fn (string $v) => now()->toString(),
+      set: fn (string $v) => now()->format('Y-m-d H:i:s'),
+      // set: fn (string $v) => date('Y-m-d H:i:s', $v),
       // get: fn (string $v) => Carbon::parse($v)->timezone(7)->toString()
       // get: fn (string $v) => 
       // get: fn (string $v) => Carbon::createFromFormat('D M d Y H:i:s O+', $v)->toString()
@@ -131,13 +137,17 @@ class Csdb extends Model
   protected function path(): Attribute
   {
     return Attribute::make(
-      set: fn (string $v) => substr($v, -1, 1) === '/' ? rtrim($v, "/") : $v,
+      set: fn (string $v) => strtoupper(substr($v, -1, 1) === '/' ? rtrim($v, "/") : $v),
       // set: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
       // get: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
+      get: fn(string $v) => strtoupper($v),
     );
     // dd(substr($str,-1,1 ));
   }
 
+  /**
+   * DEPRECIATED, diganti oleh method setProtected
+   */
   public function hide(mixed $column)
   {
     if (is_array($column)) {
@@ -178,6 +188,12 @@ class Csdb extends Model
   public function csdb() :belongsTo
   {
     return $this->belongsTo(Csdb::class,'filename','filename');
+  }
+
+  
+  protected function history() :HasMany
+  {
+    return $this->hasMany(History::class, 'owner_id','id');
   }
 
   /**
@@ -343,9 +359,11 @@ class Csdb extends Model
    * sudah termasuk revert save
    * save file dulu, kemudian model
    * sudah bisa save file ICN. Mungkin namanya tidak relevan lagi, jadi nanti didepreciated
+   * saat membuat history, isi $historyStatic function adalah [ [(string)method, (array)params] ],  index[0] = string methodName, index1 = array params
+   * jika ada parameter method history yang membutuhkan instance class ini atau turunan class ini (Dmc, Pmc, dll) maka isi param nya dengan namespace class
    * @return bool
    */
-  public function saveDOMandModel(string $storageName = '')
+  public function saveDOMandModel(string $storageName = '', $historyStaticFunction = [])
   {
     if(!$storageName) {
       if($name = User::find($this->initiator_id)) $storageName = $name->storage;
@@ -385,15 +403,37 @@ class Csdb extends Model
               break;
           }
           if (!$csdbobject) {
+            $this->delete();
             $revert_save_file();
             return false;
           }
         }
+        elseif($this->CSDBObject->document instanceof ICNDocument){
+          // do something to fillTable for meta
+          return true;
+        }
+
+        // create history
+        $HISTORYModels = [];
+        foreach($historyStaticFunction as $history){
+          $method = $history[0];
+          $params = $history[1];
+          foreach($params as $i => $p){
+            if($p === self::class){
+              $params[$i] = $this;
+            };
+          }
+          $HISTORYModels[] = call_user_func_array(array(History::class, $method),$params);
+        }
+        if(!(History::saveModel($HISTORYModels))){
+          $this->delete();
+          $revert_save_file();
+          return false;
+        }
         return true;
-      } else {
-        $revert_save_file();
-        return false;
       }
+      $revert_save_file();
+      return false;
     }
     return false;
   }

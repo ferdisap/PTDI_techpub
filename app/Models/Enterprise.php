@@ -6,6 +6,8 @@ use App\Casts\RemarksTes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Ptdi\Mpub\Main\Helper;
 
 class Enterprise extends Model
@@ -65,6 +67,8 @@ class Enterprise extends Model
 
   protected $hidden = ['id'];
 
+  protected $with = ['code'];
+
   /**
    * harus json string
    * set value akan menjadi json string curly atau json string array []
@@ -117,6 +121,11 @@ class Enterprise extends Model
       ),
       get: fn($v) => json_decode($v, true),
     );
+  }
+
+  public function code() :BelongsTo
+  {
+    return $this->belongsTo(Code::class);
   }
   
 }

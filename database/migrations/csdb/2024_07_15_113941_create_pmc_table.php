@@ -11,9 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('sqlite')->create('pmc', function (Blueprint $table) {
+    Schema::dropIfExists('pmc');
+    Schema::create('pmc', function (Blueprint $table) {
       $table->id();
-      $table->tinyText('filename')->unique();
+      $table->string('filename')->unique(false);
 
       $table->tinyText('modelIdentCode');
       $table->tinyText('pmIssuer');
@@ -36,7 +37,7 @@ return new class extends Migration
       $table->tinyText('responsiblePartnerCompany'); // merujuk ke responsiblePartnerCompany, bisa code atau textnya jika ada
       $table->tinyText('originator'); // merujuk ke originator, bisa code atau textnya jika ada
       $table->tinyText('applicability'); // merujuk ke originator, bisa code atau textnya jika ada
-      $table->bigInteger('brexDmRef');
+      $table->string('brexDmRef');
       $table->text('qa'); // isi last QA: 'unverified', 'first-...', 'second-...'
       $table->text('remarks')->nullable();
     });

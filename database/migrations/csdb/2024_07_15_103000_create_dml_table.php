@@ -11,9 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('sqlite')->create('dml', function (Blueprint $table) {
+    Schema::dropIfExists('dml');
+    Schema::create('dml', function (Blueprint $table) {
       $table->id();
-      $table->tinyText('filename')->unique();
+      $table->string('filename')->unique(false);
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
       $table->tinyText('dmlType'); // merujuk ke @dmlType yang sudah di transform, 'Partial DML', 'Complete DML', 'CSL'

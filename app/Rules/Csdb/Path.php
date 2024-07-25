@@ -14,7 +14,8 @@ class Path implements ValidationRule
    */
   public function validate(string $attribute, mixed $path, Closure $fail): void
   {
-    if(substr($path,0,4) != 'csdb') $fail("The path must be prefixed by 'csdb'.");
+    if(strtoupper(substr($path,0,4)) != 'CSDB') $fail("The path must be prefixed by 'CSDB'.");
+    if(strtoupper($path) !== $path) $fail("The path must be written in UPPER Case.");
 
     preg_match('/[^a-zA-Z0-9\/\s]+/', $path, $matches, PREG_OFFSET_CAPTURE, 0);
     if (!empty($matches)) {

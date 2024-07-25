@@ -18,7 +18,9 @@ class EnterpriseFactory extends Factory
   {
     return [
       'name' => fake()->company(),
-      'code' => rand(10000,99999),
+      // 'code' => rand(10000,99999),
+      // 'code_id' => rand(2,99),
+      'code_id' => fake()->unique()->numberBetween(0,99),
       'address' => json_encode([
         "city" => fake()->city(),
         "country" => fake()->country(),

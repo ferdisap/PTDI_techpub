@@ -2,8 +2,9 @@
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import XMLEditor from '../../XMLEditor';
-// import { isProxy, toRaw } from 'vue';
 import ContinuousLoadingCircle from '../../loadingProgress/Continuousloadingcircle.vue';
+import {setUpdate, setCreate, switchEditor, readEntity, submit, submitUploadFile, submitCreateXml, submitUpdateXml} from './EditorVue';
+
 export default {
   data(){
     return {
@@ -26,110 +27,25 @@ export default {
       return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.path : this.pathForInputUploadFile) : this.pathForInputUploadFile;
     },
     pathInputXMLFile(){
-      return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.path : this.pathForInputUploadFile) : this.pathForInputUploadFile;
+      return this.isUpdate ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.path : '') : '';
     },
     filenameInputUploadFile(){
       return this.isUpdate && this.isFile ? (this.techpubStore.currentObjectModel.csdb ? this.techpubStore.currentObjectModel.csdb.filename : this.filenameForInputUploadFile) : this.filenameForInputUploadFile;
     },
   },
   methods: {
-    setUpdate(filename){
-      this.isUpdate = true; 
-      if(filename.slice(0,3) === 'ICN'){
-        this.isFile = true;
-      } else {
-        this.isFile = false;
-        this.XMLEditor.setRoute(this.techpubStore.getWebRoute('api.get_object_raw',{filename: filename}));
-        this.XMLEditor.fetchRaw();
-      }
-    },
-    setCreate(){
-      this.isUpdate = false;
-      this.isFile = false;
-      this.XMLEditor.stopFetch();
-      this.XMLEditor.changeText('');
-    },
-    switchEditor(name){
-      switch (name) {
-        case 'XMLEditor':
-          this.isFile = false;
-          if(this.$route.params.filename.substring(0,3) === 'ICN') this.isUpdate = false;
-          setTimeout(()=>document.getElementById(this.XMLEditor.id).innerHTML = this.XMLEditor.editor.dom.outerHTML,0);
-          break;
-        case 'FILEUpload':
-          this.isFile = true;
-          if(this.$route.params.filename && this.$route.params.filename.slice(0,3) != 'ICN') this.isUpdate = false;
-          break;
-      }
-    },
-    readEntity(event){
-      let file = event.target.files[0];
-      if (file) {
-        if (file.type === 'text/xml') {
-          alert('you will be moved to xml editor.');
-          // push route to editor page here
-          const reader = new FileReader();
-          reader.onload = () => {
-            this.switchEditor('XMLEditor');
-            this.changeText(reader.result);
-            this.emitter.emit('readTextFileFromEditor');
-          }
-          reader.readAsText(file);
-        }
-        else {
-          this.emitter.emit('readFileURLFromEditor', {
-            mime: file.type,
-            sourceType: 'blobURL',
-            src: URL.createObjectURL(file),
-          });
-        }
-      }
-    },
-    async submit(event){
-      this.showLoadingProgress = true;
-      this.isFile ? (await this.submitUploadFile(event)) : (
-        this.isUpdate ? (await this.submitUpdateXml(event)) : (await this.submitCreateXml(event))
-      );
-      this.showLoadingProgress = false;
-    },
-    async submitUploadFile(event){
-      const fd = new FormData(event.target);
-      const response = await axios({
-        route: {
-          name: 'api.upload_ICN',
-          data: fd
-        }, useMainLoadingBar: false,
-      });
-      if(response.statusText === 'OK') this.emitter.emit('uploadICNFromEditor', response.data.csdb);
-    },
-    async submitCreateXml(event){
-      const fd = new FormData(event.target);
-      fd.set('xmleditor', this.XMLEditor.editor.state.doc.toString());
-      const response = await axios({
-        route: {
-          name: 'api.create_object',
-          data: fd
-        }, useMainLoadingBar: false,
-      });
-      if(response.statusText === 'OK') this.emitter.emit('createObjectFromEditor', response.data.csdb);
-    },
-    async submitUpdateXml(event){
-      const fd = new FormData(event.target);
-      fd.set('xmleditor', this.XMLEditor.editor.state.doc.toString());
-      const response = await axios({
-        route: {
-          name: 'api.update_object',
-          data: fd
-        }, useMainLoadingBar: false,
-      });
-      console.log(response);
-      if(response.statusText === 'OK') this.emitter.emit('updateObjectFromEditor', response.data.csdb);
-    },
+    setUpdate: setUpdate,
+    setCreate: setCreate,
+    switchEditor: switchEditor,
+    readEntity: readEntity,
+    submit: submit,
+    submitUploadFile: submitUploadFile,
+    submitCreateXml: submitCreateXml,
+    submitUpdateXml: submitUpdateXml,
   },
   mounted(){
-    console.log('aaa');
-    window.XMLEditor = XMLEditor;
-    window.ed = this.XMLEditor;
+    // window.XMLEditor = XMLEditor;
+    // window.ed = this.XMLEditor;
     this.XMLEditor.attachEditor()
     if(this.$route.params.filename) this.setUpdate(this.$route.params.filename);
   }
@@ -179,7 +95,7 @@ export default {
         </div>
         <div class="mb-1">
           <label for="object-path" class="text-sm font-bold mr-2">Path:</label>
-          <input id="object-path" name="path" :value="pathInputXMLFile" @change.prevent="pathForInputXMLFile = $event.target.value" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="py-0 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          <input id="object-path" name="path" :value="pathInputXMLFile" placeholder="type the fullpath eg. csdb/n219/amm" type="text" class="py-0 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         </div>
         <div :id="XMLEditor.id" class="text-xl mb-2"></div>
         <div class="error text-sm text-red-600" v-html="techpubStore.error('xmleditor')"></div>

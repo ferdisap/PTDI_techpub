@@ -11,9 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
+    Schema::dropIfExists('comment');
     Schema::create('comment', function (Blueprint $table) {
       $table->id();
-      $table->tinyText('filename')->unique();
+      $table->string('filename')->unique();
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
       $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue

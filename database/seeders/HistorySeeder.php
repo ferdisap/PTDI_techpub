@@ -1,16 +1,20 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class HistorySeeder extends Seeder
 {
   /**
-   * Run the migrations.
+   * Run the database seeds.
    */
-  public function up(): void
+  public function run(): void
   {
+    Schema::dropIfExists('history');
     Schema::create('history', function (Blueprint $table) {
       $table->id();
       $table->string('code');
@@ -20,12 +24,4 @@ return new class extends Migration
       $table->timestamp('created_at');
     });
   }
-
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('history');
-  }
-};
+}

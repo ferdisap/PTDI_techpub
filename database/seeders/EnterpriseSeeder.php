@@ -30,36 +30,42 @@ class EnterpriseSeeder extends Seeder
     //   $table->json('remarks')->nullable();
     // });
 
-    Schema::connection('sqlite')->dropIfExists('enterprises');
-    Schema::connection('sqlite')->create('enterprises', function (Blueprint $table) {
-      $table->id();
-      $table->string('name');
-      $table->string('code')->unique();
-      $table->json('address');
-      $table->json('remarks')->nullable();
-    });
+    // Schema::dropIfExists('enterprises');
+    // Schema::create('enterprises', function (Blueprint $table) {
+    //   $table->id();
+    //   $table->string('name');
+    //   $table->string('code')->unique();
+    //   $table->json('address');
+    //   $table->json('remarks')->nullable();
+    // });
 
-    Enterprise::create([
-      'name' => 'PT Dirgantara Indonesia',
-      'code' => '0001Z',
-      'address' => json_encode([
-        "city" => 'Bandung',
-        "country" => "Indonesia",
-        'department' => '',
-        'street' => '',
-        'postOfficeBox' => '',
-        'postalZipCode' => '',
-        'state' => '',
-        'province' => '',
-        'building' => '',
-        'room' => '',
-        'phoneNumber' => [],
-        'faxNumber' => [],
-        'email' => [],
-        'internet' => [],
-        'SITA' => '',
-      ]),
-    ]);
+    try {
+      # code...
+      Enterprise::create([
+        'name' => 'PT Dirgantara Indonesia',
+        // 'code' => '0001Z',
+        'code_id' => 1,
+        'address' => json_encode([
+          "city" => 'Bandung',
+          "country" => "Indonesia",
+          'department' => '',
+          'street' => '',
+          'postOfficeBox' => '',
+          'postalZipCode' => '',
+          'state' => '',
+          'province' => '',
+          'building' => '',
+          'room' => '',
+          'phoneNumber' => [],
+          'faxNumber' => [],
+          'email' => [],
+          'internet' => [],
+          'SITA' => '',
+        ]),
+      ]);
+    } catch (\Throwable $e) {
+      # code...
+    }
 
     \App\Models\Enterprise::factory()->count(3)->create();
   }

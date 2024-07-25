@@ -15,14 +15,14 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::connection('sqlite')->create('csdb', function (Blueprint $table) {
+    Schema::create('csdb', function (Blueprint $table) {
       $table->id();
       $table->string('filename')->unique();
       $table->string('path');
       $table->text('available_storage');
       $table->integer('initiator_id');
-      $table->integer('deleter_id');
-      $table->timestampsTz(7);
+      $table->timestampsTz();
+      // $table->integer('deleter_id');
       // $table->dateTimeTz('deleted_at')->nullable();
     });
   }
@@ -32,7 +32,7 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::connection('sqlite')->dropIfExists('csdb');
+    Schema::dropIfExists('csdb');
   }
 
   // old csdb_tes3
