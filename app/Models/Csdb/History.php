@@ -7,6 +7,7 @@ use App\Models\Csdb;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class History extends Model
 {
@@ -19,6 +20,52 @@ class History extends Model
   // protected $fillable = ['code', 'description', 'user_id', 'csdb_id'];
   // protected $fillable = ['code', 'description', 'owner_id', 'owner_class'];
   protected $fillable = ['code', 'description', 'owner_id', 'owner_class','created_at'];
+
+  public static function generateWhereRawQueryString(Array $historyCode = [], string $classModel) :string
+  {
+    $model = new $classModel;
+    $table = $model->getTable();
+    if(!($length = count($historyCode) > 0)) return '';
+    $query = "{$table}.id IN ( SELECT history.owner_id FROM history WHERE ";
+    $query .= "(";
+    for ($i=0; $i < $length; $i++) { 
+      if(!(Code::where('name',$historyCode[$i])->first('id'))) return '';
+      $query .= "history.code = '{$historyCode[$i]}'";
+      if(isset($historyCode[$i+1])) $query .= " OR ";
+    }
+    $query .= ")";
+    $query .= "AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = {$table}.id AND history.owner_class = '".str_replace("\\", "\\\\",$classModel)."')";
+    $query .= ")";
+
+    // custom
+    // if($classModel === Csdb::class){
+    //   $query .= " AND csdb.initiator_id = ".Auth::user()->id;
+    // }
+    return $query;
+  }
+
+  // public static function generateWhereRawQueryString_Csdb(Array $historyCode = [], int $initiator_id) :string
+  // {
+  //   $model = new Csdb();
+  //   $table = $model->getTable();
+  //   if(!($length = count($historyCode) > 0)) return '';
+  //   $query = "{$table}.id IN ( SELECT history.owner_id FROM history WHERE ";
+  //   $query .= "(";
+  //   for ($i=0; $i < $length; $i++) { 
+  //     if(!(Code::where('name',$historyCode[$i])->first('id'))) return '';
+  //     $query .= "history.code = '{$historyCode[$i]}'";
+  //     if(isset($historyCode[$i+1])) $query .= " OR ";
+  //   }
+  //   $query .= ")";
+  //   $query .= "AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = {$table}.id AND history.owner_class = '".str_replace("\\", "\\\\",get_class($model))."')";
+
+  //   $query .= ")";
+
+  //   // $tambahan custom
+  //   $query .= " AND history"
+
+  //   return $query;
+  // }
 
   /**
    * save semua HISTORYModel yang masuk kedalam parameter fungsi

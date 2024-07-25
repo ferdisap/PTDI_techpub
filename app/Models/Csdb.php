@@ -75,7 +75,8 @@ class Csdb extends Model
    *
    * @var array<int, string>
    */
-  protected $hidden = ['initiator_id', 'id', 'deleter_id'];
+  // protected $hidden = ['initiator_id', 'id', 'deleter_id'];
+  protected $hidden = ['initiator_id', 'id'];
 
   /**
    * The attributes that should be cast.

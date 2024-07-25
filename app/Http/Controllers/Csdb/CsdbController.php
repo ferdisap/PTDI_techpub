@@ -13,6 +13,7 @@ use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
 use App\Models\Csdb\Dmc;
 use App\Models\Csdb\History;
+use App\Models\User;
 use App\Rules\Csdb\Path as PathRules;
 use Carbon\Carbon;
 use Closure;
@@ -354,13 +355,12 @@ class CsdbController extends Controller
    */
   public function get_deletion_list(Request $request)
   {
-    $this->model = new Csdb();
-    // $res = $this->generateWhereRawQueryString("deleter_id::" . $request->user()->id);
-    $res = $this->generateWhereRawQueryString("deleter_id::" . 0);
-    $ret = $this->model->whereRaw($res[0])->latest('deleted_at')->paginate(15);
-    $ret->setPath($request->getUri());
-
-    return $this->ret2(200, $ret->toArray());
+    $query = History::generateWhereRawQueryString(['CSDB-DELL'],Csdb::class);
+    $model = new Csdb();
+    $ret = $model->whereRaw($query);
+    $ret = $ret->where('initiator_id',$request->user()->id);
+    $ret = $ret->get(['filename','path','updated_at'])->toArray();
+    return $this->ret2(200, ['csdbs' => $ret]);
   }
 
   /**

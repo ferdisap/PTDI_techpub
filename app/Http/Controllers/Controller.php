@@ -140,12 +140,12 @@ class Controller extends BaseController
     $data = ["message" => ''];
     $args = func_get_args();
 
-    if(!($code >= 200 AND $code < 300)){
-      $data['errors'] = [];
-      $data['infotype'] = "warning";
-    } else {
-      $data['infotype'] = "note";
-    }
+    // if(!($code >= 200 AND $code < 300)){
+    //   $data['errors'] = [];
+    //   $data['infotype'] = "warning";
+    // } else {
+    //   $data['infotype'] = "note";
+    // }
 
     $isArr = function($message, $fn) use(&$data, $code){
       if(is_array($message)) {
