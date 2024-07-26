@@ -38,7 +38,14 @@ class CsdbChangePath extends FormRequest
           if(!($this->CSDBModelArray[0])) $fail("There is no such {$filename} or you are not authorize to change the path.");
         }
       }],
-      'CSDBModelArray' => '',
+      'CSDBModelArray' => [function(string $attribute, mixed $CSDBModelArray, Closure $fail){
+        $l = count($CSDBModelArray);
+        $f = [];
+        for ($i=0; $i < $l; $i++) { 
+          if($CSDBModelArray[$i]->initiator_id !== $this->user()->id) $f[] = $CSDBModelArray[$i]->filename;
+        }
+        if(count($f) > 0) $fail("You are not authorize to change the path of " . join(", ", $f) . ".");
+      }],
       'path' => ['required', new Path]
     ];
   }

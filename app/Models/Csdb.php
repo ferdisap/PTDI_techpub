@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpParser\Node\Stmt\TryCatch;
@@ -75,7 +77,6 @@ class Csdb extends Model
    *
    * @var array<int, string>
    */
-  // protected $hidden = ['initiator_id', 'id', 'deleter_id'];
   protected $hidden = ['initiator_id', 'id'];
 
   /**
@@ -102,6 +103,8 @@ class Csdb extends Model
    * @var bool
    */
   public $timestamps = true;
+
+  protected $with = [];
 
   /**
    * Set the model created_at touse current timezone.
@@ -192,9 +195,20 @@ class Csdb extends Model
   }
 
   
-  protected function history() :HasMany
+  /**
+   * get models of history that sorted by first to end
+   */
+  public function history() :MorphMany
   {
-    return $this->hasMany(History::class, 'owner_id','id');
+    return $this->morphMany(History::class, 'owner','owner_class');
+  }
+
+  /**
+   * get the last history
+   */
+  public function lastHistory() :MorphOne
+  {
+    return $this->morphOne(History::class,'owner' ,'owner_class')->latestOfMany('created_at');
   }
 
   /**

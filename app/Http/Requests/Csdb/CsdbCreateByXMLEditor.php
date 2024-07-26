@@ -104,7 +104,7 @@ class CsdbCreateByXMLEditor extends FormRequest
     $CSDBObject = new CSDBObject("5.0");
     $CSDBObject->loadByString($this->xmleditor);
     $this->merge([
-      'path' => $this->path ?? 'csdb',
+      'path' => $this->path ?? 'CSDB',
       'xmleditor' => [$CSDBObject], // harus array atau scalar
       'xsi_validate' => $this->xsi_validate,
       'brex_validate' => $this->brex_validate,

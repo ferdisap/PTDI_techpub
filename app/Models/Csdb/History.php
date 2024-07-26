@@ -15,6 +15,8 @@ class History extends Model
 
   protected $table = 'history';
 
+  protected $hidden = ['owner_class', 'owner_id'];
+
   public $timestamps = false;
 
   // protected $fillable = ['code', 'description', 'user_id', 'csdb_id'];
@@ -36,36 +38,8 @@ class History extends Model
     $query .= ")";
     $query .= "AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = {$table}.id AND history.owner_class = '".str_replace("\\", "\\\\",$classModel)."')";
     $query .= ")";
-
-    // custom
-    // if($classModel === Csdb::class){
-    //   $query .= " AND csdb.initiator_id = ".Auth::user()->id;
-    // }
     return $query;
   }
-
-  // public static function generateWhereRawQueryString_Csdb(Array $historyCode = [], int $initiator_id) :string
-  // {
-  //   $model = new Csdb();
-  //   $table = $model->getTable();
-  //   if(!($length = count($historyCode) > 0)) return '';
-  //   $query = "{$table}.id IN ( SELECT history.owner_id FROM history WHERE ";
-  //   $query .= "(";
-  //   for ($i=0; $i < $length; $i++) { 
-  //     if(!(Code::where('name',$historyCode[$i])->first('id'))) return '';
-  //     $query .= "history.code = '{$historyCode[$i]}'";
-  //     if(isset($historyCode[$i+1])) $query .= " OR ";
-  //   }
-  //   $query .= ")";
-  //   $query .= "AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = {$table}.id AND history.owner_class = '".str_replace("\\", "\\\\",get_class($model))."')";
-
-  //   $query .= ")";
-
-  //   // $tambahan custom
-  //   $query .= " AND history"
-
-  //   return $query;
-  // }
 
   /**
    * save semua HISTORYModel yang masuk kedalam parameter fungsi
@@ -116,6 +90,8 @@ class History extends Model
     return $HISTORYModel;
   }
 
+  ############################# START of CSDB HISTORY FUNCTION #############################
+
   /**
    * Delete CSDB Object
    */
@@ -133,7 +109,7 @@ class History extends Model
    */
   public static function MAKE_CSDB_PDEL_History(Csdb $CSDBModel, string $description = '')
   {
-    $CODEModel = Code::where('name', 'CSDB-DELL')->first(["id","name",'description']);
+    $CODEModel = Code::where('name', 'CSDB-PDEL')->first(["id","name",'description']);
     if($CODEModel){
       if(!$description) $description = $CODEModel->description;
     }
@@ -188,6 +164,44 @@ class History extends Model
     return self::make_history($CODEModel, $description, $CSDBModel->id, get_class($CSDBModel));
   }
 
+  /**
+   * Restore storage CSDB Object
+   */
+  public static function MAKE_CSDB_RSTR_History(Csdb $CSDBModel, string $description = '')
+  {
+    $CODEModel = Code::where('name', 'CSDB-RSTR')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description;
+    }
+    return self::make_history($CODEModel, $description, $CSDBModel->id, get_class($CSDBModel));
+  }
+  
+  /**
+   * Create DDN CSDB Object
+   */
+  public static function MAKE_CSDB_DDNC_History(Csdb $CSDBModel, string $description = '')
+  {
+    $CODEModel = Code::where('name', 'CSDB-DDNC')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description;
+    }
+    return self::make_history($CODEModel, $description, $CSDBModel->id, get_class($CSDBModel));
+  }
+
+  /**
+   * CSDB Object has imported to requester storage
+   */
+  public static function MAKE_CSDB_IMPT_History(Csdb $CSDBModel, string $description = '')
+  {
+    $CODEModel = Code::where('name', 'CSDB-IMPT')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description . "(" .request()->user()->id . ")";
+    }
+    return self::make_history($CODEModel, $description, $CSDBModel->id, get_class($CSDBModel));
+  }
+
+############################# END of CSDB HISTORY FUNCTION #############################
+############################# START of USER HISTORY FUNCTION #############################
   /**
    * User create CSDB Object
    */
@@ -259,5 +273,42 @@ class History extends Model
     }
     return self::make_history($CODEModel, $description, $USERModel->id, get_class($USERModel));
   }
-  
+
+  /**
+   * User restore storage CSDB Object
+   */
+  public static function MAKE_USER_RSTR_History(User $USERModel, string $description = '', string $CSDBFilename = '')
+  {
+    $CODEModel = Code::where('name', 'USER-RSTR')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description. "(". $CSDBFilename . ")";
+    }
+    return self::make_history($CODEModel, $description, $USERModel->id, get_class($USERModel));
+  }
+
+  /**
+   * User create DDN CSDB Object
+   */
+  public static function MAKE_USER_DDNC_History(User $USERModel, string $description = '', string $CSDBFilename = '')
+  {
+    $CODEModel = Code::where('name', 'USER-DDNC')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description. "(". $CSDBFilename . ")";
+    }
+    return self::make_history($CODEModel, $description, $USERModel->id, get_class($USERModel));
+  }
+
+  /**
+   * User import CSDB Object
+   */
+  public static function MAKE_USER_IMPT_History(User $USERModel, string $description = '', string $CSDBFilename = '')
+  {
+    $CODEModel = Code::where('name', 'USER-IMPT')->first(["id","name",'description']);
+    if($CODEModel){
+      if(!$description) $description = $CODEModel->description. "(". $CSDBFilename . ")";
+    }
+    return self::make_history($CODEModel, $description, $USERModel->id, get_class($USERModel));
+  }
+
+  ############################# END of USER HISTORY FUNCTION #############################
 }

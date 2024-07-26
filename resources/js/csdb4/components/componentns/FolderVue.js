@@ -86,6 +86,7 @@ function clickFilename(event, filename){
 }
 
 function sortTable(event){
+  console.log('sort');
   const getCellValue = function (row, index) {
     return $(row).children('td').eq(index).text();
   };
@@ -98,6 +99,7 @@ function sortTable(event){
   };
   let table = $(event.target).parents('table').eq(0);
   let th = $(event.target).parents('th').eq(0);
+  console.log(th.index());
   if(th.index() === 0){
     let filerows = table.find('.file-row').toArray().sort(comparer(th.index()));
     let folderrows = table.find('.folder-row').toArray().sort(comparer(th.index()));
@@ -183,7 +185,6 @@ async function changePath(event){
 
 async function deleteObject(){
   let values = await this.CbSelector.delete(this.CbSelector.cancel); // output array contains filename
-  console.log(window.v = values, isEmpty(values));
   if(isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
   else if(values instanceof FormData) values = formDataToObject(values);
   if(isString(values.filename)) values.filename = values.filename.split(',');
@@ -196,7 +197,6 @@ async function deleteObject(){
   });
 
   // emit
-  console.log(window.dt = csdbDeleted);
   this.emitter.emit('DeleteCSDBObjectFromFolder',csdbDeleted);
 }
 

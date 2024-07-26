@@ -239,7 +239,7 @@ class CsdbController extends Controller
   {
     if ($request->get('listtree')) {
       $this->model = new Csdb();
-      $query = $this->generateWhereRawQueryString("filename::DMC,PMC,ICN&initiator_id={$request->user()->id}")[0];
+      $query = $this->generateWhereRawQueryString("filename::DMC,PMC,ICN&initiator_id={$request->user()->id}",[],'',['CSDB-DELL', 'CSDB-PDEL'])[0];
       $ret = $this->model->whereRaw($query)->get(['filename','path', 'updated_at'])->toArray();
       return $this->ret2(200, ["csdbs" => $ret]);
     }
@@ -265,8 +265,7 @@ class CsdbController extends Controller
   public function get_object_csdbs(Request $request)
   {
     $this->model = new Csdb();
-    $res = $this->generateWhereRawQueryString($request->get('sc'));
-    // dd($res);
+    $res = $this->generateWhereRawQueryString($request->get('sc'),[],'',['CSDB-DELL', 'CSDB-PDEL']);
     $ret = $this->model->whereRaw($res[0])->orderBy('filename')->get();
     return $this->ret2(200,['csdbs' => $ret->toArray()]);
   }
@@ -276,9 +275,9 @@ class CsdbController extends Controller
     // validasi. Jadi ketika tidak ada path ataupun sc, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
     if ($request->path === "/") $request->merge(['path' => 'csdb']);
 
-    $this->model = Csdb::with('initiator');
+    $this->model = Csdb::with(['initiator','lastHistory']);
     $keywords = Helper::explodeSearchKeyAndValue($request->get('sc'), 'filename',["typeonly"=>"filename"]);
-    $res = $this->generateWhereRawQueryString($keywords,['path' => "#&value;"]);
+    $res = $this->generateWhereRawQueryString($keywords,['path' => "#&value;"],'',['CSDB-DELL', 'CSDB-PDEL']);
     $keywords = $res[1];
 
     // menyiapkan csdb object
@@ -286,6 +285,9 @@ class CsdbController extends Controller
     // $ret = $this->model->paginate(100);
     $ret = $this->model->whereRaw($res[0])->orderBy('filename')->paginate(100);
     $ret->setPath($request->getUri());
+
+    
+    // dd($ret->toArray());
     // dd($res, $ret->toArray());
     
     
@@ -294,7 +296,7 @@ class CsdbController extends Controller
     if ($ret->isNotEmpty()) {
       if (isset($keywords['path'])) {
         $this->model = new Csdb();
-        $res = $this->generateWhereRawQueryString($request->get('sc'));
+        $res = $this->generateWhereRawQueryString($request->get('sc'),[],'',['CSDB-DELL', 'CSDB-PDEL']);
         $folder = $this->model->whereRaw($res[0])->get(['path'])->toArray();
         $folder = array_unique($folder, SORT_REGULAR);
         foreach($folder as $i => $v){
@@ -357,10 +359,13 @@ class CsdbController extends Controller
   {
     $query = History::generateWhereRawQueryString(['CSDB-DELL'],Csdb::class);
     $model = new Csdb();
+    $model->setProtected(['with' => ['lastHistory']]);
     $ret = $model->whereRaw($query);
     $ret = $ret->where('initiator_id',$request->user()->id);
-    $ret = $ret->get(['filename','path','updated_at'])->toArray();
-    return $this->ret2(200, ['csdbs' => $ret]);
+    $ret = $ret->paginate(10)->toArray();
+    $ret['csdbs'] = $ret['data'];
+    unset($ret['data']);
+    return $this->ret2(200, $ret);
   }
 
   /**
@@ -399,7 +404,65 @@ class CsdbController extends Controller
     $totalFail = count($result['fail']);
     $totalSuccess = count($result['success']);
     $infotype = $totalSuccess < 1 ? "warning" : ($totalFail > 0 ? 'caution' : 'info');
-    $m = ($totalSuccess > 0 ? 'Success delete to ' . join(", ", $result['success']) : '') . ($totalFail > 0 ? " and Fail delete to " . join(", ", $result['fail']) : '');
+    $m = ($totalSuccess > 0 ? 'Success delete to ' . join(", ", $result['success']) : '') . ($totalFail > 0 ? " and fail delete to " . join(", ", $result['fail']) : '');
+    return $this->ret2(200, ['message' => $m,'infotype' => $infotype]);
+  }
+
+  /**
+   * sama dengan @delete() tapi beda history saja
+   */
+  public function permanentDelete(CsdbDelete $request)
+  {
+    $result = [
+      'success' => [],
+      'fail' => [],
+    ];
+    $validatedData = $request->validated();
+    $CSDBModels = $validatedData['CSDBModelArray'];
+    unset($validatedData['CSDBModelArray']);
+    $qtyCSDBs = count($CSDBModels);
+    for ($i=0; $i < $qtyCSDBs; $i++) { 
+      $CSDB_HISTORYModel = History::MAKE_CSDB_PDEL_History($CSDBModels[$i]);
+      $USER_HISTORYModel = History::MAKE_USER_PDEL_History($request->user(),'', $CSDBModels[$i]->filename);
+      if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
+        $result['success'][] = $CSDBModels[$i]->filename;
+      } else {
+        $result['fail'][] = $CSDBModels[$i]->filename;
+      }
+    }
+    $totalFail = count($result['fail']);
+    $totalSuccess = count($result['success']);
+    $infotype = $totalSuccess < 1 ? "warning" : ($totalFail > 0 ? 'caution' : 'info');
+    $m = ($totalSuccess > 0 ? 'Success permanent delete to ' . join(", ", $result['success']) : '') . ($totalFail > 0 ? " and fail permanent delete to " . join(", ", $result['fail']) : '');
+    return $this->ret2(200, ['message' => $m,'infotype' => $infotype]);
+  }
+
+  /**
+   * sama dengan @delete() tapi beda history saja
+   */
+  public function restore(CsdbDelete $request)
+  {
+    $result = [
+      'success' => [],
+      'fail' => [],
+    ];
+    $validatedData = $request->validated();
+    $CSDBModels = $validatedData['CSDBModelArray'];
+    unset($validatedData['CSDBModelArray']);
+    $qtyCSDBs = count($CSDBModels);
+    for ($i=0; $i < $qtyCSDBs; $i++) { 
+      $CSDB_HISTORYModel = History::MAKE_CSDB_RSTR_History($CSDBModels[$i]);
+      $USER_HISTORYModel = History::MAKE_USER_RSTR_History($request->user(),'', $CSDBModels[$i]->filename);
+      if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
+        $result['success'][] = $CSDBModels[$i]->filename;
+      } else {
+        $result['fail'][] = $CSDBModels[$i]->filename;
+      }
+    }
+    $totalFail = count($result['fail']);
+    $totalSuccess = count($result['success']);
+    $infotype = $totalSuccess < 1 ? "warning" : ($totalFail > 0 ? 'caution' : 'info');
+    $m = ($totalSuccess > 0 ? 'Success restore  to ' . join(", ", $result['success']) : '') . ($totalFail > 0 ? " and fail restore to " . join(", ", $result['fail']) : '');
     return $this->ret2(200, ['message' => $m,'infotype' => $infotype]);
   }
 }

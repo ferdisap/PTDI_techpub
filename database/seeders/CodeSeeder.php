@@ -47,54 +47,74 @@ class CodeSeeder extends Seeder
     ]);
     Code::create([
       'name' => 'CSDB-PATH',
-      'description' => 'Update path CSDB Object database.', // there is no storage disk and cannot restore
+      'description' => 'Update path CSDB Object database', // there is no storage disk and cannot restore
       'type' => 'CSDB-code',
     ]);
     Code::create([
       'name' => 'CSDB-STRG',
-      'description' => 'Update storage CSDB Object database.', // there is no storage disk and cannot restore
+      'description' => 'Update storage CSDB Object database', // there is no storage disk and cannot restore
       'type' => 'CSDB-code',
     ]);
     Code::create([
       'name' => 'CSDB-RSTR',
-      'description' => 'Restore CSDB Object database.',
+      'description' => 'Restore CSDB Object database',
+      'type' => 'CSDB-code',
+    ]);
+    Code::create([
+      'name' => 'CSDB-DDNC',
+      'description' => 'Create DDN Object database',
+      'type' => 'CSDB-code',
+    ]);
+    Code::create([
+      'name' => 'CSDB-IMPT',
+      'description' => 'CSDB Object has imported to storage',
       'type' => 'CSDB-code',
     ]);
 
     // User history code
     Code::create([
       'name' => 'USER-CRBT',
-      'description' => 'User create the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User create the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-UPDT',
-      'description' => 'User update the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User update the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-DELL',
-      'description' => 'User delete the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User delete the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-PDEL',
-      'description' => 'User permanent delete the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User permanent delete the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-PATH',
-      'description' => 'User update path the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User update path the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-STRG',
-      'description' => 'User update storage the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User update storage the CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
     Code::create([
       'name' => 'USER-RSTR',
-      'description' => 'User restore the CSDB Object.', // there is no storage disk and cannot restore
+      'description' => 'User restore the CSDB Object', // there is no storage disk and cannot restore
+      'type' => 'USER-code',
+    ]);
+    Code::create([
+      'name' => 'USER-DDNC',
+      'description' => 'User create DDN CSDB Object', // there is no storage disk and cannot restore
+      'type' => 'USER-code',
+    ]);
+    Code::create([
+      'name' => 'USER-IMPT',
+      'description' => 'User import CSDB Object', // there is no storage disk and cannot restore
       'type' => 'USER-code',
     ]);
 

@@ -2,7 +2,7 @@
 import { sorter } from "../../../helper.js";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
-import ContinuousLoadingCircle from "../../loadingProgress/continuousLoadingCircle.vue";
+import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
 import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
 import {CsdbObjectCheckboxSelector} from "../../CheckboxSelector";
 import {getObjs, storingResponse, goto, back, clickFolder, clickFilename, 
@@ -126,13 +126,14 @@ export default {
 
       <div class="h-[75%] block relative overflow-scroll">
         <table class="table" :id="CbSelector.id">
-          <thead class="text-sm">
+          <thead class="text-sm text-left">
             <tr class="leading-3 text-sm">
               <th v-show="CbSelector.selectionMode"></th>
               <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Updated At <Sort :function="sortTable"></Sort></th>
+              <th class="text-sm">Last History <Sort :function="sortTable"></Sort></th>
             </tr>
           </thead>
           <tbody>
@@ -157,6 +158,7 @@ export default {
               <td class="leading-3 text-sm"> {{ obj.path }} </td>
               <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
               <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
+              <td class="leading-3 text-sm"> {{ (obj.last_history.description) }}, {{ techpubStore.date(obj.last_history.created_at) }} </td>
             </tr>        
           </tbody>
         </table>

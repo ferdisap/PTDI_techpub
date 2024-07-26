@@ -1,18 +1,29 @@
 <script>
-import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import {getObjs, storingResponse, goto, removeList, restore, permanentDelete, download, refresh, select, preview, clickFilename} from './DeletionVue.js';
+import {CsdbObjectCheckboxSelector} from '../../CheckboxSelector';
+import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
+import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
+import Sort from "../subComponents/Sort.vue";
 
 export default {
   name: 'Deletion',
+  components: {ContinuousLoadingCircle, RCMenu, Sort},
   data() {
     return {
       techpubStore: useTechpubStore(),
       data: {},
+      showLoadingProgress: false,
+
+      CbSelector: new CsdbObjectCheckboxSelector(),
+
+      // selection view (becasuse clicked by user)
+      selectedRow: undefined,
     }
   },
   computed: {
     list() {
-      return this.data.list ?? {};
+      return this.data.csdb ?? [];
     },
     filenameSearch() {
       return this.data.filenameSearch;
@@ -28,101 +39,28 @@ export default {
     },
   },
   methods: {
-    async getObjs(data = {}) {
-      data = Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
-      let response = await axios({
-        route: {
-          name: 'api.get_deletion_list',
-          data: data,
-        }
-      });
-      if (response.statusText === 'OK') {
-        this.storingResponse(response);
-      }
-    },
-    storingResponse(response) {
-      this.data.list = response.data.data;
-      delete response.data.data;
-      this.data.paginationInfo = response.data;
-    },
-    async goto(url, page) {
-      if (page) {
-        url = new URL(this.pagination['path']);
-        url.searchParams.set('page', page)
-      }
-      if (url) {
-        let response = await axios.get(url);
-        if (response.statusText === 'OK') {
-          this.storingResponse(response);
-        }
-      }
-    },
-    removeList(filename) {
-      let index = this.data.list.indexOf(this.data.list.find(o => o.filename === filename));
-      this.data.list.splice(index, 1);
-    },
-    async restore(filename) {
-      let response = await axios({
-        route: {
-          name: 'api.restore_object',
-          data: { filename: filename }
-        },
-      })
-      if (response.statusText === 'OK') {
-        this.removeList(filename);
-        this.emitter.emit('RestoreCSDBobejctFromDeletion', response.data.data);
-      }
-    },
-    async permanentDelete(filename) {
-      if (!(await this.$root.alert({ name: 'beforePermanentDeleteCsdbObject', filename: filename }))) {
-        return;
-      }
-      let response = await axios({
-        route: {
-          name: 'api.permanentdelete_object',
-          data: { filename: filename }
-        }
-      });
-      if (response.statusText === 'OK') {
-        this.removeList(filename);
-      }
-    },
-    async download(filename) {
-      let response = await axios({
-        route: {
-          name: 'api.get_deletion_object',
-          data: { filename: filename },
-        },
-        responseType: 'blob',
-      });
-      if (response.statusText === 'OK') {
-        let typeblob = response.headers.getContentType();
-        if (typeblob.includes('xml')) {
-          // let raw = await response.data.text(); // tidak dipakai
-          let srcblob = URL.createObjectURL(await response.data);
-
-          let a = $('<a/>')
-          a.attr('download', filename);
-          a.attr('href', srcblob);
-          a[0].click();
-        }
-      }
-    }
+    getObjs: getObjs,
+    storingResponse: storingResponse,
+    goto: goto,
+    removeList: removeList,
+    restore: restore,
+    permanentDelete: permanentDelete,
+    download: download,
+    clickFilename: clickFilename,
+    refresh: refresh,
+    select: select,
+    preview: preview,
   },
   mounted() {
     this.getObjs({ filenameSearch: this.filenameSearch });
-
-    this.emitter.on('Deletion-refresh', (data) => {
-      // data adalah Deletion Object
-      this.data.list.push(data);
-    })
-  },
+    this.emitter.on('Deletion-refresh', refresh.bind(this))
+  }
 }
 </script>
 <template>
   <div class="deletion overflow-auto h-full">
 
-    <div class="bg-white px-3 py-3 2xl:h-[92%] xl:h-[90%] lg:h-[88%] md:h-[90%] sm:h-[90%] h-full">
+    <div class="bg-white px-3 py-3 2xl:h-[92%] xl:h-[90%] lg:h-[88%] md:h-[90%] sm:h-[90%] h-full" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true">
 
       <div class="2xl:h-[5%] xl:h-[6%] lg:h-[8%] md:h-[9%] sm:h-[11%]">
         <h1 class="text-blue-500">DELETION</h1>
@@ -138,29 +76,29 @@ export default {
             @click="$root.info({ name: 'searchCsdbObject' })">info</button>
         </div>
 
-        <div class="flex justify-start flex-col p-5 max-h-[80%] text-left">
-          <table class="w-full">
-            <thead class="h-10 border-b-4 border-black">
+        <div class="block relative oveflow-auto max-h-[80%] text-left">
+          <table class="table" :id="CbSelector.id">
+            <thead class="text-sm">
               <tr>
-                <th class="w-[40%]">Filename</th>
-                <th class="w-[20%]">Created</th>
-                <th class="w-[20%]">Deleted</th>
-                <th class="w-[20%]">Action</th>
+                <th v-show="CbSelector.selectionMode" class="w-[2%] text-sm"></th>
+                <th class="w-[53%] text-sm">Filename <Sort/></th>
+                <th class="w-[15%] text-sm">Path</th>
+                <th class="w-[15%] text-sm">Last Update</th>
+                <th class="w-[15%] text-sm">Deleted At</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="object in list">
-                <td><a href="#" @click="filenameAnalysis = object.filename">{{ object.filename }}</a></td>
-                <td>{{ techpubStore.date(object.created_at) }}</td>
-                <td>{{ techpubStore.date(object.deleted_at) }}</td>
-                <td>
-                  <button @click="restore(object.filename)" class="material-icons text-green-700 has-tooltip-arrow"
-                    data-tooltip="Restore">restore_from_trash</button>
-                  <button @click="permanentDelete(object.filename)" class="material-icons text-red-700 has-tooltip-arrow"
-                    data-tooltip="Permanent Delete">delete_forever</button>
-                  <button @click="download(object.filename)" class="material-icons text-black has-tooltip-arrow"
-                    data-tooltip="Download">download</button>
+              <tr v-for="object in list" @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, path)" @mousemove="CbSelector.setCbHovered('cbdell'+object.filename)" class="text-sm hover:cursor-pointer" >
+                <td v-show="CbSelector.selectionMode" class="flex p-2" @click.stop.prevent>
+                  <input file="false" :id="'cbdell'+object.filename" type="checkbox" :value="object.filename">
                 </td>
+                <td class="text-sm">
+                  <span class="material-symbols-outlined text-sm mr-1">description</span>
+                  <span class="text-sm"> {{ object.filename }} </span>
+                </td>
+                <td class="text-sm">{{ object.path }}</td>
+                <td class="text-sm">{{ techpubStore.date(object.updated_at) }}</td>
+                <td class="text-sm">{{ techpubStore.date(object.last_history.created_at) }}</td>
               </tr>
             </tbody>
           </table>
@@ -176,8 +114,41 @@ export default {
             <button @click="goto(pagemore)" class="material-symbols-outlined text-sm">navigate_next</button>
           </div>
         </div>
-
       </div>
     </div>
+
+    <ContinuousLoadingCircle :show="showLoadingProgress"/>
+    <RCMenu v-if="CbSelector.isShowTriggerPanel">
+      <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select</div>
+      </div>
+      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All</div>
+      </div>
+      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll, `.folder input[file='true']`)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click="CbSelector.copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Copy</div>
+      </div>
+      <div @click="download()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Download</div>
+      </div>
+      <div @click="preview()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Preview</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click="restore()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Restore</div>
+      </div>
+      <div @click="permanentDelete()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Permanent Delete</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.prevent="CbSelector.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Cancel</div>
+      </div>
+    </RCMenu>
   </div>
 </template>

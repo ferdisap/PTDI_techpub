@@ -34,6 +34,15 @@ Route::post("/api/csdbdelete", [CsdbController::class, 'delete'])->middleware('a
 // get user model
 Route::get('/api/usersearch', [UserController::class, 'searchModel'])->middleware('auth')->name('api.user_search_model');
 
+// get deleted csdb
+Route::get("/api/deletion/all",[CsdbController::class, 'get_deletion_list'])->middleware('auth')->name('api.get_deletion_list');
+
+// delete permanent csdb object
+Route::post("/api/permanentdelete", [CsdbController::class, 'permanentDelete'])->middleware('auth')->name('api.permanentdelete_object');
+
+// restore csdb object after deleted
+Route::post("/api/restore", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
+
 
 
 
@@ -50,7 +59,6 @@ Route::post('/api/object/path/change', [CsdbController::class, 'change_object_pa
 
 // Route::get("/api/object/all",[CsdbController::class, 'get_objects_list'])->middleware('auth')->name('api.get_objects_list');
 // Route::get("/api/csdbtransform/{filename}", [CsdbServiceController::class, 'provide_csdb_transform3'])->middleware('auth')->name('api.transform_csdb');
-Route::get("/api/deletion/all",[CsdbController::class, 'get_deletion_list'])->middleware('auth')->name('api.get_deletion_list');
 
 // Route::post("/api/updateICN/{csdb:filename}", [CsdbController::class, 'updateICN'])->middleware('auth')->name('api.update_ICN');
 
@@ -67,8 +75,7 @@ Route::post("/api/edit/{filename}",[CsdbController::class, 'edit'])->middleware(
 
 // Route::get("/api/delete/{filename}", [CsdbController::class, 'delete'])->middleware('auth')->name('api.delete_object');
 // Route::post("/api/multipledeletecsdbobject", [CsdbController::class, 'delete_multiple'])->middleware('auth')->name('api.delete_objects');
-Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
-Route::post("/api/permanentdelete", [CsdbController::class, 'permanentDelete'])->middleware('auth')->name('api.permanentdelete_object');
+// Route::get("/api/restore/{filename}", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
 Route::get("/api/harddelete/{filename}", [CsdbController::class, 'harddelete'])->middleware('auth'); // untuk developer saja
 
 

@@ -302,7 +302,8 @@ class Controller extends BaseController
    * jika "?sc=filename::DMC%20filename::022" => maka querynya WHERE filename LIKE '%DMC%' AND filename LIKE '%022%';
    * @param Array, index0 = query string, index1 = exploded keywords
    */
-  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = ['CSDB-DELL', 'CSDB-PDEL'])
+  // public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = ['CSDB-DELL', 'CSDB-PDEL'])
+  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = [])
   {
     $isFitted = false;
     // contoh1

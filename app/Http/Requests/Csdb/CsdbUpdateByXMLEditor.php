@@ -32,7 +32,9 @@ class CsdbUpdateByXMLEditor extends FormRequest
   {
     return [
       'path' => [new Path],
-      'oldCSDBModel' => 'required',
+      'oldCSDBModel' => ['required', function(string $attribute, mixed $oldCSDBModel, Closure $fail){
+        if($oldCSDBModel->initiator_id !== $this->user()->id) $fail("You are not authorize to update ". $oldCSDBModel->filename . ".")
+      }],
       'xmleditor' => ['required', function(string $attribute, mixed $value, Closure $fail){
         if(!($value[0]->document instanceof \DOMDocument)) return $fail('Document must be in XML form.'); // harus return agar script dibawah tidak di eksekusi
         if(!$value[0]->document) $fail('Fail to recognize xml file as CSDB object.');
@@ -69,7 +71,7 @@ class CsdbUpdateByXMLEditor extends FormRequest
     $CSDBObject = new CSDBObject("5.0");
     $CSDBObject->loadByString($this->xmleditor);
     $this->merge([
-      'path' => $this->path ?? 'csdb',
+      'path' => $this->path ?? 'CSDB',
       'xmleditor' => [$CSDBObject], // harus array atau scalar
       'xsi_validate' => $this->xsi_validate,
       'brex_validate' => $this->brex_validate,

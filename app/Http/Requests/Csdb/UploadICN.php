@@ -30,7 +30,10 @@ class UploadICN extends FormRequest
     return [
       "filename" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
         $oldCSDBModel = Csdb::where('filename', $value)->first();
-        if($oldCSDBModel) $this->isUpdate = true;
+        if($oldCSDBModel) {
+          if($oldCSDBModel->initiator_id !== $this->user()->id) $fail("You are not authorize to update the " . $oldCSDBModel->filename .".");
+          $this->isUpdate = true;
+        };
 
         CSDBError::$processId = 'ICNFilenameValidation';
         $validator = new CSDBValidator('ICNName', ["validatee" => $value]);

@@ -5,10 +5,29 @@ import mitt from 'mitt';
 import { array_unique } from "./helper";
 
 class CheckboxSelector{
-  cbHovered = ''; // checkbox input id;
-  isSelectAll = false;
-  selectionMode = false;
+  /**
+   * Untuk ditaruh di parent checkbox input
+   */
   id = ''; 
+
+  /**
+   * untuk menandai checkbox mana yang lagi di hover
+   */
+  cbHovered = ''; // checkbox input id;
+
+  /**
+   * Jika semua checkbox kondisi select all true semua
+   */
+  isSelectAll = false;
+
+  /**
+   * Untuk menandai jika view sedang selection mode
+   */
+  selectionMode = false;
+
+  /**
+   * untuk menampilkan RC menu atau menu trigger lainnya
+   */
   isShowTriggerPanel = false;
 
   constructor(){
@@ -151,6 +170,16 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
   async delete(callback){
     let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
     return await this.fetch('api.delete_objects', {data:{filename: value}}, callback);
+  }
+
+  async permanentDelete(callback){
+    let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
+    return await this.fetch('api.permanentdelete_object', {data:{filename: value}}, callback);
+  }
+
+  async restore(callback){
+    let value = this.selectionMode ? this.getAllSelectionValue() : [document.getElementById(this.cbHovered).value];
+    return await this.fetch('api.restore_object', {data:{filename: value}}, callback);
   }
 
   /**
