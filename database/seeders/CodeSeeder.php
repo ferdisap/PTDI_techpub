@@ -24,115 +24,54 @@ class CodeSeeder extends Seeder
       $table->text('description')->nullable();
     });
 
-    // CSDB history code
-    Code::create([
-      'name' => 'CSDB-DELL',
-      'description' => 'Delete CSDB Object',
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-PDEL',
-      'description' => 'Permanent delete CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-CRBT',
-      'description' => 'Create CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-UPDT',
-      'description' => 'Update content CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-PATH',
-      'description' => 'Update path CSDB Object database', // there is no storage disk and cannot restore
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-STRG',
-      'description' => 'Update storage CSDB Object database', // there is no storage disk and cannot restore
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-RSTR',
-      'description' => 'Restore CSDB Object database',
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-DDNC',
-      'description' => 'Create DDN Object database',
-      'type' => 'CSDB-code',
-    ]);
-    Code::create([
-      'name' => 'CSDB-IMPT',
-      'description' => 'CSDB Object has imported to storage',
-      'type' => 'CSDB-code',
-    ]);
-
-    // User history code
-    Code::create([
-      'name' => 'USER-CRBT',
-      'description' => 'User create the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-UPDT',
-      'description' => 'User update the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-DELL',
-      'description' => 'User delete the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-PDEL',
-      'description' => 'User permanent delete the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-PATH',
-      'description' => 'User update path the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-STRG',
-      'description' => 'User update storage the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-RSTR',
-      'description' => 'User restore the CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-DDNC',
-      'description' => 'User create DDN CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-    Code::create([
-      'name' => 'USER-IMPT',
-      'description' => 'User import CSDB Object', // there is no storage disk and cannot restore
-      'type' => 'USER-code',
-    ]);
-
-    
-    // PTDI CAGE Code
-    Code::create([
-      'name' => '0001Z',
-      'description' => 'cade code for PTDI',
-      'type' => 'CAGE-code',
-    ]);
-
-    // fake code
-    for ($i=0; $i < 10; $i++) { 
+    foreach($this->getCode() as $codeArray){
       Code::create([
-        'name' => Str::random(5),
-        'description' => fake()->text(100),
-        'type' => fake()->text(10),
+        'name' => $codeArray[0],
+        'description' => $codeArray[1],
+        'type' => $codeArray[2],
       ]);
     }
+  }
+
+  public function getCode()
+  {
+    
+    // PTDI CAGE Code
+    $CAGECode = [
+      "0001Z|Cage code for PTDI|ENTERPRISE-code"
+    ];
+
+    // CSDB history code
+    $CSDBHistoryCode = [
+      "CSDB-DELL|Delete CSDB Object|CSDB-code",
+      "CSDB-PDEL|Permanent Delete CSDB Object|CSDB-code", // there is no storage disk and cannot restore
+      "CSDB-CRBT|Create CSDB Object|CSDB-code",
+      "CSDB-UPDT|Update CSDB Object|CSDB-code",
+      "CSDB-RSTR|Restore CSDB Object|CSDB-code",
+      "CSDB-PATH|Update path CSDB Object|CSDB-code",
+      "CSDB-STRG|Update storage CSDB Object|CSDB-code",
+      "CSDB-IMPT|CSDB is imported Object|CSDB-code",
+    ];
+
+    // User history code
+    $USERHistoryCode = [
+      "USER-DELL|User delete CSDB Object|USER-code",
+      "USER-PDEL|User permanent delete CSDB Object|USER-code",
+      "USER-CRBT|User create CSDB Object|USER-code",
+      "USER-UPDT|User update CSDB Object|USER-code",
+      "USER-RSTR|User restore CSDB Object|USER-code",
+      "USER-PATH|User update path CSDB Object|USER-code",
+      "USER-IMPT|User import CSDB Object|USER-code",
+    ];
+
+    // fakeCode
+    $fakeCode = [];
+    for ($i=0; $i < 10; $i++) { 
+      $fakeCode[] = Str::random(5) ."|". fake()->text(100) . "|". fake()->text(10);
+    }
+    
+    $arr = array_merge($CAGECode, $CSDBHistoryCode, $USERHistoryCode, $fakeCode);
+    array_walk($arr, fn(&$v) => $v = explode("|", $v));
+    return $arr;
   }
 }

@@ -2,34 +2,24 @@
 
 namespace App\Http\Controllers\Csdb;
 
-use Abordage\LastModified\Facades\LastModified;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Csdb\CsdbChangePath;
 use App\Http\Requests\Csdb\CsdbCreateByXMLEditor;
 use App\Http\Requests\Csdb\CsdbDelete;
+use App\Http\Requests\Csdb\CsdbPermanentDelete;
+use App\Http\Requests\Csdb\CsdbRestore;
 use App\Http\Requests\Csdb\CsdbUpdateByXMLEditor;
-use App\Http\Requests\Csdb\GetObjectModels;
 use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
-use App\Models\Csdb\Dmc;
 use App\Models\Csdb\History;
-use App\Models\User;
-use App\Rules\Csdb\Path as PathRules;
-use Carbon\Carbon;
-use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon as SupportCarbon;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use PrettyXml\Formatter;
 use Ptdi\Mpub\Fop\Fop;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
-use Ptdi\Mpub\Main\CSDBValidator;
 use Ptdi\Mpub\Main\Helper;
-use SimpleXMLElement;
 
 class CsdbController extends Controller
 {
@@ -44,17 +34,15 @@ class CsdbController extends Controller
     $CSDBModel->CSDBObject = $request->validated()['xmleditor'][0];
     $CSDBModel->filename = $CSDBModel->CSDBObject->getFilename();
     $CSDBModel->path = $request->validated()['path'];
-    $CSDBModel->initiator_id = $request->user()->id;
-    $CSDBModel->appendAvailableStorage($request->user()->storage);
-    $this->created_at = now()->toString();
-    $this->updated_at = now()->toString();
+    $CSDBModel->storage_id = $request->user()->id;
+    $CSDBModel->initiator_id = $request->user()->id;    
     if ($CSDBModel->saveDOMandModel($request->user()->storage,
         [ 
           ['MAKE_CSDB_CRBT_History',[Csdb::class]], 
           ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
         ]
     )) {
-      $CSDBModel->initiator; // agar ada initiator nya
+      // $CSDBModel->initiator; // agar ada initiator nya
       return $this->ret2(200, ["New {$CSDBModel->filename} has been created."], ["csdb" => $CSDBModel], ['infotype' => 'info']);
     }
     return $this->ret2(400, ["{$CSDBModel->filename} failed to create."], CSDBError::getErrors(), ['csdb' => $CSDBModel]);
@@ -69,9 +57,11 @@ class CsdbController extends Controller
     $CSDBModel = $request->validated()['oldCSDBModel'][0];
     $CSDBModel->CSDBObject = $request->validated()['xmleditor'][0];
     $CSDBModel->path = $request->validated()['path'];
-    $this->updated_at = now()->toString();
-    if ($CSDBModel->saveDOMandModel($request->user()->storage)) {
-      $CSDBModel->initiator; // agar ada initiator nya
+    if ($CSDBModel->saveDOMandModel($request->user()->storage,[
+      History::MAKE_CSDB_UPDT_History($CSDBModel),
+      History::MAKE_USER_UPDT_History($request->user(),'',$CSDBModel->filename)
+    ])) {
+      // $CSDBModel->initiator; // agar ada initiator nya
       return $this->ret2(200, ["New {$CSDBModel->filename} has been update."], ["csdb" => $CSDBModel], ['infotype' => 'info']);
     }
     return $this->ret2(400, ["{$CSDBModel->filename} failed to update."], CSDBError::getErrors(), ['csdb' => $CSDBModel]);
@@ -87,11 +77,6 @@ class CsdbController extends Controller
     $xpath = new \DOMXPath($config);
     $fo = CSDB_VIEW_PATH . "/xsl" . "/" . $xpath->evaluate("string(//method[@type='pdf']/pathCache)") . "/" . $CSDBModel->filename . ".fo";
     $response = Response::make();
-    // $etag = '"'.md5($fo."___".$CSDBModel->updated_at).'"';
-    // $response = Response::make()->setEtag($etag);
-    // if(in_array($etag, $request->getEtags())){
-    //   return Response::make('',304);
-    // }
     $pathxsl = CSDB_VIEW_PATH . "/xsl" . "/" . $xpath->evaluate("string(//config/output/method[@type='pdf']/path[@product-name='{$modelIdentCode}' or @product-name='*'])");
 
     $storage = $CSDBModel->initiator->storage;
@@ -106,49 +91,10 @@ class CsdbController extends Controller
     if (file_put_contents($fo, $transformed) and ($pdf = Fop::FO_to_PDF($fo))) {
       $response->header('Content-Type', 'application/pdf');
       return $response->setContent($pdf);
-      // return Response::make($pdf,200,[
-      //   'Content-Type' => 'application/pdf', 
-      //   // 'Cache-Control' => 'no-cache, must-revalidate, max-age=0', // kayaknya ga guna di ETag
-      //   // 'Expires' => now()->add('seconds', 20)->toString(), // kayaknya ga guna juga di ETag
-      //   // 'ETag' => $etag,
-      // ]);
     }
     abort(400);
   }
-  public function read_pdf_object_berhasil_cacheing(Request $request, Csdb $CSDBModel)
-  {
-    // $modelIdentCode = Helper::get_attribute_from_filename($CSDBModel->filename, 'modelIdentCode');  
-    $modelIdentCode = 'CN235';
-    $config = new \DOMDocument();
-    $config->validateOnParse = true;
-    $config->load(CSDB_VIEW_PATH . "/xsl/Config.xml");
-    $xpath = new \DOMXPath($config);
-    $fo = CSDB_VIEW_PATH . "/xsl" . "/" . $xpath->evaluate("string(//method[@type='pdf']/pathCache)") . "/" . $CSDBModel->filename . ".fo";
-    $etag = '"' . md5($fo . "___" . $CSDBModel->updated_at) . '"';
-    if (in_array($etag, $request->getEtags())) {
-      return Response::make('', 304);
-    }
-    $pathxsl = CSDB_VIEW_PATH . "/xsl" . "/" . $xpath->evaluate("string(//config/output/method[@type='pdf']/path[@product-name='{$modelIdentCode}' or @product-name='*'])");
-
-    $storage = $CSDBModel->initiator->storage;
-    $CSDBModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $storage . "/" . $CSDBModel->filename);
-    $CSDBModel->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
-
-    CSDBStatic::$footnotePositionStore[$CSDBModel->filename] = [];
-    $transformed = $CSDBModel->CSDBObject->transform_to_xml($pathxsl, [
-      "filename" => $CSDBModel->filename,
-      "alertPathBackground" => "file:///" . str_replace("\\", "/", CSDB_VIEW_PATH . "/xsl/pdf/assets"),
-    ]);
-    if (file_put_contents($fo, $transformed) and ($pdf = Fop::FO_to_PDF($fo))) {
-      return Response::make($pdf, 200, [
-        'Content-Type' => 'application/pdf',
-        // 'Cache-Control' => 'no-cache, must-revalidate, max-age=0', // kayaknya ga guna di ETag
-        // 'Expires' => now()->add('seconds', 20)->toString(), // kayaknya ga guna juga di ETag
-        'ETag' => $etag,
-      ]);
-    }
-    abort(400);
-  }
+  
   public function read_html_object(Request $request, Csdb $CSDBModel)
   {
   }
@@ -231,20 +177,20 @@ class CsdbController extends Controller
   ###### semua fungsi lama taruh dibawah ######
 
   /**
-   * tidak bisa pakai fitur search dan tidak pakai pagination karena digunakan untuk ListTree.vue
-   * jika $request->('listtree'), return all with only filename and path column
-   * notApplicable: jika $request->get('path'), maka query where path like $request->get('path'); return all column
+   * always return code 200
+   * biasa dipakai listtree
    */
   public function get_allobjects_list(Request $request)
   {
-    if ($request->get('listtree')) {
-      $this->model = new Csdb();
-      $query = $this->generateWhereRawQueryString("filename::DMC,PMC,ICN&initiator_id={$request->user()->id}",[],'',['CSDB-DELL', 'CSDB-PDEL'])[0];
-      $ret = $this->model->whereRaw($query)->get(['filename','path', 'updated_at'])->toArray();
-      return $this->ret2(200, ["csdbs" => $ret]);
-    }
-    // $this->model = Csdb::with('initiator');
-    // return $this->ret2(200, ['csdbs' => $this->model->get()->toArray()]);
+    // $CSDBModel = new Csdb();
+    // $query = History::generateWhereRawQueryString_historyException(['CSDB-DELL', 'CSDB-PDEL'],get_class($CSDBModel),$CSDBModel->getTable());
+    // $query[0] = Helper::replaceSQLQueryWithBindedParam($query[0],$query[1],$query[2],$query[3]);
+    // $ret = $CSDBModel->whereRaw($query[0]); // jika mau pakai replace @replaceSQLQueryWithBindedParam()
+    // $ret = $CSDBModel->whereRaw($query[0], $query[1]);
+    // $csdbs = $csdbs->where('initiator_id',$request->user()->id);
+    $csdbs = Csdb::getCsdbs(['exception' => ['CSDB-DELL', 'CSDB-PDEL']]);
+    $csdbs = $csdbs->get(['filename','path'])->toArray();
+    return $this->ret2(200, ["csdbs" => $csdbs]);
   }
 
   /**
@@ -252,10 +198,11 @@ class CsdbController extends Controller
    */
   public function get_object_model(Request $request, string $filename)
   {
-    $type = substr($filename, 0, 3);
-    $model = Csdb::getModelClass(ucfirst($type));
-    $model->setProtected(['with' => 'csdb.initiator']);
-    $model = $model->where('filename', $filename)->first();
+    // $type = substr($filename, 0, 3);
+    // $model = Csdb::getModelClass(ucfirst($type)); // gabisa kalau mencari comment karena modelnya bukan 'Com.php' tapi 'Comment.php'
+    // $model->setProtected(['with' => 'csdb.initiator']);
+    // $model = $model->where('filename', $filename)->first();
+    $model = Csdb::getObject($filename)->first();
     return $model ? $this->ret2(200, ["model" => $model->toArray()]) : $this->ret2(400, ["no such {$filename} available."]);
   }
 
@@ -264,10 +211,17 @@ class CsdbController extends Controller
    */
   public function get_object_csdbs(Request $request)
   {
-    $this->model = new Csdb();
-    $res = $this->generateWhereRawQueryString($request->get('sc'),[],'',['CSDB-DELL', 'CSDB-PDEL']);
-    $ret = $this->model->whereRaw($res[0])->orderBy('filename')->get();
-    return $this->ret2(200,['csdbs' => $ret->toArray()]);
+    // $CSDBModel = new Csdb();
+    // $query = Helper::generateWhereRawQueryString($request->get('sc'), $CSDBModel->getTable());
+    // $queryException = History::generateWhereRawQueryString_historyException(['CSDB-DELL', 'CSDB-PDEL'],get_class($CSDBModel),$CSDBModel->getTable());
+    // $ret = $CSDBModel->whereRaw($query[0],$query[1]);
+    // $ret = $ret->whereRaw($queryException[0],$queryException[1]);
+    // $ret = $ret->orderBy('filename')->get();
+    // return $this->ret2(200,['csdbs' => $ret->toArray()]);
+
+    $CSDBModels = Csdb::searchCsdbs($request->get('sc'), ['exception' => ['CSDB-DELL', 'CSDB-PDEL']]);
+    $CSDBModels = $CSDBModels->orderBy('filename')->get();
+    return $this->ret2(200,['csdbs' => $CSDBModels->toArray()]);
   }
 
   public function forfolder_get_allobjects_list(Request $request)
@@ -275,45 +229,42 @@ class CsdbController extends Controller
     // validasi. Jadi ketika tidak ada path ataupun sc, ataupun filename (KOSONG) maka akan mencari path = "csdb/"
     if ($request->path === "/") $request->merge(['path' => 'csdb']);
 
-    $this->model = Csdb::with(['initiator','lastHistory']);
-    $keywords = Helper::explodeSearchKeyAndValue($request->get('sc'), 'filename',["typeonly"=>"filename"]);
-    $res = $this->generateWhereRawQueryString($keywords,['path' => "#&value;"],'',['CSDB-DELL', 'CSDB-PDEL']);
-    $keywords = $res[1];
-
     // menyiapkan csdb object
-    // $this->model->orderBy('filename');
-    // $ret = $this->model->paginate(100);
-    $ret = $this->model->whereRaw($res[0])->orderBy('filename')->paginate(100);
-    $ret->setPath($request->getUri());
-
-    
-    // dd($ret->toArray());
-    // dd($res, $ret->toArray());
-    
+    $CSDBModels = Csdb::with(['initiator','lastHistory']);
+    // $keywords = Helper::explodeSearchKeyAndValue($request->get('sc'), 'filename',["typeonly"=>"filename"]); // nanti ditiadakan typeonly karena DML dan DMC digabung di Explorer.vue
+    $keywords = Helper::explodeSearchKeyAndValue($request->get('sc'), 'filename');
+    $query = Helper::generateWhereRawQueryString($keywords, $CSDBModels->getModel()->getTable(), ['path' => "#&value;"]);
+    $queryExecption = History::generateWhereRawQueryString_historyException(['CSDB-DELL', 'CSDB-PDEL'],Csdb::class,$CSDBModels->getModel()->getTable());
+    $CSDBModels = $CSDBModels->whereRaw($query[0], $query[1]);
+    $CSDBModels = $CSDBModels->whereRaw($queryExecption[0], $queryExecption[1]);
+    $CSDBModels = $CSDBModels->orderBy('filename')->paginate(100);
+    $CSDBModels->setPath($request->getUri());
     
     $m = '';
     // menyiapkan folder
-    if ($ret->isNotEmpty()) {
+    if ($CSDBModels->isNotEmpty()) {
       if (isset($keywords['path'])) {
-        $this->model = new Csdb();
-        $res = $this->generateWhereRawQueryString($request->get('sc'),[],'',['CSDB-DELL', 'CSDB-PDEL']);
-        $folder = $this->model->whereRaw($res[0])->get(['path'])->toArray();
-        $folder = array_unique($folder, SORT_REGULAR);
-        foreach($folder as $i => $v){
-          $folder[$i] = join("", $v); // saat didapat dari database, bentuknya array berisi satu path saja
+        $folders = new Csdb();
+        $query = Helper::generateWhereRawQueryString($keywords,$folders->getTable());
+        $folders = $folders->whereRaw($query[0],$query[1]);
+        $folders = $folders->whereRaw($queryExecption[0],$queryExecption[1]);
+        $folders = $folders->get(['path'])->toArray();
+        $folders = array_unique($folders, SORT_REGULAR);
+        foreach($folders as $i => $v){
+          $folders[$i] = join("", $v); // saat didapat dari database, bentuknya array berisi satu path saja
           foreach($keywords['path'] as $path){
-            if($folder[$i] === $path){
-              $folder[$i] = '';
+            if($folders[$i] === $path){
+              $folders[$i] = '';
             } else {
               $path = str_replace("/","\/",$path);
-              $folder[$i] = preg_replace("/({$path})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folder[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
+              $folders[$i] = preg_replace("/({$path})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folders[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
             }
           }
         }
-        $folder = array_unique($folder,SORT_STRING);
-        $folder = array_filter($folder, fn ($v) => ($v != null) || ($v != ''));
-        $folder = array_values($folder); // supaya tidak assoc atau supaya indexnya teratur
-        sort($folder);
+        $folders = array_unique($folders,SORT_STRING);
+        $folders = array_filter($folders, fn ($v) => ($v != null) || ($v != ''));
+        $folders = array_values($folders); // supaya tidak assoc atau supaya indexnya teratur
+        sort($folders);
       }
     } else $m = "CSDB objects can not be found.";
 
@@ -321,11 +272,11 @@ class CsdbController extends Controller
       $current_path = $keywords['path'][0];
     }
 
-    $ret = $ret->toArray();
-    $ret['csdbs'] = $ret['data'];
-    unset($ret['data']);
+    $CSDBModels = $CSDBModels->toArray();
+    $CSDBModels['csdbs'] = $CSDBModels['data'];
+    unset($CSDBModels['data']);
 
-    return $this->ret2(200, $ret, ['message' => $m, 'infotype' => "caution", 'folders' => $folder ?? [], "current_path" => $current_path ?? '']);
+    return $this->ret2(200, $CSDBModels, ['message' => $m, 'infotype' => "caution", 'folders' => $folders ?? [], "current_path" => $current_path ?? '']);
   }
 
   /**
@@ -337,15 +288,20 @@ class CsdbController extends Controller
     // #1 validation input form
     $validatedData = $request->validated();
     $file = $validatedData['entity'];
-    $CSDBModel = Csdb::where('filename', $validatedData['filename'])->first() ?? new Csdb();
+    $CSDBModel = $validatedData['oldCSDBModel'];
     $CSDBModel->CSDBObject->load($file->path());
     $CSDBModel->filename = $validatedData['filename'];
     $CSDBModel->path = $validatedData['path'];
     $CSDBModel->initiator_id = $request->user()->id;
-    $CSDBModel->appendAvailableStorage($request->user()->storage);
-    if ($CSDBModel->saveDOMandModel($request->user()->storage)) {
+    $CSDBModel->storage_id = $request->user()->id;
+    if ($CSDBModel->saveDOMandModel($request->user()->storage,[
+      [$request->isUpdate ? 'MAKE_CSDB_UPDT_History' : 'MAKE_CSDB_CRBT_History', [Csdb::class]],
+      [$request->isUpdate ? 'MAKE_USER_UPDT_History' : 'MAKE_USER_CRBT_History', [$request->user(),'',$CSDBModel->filename]],
+    ])) {
       $CSDBModel->initiator; // agar ada initiator nya
+      
       $message = $request->isUpdate ? "{$CSDBModel->filename} has been updated." : "New {$CSDBModel->filename} has been uploaded.";
+      // $message = $request->isUpdate ? "New {$CSDBModel->filename} has been uploaded." : "{$CSDBModel->filename} has been updated." ;
       return $this->ret2(200, [$message], ["csdb" => $CSDBModel, 'infotype' => 'info']);
     } else {
       return $this->ret2(400, ["{$validatedData['filename']} failed to upload."], CSDBError::getErrors(), ["csdb" => $CSDBModel]);
@@ -357,15 +313,12 @@ class CsdbController extends Controller
    */
   public function get_deletion_list(Request $request)
   {
-    $query = History::generateWhereRawQueryString(['CSDB-DELL'],Csdb::class);
-    $model = new Csdb();
-    $model->setProtected(['with' => ['lastHistory']]);
-    $ret = $model->whereRaw($query);
-    $ret = $ret->where('initiator_id',$request->user()->id);
-    $ret = $ret->paginate(10)->toArray();
-    $ret['csdbs'] = $ret['data'];
-    unset($ret['data']);
-    return $this->ret2(200, $ret);
+    $CSDBModels = Csdb::getCsdbs(['code' => ['CSDB-DELL']]);
+    $CSDBModels = $CSDBModels->with(['lastHistory']);
+    $CSDBModels = $CSDBModels->paginate(10)->toArray();
+    $CSDBModels['csdbs'] = $CSDBModels['data'];
+    unset($CSDBModels['data']);
+    return $this->ret2(200, $CSDBModels);
   }
 
   /**
@@ -376,7 +329,9 @@ class CsdbController extends Controller
     $validatedData = $request->validated();
     foreach($validatedData['CSDBModelArray'] as $model){
       $model->path = (string) $validatedData['path'];
-      $model->save();
+      if($model->save()){
+        History::saveModel([History::MAKE_CSDB_PATH_History($model)]);
+      }
     }
     return $this->ret2(200,[ join(", ", $validatedData['filename']) . " success move to {$validatedData['path']}." ],['infotype' => 'info']);
   }
@@ -394,8 +349,9 @@ class CsdbController extends Controller
     $qtyCSDBs = count($CSDBModels);
     for ($i=0; $i < $qtyCSDBs; $i++) { 
       $CSDB_HISTORYModel = History::MAKE_CSDB_DELL_History($CSDBModels[$i]);
+      // $OBJECT_HISTORYModel = History::MAKE_CSDB_DELL_History($CSDBModels[$i]->meta);
       $USER_HISTORYModel = History::MAKE_USER_DELL_History($request->user(),'', $CSDBModels[$i]->filename);
-      if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
+      if(History::saveModel([$CSDB_HISTORYModel, $USER_HISTORYModel])){
         $result['success'][] = $CSDBModels[$i]->filename;
       } else {
         $result['fail'][] = $CSDBModels[$i]->filename;
@@ -411,7 +367,7 @@ class CsdbController extends Controller
   /**
    * sama dengan @delete() tapi beda history saja
    */
-  public function permanentDelete(CsdbDelete $request)
+  public function permanentDelete(CsdbPermanentDelete $request)
   {
     $result = [
       'success' => [],
@@ -423,6 +379,7 @@ class CsdbController extends Controller
     $qtyCSDBs = count($CSDBModels);
     for ($i=0; $i < $qtyCSDBs; $i++) { 
       $CSDB_HISTORYModel = History::MAKE_CSDB_PDEL_History($CSDBModels[$i]);
+      // $OBJECT_HISTORYModel = History::MAKE_CSDB_PDEL_History($CSDBModels[$i]->object);
       $USER_HISTORYModel = History::MAKE_USER_PDEL_History($request->user(),'', $CSDBModels[$i]->filename);
       if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
         $result['success'][] = $CSDBModels[$i]->filename;
@@ -440,7 +397,7 @@ class CsdbController extends Controller
   /**
    * sama dengan @delete() tapi beda history saja
    */
-  public function restore(CsdbDelete $request)
+  public function restore(CsdbRestore $request)
   {
     $result = [
       'success' => [],
@@ -452,6 +409,7 @@ class CsdbController extends Controller
     $qtyCSDBs = count($CSDBModels);
     for ($i=0; $i < $qtyCSDBs; $i++) { 
       $CSDB_HISTORYModel = History::MAKE_CSDB_RSTR_History($CSDBModels[$i]);
+      // $OBJECT_HISTORYModel = History::MAKE_CSDB_RSTR_History($CSDBModels[$i]->object);
       $USER_HISTORYModel = History::MAKE_USER_RSTR_History($request->user(),'', $CSDBModels[$i]->filename);
       if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
         $result['success'][] = $CSDBModels[$i]->filename;

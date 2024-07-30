@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::dropIfExists('pmc');
     Schema::create('pmc', function (Blueprint $table) {
       $table->id();
-      $table->string('filename')->unique(false);
+      $table->string('csdb_id');
 
       $table->tinyText('modelIdentCode');
       $table->tinyText('pmIssuer');
@@ -40,6 +40,9 @@ return new class extends Migration
       $table->string('brexDmRef');
       $table->text('qa'); // isi last QA: 'unverified', 'first-...', 'second-...'
       $table->text('remarks')->nullable();
+
+      $table->json('json');
+      $table->longText('xml');
     });
   }
 

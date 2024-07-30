@@ -6,7 +6,7 @@ use App\Models\Csdb;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CsdbDelete extends FormRequest
+class CsdbPermanentDelete extends FormRequest
 {
   /**
    * Determine if the user is authorized to make this request.
@@ -42,7 +42,7 @@ class CsdbDelete extends FormRequest
         for ($i=0; $i < $l; $i++) { 
           if(!$CSDBModelArray[$i]) $f[] = $CSDBModelArray[$i]->filename;
         }
-        if(count($f) > 0) $fail("You are not authorize to delete " . join(", ", $f) . ".");
+        if(count($f) > 0) $fail("You are not authorize or to permanent delete " . join(", ", $f) . ".");
       }
     ];
   }
@@ -57,12 +57,12 @@ class CsdbDelete extends FormRequest
     if(is_array($filename) || ($filename = explode(",",$filename))){
       foreach($filename as $i => $f){
         // $m = Csdb::with(['object'])->where('filename',$f)->where('initiator_id',$this->user()->id)->first();
-        $m = Csdb::getCsdb($f,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
+        $m = Csdb::getCsdb($f,['code' => ['CSDB-DELL']])->first();
         $CSDBModelArray[$i] = $m;
       }
     } else {
       // $m = Csdb::where('filename',$filename)->where('initiator_id',$this->user()->id)->first();
-      $m = Csdb::getCsdb($filename,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
+      $m = Csdb::getCsdb($filename,['code' => ['CSDB-DELL']])->first();
       array_push($CSDBModelArray, $m);
       $filename = [$filename];
     }

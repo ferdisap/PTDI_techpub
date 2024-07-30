@@ -15,6 +15,36 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
+
+    Schema::dropIfExists('ddn');
+    Schema::create('ddn', function (Blueprint $table) {
+      $table->id();
+      $table->string('filename')->unique(false);
+      $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
+      $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
+      $table->tinyText('receiverIdent'); // merujuk ke receiver code atau sudah di transform codenya, gunakan file config jika ingin transform
+      $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue
+      $table->tinyText('seqNumber'); // merujuk ke @seqNumber
+
+      $table->tinyText('year');
+      $table->tinyText('month');
+      $table->tinyText('day');
+      
+      $table->json('dispatchTo');
+      $table->json('dispatchFrom');      
+      
+      $table->string('securityClassification');
+      $table->string('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
+      $table->text('authorization'); //merujuk ke ddnStatus/authorization
+      $table->text('remarks')->nullable(); //merujuk ke ddnStatus/remarks
+      /**
+       * merujuk ke dmlEntry. cara tulis: 
+       * { "deliveryList: [filename1, filename2, filename3, ...], "mediaIdent" : {$label} }
+       * jika tidak ada, isi dengan null
+       */
+      $table->json('ddnContent')->nullable(); 
+    });
+
     // Schema::connection('sqlite')->table('csdb', function(Blueprint $table){
     //   $table->dropColumn('deleted_at');
     // });

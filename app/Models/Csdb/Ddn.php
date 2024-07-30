@@ -15,9 +15,44 @@ class Ddn extends Csdb
 {
   use HasFactory;
 
+  protected $fillable = [
+    'csdb_id',
+
+    'modelIdentCode',
+    'senderIdent',
+    'receiverIdent',
+    'yearOfDataIssue',
+    'seqNumber',
+
+    "year",
+    "month",
+    "day",
+
+    'securityClassification',
+    'brexDmRef',
+    'authorization',
+    'remarks',
+
+    'ddnContent',
+
+    'json',
+    'xml'
+  ];
+
+  protected $table = 'ddn';
+
   protected $attributes = [
     'ddnContent' => '[]',
   ];
+
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+
+  public $timestamps = false;
 
   /**
    * harus json string
@@ -47,7 +82,7 @@ class Ddn extends Csdb
     return false;
   }
 
-  public static function fillTable(CSDBObject $CSDBObject)
+  public static function fillTable($csdb_id, CSDBObject $CSDBObject)
   {
     $filename = $CSDBObject->filename;
     // $decode_ident = CSDBStatic::decode_ddnIdent($filename,false); 
@@ -97,7 +132,8 @@ class Ddn extends Csdb
     }
 
     $arr = [
-      'filename' => $filename,
+      "csdb_id" => $csdb_id,
+      
       'modelIdentCode' => $modelIdentCode,
       'senderIdent' => $senderIdent,
       'receiverIdent' => $receiverIdent,
@@ -114,38 +150,12 @@ class Ddn extends Csdb
       'remarks' => $remarks,
       
       'ddnContent' => $ddnContent,
+
+      'json' => CSDBStatic::xml_to_json($CSDBObject->document),
+      'xml' => $CSDBObject->document->C14N() // ga bisa pakai saveXML karena menghasilkan doctype, sementara SQL XML belum tahu caranya render xml yang ada dtd
     ];
 
-    $fillable = [
-      'filename',
-      'modelIdentCode',
-      'senderIdent',
-      'receiverIdent',
-      'yearOfDataIssue',
-      'seqNumber',
-
-      "year",
-      "month",
-      "day",
-
-      'securityClassification',
-      'brexDmRef',
-      'authorization',
-      'remarks',
-
-      'ddnContent',
-    ];
-
-    $ddn = new self();
-    $ddn->setProtected([
-      'table' => 'ddn',
-      'fillable' => $fillable,
-      'casts' => [],
-      // 'attributes' => [],
-      'timestamps' => false
-    ]);
-    $ddn = $ddn->where('filename', $filename)->first() ?? $ddn;
-    $ddn->timestamps = false;
+    $ddn = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('Ddn');
     foreach($arr as $prop => $v){
       $ddn->$prop = $v;
     }

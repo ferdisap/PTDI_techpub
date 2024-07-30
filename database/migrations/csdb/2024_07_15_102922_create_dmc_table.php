@@ -14,8 +14,7 @@ return new class extends Migration
     Schema::dropIfExists('dmc');
     Schema::create('dmc', function (Blueprint $table) {
       $table->id();
-      $table->string('filename')->unique(false);
-      // $table->text('filename')->unique();
+      $table->string('csdb_id');
 
       $table->tinyText('modelIdentCode');
       $table->tinyText('systemDiffCode');
@@ -48,6 +47,9 @@ return new class extends Migration
       $table->string('brexDmRef');
       $table->text('qa'); // isi last QA: 'unverified', 'first-...', 'second-...'
       $table->text('remarks')->nullable();
+
+      $table->json('json');
+      $table->longText('xml');
     });
   }
 

@@ -2,13 +2,14 @@
 
 namespace App\Models\Csdb;
 
-use App\Models\Csdb as ModelsCsdb;
+use App\Http\Requests\Csdb\CsdbDelete;
+use App\Models\Csdb;
 use DOMDocument;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Ptdi\Mpub\CSDB;
-use Ptdi\Mpub\Helper;
+// use Ptdi\Mpub\CSDB;
+// use Ptdi\Mpub\Helper;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 use Illuminate\Support\Facades\Storage;
@@ -16,11 +17,63 @@ use function PHPUnit\Framework\directoryExists;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class Dml extends ModelsCsdb
+class Dml extends Csdb
 {
   use HasFactory;
 
-  protected $with = ['initiator'];
+  // protected $with = ['initiator'];
+
+    /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+  
+  /**
+   * The table associated with the model.
+   *
+   * @var string
+   */
+  protected $table = 'dml';
+
+  /**
+   * The model's default values for attributes.
+   *
+   * @var array
+   */
+  protected $attributes = [];
+
+  /**
+   * Indicates if the modul should be timestamped
+   * 
+   * @var bool
+   */
+  public $timestamps = false;
+
+  protected $fillable = [
+    'csdb_id',
+
+    'modelIdentCode',
+    'senderIdent',
+    'dmlType',
+    'yearOfDataIssue',
+    'seqNumber',
+
+    'year',
+    'month',
+    'day',
+
+    'securityClassification',
+    'brexDmRef',
+    'dmlRef',
+    'remarks',
+
+    'content',
+
+    'json',
+    'xml',
+  ];
 
   public function create_xml(string $storagePath, string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
   {
@@ -28,10 +81,10 @@ class Dml extends ModelsCsdb
     $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
     $this->CSDBObject->createDML($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
 
-    if($this->CSDBObject->document){
-      return true;
+    if(!$this->CSDBObject->document){
+      return false;
     }
-    return false;
+    return true;
   }
 
   /**
@@ -142,7 +195,7 @@ class Dml extends ModelsCsdb
     // $check_to_alldmls = function () use ($ident, $entryIdent, $dml_dom) {
     //   $codeType = array_keys($ident)[0]; // output eg.: 'dmCode', 'pmCode', etc
     //   $modelIdentCode = $ident[$codeType]['modelIdentCode'];
-    //   $alldmls = ModelsCsdb::where('filename', 'not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
+    //   $alldmls = Csdb::where('filename', 'not like', $this->filename)->where('filename', 'like', "DML-{$modelIdentCode}-%_%")->get(); // get all dmls which only code same in modelIdentCode;
     //   // $xpath = $xpath($ident, $codeType);
     //   $xpath = self::generate_xpath_for_dmlEntry_checking($ident, $codeType);
     //   // $results = [];
@@ -409,14 +462,21 @@ class Dml extends ModelsCsdb
     return $dom;
   }
 
-  public static function fillTable(CSDBObject $CSDBObject)
+  public static function fillTable($csdb_id, CSDBObject $CSDBObject)
   {
     $filename = $CSDBObject->filename;
-    $decode_ident = CSDBStatic::decode_dmlIdent($filename,false);
-    $dmlAddressItems = $CSDBObject->document->getElementsByTagName('dmlAddressItems')[0];
-    $issueDate = $dmlAddressItems->firstElementChild;
-
     $domXpath = new \DOMXpath($CSDBObject->document);
+
+    $modelIdentCode = $domXpath->evaluate("string(//dmlAddress/dmlIdent/dmlCode/@modelIdentCode)");
+    $senderIdent = $domXpath->evaluate("string(//dmlAddress/dmlIdent/dmlCode/@senderIdent)");
+    $dmlType = $domXpath->evaluate("string(//dmlAddress/dmlIdent/dmlCode/@dmlType)");
+    $yearOfDataIssue = $domXpath->evaluate("string(//dmlAddress/dmlIdent/dmlCode/@yearOfDataIssue)");
+    $seqNumber = $domXpath->evaluate("string(//dmlAddress/dmlIdent/dmlCode/@seqNumber)");
+
+    $year = $domXpath->evaluate("string(//dmlAddress/dmlAddressItems/issueDate/@year)");
+    $month = $domXpath->evaluate("string(//dmlAddress/dmlAddressItems/issueDate/@month)");
+    $day = $domXpath->evaluate("string(//dmlAddress/dmlAddressItems/issueDate/@day)");
+
     $sc = $domXpath->evaluate("string(//identAndStatusSection/descendant::security/@securityClassification)");
     $brexElement = $domXpath->evaluate("//identAndStatusSection/descendant::brexDmRef/dmRef/dmRefIdent")[0];
     $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
@@ -429,83 +489,33 @@ class Dml extends ModelsCsdb
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
     $arr = [
-      'filename' => $filename,
-      'modelIdentCode' => $decode_ident['dmlCode']['modelIdentCode'],
-      'senderIdent' => $decode_ident['dmlCode']['senderIdent'],
-      'dmlType' => $decode_ident['dmlCode']['dmlType'],
-      'yearOfDataIssue' => $decode_ident['dmlCode']['yearOfDataIssue'],
-      'seqNumber' => $decode_ident['dmlCode']['seqNumber'],
+      'csdb_id' => $csdb_id,
+
+      'modelIdentCode' => $modelIdentCode,
+      'senderIdent' => $senderIdent,
+      'dmlType' => $dmlType,
+      'yearOfDataIssue' => $yearOfDataIssue,
+      'seqNumber' => $seqNumber,
+
+      'year' => $year,
+      'month' => $month,
+      'day' => $day,
+
       'securityClassification' => $sc,
       'brexDmRef' => $brexDmRef,
       'dmlRef' => $dmlRef,
       'remarks' => $remarks,
-      // 'content' => null,
 
-      
-      "year" => $issueDate->getAttribute('year'),
-      "month" => $issueDate->getAttribute('month'),
-      "day" => $issueDate->getAttribute('day'),
+      'content' => null,
+
+      'json' => CSDBStatic::xml_to_json($CSDBObject->document),
+      'xml' => $CSDBObject->document->C14N() // ga bisa pakai saveXML karena menghasilkan doctype, sementara SQL XML belum tahu caranya render xml yang ada dtd
     ];
 
-    // if($dml = DB::table('dml')->where('filename', $filename)->first()){
-    //   foreach($arr as $prop => $v){
-    //     $dml->$prop = $v;
-    //   }
-    //   return $dml->save();
-    // }
-    $fillable = [
-      'filename',
-      'modelIdentCode',
-      'senderIdent',
-      'dmlType',
-      'yearOfDataIssue',
-      'seqNumber',
-      'securityClassification',
-      'brexDmRef',
-      'dmlRef',
-      'remarks',
-    ];
-    $dml = new self();
-    $dml->setProtected([
-      'table' => 'dml',
-      'fillable' => $fillable,
-      'casts' => [],
-      'attributes' => [],
-      'timestamps' => false
-    ]);
-    $dml = $dml->where('filename', $filename)->first() ?? $dml;
-    $dml->timestamps = false;
+    $dml = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('Dml');
     foreach($arr as $prop => $v){
       $dml->$prop = $v;
     }
     return $dml->save();
   }
-
-  /**
-   * dilakukan di parent class
-   */
-  // public static function instanceModel()
-  // {
-  //   $self = new self();
-  //   $fillable = [
-  //     'filename',
-  //     'modelIdentCode',
-  //     'senderIdent',
-  //     'dmlType',
-  //     'yearOfDataIssue',
-  //     'seqNumber',
-  //     'securityClassification',
-  //     'brexDmRef',
-  //     'dmlRef',
-  //     'remarks',
-  //   ];
-  //   $self->setProtected([
-  //     'table' => 'dml',
-  //     'fillable' => $fillable,
-  //     'casts' => [],
-  //     'attributes' => [],
-  //     'timestamps' => false
-  //   ]);
-  //   return $self;
-  // }
 }

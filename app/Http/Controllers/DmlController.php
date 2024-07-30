@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Csdb\DmlCreateFromEditorDML;
 use App\Models\Csdb;
 use App\Models\Csdb\Dml;
 use App\Rules\Dml\EntryIdent;
@@ -30,53 +31,71 @@ class DmlController extends Controller
    * pada request, tinggal tambah dmlRef di frontend. Nanti tambahkan $otherOptions['dmlRef'] = ['DML-...', 'DML-...'];
    * @return App\Models\Csdb
    */
-  public function create(Request $request)
+  public function create(DmlCreateFromEditorDML $request)
   {
-    $validator = Validator::make($request->all(), [
-      'modelIdentCode' => 'required',
-      'originator' => 'required',
-      'dmlType' => 'required',
-      'securityClassification' => 'required',
-      'brexDmRef' => ['required', new BrexDmRefRules],
-      'remarks' => 'array',
-    ]);
+    $CSDBModel = new Csdb();
+    $CSDBModel->CSDBObject = $request->CSDBObject[0];
+    $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
+    $CSDBModel->path = $request->validated()['path'];
+    $CSDBModel->storage_id = $request->user()->id;
+    $CSDBModel->initiator_id = $request->user()->id;
 
-    if ($validator->fails()) {
-      return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+    if($CSDBModel->saveDOMandModel($request->user()->storage,[
+        ['MAKE_CSDB_CRBT_History',[Csdb::class]], 
+        ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
+    ])){
+      return $this->ret2(200, ["{$CSDBModel->filename} has been created."], ['csdb' => $CSDBModel, 'infotype' => 'info']);
     }
-
-    $validator->validated();
-
-    $dml_model = new Dml();
-    $csdb = new Csdb();
-    $dml_model->setProtected([
-      'table' => $csdb->getProtected('table'),
-      'fillable'=> $csdb->getProtected('fillable'),
-      'casts'=> $csdb->getProtected('casts'),
-      'attributes'=> $csdb->getProtected('attributes'),
-    ]);
-    // $dml_model->setWith(['initiator']);
-    // $dml_model->direct_save = false;
-    $otherOptions = [];
-    $isCreated = $dml_model->create_xml($request->user()->storage,$request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
-    if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
-
-    $ident = $dml_model->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
-    $filename = CSDBStatic::resolve_dmlIdent($ident);
-    $dml_model->filename = $filename;
-    $dml_model->path = "csdb";
-    $dml_model->available_storage = $request->user()->storage;
-    $dml_model->initiator_id = $request->user()->id;
-    
-    if($dml_model->saveDOMandModel($request->user()->storage)){
-      $dml_model->initiator; // supaya ada initiator saat return
-      return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model, 'infotype' => 'info']);
-    } else {
-      return $this->ret2(400, ["fail to create and save DML."]);
-    }
+    return $this->ret2(400, ["fail to create and save DML."]);
   }
+  // public function create(Request $request)
+  // {
+  //   $validator = Validator::make($request->all(), [
+  //     'modelIdentCode' => 'required',
+  //     'originator' => 'required',
+  //     'dmlType' => 'required',
+  //     'securityClassification' => 'required',
+  //     'brexDmRef' => ['required', new BrexDmRefRules],
+  //     'remarks' => 'array',
+  //   ]);
+
+  //   if ($validator->fails()) {
+  //     return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
+  //   }
+
+  //   $validator->validated();
+
+  //   $dml_model = new Dml();
+  //   $csdb = new Csdb();
+  //   $dml_model->setProtected([
+  //     'table' => $csdb->getProtected('table'),
+  //     'fillable'=> $csdb->getProtected('fillable'),
+  //     'casts'=> $csdb->getProtected('casts'),
+  //     'attributes'=> $csdb->getProtected('attributes'),
+  //   ]);
+  //   // $dml_model->setWith(['initiator']);
+  //   // $dml_model->direct_save = false;
+  //   $otherOptions = [];
+  //   $isCreated = $dml_model->create_xml($request->user()->storage,$request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
+  //   if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
+
+  //   $ident = $dml_model->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
+  //   $filename = CSDBStatic::resolve_dmlIdent($ident);
+  //   $dml_model->filename = $filename;
+  //   $dml_model->path = "csdb";
+  //   $dml_model->available_storage = $request->user()->storage;
+  //   $dml_model->initiator_id = $request->user()->id;
+    
+  //   if($dml_model->saveDOMandModel($request->user()->storage)){
+  //     $dml_model->initiator; // supaya ada initiator saat return
+  //     return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model, 'infotype' => 'info']);
+  //   } else {
+  //     return $this->ret2(400, ["fail to create and save DML."]);
+  //   }
+  // }
 
   /**
+   * DEPRECIATED, karena semua object ditampilkan di listtree explorer
    * aturannya sama seperti CsdbController@get_allobjects_list
    */
   public function get_dmrl_list(Request $request)
@@ -92,49 +111,18 @@ class DmlController extends Controller
     }
     $this->model = Csdb::with('initiator')->where('filename', 'like', 'DML-%');
     return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
-
-    // $obj1 = [
-    //   "filename" => 'cfoo1asasscsascscasas',
-    //   'path' => 'csdb'
-    // ];
-    // $obj1_1 = [
-    //   "filename" => 'cfoo1_1asasscsascscasas',
-    //   'path' => 'csdb'
-    // ];
-    // $obj11 = [
-    //   "filename" => 'cfoo11asasscsascscasas',
-    //   'path' => 'csdb/n219'
-    // ];
-    // $obj12 = [
-    //   "filename" => 'cfoo12asasscsascscasas',
-    //   'path' => 'csdb/n219'
-    // ];
-    // $obj111 = [
-    //   "filename" => 'cfoo111asasscsascscasas',
-    //   'path' => 'csdb/n219/amm'
-    // ];
-
-    // $obj21 = ["filename" => 'cfoo21', "path" => 'csdb/male'];
-    // $obj22 = ["filename" => 'cfoo22', "path" => 'csdb/male'];
-
-    // $obj3 = ["filename" => 'xafoo1', "path" => 'xxx'];
-    // $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
-    // $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
-
-    // $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
-    // return $this->ret2(200, ['data' => $allobj]);
   }
   
   public function read_html_content(Request $request, string $filename)
   {
-    if(!($DMLModel = Dml::where('filename', $filename)->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
     $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
     $DMLModel->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $transformed = $DMLModel->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/html_dml/dml.xsl", [
-      'filename' => $DMLModel->filename
+      'filename' => $filename
     ]);
     if($error = CSDBError::getErrors(false)){
-      return $this->ret2(200, [$error], ['model' => $DMLModel->makeHidden(['id']),'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+      return $this->ret2(200, [$error], ['model' => $DMLModel,'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
   }

@@ -146,8 +146,9 @@ export default {
   },
   mounted() {
     let emitters =  this.emitter.all.get('dispatchTo'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    let indexEmitter;
     if(emitters){
-      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound setObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+       indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound setObject')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
       if(emitters.length < 2 && indexEmitter < 0) this.emitter.on('dispatchTo', this.setObject); 
     }
 
@@ -245,7 +246,7 @@ export default {
       </div>
     </form>
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
-    <RCMenu v-if="CbSelector.isShowTriggerPanel">
+    <RCMenu v-if="CbSelector.isShowTriggerPanel" id="DispatchTo">
       <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
       </div>

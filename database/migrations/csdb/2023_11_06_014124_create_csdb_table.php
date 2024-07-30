@@ -17,11 +17,12 @@ return new class extends Migration
   {
     Schema::create('csdb', function (Blueprint $table) {
       $table->id();
-      $table->string('filename')->unique();
+      // $table->string('filename')->unique();
+      $table->string('filename');
       $table->string('path');
-      $table->text('available_storage');
+      $table->text('storage_id');
       $table->integer('initiator_id');
-      $table->timestampsTz();
+      // $table->timestampsTz();
       // $table->integer('deleter_id');
       // $table->dateTimeTz('deleted_at')->nullable();
     });

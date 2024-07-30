@@ -5,7 +5,7 @@ import Remarks from '../subComponents/Remarks.vue';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import DmlEntryForm from '../subComponents/DmlEntryFrom.vue';
 import Sort from '../../../techpub/components/Sort.vue';
-import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+// import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
 import DropdownInputSearch from '../../DropdownInputSearch';
 export default {
   data(){
@@ -17,7 +17,8 @@ export default {
       DropdownBrexSearch: new DropdownInputSearch('filename')
     }
   },
-  components:{Remarks, ContinuousLoadingCircle, DmlEntryForm, PreviewRCMenu},
+  // components:{Remarks, ContinuousLoadingCircle, DmlEntryForm, PreviewRCMenu},
+  components:{Remarks, ContinuousLoadingCircle, DmlEntryForm},
   computed:{
     isUpdate(){
       if(this.$route.params.filename){
@@ -71,10 +72,7 @@ export default {
         },
         useMainLoadingBar: false,
       });
-      if(response.statusText === 'OK'){
-        // this.emitter.emit('createDMLFromEditorDML', { model: response.data.data });
-        // do something here
-      }
+      if(response.statusText === 'OK') this.emitter.emit('createDMLFromEditorDML', response.data.csdb);
       this.showLoadingProgress = false;
     },
     async update(event){
@@ -196,7 +194,7 @@ export default {
       </div>
     </form>
 
-    <PreviewRCMenu v-if="isUpdate">
+    <!-- <PreviewRCMenu v-if="isUpdate">
       <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: $route.params.filename})">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
@@ -212,7 +210,7 @@ export default {
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
           Commit</div>
       </div>  
-    </PreviewRCMenu>
+    </PreviewRCMenu> -->
 
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>

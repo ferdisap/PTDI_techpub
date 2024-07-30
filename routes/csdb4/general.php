@@ -23,7 +23,8 @@ Route::get("/api/csdbs",[CsdbController::class, 'get_object_csdbs'])->middleware
 Route::get("/api/byfolder-allobjects",[CsdbController::class, 'forfolder_get_allobjects_list'])->middleware('auth')->name('api.requestbyfolder.get_allobject_list');
 
 Route::get('/api/object/raw/{CSDBModel:filename}', [CsdbController::class, 'get_object_raw'])->middleware('auth')->name('api.get_object_raw');
-Route::get('/api/content/{CSDBModel:filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth','ETagCsdbPDF'])->name('api.read_pdf_object');
+// Route::get('/api/content/{CSDBModel:filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth','ETagCsdbPDF'])->name('api.read_pdf_object');
+Route::get('/api/content/{filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth','ETagCsdbPDF'])->name('api.read_pdf_object');
 Route::get("/api/content/{CSDBModel:filename}/html",[CsdbController::class, 'read_html_object'])->middleware('auth')->name('api.read_html_object');
 Route::get("/api/content/{CSDBModel:filename}/other",[CsdbController::class, 'read_html_object'])->middleware('auth')->name('api.read_other_object');
 Route::get("/api/icn/raw/{CSDBModel:filename}", [CsdbController::class, 'get_icn_raw'])->middleware('auth')->name('api.get_icn_raw');
@@ -43,13 +44,13 @@ Route::post("/api/permanentdelete", [CsdbController::class, 'permanentDelete'])-
 // restore csdb object after deleted
 Route::post("/api/restore", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
 
-
+Route::post('/api/object/path/change', [CsdbController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
 
 
 
 
 // ### percobaan ###
-Route::post('/api/object/path/change', [CsdbController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
+Route::get("/api/content/html/{filename}",[DmlController::class, 'read_html_content'])->middleware('auth')->name('api.get_html_content');
 
 
 

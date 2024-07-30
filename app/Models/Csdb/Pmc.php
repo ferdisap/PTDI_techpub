@@ -14,7 +14,7 @@ class Pmc extends Csdb
 
   
   protected $fillable = [
-    'filename',
+    'csdb_id',
 
     'modelIdentCode',
     'pmIssuer',
@@ -39,6 +39,9 @@ class Pmc extends Csdb
     'brexDmRef',
     'qa',
     'remarks',
+
+    'json',
+    'xml'
   ];
 
   /**
@@ -55,7 +58,14 @@ class Pmc extends Csdb
    */
   public $timestamps = false;
 
-  public static function fillTable(CSDBObject $CSDBObject)
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+
+  public static function fillTable($csdb_id, CSDBObject $CSDBObject)
   {
     $filename = $CSDBObject->filename;
     $domXpath = new \DOMXpath($CSDBObject->document);
@@ -92,7 +102,7 @@ class Pmc extends Csdb
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
     $arr = [
-      "filename" => $filename,
+      "csdb_id" => $csdb_id,
       
       "modelIdentCode" => $modelIdentCode,
       "pmIssuer" => $pmIssuer,
@@ -118,13 +128,16 @@ class Pmc extends Csdb
       'applicability' => $applic,
       'brexDmRef' => $brexDmRef,
       'qa' => $QAtext,
-      'remarks' => $remarks
+      'remarks' => $remarks,
+
+      'json' => CSDBStatic::xml_to_json($CSDBObject->document),
+      'xml' => $CSDBObject->document->C14N() // ga bisa pakai saveXML karena menghasilkan doctype, sementara SQL XML belum tahu caranya render xml yang ada dtd      
     ];
  
-    $pmc = self::where('filename', $filename)->first();
-    if($pmc) {
-      $pmc->update($arr);
-      return $pmc->save();
+    $pmc = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('Pmc');
+    $pmc->timestamps = false;
+    foreach($arr as $prop => $v){
+      $pmc->$prop = $v;
     }
     return self::create($arr);
   }

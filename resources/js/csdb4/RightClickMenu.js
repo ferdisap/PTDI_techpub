@@ -1,48 +1,71 @@
-const rcmcloseevent = new Event("rcm-close");
-document.addEventListener("click", (e) => {
-  // let button = e.which || e.button;
-  // if (button === 1) {}
-  document.dispatchEvent(rcmcloseevent);
-});
-window.onkeyup = function(e){
-  if (e.keyCode === 27){
-    document.dispatchEvent(rcmcloseevent);
+import { isArray } from "./helper";
+// import { TRUE } from "sass";
+
+// const rcmcloseevent = new Event("rcm-close");
+// const dispatch = () => document.dispatchEvent(rcmcloseevent);
+// document.addEventListener("click", (e) => {
+//   // let button = e.which || e.button;
+//   // if (button === 1) {}
+//   document.dispatchEvent(rcmcloseevent);
+// });
+// window.onkeyup = function(e){
+//   if (e.keyCode === 27){
+//     document.dispatchEvent(rcmcloseevent);
+//   }
+// }
+// // useCapture = true berarti tidak buble, source: https://stackoverflow.com/questions/7398290/unable-to-understand-usecapture-parameter-in-addeventlistener
+// document.addEventListener("click", dispatch, true); // dibuat fungsi agar tidak listener tidak multiple ditambah ke document
+
+// const rcmcloseevent = new Event("rcm-close");
+const turnOffAllRCM = (event) => {
+  event.preventDefault
+  for (let i = 0; i < top.RCMCollection.length; i++) {
+    top.RCMCollection[i].toggleOff();
   }
 }
-
-
+// document.addEventListener('rcm-close', turnOffAllRCM);
+document.onclick = turnOffAllRCM;
 
 class RightClickMenu{
+  id = '';
   name= undefined;
   state = 0;
   context = undefined;
   stopPropagation = false;
 
-  constructor(name, contextMenu, area, stopPropagation = true){
-    this.name = name;
-    this.context = contextMenu;
-    let run = function(event){
-      event.preventDefault();
-      this.positionMenu();
-      this.toggleOn;  
-    }
-    run = run.bind(this);
+  static instantiate(id,name, contextMenu, area, stopPropagation = true){
+    this.id = id;
+    if(!isArray(top.RCMCollection)) top.RCMCollection = new Array;
+
+    // jika RCM sudah pernah di instantiate maka tidak bisa di instantiate lagi
+    let rcm;
+    if(rcm = top.RCMCollection.find((rcm) => rcm.id === id)) return rcm;
+
+    rcm = new this();
+
+    rcm.name = name;
+    rcm.context = contextMenu;
     contextMenu.style.display = 'none';
-    area.addEventListener("contextmenu", run);
-    document.addEventListener("rcm-close", () => {
-      this.toggleOff;
-    });
-    if(stopPropagation){
-      this.context.onclick = (e) => e.stopPropagation();
+    area.oncontextmenu = (event) => {
+      event.preventDefault();
+      turnOffAllRCM(event);
+      rcm.positionMenu();
+      rcm.toggleOn();
     }
+    // useCapture = true berarti tidak buble, source: https://stackoverflow.com/questions/7398290/unable-to-understand-usecapture-parameter-in-addeventlistener
+    area.addEventListener('click', turnOffAllRCM, true);
+    if(stopPropagation) rcm.context.onclick = (e) => e.stopPropagation();
+
+    top.RCMCollection.push(new Proxy(rcm,{})); // harapannya pakai proxy agar tidak membebani memory
+    return rcm;
   }
 
-  get toggleOn(){
+  toggleOn(){
     this.context.style.display = "block";
     return this.state = 1;
   }
 
-  get toggleOff(){
+  toggleOff(){
     this.context.style.display = "none";
     return this.state = 0;
   }

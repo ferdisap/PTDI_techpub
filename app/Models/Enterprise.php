@@ -65,7 +65,7 @@ class Enterprise extends Model
     'remarks' => "[]",
   ];
 
-  protected $hidden = ['id'];
+  protected $hidden = ['id', 'code_id'];
 
   protected $with = ['code'];
 

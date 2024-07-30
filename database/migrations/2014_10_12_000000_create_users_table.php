@@ -29,7 +29,7 @@ return new class extends Migration
       $table->string('storage');
       $table->json('address');
       $table->rememberToken();
-    $table->timestamps();
+      $table->timestamps();
     });
   }
 

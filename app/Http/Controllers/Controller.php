@@ -296,210 +296,177 @@ class Controller extends BaseController
   // QUERY untuk undeleted
   // SELECT * FROM csdb WHERE id IN ( SELECT history.owner_id FROM history WHERE history.owner_class = 'App\\Models\\Csdb' AND (history.code <> 'CSDB-DELL' OR history.code <> 'CRBT-PDEL') AND history.created_at = (SELECT max(history.created_at) from history) )
   /**
+   * DEPRECIATED, dipindah ke PTDI MPUB Helper jadi static function
    * jika "?sc=DMC" => maka querynya WHERE each.column like %DMC% , joined by 'OR';
    * jika "?sc=filename::DMC%20path::csdb" => maka querynya WHERE filename LIKE '%DMC%' AND path LIKE '%csdb%';
    * jika "?sc=filename::DMC,PMC" => maka querynya WHERE filename LIKE '%DMC%' OR filename LIKE '%PMC%';
    * jika "?sc=filename::DMC%20filename::022" => maka querynya WHERE filename LIKE '%DMC%' AND filename LIKE '%022%';
    * @param Array, index0 = query string, index1 = exploded keywords
+   * @return Array
    */
   // public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = ['CSDB-DELL', 'CSDB-PDEL'])
-  public function generateWhereRawQueryString($keyword, Array $strictString = ['col' => "%#&value;%"], string $table = '', $historyCodeExeception = [])
-  {
-    $isFitted = false;
-    // contoh1
-    // $keywords = [
-    //   'path' => ['A','B'],
-    //   'filename' => ['C','D', 'E'],
-    //   'editable' => ['F','G'],
-    // ];
-    // contoh2
-    // $keywords = [
-    //   'path' => ['A','B'],
-    //   'filename' => ['C'],
-    // ];
-    // contoh3
-    // $keywords = [
-    //   'path' => ['A'],
-    //   'filename' => ['B','C','D'],
-    //   'editable' => ['E'],
-    // ];
-    $keywords = is_array($keyword) ? $keyword : Helper::explodeSearchKeyAndValue($keyword);
+  // public function generateWhereRawQueryString($keyword, string $table, Array $strictString = ['col' => "%#&value;%"])
+  // {
+  //   // $isFitted = false;
+  //   // contoh1
+  //   // $keywords = [
+  //   //   'path' => ['A','B'],
+  //   //   'filename' => ['C','D', 'E'],
+  //   //   'editable' => ['F','G'],
+  //   // ];
+  //   // contoh2
+  //   // $keywords = [
+  //   //   'path' => ['A','B'],
+  //   //   'filename' => ['C'],
+  //   // ];
+  //   // contoh3
+  //   // $keywords = [
+  //   //   'path' => ['A'],
+  //   //   'filename' => ['B','C','D'],
+  //   //   'editable' => ['E'],
+  //   // ];
+  //   $keywords = is_array($keyword) ? $keyword : Helper::explodeSearchKeyAndValue($keyword);
+  //   if(empty($keywords)) return [];
 
-    // jika $keyword tidak ada column namenya, maka akan mengambil seluruh column name database
-    // contoh $request->sc = "Senchou";. Kita tidak tahu 'Senchou' ini dicari di column mana, jadi cari di semua column di database
-    $table = $table ? $table : ($this->model instanceof Builder ? $this->model->getModel()->getTable() : $this->model->getTable());
-    $fitToColumn = function($keywordsExploded)use($table){
-      $column = DB::getSchemaBuilder()->getColumnListing($table);
-      for ($i=0; (int)$i < count($column); $i++) { 
-        $k = $column[$i];
-        $column[$k] = $keywordsExploded;
-        unset($column[$i]);
-      }
-      return $column;
-    };
+  //   // jika $keyword tidak ada column namenya, maka akan mengambil seluruh column name database
+  //   // contoh $request->sc = "Senchou";. Kita tidak tahu 'Senchou' ini dicari di column mana, jadi cari di semua column di database
+  //   // $table = $table ? $table : ($this->model instanceof Builder ? $this->model->getModel()->getTable() : $this->model->getTable());
+  //   // $fitToColumn = function($keywordsExploded)use($table){
+  //   //   $column = DB::getSchemaBuilder()->getColumnListing($table);
+  //   //   for ($i=0; (int)$i < count($column); $i++) { 
+  //   //     $k = $column[$i];
+  //   //     $column[$k] = $keywordsExploded;
+  //   //     unset($column[$i]);
+  //   //   }
+  //   //   return $column;
+  //   // };
     
-    if(isset($this->model) && (get_class($this->model) === Csdb::class)){
-      if(array_is_list($keywords)){
-        $keywords = $fitToColumn($keywords);
-        $isFitted = true;
-      }
-      // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
-      // $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id]; // kayaknya ini ga perlu karena suatu saat ada orang yang import csdb object pakai DDN
-      $keywords['available_storage'] = [Auth::user()->storage];
-    } else {
-      if(array_is_list($keywords)){
-        $keywords = $fitToColumn($keywords);
-        $isFitted = true;
-      }
-    }
-    // dump($keywords);
+  //   // if(isset($this->model) && (get_class($this->model) === Csdb::class)){
+  //   //   if(array_is_list($keywords)){
+  //   //     $keywords = $fitToColumn($keywords);
+  //   //     $isFitted = true;
+  //   //   }
+  //   //   // $keywords['path'] = array_map(fn($v) => $v = substr($v,-1,1) === '/' ? $v : $v . "/", $keywords['path']);
+  //   //   // $keywords['initiator_id'] = $keywords['initiator_id'] ?? [Auth::user()->id]; // kayaknya ini ga perlu karena suatu saat ada orang yang import csdb object pakai DDN
+  //   //   $keywords['available_storage'] = [Auth::user()->storage];
+  //   // } else {
+  //   //   if(array_is_list($keywords)){
+  //   //     $keywords = $fitToColumn($keywords);
+  //   //     $isFitted = true;
+  //   //   }
+  //   // }
+  //   // dump($keywords);
 
-    $keys = array_keys($keywords);
-    $k = 0;
-    $str = '';
-        
-    // create space
-    $createSpace = function($k, $space = '', $cb)use($keywords, $keys, ){
-      // create space
-      $queryArr = $keywords[$keys[$k]];
-      $l = count($queryArr);
-      $isNextCol = isset($keys[$k+1]);   
-      $squareOpen = 0;
-      $curvOpen = 0;
-      if($l-1 > 0 AND $isNextCol){
-        $space .= "{";
-        $curvOpen++;
-      }
-      elseif($l-1 > 0) {
-        $space .= "[";
-        $squareOpen++;
-      }
-      // untuk perbaikan contoh3 dan contoh3
-      elseif($l === 1 AND !$isNextCol) {
-        $space .= "[";
-        $squareOpen++;
-      }
-      else {
-        $space .= "{";
-        $curvOpen++;
-      };
-      for ($i=0; $i < $l; $i++) { 
-        $isNextIndex = $i+1 < $l;
-        $space .= '"COL'.$k.'_'.$i.'"';
-        if($isNextCol){
-          $space .= ":";
-          $space .= $cb($k+1, '', $cb);
-        }
-        if($isNextIndex) $space .= ",";
-      }
-      while($curvOpen > 0){
-        $space .= "}";
-        $curvOpen--;
-      }
-      while($squareOpen > 0){
-        $space .= "]";
-        $squareOpen--;
-      }
-      return $space;
-    };
-    $space = $createSpace(0,'', $createSpace);
+  //   // create space
+  //   $keys = array_keys($keywords);
+  //   $createSpace = function($k, $space = '', $cb)use($keywords, $keys ){
+  //     // create space
+  //     $queryArr = $keywords[$keys[$k]];
+  //     $l = count($queryArr);
+  //     $isNextCol = isset($keys[$k+1]);   
+  //     $squareOpen = 0;
+  //     $curvOpen = 0;
+  //     if($l-1 > 0 AND $isNextCol){
+  //       $space .= "{";
+  //       $curvOpen++;
+  //     }
+  //     elseif($l-1 > 0) {
+  //       $space .= "[";
+  //       $squareOpen++;
+  //     }
+  //     // untuk perbaikan contoh3 dan contoh3
+  //     elseif($l === 1 AND !$isNextCol) {
+  //       $space .= "[";
+  //       $squareOpen++;
+  //     }
+  //     else {
+  //       $space .= "{";
+  //       $curvOpen++;
+  //     };
+  //     for ($i=0; $i < $l; $i++) { 
+  //       $isNextIndex = $i+1 < $l;
+  //       $space .= '"COL'.$k.'_'.$i.'"';
+  //       if($isNextCol){
+  //         $space .= ":";
+  //         $space .= $cb($k+1, '', $cb);
+  //       }
+  //       if($isNextIndex) $space .= ",";
+  //     }
+  //     while($curvOpen > 0){
+  //       $space .= "}";
+  //       $curvOpen--;
+  //     }
+  //     while($squareOpen > 0){
+  //       $space .= "]";
+  //       $squareOpen--;
+  //     }
+  //     return $space;
+  //   };
+  //   $space = $createSpace(0,'', $createSpace);
 
-    // fill the space
-    $dictionary = [];
-    foreach($keywords as $col => $queryArr){
-      $colnum = array_search($col,$keys);
-      if($col === 'typeonly') $col = 'filename';
-      // $col = $table.".".$col; // tambahan agar query tidak bingung karena ada table name sebelum column
-      foreach($queryArr as $i => $v){
-        $indexString = "COL{$colnum}_{$i}";
-        $id = rand(0,9999); // mencegah kalau kalau ada value yang sama antar column
-        // $escapedV = str_replace("_", "\_",$v); // sudah dicoba di SQLITE tapi error di MySQL
-        $escapedV = str_replace("_", "|_",$v); // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/6000
-        $strictStr = str_replace('#&value;', $escapedV, $strictString[$col] ?? "%#&value;%"); // variable $strictString jangan di re asign
-        $col = preg_replace("/___[0-9]+$/", "", $col); // menghilangkan suffix "___XXX" yang ditambahkan di fungsi ...Main\Helper::class@explodeSearchKeyAndValue
-        // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'"; // // sudah dicoba di SQLITE tapi error di MySQL
-        // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
-        // ditambah $table.$col agar query tidak bingung karena ada table name sebelum column
-        $dictionary["<<".$v.$id.">>"] = " {$table}.{$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
-        $space = str_replace($indexString, "<<".$v.$id.">>", $space);
-      }
-    }
-    // dd($dictionary);
+  //   // fill the space
+  //   $vCode = " ? ";
+  //   $dictionary = array();
+  //   $dictionaryBindValue = array();
+  //   foreach($keywords as $col => $queryArr){
+  //     $colnum = array_search($col,$keys);
+  //     if($col === 'typeonly') $col = 'filename';
+  //     foreach($queryArr as $i => $v){
+  //       $indexString = "COL{$colnum}_{$i}";
+  //       $id = rand(0,9999); // mencegah kalau kalau ada value yang sama antar column
+  //       // $escapedV = str_replace("_", "\_",$v); // sudah dicoba di SQLITE tapi error di MySQL
+  //       $escapedV = str_replace("_", "|_",$v); // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/6000
+  //       $strictStr = str_replace('#&value;', $escapedV, $strictString[$col] ?? "%#&value;%"); // variable $strictString jangan di re asign
+  //       $col = preg_replace("/___[0-9]+$/", "", $col); // menghilangkan suffix "___XXX" yang ditambahkan di fungsi ...Main\Helper::class@explodeSearchKeyAndValue
+  //       // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '\'"; // // sudah dicoba di SQLITE tapi error di MySQL
+  //       // $dictionary["<<".$v.$id.">>"] = " {$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
+  //       // ditambah $table.$col agar query tidak bingung karena ada table name sebelum column
+  //       // $dictionary["<<".$v.$id.">>"] = " {$table}.{$col} LIKE '{$strictStr}' ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
+  //       $dictionary["<<".$v.$id.">>"] = " {$table}.{$col} LIKE {$vCode} ESCAPE '|'"; // sudah dicoba di MySQL (belum dicoba di SQLITE) dan sesuai ref book MySQL 8.4 page 2170/60004 https://downloads.mysql.com/docs/refman-8.4-en.a4.pdf
+  //       $space = str_replace($indexString, "<<".$v.$id.">>", $space);
+  //       $dictionaryBindValue["<<".$v.$id.">>"] = $strictStr;
+  //     }
+  //   }
+
+  //   // change the filled space to the final string query
+  //   $arr = json_decode($space,true);
+  //   $str = '';
+  //   $merge = function($prevVal, $arr, $cb){
+  //     $str = '';
+  //     // $joinAND = !$isFitted ? ' AND ' : ' OR '; // kalau di fittedkan artinya satu keyword untuk mencari semua column. Artinya query SQL akan join pakai OR
+  //     $joinAND = ' AND ';
+  //     if(array_is_list($arr)){
+  //       foreach($arr as $i => $v){
+  //         if($prevVal) $arr[$i] = "$prevVal".$joinAND."$v";
+  //         else $arr[$i] = "$v";
+  //         $arr[$i] = "(" . $arr[$i] . ")"; // tambahan agar setiap setelah AND akan di kurung
+  //       }
+  //       $str = join(" OR ", $arr);
+  //     } else { // jika bukan aray assoc maka berarti ini adalah kolom terakhir
+  //       foreach($arr as $i => $v){
+  //         if($prevVal) $arr[$i] = $cb($prevVal . $joinAND . $i, $v, $cb);
+  //         else $arr[$i] = $cb($prevVal . $i, $v, $cb);
+  //       }
+  //       $str = join(" OR ", $arr);
+  //     }
+  //     return $str;
+  //   };
+  //   $str = "(".$merge($str, $arr, $merge). ")"; // dikurung agar tidak tergabung dengan variable $options
+
+  //   // replace string by the dictionary value and make bindValue and types
+  //   preg_match_all("/<<[^>]+>>/",$str,$bindValue,PREG_PATTERN_ORDER,0);
+  //   $bindValue = join(";;;;",$bindValue[0]); // match regex adalah $result = [ ['','',''] ], jadi [0] adalah mengambil isi match nya;
+  //   $types = $bindValue;
+  //   foreach($dictionary as $k => $v){
+  //     $str = str_replace($k,$v, $str);
+  //     $bindValue = str_replace($k,$dictionaryBindValue[$k], $bindValue);
+  //     $types = str_replace($k, (is_integer($dictionaryBindValue[$k]) ?  'i' : (is_double($dictionaryBindValue[$k]) ? 'd' : 's')), $types);
+  //   }
+  //   $bindValue = explode(";;;;",$bindValue);
+  //   $types = str_replace(";;;;",',',$types);
     
-    // change the filled space to the final string query
-    $arr = json_decode($space,true);
-    // dump($arr);
-    // dd($dictionary, $arr, $space);
-    $str = '';
-    $merge = function($prevVal, $arr, $cb)use($isFitted){
-      $str = '';
-      $joinAND = !$isFitted ? ' AND ' : ' OR '; // kalau di fittedkan artinya satu keyword untuk mencari semua column. Artinya query SQL akan join pakai OR
-      if(array_is_list($arr)){
-        foreach($arr as $i => $v){
-          if($prevVal) $arr[$i] = "$prevVal".$joinAND."$v";
-          else $arr[$i] = "$v";
-          $arr[$i] = "(" . $arr[$i] . ")"; // tambahan agar setiap setelah AND akan di kurung
-        }
-        $str = join(" OR ", $arr);
-      } else { // jika bukan aray assoc maka berarti ini adalah kolom terakhir
-        foreach($arr as $i => $v){
-          if($prevVal) $arr[$i] = $cb($prevVal . $joinAND . $i, $v, $cb);
-          else $arr[$i] = $cb($prevVal . $i, $v, $cb);
-        }
-        $str = join(" OR ", $arr);
-      }
-      return $str;
-    };
-    $str = "(".$merge($str, $arr, $merge). ")"; // dikurung agar tidak tergabung dengan variable $options
-
-    foreach($dictionary as $k => $v){
-      $str = str_replace($k,$v, $str);
-    }
-
-    // handling options
-    // contoh kurang tepat =  eg: SELECT * FROM csdb WHERE id IN ( SELECT history.owner_id FROM history WHERE history.owner_class = 'App\\Models\\Csdb' AND (history.code <> 'CSDB-DELL' OR history.code <> 'CRBT-PDEL') AND history.created_at = (SELECT MAX(history.created_at) from history) )
-    // contoh yang kurang tepat = 
-    //  SELECT * FROM csdb WHERE id IN ( 
-    // 	  SELECT history.owner_id FROM history WHERE (history.code <> 'CSDB-DELL' OR history.code <> 'CSDB-PDEL') AND history.created_at = (
-    // 		  SELECT MAX(history.created_at) FROM history
-    //    )
-    //  )
-    // contoh yang tepat = 
-    // -- berhasil jika csdb.id last record = CSDB-DELL
-    // -- query ini digunakan untuk mencari CSDBObject yang last record nya bukan CSDB-DELL
-    // -- sudah dicoba untuk mencari CSDBObject jumlah 5 record, 2 CSDB-DELL dan 3 lain-lain
-    // SELECT * FROM csdb WHERE csdb.id NOT IN (
-    // 	  SELECT history.owner_id FROM history WHERE (history.code = 'CSDB-DELL' OR history.code = 'CSDB-PDEL') AND history.created_at = (
-    //         SELECT MAX(history.created_at) FROM history WHERE history.owner_id = csdb.id
-    //    )
-    // )
-    if(count($historyCodeExeception) > 0){
-      $str .= " AND (";
-      $str .= "(".$table.".id NOT IN (SELECT history.owner_id FROM history WHERE (";
-      foreach($historyCodeExeception as $i => $historyCode){
-        $str .= "history.code = '{$historyCode}'";
-        if(isset($historyCodeExeception[$i+1])) $str .= " OR ";
-      }
-      $str .= ") AND history.created_at = (SELECT MAX(history.created_at) FROM history WHERE history.owner_id = ".
-        $table
-        .".id AND history.owner_class = '"
-        .str_replace("\\", "\\\\",get_class($this->model instanceof Builder ? $this->model->getModel() : $this->model))
-        ."'))))";
-    }
-
-    // dump($dictionary, $str);
-    // $this->model = new User();
-    // $this->model = User::query();
-    // $this->model = User::with(['work_enterprise']);
-    
-    // dump($str);
-    // eg. $str = "path LIKE '%male%' ESCAPE '\' AND filename LIKE '%DML%' ESCAPE '\' OR path LIKE '%male%' ESCAPE '\' AND filename LIKE '%ICN%' ESCAPE '\'";
-    // $this->model->whereRaw($str);
-    // dd($this->model->get()->toArray());
-    // return $keywords;
-    // dd($str, $keywords);
-    return [$str, $keywords];
-  }
+  //   return [(string)$str, (array)$bindValue, (string)$vCode ,(string) $types, $keywords];
+  // }
 
   /**
    * jugo bisa ES6 module

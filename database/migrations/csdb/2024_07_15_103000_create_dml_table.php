@@ -14,7 +14,8 @@ return new class extends Migration
     Schema::dropIfExists('dml');
     Schema::create('dml', function (Blueprint $table) {
       $table->id();
-      $table->string('filename')->unique(false);
+      $table->string('csdb_id');
+      
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
       $table->tinyText('dmlType'); // merujuk ke @dmlType yang sudah di transform, 'Partial DML', 'Complete DML', 'CSL'
@@ -26,7 +27,7 @@ return new class extends Migration
       $table->tinyText('day');
 
       $table->string('securityClassification');
-      $table->bigInteger('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
+      $table->string('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
       $table->text('dmlRef')->nullable(); //merujuk ke dmlStatus/dmlRef
       $table->text('remarks')->nullable();
       /**
@@ -38,6 +39,9 @@ return new class extends Migration
        * jika tidak ada, isi dengan null
        */
       $table->json('content')->nullable(); 
+
+      $table->json('json');
+      $table->longText('xml');
     });
   }
 

@@ -33,7 +33,7 @@ class CsdbUpdateByXMLEditor extends FormRequest
     return [
       'path' => [new Path],
       'oldCSDBModel' => ['required', function(string $attribute, mixed $oldCSDBModel, Closure $fail){
-        if($oldCSDBModel->initiator_id !== $this->user()->id) $fail("You are not authorize to update ". $oldCSDBModel->filename . ".")
+        if(!$oldCSDBModel) $f[] = $fail("You are not authorize to update ". $oldCSDBModel->filename . ".");
       }],
       'xmleditor' => ['required', function(string $attribute, mixed $value, Closure $fail){
         if(!($value[0]->document instanceof \DOMDocument)) return $fail('Document must be in XML form.'); // harus return agar script dibawah tidak di eksekusi
@@ -75,7 +75,8 @@ class CsdbUpdateByXMLEditor extends FormRequest
       'xmleditor' => [$CSDBObject], // harus array atau scalar
       'xsi_validate' => $this->xsi_validate,
       'brex_validate' => $this->brex_validate,
-      'oldCSDBModel' => [Csdb::where('filename', Route::current()->parameter('filename'))->first()],
+      // 'oldCSDBModel' => [Csdb::where('filename', Route::current()->parameter('filename'))->first()],
+      'oldCSDBModel' => [Csdb::getCsdb(Route::current()->parameter('filename'),["exception" => ['CSDB-DELL','CSDB-PDEL']])->first()],
     ]);
   }
 }

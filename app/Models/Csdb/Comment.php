@@ -16,6 +16,13 @@ class Comment extends Csdb
   use HasFactory;
 
   /**
+   * The table associated with the model.
+   *
+   * @var string
+   */
+  protected $table = 'comment';
+
+  /**
    * saat create
    * jika tidak kita masukkan valunya maka ini berjalan DAN fungsi :Attribute TIDAK berjalan
    * jika kita masukin valuenya walaupun NULL, maka ini TIDAK berjalan DAN fungsi :Attribute berjalan
@@ -25,12 +32,50 @@ class Comment extends Csdb
   ];
 
   /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+
+  /**
    * The attributes that should be cast.
    * @var array
    */
   // protected $casts = [
   //   'commentRefs' => 'array', // tidak perlu kalau columnnya json
   // ];
+
+  protected $fillable = [
+    'csdb_id',
+
+    'modelIdentCode',
+    'senderIdent',
+    'yearOfDataIssue',
+    'seqNumber',
+
+    "languageIsoCode",
+    "countryIsoCode",
+
+    'commentTitle',
+    'year',
+    'month',
+    'day',
+
+    'securityClassification',
+    'commentPriority',
+    'commentResponse',
+    'commentRefs',
+    'brexDmRef',
+    'remarks',
+
+    'commentContent',
+
+    'json',
+    'xml'
+  ];
+
+  public $timestamps = false;
 
   /**
    * harus json string
@@ -60,13 +105,11 @@ class Comment extends Csdb
     return false;
   }
 
-  public static function fillTable(CSDBObject $CSDBObject)
+  public static function fillTable($csdb_id, CSDBObject $CSDBObject)
   {
     $filename = $CSDBObject->filename;
-    // $decode_ident = CSDBStatic::decode_commentIdent($filename,false); 
-    // $commentAddressItems = $CSDBObject->document->getElementsByTagName('commentAddressItems')[0];
-
     $domXpath = new \DOMXpath($CSDBObject->document);
+
     $modelIdentCode = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@modelIdentCode)");
     $senderIdent = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@senderIdent)");
     $yearOfDataIssue = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@yearOfDataIssue)");
@@ -115,7 +158,8 @@ class Comment extends Csdb
     }
     
     $arr = [
-      'filename' => $filename,
+      "csdb_id" => $csdb_id,
+
       'modelIdentCode' => $modelIdentCode,
       'senderIdent' => $senderIdent,
       'yearOfDataIssue' => $yearOfDataIssue,
@@ -137,47 +181,16 @@ class Comment extends Csdb
       'remarks' => $remarks,
 
       'commentContent' => $commentContent,
+
+      'json' => CSDBStatic::xml_to_json($CSDBObject->document),
+      'xml' => $CSDBObject->document->C14N() // ga bisa pakai saveXML karena menghasilkan doctype, sementara SQL XML belum tahu caranya render xml yang ada dtd
     ];
 
-    $fillable = [
-      'filename',
-      'modelIdentCode',
-      'senderIdent',
-      'yearOfDataIssue',
-      'seqNumber',
-
-      "languageIsoCode",
-      "countryIsoCode",
-
-      'commentTitle',
-      'year',
-      'month',
-      'day',
-
-      'securityClassification',
-      'commentPriority',
-      'commentResponse',
-      'commentRefs',
-      'brexDmRef',
-      'remarks',
-
-      'commentContent',
-    ];
-    
-    $comment = new self();
-    $comment->setProtected([
-      'table' => 'comment',
-      'fillable' => $fillable,
-      'casts' => [],
-      // 'attributes' => [],
-      'timestamps' => false
-    ]);
-    $comment = $comment->where('filename', $filename)->first() ?? $comment;
+    $comment = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('comment');
     $comment->timestamps = false;
     foreach($arr as $prop => $v){
       $comment->$prop = $v;
     }
-    return $comment->save();
-    
+    return $comment->save();    
   }
 }

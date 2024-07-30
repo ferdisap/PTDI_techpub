@@ -42,7 +42,7 @@ class CsdbChangePath extends FormRequest
         $l = count($CSDBModelArray);
         $f = [];
         for ($i=0; $i < $l; $i++) { 
-          if($CSDBModelArray[$i]->initiator_id !== $this->user()->id) $f[] = $CSDBModelArray[$i]->filename;
+          if(!$CSDBModelArray[$i]) $f[] = $CSDBModelArray[$i]->filename;
         }
         if(count($f) > 0) $fail("You are not authorize to change the path of " . join(", ", $f) . ".");
       }],
@@ -59,11 +59,13 @@ class CsdbChangePath extends FormRequest
     $filename = $this->get('filename');
     if(is_array($filename) || ($filename = explode(",",$filename))){
       foreach($filename as $i => $f){
-        $m = Csdb::where('filename',$f)->where('initiator_id',$this->user()->id)->first();
+        // $m = Csdb::where('filename',$f)->where('initiator_id',$this->user()->id)->first();
+        $m = Csdb::getCsdb($f,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
         $CSDBModelArray[$i] = $m;
       }
     } else {
-      $m = Csdb::where('filename',$filename)->where('initiator_id',$this->user()->id)->first();
+      // $m = Csdb::where('filename',$filename)->where('initiator_id',$this->user()->id)->first();
+      $m = Csdb::getCsdb($filename,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
       array_push($CSDBModelArray, $m);
       $filename = [$filename];
     }

@@ -186,7 +186,7 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
    * DEPRECIATED, nanti dipindah ke Folder.js
    * @returns {Promise} contain csdbs
    */
-  async getCsdbFilenameFromFolderVue(){
+  async getCsdbFilenameFromFolderVue(context){
     let resolve,reject;
     const prom = new Promise((r,j) => {
       resolve = r; reject = j;
@@ -199,8 +199,8 @@ class CsdbObjectCheckboxSelector extends CheckboxSelector {
     if(this.selectionMode) values = this.getAllSelectionValue(true);
     else values = [document.getElementById(this.cbHovered).value];
     values.forEach((v) => {
-      if(o = this.context.data.folders.find((path) => path === v)) paths.push(o);
-      else if(o = this.context.data.csdb.find((obj) => obj.filename === v)) csdbs.push(o.filename);
+      if(o = context.data.folders.find((path) => path === v)) paths.push(o);
+      else if(o = context.data.csdb.find((obj) => obj.filename === v)) csdbs.push(o.filename);
     })
 
     if(paths.length > 0){

@@ -14,7 +14,9 @@ return new class extends Migration
     Schema::dropIfExists('comment');
     Schema::create('comment', function (Blueprint $table) {
       $table->id();
-      $table->string('filename')->unique();
+      
+      $table->string('csdb_id');
+
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
       $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue
@@ -32,10 +34,13 @@ return new class extends Migration
       $table->string('commentPriority'); // sementara merujuk ke commentPriority@commentPriorityCode yang BELUM di terjemahkan codenya. Nanti jika fungsi di CSDBObject class sudah selesai, baru pakai yang SUDAH di terjemahkan
       $table->string('commentResponse')->nullable(); // sementara merujuk ke commentResponse@responseType yang BELUM di terjemahkan codenya. Nanti jika fungsi di CSDBObject class sudah selesai, baru pakai yang SUDAH di terjemahkan
       $table->json('commentRefs'); // jika kosong harus di isi dengan Array
-      $table->bigInteger('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
+      $table->string('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
       $table->text('remarks')->nullable(); //merujuk ke ddnStatus/remarks
 
       $table->longText('commentContent')->nullable();
+
+      $table->json('json');
+      $table->longText('xml');
     });
   }
 

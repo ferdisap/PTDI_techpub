@@ -6,6 +6,7 @@ use App\Jobs\Csdb\DmcTableFiller;
 use App\Models\Csdb;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 
@@ -14,7 +15,7 @@ class Dmc extends Csdb
   use HasFactory;
 
   protected $fillable = [
-    'filename', 
+    'csdb_id', 
 
     'modelIdentCode',
     'systemDiffCode',
@@ -45,6 +46,9 @@ class Dmc extends Csdb
     'brexDmRef',
     'qa',
     'remarks',
+
+    'json',
+    'xml'
   ];
 
   /**
@@ -68,7 +72,14 @@ class Dmc extends Csdb
    */
   public $timestamps = false;
 
-  public static function fillTable(CSDBObject $CSDBObject){
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var array<int, string>
+   */
+  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+
+  public static function fillTable($csdb_id, CSDBObject $CSDBObject){
 
     $filename = $CSDBObject->filename;
     $domXpath = new \DOMXpath($CSDBObject->document);
@@ -111,7 +122,8 @@ class Dmc extends Csdb
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
     $arr = [
-      "filename" => $filename,
+      "csdb_id" => $csdb_id,
+
       "modelIdentCode" => $modelIdentCode,
       "systemDiffCode" => $systemDiffCode,
       "systemCode" => $systemCode,
@@ -143,60 +155,17 @@ class Dmc extends Csdb
       'applicability' => $applic,
       'brexDmRef' => $brexDmRef,
       'qa' => $QAtext,
-      'remarks' => $remarks
+      'remarks' => $remarks,
+
+      'json' => CSDBStatic::xml_to_json($CSDBObject->document),
+      'xml' => $CSDBObject->document->C14N() // ga bisa pakai saveXML karena menghasilkan doctype, sementara SQL XML belum tahu caranya render xml yang ada dtd
     ];
 
-    // $dmc = fn() => self::create($arr);
-    // dispatch($dmc)->delay(now()->addMinutes(5));
-
-    // dispatch(fn() => Dmc::create($arr))->delay(now()->addMinutes(1));
-    // dispatch(fn() => self::create($arr));
-    // dispatch(self::create($arr));
-    // dispatch(self::create($arr))->delay(now()->addMinutes(1));
-    // dispatch(Dmc::create($arr))->delay(now()->addMinutes(5));
-    // self::create($arr);
-    // dispatch(Dmc::create($arr))->delay(now()->addMinutes(5));
-
-    // $dmc = self::where('filename', $filename)->first();
-    // if($dmc) {
-    //   $dmc->update($arr);
-    //   return $dmc->save();
-    // }
-    // return self::create($arr);
-    $dmc = Csdb::getModelClass('Dmc');
-    $dmc = $dmc->where('filename', $filename)->first() ?? $dmc;
+    $dmc = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('Dmc');
     $dmc->timestamps = false;
     foreach($arr as $prop => $v){
       $dmc->$prop = $v;
     }
     return $dmc->save();
-
-    // $ddn = new self();
-    // $ddn->setProtected([
-    //   'table' => 'ddn',
-    //   'fillable' => $fillable,
-    //   'casts' => [],
-    //   // 'attributes' => [],
-    //   'timestamps' => false
-    // ]);
-    // $ddn = $ddn->where('filename', $filename)->first() ?? $ddn;
-    // $ddn->timestamps = false;
-    // foreach($arr as $prop => $v){
-    //   $ddn->$prop = $v;
-    // }
-    // return $ddn->save();
   }
-
-  // public static function instanceModel()
-  // {
-  //   $self = new self();
-  //   $self->setProtected([
-  //     'table' => $self->getProtected('table') ?? [],
-  //     'fillable' => $self->getProtected('fillable') ?? [],
-  //     'casts' => $self->getProtected('casts') ?? [],
-  //     'attributes' => $self->getProtected('attributes') ?? [],
-  //     'timestamps' => $self->getProtected('timestamps') ?? false,
-  //   ]);
-  //   return $self;
-  // }
 }

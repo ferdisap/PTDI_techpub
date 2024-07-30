@@ -1,3 +1,4 @@
+<!-- DEPRECIATED -->
 <script>
 import RightClickMenu from '../RightClickMenu';
 export default {

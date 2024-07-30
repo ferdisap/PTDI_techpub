@@ -12,7 +12,7 @@ import History from '../componentns/History.vue';
 import DispatchTo from '../componentns/DispatchTo.vue';
 export default {
   name: 'Explorer',
-  components: { BottomBar, ListTree, Folder, Preview, Editor, History, DispatchTo},
+  components: { BottomBar, ListTree, Folder, Preview, Editor, History, DispatchTo },
   data() {
     return {
       bottomBarItems: {
@@ -41,11 +41,11 @@ export default {
           isShow: false,
           data: {}
         },
-        DispatchTo:{
+        DispatchTo: {
           iconName: 'local_shipping',
           'tooltipName': 'Dispatch To',
           isShow: false,
-          data:{}
+          data: {}
         },
       },
       colWidth: {
@@ -87,14 +87,14 @@ export default {
         top.localStorage.setItem('colWidthExplorer', JSON.stringify(this.colWidth));
       }
       document.addEventListener('mousemove', sizing);
-      document.addEventListener('mouseup', this.turnOffSizing.bind(this, sizing), {once:true});
+      document.addEventListener('mouseup', this.turnOffSizing.bind(this, sizing), { once: true });
     },
-    turnOffSizing(callback){
+    turnOffSizing(callback) {
       document.removeEventListener('mousemove', callback, false)
     }
   },
   mounted() {
-    if(top.localStorage.colWidthExplorer){
+    if (top.localStorage.colWidthExplorer) {
       this.colWidth = JSON.parse(top.localStorage.colWidthExplorer);
     }
 
@@ -116,16 +116,25 @@ export default {
       // hanya ada filename di data, bisa berguna jika perlu ambil data terbaru dari server
       this.emitter.emit('Preview-refresh', data);
       this.bottomBarItems.Preview.isShow = true;
-      this.bottomBarItems.History.data = data; 
+      this.bottomBarItems.History.data = data;
     });
 
-    this.emitter.on('createObjectFromEditor', (data) => { 
+    this.emitter.on('createObjectFromEditor', (data) => {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
       this.$root.gotoExplorer(data.filename);
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.Preview.data = data;
       this.bottomBarItems.History.data = data;
+    })
+
+    this.emitter.on('createDMLFromEditorDML', (data) => {
+      // data adalah csdb file sql, bukan model/meta object
+      this.emitter.emit('ListTree-refresh', data);
+      this.$root.gotoExplorer(data.filename);
+      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.data = data;
+      this.bottomBarItems.History.data = data.model;
     })
 
     this.emitter.on('uploadICNFromEditor', (data) => {
@@ -140,10 +149,10 @@ export default {
       this.emitter.emit('History-refresh', data); // sepertinya ini tidak usah. Biar ga kebanyakan request
     });
 
-    this.emitter.on('readFileURLFromEditor', (data) => { 
+    this.emitter.on('readFileURLFromEditor', (data) => {
       // data berisi mime, source, sourceType
       this.bottomBarItems.Preview.isShow = true;
-      setTimeout(() => this.emitter.emit('Preview-refresh', data),0);
+      setTimeout(() => this.emitter.emit('Preview-refresh', data), 0);
       this.bottomBarItems.History.isShow = false;
       this.bottomBarItems.Analyzer.isShow = false;
     });
@@ -202,26 +211,28 @@ export default {
         <!-- col 1 -->
         <div class="flex" :style="[col1Width]">
           <div class="overflow-auto text-nowrap relative h-full w-full">
-            <ListTree type="allobjects" routeName="Explorer"/>
+            <ListTree type="allobjects" routeName="Explorer" />
           </div>
-          <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize" @mousedown.prevent="turnOnSizing($event, 'satu')"></div>
+          <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
+            @mousedown.prevent="turnOnSizing($event, 'satu')"></div>
         </div>
 
         <!-- col 2 -->
         <div class="flex" :style="[col2Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
-            <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" routeName="Explorer"/>
+            <Folder v-if="bottomBarItems.Folder.isShow" :data-props="bottomBarItems.Folder.data" routeName="Explorer" />
             <Editor v-if="bottomBarItems.Editor.isShow" :filename="bottomBarItems.Editor.data.filename" text="" />
-            <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename"/>
+            <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename" />
           </div>
         </div>
-        <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize" @mousedown.prevent="turnOnSizing($event, 'dua')"></div>
+        <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
+          @mousedown.prevent="turnOnSizing($event, 'dua')"></div>
 
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
           <div class="overflow-auto text-wrap relative h-full w-full">
             <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
-            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow" :objectsToDispatch="bottomBarItems.DispatchTo.data"/>
+            <DispatchTo v-if="bottomBarItems.DispatchTo.isShow" :objectsToDispatch="bottomBarItems.DispatchTo.data" />
           </div>
         </div>
       </div>

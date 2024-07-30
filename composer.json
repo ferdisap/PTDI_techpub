@@ -7,7 +7,10 @@
     "requirement_yang_tidak_terpakai_lagi":{
       "abordage/laravel-last-modified": "^0.2.1",
       "spipu/html2pdf": "^5.2",
-      "tecnickcom/tcpdf": "^6.6"
+      "tecnickcom/tcpdf": "^6.6",
+      "symfony/property-access": "^7.1",
+      "symfony/serializer": "^7.1",      
+      "jms/serializer": "^3.30"
     },
     "require": {
         "php": "^8.1",
@@ -21,7 +24,7 @@
         "maennchen/zipstream-php": "^3.1",
         "nesbot/carbon": "^2.68",
         "ptdi/mpub": "^1.07",
-        "shanethehat/pretty-xml": "^1.0",        
+        "shanethehat/pretty-xml": "^1.0",
         "werk365/etagconditionals": "^1.4"
     },
     "require-dev": {

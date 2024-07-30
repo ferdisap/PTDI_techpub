@@ -12,6 +12,7 @@ use Ptdi\Mpub\Main\CSDBValidator;
 class UploadICN extends FormRequest
 {
   public bool $isUpdate = false;
+  public array $fail = [];
   /**
    * Determine if the user is authorized to make this request.
    */
@@ -29,15 +30,10 @@ class UploadICN extends FormRequest
   {
     return [
       "filename" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
-        $oldCSDBModel = Csdb::where('filename', $value)->first();
-        if($oldCSDBModel) {
-          if($oldCSDBModel->initiator_id !== $this->user()->id) $fail("You are not authorize to update the " . $oldCSDBModel->filename .".");
-          $this->isUpdate = true;
-        };
-
+        if(isset($this->fail['checkOldCsdb'])) $fail($this->fail['checkOldCsdb']);
         CSDBError::$processId = 'ICNFilenameValidation';
         $validator = new CSDBValidator('ICNName', ["validatee" => $value]);
-        $validator->setStoragePath(CSDB_STORAGE_PATH."/".$this->user()->storage);
+        $validator->setStoragePath(CSDB_STORAGE_PATH . "/" . $this->user()->storage);
         if (!$validator->validate()) $fail(join(", ", CSDBError::getErrors(true, 'ICNFilenameValidation')));
       }],
       "entity" => ['required', function (string $attribute, mixed $value,  Closure $fail) {
@@ -47,7 +43,31 @@ class UploadICN extends FormRequest
           $fail("You should put the non-text file in {$attribute}.");
         }
       }],
-      'path' => ['required', new Path]
+      'path' => ['required', new Path],
+      'oldCSDBModel' => ''
     ];
+  }
+
+  protected function prepareForValidation(): void
+  {
+    $oldCSDBModel = Csdb::getCsdb($this->filename)->first();
+    if($oldCSDBModel){
+      if(($oldCSDBModel->storage_id != $this->user()->id)){
+        $this->fail['checkOldCsdb'] = "You are not authorize to update the " . $oldCSDBModel->filename . ".";
+        return;
+      }
+      elseif((($code = ($oldCSDBModel->lastHistory->code)) === 'CSDB-DELL')||($code === 'CSDB-PDEL')){
+        $this->fail['checkOldCsdb'] = $oldCSDBModel->filename . " has been deleted({$code}).";
+        return;
+      } 
+      $this->isUpdate = true;
+    } 
+    else {
+      $oldCSDBModel = new Csdb();
+    }
+    $this->merge([
+      'path' => $this->path ?? 'CSDB',
+      'oldCSDBModel' => $oldCSDBModel
+    ]);
   }
 }

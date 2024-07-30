@@ -26,7 +26,7 @@ class UserFactory extends Factory
       'email' => fake()->unique()->safeEmail(),
       'password' => '$2y$10$BkzZhuRUrW2UWnGzQmGWLOIMj4P17o9lRH1HoSx7qHubAyYH8T/7q', // 'password'
       'storage' => Str::random(5),
-      'address' => json_encode([
+      'address' => ([
         "city" => fake()->city(),
         "country" => fake()->country()
       ]),

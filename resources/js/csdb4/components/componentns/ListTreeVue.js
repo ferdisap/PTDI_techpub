@@ -139,10 +139,15 @@ function pushList(model) {
  */
 function refresh(data) {
   //data adalah model SQL Csdb Object atau array contain csdb object (bukan meta objek nya)
-  data.forEach((obj) => {
-    this.deleteList(obj.filename)
-    this.pushList(obj);
-  });
+  if(isArray(data)){
+    data.forEach((obj) => {
+      this.deleteList(obj.filename)
+      this.pushList(obj);
+    });
+  } else{
+    this.deleteList(data.filename)
+    this.pushList(data);
+  }
   this.createListTreeHTML();
 }
 

@@ -10,16 +10,17 @@ async function getObjs(data = {}){
     else data.sc = data.sc.replace(/path::\S+\s/, "path::" + data.path + " "); // mengganti 'path::... ' dengan path data.path
     delete data.path;
   }
-  switch (this.$props.routeName) {
-    case 'Explorer':
-      data.sc += " typeonly::DMC,PMC,ICN";
-      break;
-    case 'ManagementData':
-      data.sc += " typeonly::DML";
-      break;
-    default:
-      break;
-  }
+  // ini dicancel. Semua CSDBObject akan di fetch ditampilkan Explorer.vue
+  // switch (this.$props.routeName) {
+  //   case 'Explorer':
+  //     data.sc += " typeonly::DMC,PMC,ICN";
+  //     break;
+  //   case 'ManagementData':
+  //     data.sc += " typeonly::DML";
+  //     break;
+  //   default:
+  //     break;
+  // }
   let response = await axios({
     route: {
       name: 'api.requestbyfolder.get_allobject_list',
@@ -139,7 +140,7 @@ function removeList(filename){
 
 async function dispatch(cond = 0){
   const emitName = !cond ? 'dispatchTo' : (cond === 1 ? 'AddDispatchTo' : (cond === 2 ? 'RemoveDispatchTo' : ('dispatchTo')));
-  const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue();
+  const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue(this);
   if(!csdbs) return;
   this.emitter.emit(emitName, csdbs);
   this.CbSelector.isShowTriggerPanel = false;

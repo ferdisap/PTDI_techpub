@@ -178,7 +178,8 @@ export default {
     </div>
   
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
-    <RCMenu v-if="CbSelector.isShowTriggerPanel">
+    <!-- <RCMenu v-if="CbSelector.isShowTriggerPanel" id="Folder"> -->
+    <RCMenu :show="CbSelector.isShowTriggerPanel"  id="Folder">
       <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
       </div>
