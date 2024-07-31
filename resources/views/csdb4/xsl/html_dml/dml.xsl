@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/bind" xmlns:v-on="https://vuejs.org/on">
+<xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:v-bind="https://vuejs.org/bind" xmlns:v-on="https://vuejs.org/on" xmlns:v-show="https://vuejs.org/show">
 
   <xsl:output method="html" media-type="text/html" omit-xml-declaration="yes"/>
   <xsl:param name="filename"/>
@@ -7,46 +7,46 @@
   <xsl:template match="dml">
     <xsl:apply-templates select="identAndStatusSection"/>
     <xsl:apply-templates select="dmlContent"/>
+    <SearchDialog v-show="showDialog" v-bind:callback="dialogCallback"/>
   </xsl:template>
 
   <xsl:template match="identAndStatusSection">
-    <div class="identAndStatusSection">
+    <div class="dmlIdentAndStatusSection">
       <h1>IDENTIFICATION AND STATUS SECTION</h1>
       <table>
         <!-- dmlAddress -->
         <tr>
-          <td><b>DML Code:</b></td>
+          <td>DML Code:</td>
           <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_dmlCode', //dmlCode)"/></td>
         </tr>
         <tr>
-          <td><b>Issue Number:</b></td>
+          <td>Issue Number:</td>
           <td><xsl:value-of select="//dmlIdent/issueInfo/@issueNumber"/></td>
         </tr>
         <tr>
-          <td><b>InWork Number:</b></td>
+          <td>InWork Number:</td>
           <td><xsl:value-of select="//dmlIdent/issueInfo/@inWork"/></td>
         </tr>
         <tr>
-          <td><b>Issue Date:</b></td>
+          <td>Issue Date:</td>
           <td><xsl:value-of select="php:function('Ptdi\Mpub\CSDB::resolve_issueDate', //issueDate)"/></td>
         </tr>
       
         <!-- dmlStatus -->
         <tr>
-          <td><b>Security Classification:</b></td>
+          <td>Security Classification:</td>
           <td>
             <input name="ident-securityClassification" value="{dmlStatus/security/@securityClassification}"/>
           </td>
         </tr>
         <tr>
-          <td><b>Brex DM Ref:</b></td>
+          <td>Brex DM Ref:</td>
           <td>
             <input name="ident-brexDmRef" value="{php:function('Ptdi\Mpub\CSDB::resolve_dmIdent', //dmlStatus/descendant::brexDmRef/dmRef/dmRefIdent)}"/>
           </td>
         </tr>
         <tr>
-          <td><b>Remarks:</b>
-          </td>
+          <td>Remarks:</td>
           <td>
             <xsl:variable name="remarks">
               <xsl:for-each select="//dmlStatus/remarks/simplePara">
@@ -79,7 +79,7 @@
       <xsl:for-each select="dmlEntry">
         <tr class="dmlEntry">
           <td class="dmlEntry-ident">
-            <textarea name="entryIdent[]" class="w-full">
+            <textarea name="entryIdent[]" class="w-full" v-on:click="$parent.searchDialog($event,true)">
               <xsl:apply-templates select="dmRef | pmRef | infoEntityRef | commentRef | dmlRef"/>
             </textarea>
             <div class="text-red-600 text-sm error">
@@ -114,13 +114,6 @@
             </div>
           </td>
         </tr>
-        <!-- <xsl:if test="commentRef">
-          <tr class="commentContent">
-            <td colspan="6">
-              <textarea name="commentContent[]" commentIdent="foo" class="w-full"/>
-            </td>
-          </tr>
-        </xsl:if> -->
       </xsl:for-each>  
       </DmlEntryForm>
     </table>

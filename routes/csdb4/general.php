@@ -44,7 +44,12 @@ Route::post("/api/permanentdelete", [CsdbController::class, 'permanentDelete'])-
 // restore csdb object after deleted
 Route::post("/api/restore", [CsdbController::class, 'restore'])->middleware('auth')->name('api.restore_object');
 
+// change path
 Route::post('/api/object/path/change', [CsdbController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
+
+// search csdbs
+Route::get('/api/csdbssearch', [CsdbController::class, 'searchCsdbs'])->middleware('auth')->name('api.csdb_search');
+
 
 
 

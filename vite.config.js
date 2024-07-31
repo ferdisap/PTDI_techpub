@@ -5,7 +5,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { env } from 'node:process';
 import * as dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
-import mkcert from 'vite-plugin-mkcert'
+import mkcert from 'vite-plugin-mkcert';
 // import RubyPlugin from 'vite-plugin-ruby';
 // import inject from "@rollup/plugin-inject";
 

@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: tahoma;
+  src: url("./tahoma.ttf");
+}
+
+.add_dmlEntry button{
+  display: none;
+}
+.add_dmlEntry:hover button{
+  display: block;
+}
+
+@layer components {
+  .dmlIdentAndStatusSection th, 
+  .dmlIdentAndStatusSection td,
+  .dmlContent th, 
+  .dmlContent td {
+    @apply text-sm
+  }
+}
