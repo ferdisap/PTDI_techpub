@@ -2,6 +2,7 @@
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, pushList, refresh, remove} from './ListTreeVue';
+import {CbListTreeVue} from '../../Checkbox.js';
 
 export default {
   data() {
@@ -10,6 +11,9 @@ export default {
       html: '',
       techpubStore: useTechpubStore(),
       showLoadingProgress: false,
+
+      contextMenuId: 'cmListTreeVue',
+      CB: undefined,
     }
   },
   components: {ContinuousLoadingCircle},
@@ -30,6 +34,12 @@ export default {
     remove: remove,
   },
   async mounted() {
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false,this.contextMenuId);
+
+    this.CB = new CbListTreeVue('cbListTreeVue');
+    this.CB.display = 'inline';
+    
     this.data.open = JSON.parse(top.localStorage.getItem('expandCollapseListTree'))
 
     let emitters =  this.emitter.all.get('ListTree-refresh'); // output array or undefined. Jika array, berarti sudah pernah di instance
@@ -61,6 +71,11 @@ export default {
     tree() {
       return {
         template: this.html,
+        data(){
+          return{
+            CB: this.$parent.CB,
+          }
+        },
         computed: {
           parent() {
             return this.$parent;
@@ -84,6 +99,9 @@ export default {
             top.localStorage.setItem('expandCollapseListTree', JSON.stringify(this.$parent.data.open))
           }
         },
+        mounted(){
+          this.CB.register();
+        }
       }
     }
   },
@@ -92,10 +110,22 @@ export default {
 <template>
   <div class="listtree h-full relative">
     <!-- list -->
-    <div :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
+    <div id="cbListTreeVue" :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
       <!-- <component v-if="(this.data[`${this.$props.type}_list_level`] && this.data[`${this.$props.type}_list`])" :is="tree" /> -->
       <component v-if="html" :is="tree" />
     </div>
+
+    <div :id="contextMenuId">
+      <div class="bg-white w-60 border border-gray-300 rounded-lg flex flex-col text-sm py-4 px-2 text-gray-500 shadow-lg">
+        <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+          <div class="text-sm">Select</div>
+        </div>
+        <div @click.stop.prevent="CB.cancel" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+          <div class="text-sm">Cancel</div>
+        </div>
+      </div>
+    </div>
+
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>
 </template>

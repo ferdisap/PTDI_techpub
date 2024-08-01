@@ -10,6 +10,8 @@ import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
 import routes from '../../others/routes.json';
+
+import ContextMenu from './ContextMenu';
 // ####### start here
 
 /**
@@ -17,17 +19,17 @@ import routes from '../../others/routes.json';
  * @param {string} subject 
  * @returns [Array(match1, match2)] 
  */
-function find(pattern, subject) {
-  let match = [];
-  let m;
-  while ((m = pattern.exec(subject)) !== null) {
-    if (m.index === pattern.lastIndex) {
-      pattern.lastIndex++;
-    }
-    match.push(m);
-  }
-  return match;
-}
+// function find(pattern, subject) {
+//   let match = [];
+//   let m;
+//   while ((m = pattern.exec(subject)) !== null) {
+//     if (m.index === pattern.lastIndex) {
+//       pattern.lastIndex++;
+//     }
+//     match.push(m);
+//   }
+//   return match;
+// }
 
 const createWorker = function (filename)
 {
@@ -38,10 +40,10 @@ const createWorker = function (filename)
   }
 }
 
-const copyText = function(text)
-{
-  if(text) navigator.clipboard.writeText(text);
-}
+// const copyText = function(text)
+// {
+//   if(text) navigator.clipboard.writeText(text);
+// }
 
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -60,9 +62,10 @@ csdb.use(pinia);
 csdb.use(router);
 csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
-csdb.config.globalProperties.findText = find;
+// csdb.config.globalProperties.findText = find;
 csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
-csdb.config.globalProperties.copyText = copyText;
+// csdb.config.globalProperties.copyText = copyText;
+csdb.config.globalProperties.ContextMenu = new ContextMenu();
 
 // ga bisa npm build jika pakai await 
 axios.get('/auth/check')

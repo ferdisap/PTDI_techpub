@@ -59,14 +59,15 @@ const ListTree = {
       let listobj = '';
       if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
         for (const model of models) {
-          let isICN = model.filename.substr(0, 3) === 'ICN';
-          let logo = isICN ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+          const isICN = model.filename.substr(0, 3) === 'ICN';
+          const logo = isICN ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
           let href = isICN ? this.data.hrefForOther : this.data.hrefForPdf ;
+          const cb = `<span cb-window class="mr-1"><input type="checkbox" value="${model.filename}"/></span>`;
           href = href.replace(':filename', model.filename);
-          let viewType = isICN ? 'other' : 'pdf';
+          const viewType = isICN ? 'other' : 'pdf';
           listobj = listobj + `
-                <div class="obj" style="${style}">
-                  ${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}', viewType:'${viewType}'})">${model.filename}</a>
+                <div class="obj" style="${style}" cb-room>
+                  ${cb}${logo}<a href="${href}" @click.prevent="$parent.clickFilename({path:'${model.path}',filename: '${model.filename}', viewType:'${viewType}'})">${model.filename}</a>
                 </div>`
         }
       }
@@ -93,12 +94,14 @@ const ListTree = {
           }
           let isOpen = this.data.open ? this.data.open[path] : false;
           isOpen = isOpen ? 'open' : '';
+          const cb = `<span cb-window class="mr-1"><input type="checkbox" value=""/></span>`;
 
           // generating folder list
           // <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}" @click="clickDetails($el)">
           details = details + `
-          <details ${isOpen} style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}">
+          <details ${isOpen} cb-room style="margin-left:${start_l * 3 + defaultMarginLeft}px;" path="${path}">
             <summary class="list-none flex">
+              ${cb}
               <span @click.prevent="expandCollapse('${path}')" class="material-symbols-outlined cursor-pointer text-sm content-center">chevron_right</span> 
               <a href="#" @click.prevent="$parent.clickFolder({path: '${path}'})">${currFolder}</a>
             </summary>`;

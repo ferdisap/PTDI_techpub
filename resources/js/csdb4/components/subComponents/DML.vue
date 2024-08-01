@@ -88,7 +88,7 @@ export default {
       </div>
       <div>
         <!-- <textarea v-for="para in DMLObject.remarks">{{ para }}</textarea> -->
-        <Remarks :para="DMLObject.remarks" class_label=" font-bold italic"
+        <Remarks :para="DMLObject.remarks" class_label=" font-bold italic" class_textarea="w-full"
           placeholder="eg.: add more field if need more paragraph" />
       </div>
     </div>

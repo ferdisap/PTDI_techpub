@@ -17,6 +17,9 @@ export default {
       type: String,
       default: "text-lg font-bold"
     },
+    class_textarea: {
+      type: String,
+    },
     placeholder: {
       type: String,
       default: 'eg.: this document is intended for...',
@@ -56,7 +59,7 @@ export default {
     <label for="remarks" :class="['inline-block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</label>
     <div class="remarks flex" v-for="p in remarksPara">
     <!-- <div class="remarks flex" v-for="p in $props.para"> -->
-      <textarea :name="$props.nameAttr + '[]'" :placeholder="$props.placeholder">{{ p }}</textarea>
+      <textarea :class="$props.class_textarea" :name="$props.nameAttr + '[]'" :placeholder="$props.placeholder">{{ p }}</textarea>
       <button @click.stop type="button" onclick="(() => {event.stopPropagation();const container = this.parentElement;const clonned = container.cloneNode(true);clonned.firstElementChild.value = '';container.after(clonned);})(this)" class="border text-white bg-green-500 rounded-md w-4">+</button>
       <button @click.stop type="button"
         onclick="(()=>{event.stopPropagation();(Object.values(this.parentElement.previousElementSibling.classList).includes('remarks')) ? this.parentElement.remove() : false})()"
