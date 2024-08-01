@@ -3,6 +3,7 @@ import { useTechpubStore } from "../techpub/techpubStore";
 import axios from "axios";
 import mitt from 'mitt';
 import { array_unique } from "./helper";
+import $ from 'jquery';
 
 class CheckboxSelector{
   /**
@@ -41,6 +42,14 @@ class CheckboxSelector{
     this._toSetCbHovered = setTimeout(()=> (!this.isShowTriggerPanel) ? (this.cbHovered = '') : null ,1000);
   }
 
+  setCbHoveredByEventTarget(event, attributeName, prefixCheckboxId = '' , parentId = null){
+    clearTimeout(this.to_setCbHovered);
+    this.to_setCbHovered = setTimeout(()=>{
+      let cbid = prefixCheckboxId + $(event.target).parents(parentId ?? 'tr')[0].getAttribute(attributeName);
+      return this.setCbHovered(cbid);
+    },100)
+  }
+
   select(cbid = ''){
     if(!cbid) cbid = this.cbHovered;
     this.isSelectAll = false;
@@ -50,6 +59,12 @@ class CheckboxSelector{
       let input = document.getElementById(cbid);
       input.checked = !input.checked
     },10);
+  }
+
+  selectByEventTarget(event, attributeName, prefixCheckboxId = '' , parentId = null){
+    let cbid = prefixCheckboxId + $(event.target).parents(parentId ?? 'tr')[0].getAttribute(attributeName);
+    console.log(cbid);
+    return this.select(cbid);
   }
 
   copy(text){

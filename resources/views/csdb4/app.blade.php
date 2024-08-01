@@ -45,6 +45,7 @@
   <script src="https://localhost:987/resources/js/csdb4/app.js" type="module"> </script> --}}
   @vite(['resources/css/dmodule.css', 'resources/css/app.css', 'resources/css/loadingbar.css'])
   @vite(['resources/js/csdb4/app.js'])
+  @vite(['resources/css/EditorDML.css'])
 
   {{-- <script>
     if(window.Worker){

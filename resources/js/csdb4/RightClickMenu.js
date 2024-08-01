@@ -18,9 +18,11 @@ import { isArray } from "./helper";
 
 // const rcmcloseevent = new Event("rcm-close");
 const turnOffAllRCM = (event) => {
-  event.preventDefault
-  for (let i = 0; i < top.RCMCollection.length; i++) {
-    top.RCMCollection[i].toggleOff();
+  event.preventDefault;
+  if(top.RCMCollection && top.RCMCollection.length){
+    for (let i = 0; i < top.RCMCollection.length; i++) {
+      top.RCMCollection[i].toggleOff();
+    }
   }
 }
 // document.addEventListener('rcm-close', turnOffAllRCM);

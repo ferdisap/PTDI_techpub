@@ -10,13 +10,6 @@ import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
 import routes from '../../others/routes.json';
-import Alpine from 'alpinejs';
-
-top.Alpine = Alpine;
-Alpine.start();
-
-// import WorkerListTree from './worker/WorkerListTree';
-
 // ####### start here
 
 /**

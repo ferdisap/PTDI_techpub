@@ -40,6 +40,28 @@ const findAncestor = function(el, sel) {
   return el;
 }
 
+// event
+function isArrowDownKeyPress(evt){
+  return (evt.keyCode === 40) ? true : false;
+}
+function isArrowUpKeyPress(evt){
+  return (evt.keyCode === 38) ? true : false;
+}
+function isEnterKeyPress(evt){
+  return (evt.keyCode === 13) ? true : false;
+}
+function isEscapeKeyPress(evt){
+  return (evt.which === 27) ? true : false;
+}
+function isLeftClick(evt){
+  return (evt.which === 1) ? true : false;
+}
+function isRightClick(evt){
+  return (evt.which === 3) ? true : false;
+}
+
 
 export {array_unique, formDataToObject, isObject, isNumber, isEmpty, 
-  isString, isArray, isClassIntance, isFunction, findAncestor};
+  isString, isArray, isClassIntance, isFunction, findAncestor,
+  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick
+};

@@ -1,4 +1,6 @@
 import Randomstring from "randomstring";
+import { useTechpubStore } from "../techpub/techpubStore";
+import {isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick} from './helper.js';
 
 // source: https://stackoverflow.com/questions/4179708/how-to-detect-if-the-pressed-key-will-produce-a-character-inside-an-input-text
 function isCharacterKeyPress(evt) {
@@ -17,25 +19,6 @@ function isCharacterKeyPress(evt) {
   return false;
 }
 
-function isArrowDownKeyPress(evt){
-  return (evt.keyCode === 40) ? true : false;
-}
-function isArrowUpKeyPress(evt){
-  return (evt.keyCode === 38) ? true : false;
-}
-function isEnterKeyPress(evt){
-  return (evt.keyCode === 13) ? true : false;
-}
-function isEscapeKeyPress(evt){
-  return (evt.which === 27) ? true : false;
-}
-function isLeftClick(evt){
-  return (evt.which === 1) ? true : false;
-}
-function isRightClick(evt){
-  return (evt.which === 3) ? true : false;
-}
-
 class DropdownInputSearch {
   idInputText = '';
   idDropdownListContainer = ''
@@ -50,32 +33,53 @@ class DropdownInputSearch {
   listItemKey = '';
   showList = true;
 
-  constructor(listItemKey) {
+  routeName = '';
+
+  constructor(listItemKey, routeName) {
     this.idInputText = Randomstring.generate({ charset: 'alphabetic' });
     this.idDropdownListContainer = Randomstring.generate({ charset: 'alphabetic' });
-    this.listItemKey = listItemKey
+    this.listItemKey = listItemKey;
+    this.routeName = routeName;
   }
 
+  /**
+   * 
+   * @param {Event} event 
+   * @param {Object} techpubRoute 
+   * @returns {array} index#1 event name, index#2 result
+   */
   keypress(event, techpubRoute) {
-    window.e = event;
     event.preventDefault();
     event.stopPropagation();
     this.showList = true;
-    // console.log(isEnterKeyPress(event), isLeftClick(event));
-    if(isCharacterKeyPress(event)) this.searching(techpubRoute);
-    else if(isArrowDownKeyPress(event)) this.moveDown(event);
-    else if(isArrowUpKeyPress(event)) this.moveUp(event);
-    else if(isEnterKeyPress(event)) this.select(event);
-    else if(isLeftClick(event)) this.selectByClick(event);
-    else if(isEscapeKeyPress(event)) this.cancel(event);
+    if(isCharacterKeyPress(event)) {
+      return ['isCharacterKeyPress', this.searching(event, techpubRoute)];
+    }
+    else if(isArrowDownKeyPress(event)) {
+      return ['isArrowDownKeyPress', this.moveDown(event)];
+    }
+    else if(isArrowUpKeyPress(event)) {
+      return ['isArrowUpKeyPress', this.moveUp(event)];
+    }
+    else if(isEnterKeyPress(event)) {
+      return ['isEnterKeyPress', this.select(event)];
+    }
+    else if(isLeftClick(event)) {
+      return ['isLeftClick', this.selectByClick(event)];
+    }
+    else if(isEscapeKeyPress(event)) {
+      return ['isEscapeKeyPress', this.cancel(event)];
+    }
   }
 
-  searching(techpubRoute) {
-    // console.log(techpubRoute);
+  searching(event, techpubRoute) {
     this.process = new Promise((r, j) => {
       clearTimeout(this.timeout);
       this.isDone = false;
       this.timeout = setTimeout(() => {
+        if(!techpubRoute){
+          techpubRoute = useTechpubStore().getWebRoute(this.routeName, {sc: event.target.value, limit:5})
+        }
         let worker;
         if (window.Worker) {
           worker = new Worker(`/worker/WorkerInputSearch.js`, { type: "module" });
@@ -89,7 +93,11 @@ class DropdownInputSearch {
           } else {
             r(true);
             this.isDone = true;
-            this.result = e.data.result; // result merupakan key dari server
+            this.result = (
+              e.data.csdbs ? e.data.csdbs : (
+                e.data.users ? e.data.users : e.data.result
+              )
+            ); // result merupakan key dari server
           }
           worker.terminate();
         }
@@ -114,16 +122,21 @@ class DropdownInputSearch {
 
   moveUp(event){
     let el = event.target.previousElementSibling ?? document.getElementById(this.idInputText); // null jika tidak ada previousElementSibling
-    console.log(el);
     this.focus(el);
     this.unfocus(event.target);
     this.setHovered(el);
   }
 
   select(event){
-    this.selected = this.hovered;
-    document.getElementById(this.idInputText).value = this.selected[this.listItemKey];
-    this.showList = false;
+    if(event.target.id === this.idInputText) {
+      return event.target.value
+    }
+    else {
+      this.selected = this.hovered; // object hasil fetch bisa csdb,user,dll
+      document.getElementById(this.idInputText).value = this.selected[this.listItemKey];
+      this.showList = false;
+      return this.selected[this.listItemKey];
+    };
   }
   
   selectByClick(event){
@@ -140,7 +153,7 @@ class DropdownInputSearch {
   setHovered(element){
     let listItemKeyValue = element.getAttribute(this.listItemKey);
     // console.log(listItemKeyValue);
-    this.hovered = this.result.find(v => v[this.listItemKey] === listItemKeyValue);
+    this.hovered = this.result.find(v => v[this.listItemKey] === listItemKeyValue); // object hasil fetch
   }
   focus(element){
     // console.log(element);

@@ -1,24 +1,23 @@
 <script>
-import axios from 'axios';
+// import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
-import DmlEntryForm from '../subComponents/DmlEntryFrom.vue';
-import Sort from '../../../techpub/components/Sort.vue';
-// import PreviewRCMenu from '../../rightClickMenuComponents/PreviewRCMenu.vue';
+import { submit, update, showDMLContent, searchBrex } from './EditorDMLVue.js';
+// import DynamicDML from '../subComponents/DynamicDML.js';
 import DropdownInputSearch from '../../DropdownInputSearch';
+import DML from '../subComponents/DML.vue';
 export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
       showLoadingProgress: false,
+      DropdownBrexSearch: new DropdownInputSearch('filename'),
       transformed: '',
-      filename: '',
-      DropdownBrexSearch: new DropdownInputSearch('filename')
+      json: '',
     }
   },
-  // components:{Remarks, ContinuousLoadingCircle, DmlEntryForm, PreviewRCMenu},
-  components:{Remarks, ContinuousLoadingCircle, DmlEntryForm},
+  components:{Remarks, ContinuousLoadingCircle, DML},
   computed:{
     isUpdate(){
       if(this.$route.params.filename){
@@ -26,106 +25,21 @@ export default {
         return true;
       }
     },
-    dynamic(){
-      return {
-        template: this.transformed,
-        components: {DmlEntryForm, Sort},
-        data(){
-          return {
-            store: useTechpubStore(),
-          }
-        },
-        methods:{
-          sort() {
-            const getCellValue = function (row, index) {
-              return $(row).children('td').eq(index).text();
-            };
-            const comparer = function (index) {
-              return function (a, b) {
-                let valA = getCellValue(a, index), valB = getCellValue(b, index);
-                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
-              }
-            };
-            let table = $(event.target).parents('table').eq(0);
-            let th = $(event.target).parents('th').eq(0);
-            let rows = table.find('tr:gt(0)').toArray().sort(comparer(th.index()));
-            this.asc = !this.asc;
-            if (!this.asc) {
-              rows = rows.reverse();
-            }
-            for (let i = 0; i < rows.length; i++) {
-              table.append(rows[i]);
-            }
-          },
-        }
-      }
-    },
+    // dynamic: DynamicDML,
   },
   methods:{
-    async submit(event){
-      this.showLoadingProgress = true;
-      const formData = new FormData(event.target);
-      let response = await axios({
-        route: {
-          name: 'api.create_dml',
-          data: formData,
-        },
-        useMainLoadingBar: false,
-      });
-      if(response.statusText === 'OK') this.emitter.emit('createDMLFromEditorDML', response.data.csdb);
-      this.showLoadingProgress = false;
-    },
-    async update(event){
-      this.showLoadingProgress = true;
-      const formData = new FormData(event.target);
-      let response = await axios({
-        route: {
-          name: 'api.dmlupdate',
-          data: formData,
-        },
-        useMainLoadingBar: false,
-      });
-      if(response.statusText === 'OK'){
-        // this.emitter.emit('createDMLFromEditorDML', { model: response.data.data });
-        // do something here
-      }
-      this.showLoadingProgress = false;
-    },
-    async showDMLContent(){
-      this.showLoadingProgress = true;
-      let response = await axios({
-        route: {
-          name: 'api.get_html_content',
-          data: {filename: this.$route.params.filename}
-        },
-        useMainLoadingBar: false,
-      });
-      if(response.statusText === 'OK'){
-        // do something here
-        this.transformed = response.data.transformed
-        this.showLoadingProgress = false;
-        this.techpubStore.currentObjectModel = response.data.model;
-      }
-    },
-    async searchBrex(event){
-      if(event.target.id === this.DropdownBrexSearch.idInputText){
-        let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
-        this.DropdownBrexSearch.keypress(event, route);
-      }
-    },
+    submit: submit,
+    update: update,
+    showDMLContent: showDMLContent,
+    searchBrex: searchBrex,
   },
-  mounted(){
-    // if(this.$route.params.filename){
-    //   this.isUpdate = true;
-    //   this.showDMLContent();
-    // } 
-    // this.showDMLContent;
-  }
+  mounted(){}
 }
 </script>
 <template>
-  <div class="EditorDML px-3">
+  <div class="EditorDML px-3 relative">
     <h1 class="mt-2 mb-4 text-center underline">{{ isUpdate ? 'Update DML' : 'Create DML' }}</h1>
+    
     <form @submit.prevent="submit($event)" v-if="!isUpdate">
       <!-- untuk DML Type -->
       <input type="hidden" value="p" name="dmlType"/>
@@ -184,33 +98,16 @@ export default {
       <button type="submit" class="button-violet">Submit</button>
     </form>
 
-    <form id="dml" v-if="isUpdate" @submit.prevent="update($event)">
+    <!-- <form id="dml" v-if="isUpdate" @submit.prevent="update($event)">
       <input type="hidden" name="filename" :value="$route.params.filename" />
 
       <component :is="dynamic" v-if="transformed" />
 
       <div class="w-full text-center mb-3 mt-3">
-        <button class="button-violet" type="submit">Update</button>
+        <button class="button-violet">Update</button>
       </div>
-    </form>
-
-    <!-- <PreviewRCMenu v-if="isUpdate">
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: $route.params.filename})">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
-          Delete</div>
-      </div>
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-green-600">devices</span>
-          Issue</div>
-      </div>
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm" @click="()=>this.emitter.emit('CommitCSDBObjectFromEveryWhere', {filename: $route.params.filename})">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
-          Commit</div>
-      </div>  
-    </PreviewRCMenu> -->
+    </form> -->
+    <DML v-if="json" :json="json"/>
 
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>

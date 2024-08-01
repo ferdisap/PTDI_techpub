@@ -1,6 +1,6 @@
 import {findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObject} from '../../helper';
 import { isProxy, toRaw } from "vue";
-import $ from 'jQuery';
+import $ from 'jquery';
 
 async function getObjs(data = {}){
   this.showLoadingProgress = true;

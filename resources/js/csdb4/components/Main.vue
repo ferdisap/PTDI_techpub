@@ -46,7 +46,8 @@ export default {
 <template>
   <div class="pt-5 pl-2 h-full w-full overflow-auto">
     <router-view v-slot="{ Component }">
-      <keep-alive exclude="Explorer,ManagementData">
+      <!-- <keep-alive exclude="Explorer,ManagementData"> -->
+      <keep-alive>
         <component :is="Component" />
       </keep-alive>
     </router-view>

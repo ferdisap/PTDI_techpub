@@ -15,10 +15,16 @@
 }
 
 @layer components {
-  .dmlIdentAndStatusSection th, 
-  .dmlIdentAndStatusSection td,
-  .dmlContent th, 
-  .dmlContent td {
+  .DML th, 
+  .DML td,
+  div,
+  label {
     @apply text-sm
+  }
+}
+
+@layer components{
+  .DML .dmlEntry td {
+    @apply align-top
   }
 }

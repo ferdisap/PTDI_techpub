@@ -103,12 +103,14 @@ export default {
       }
       this.CbSelector.isShowTriggerPanel = false;
     },
+    // bisa langsung pakai DropdownBrexSearch@keypress di tag htmlnya, tanpa pakai fungsi searchUser ini
     async searchUser(event){
       if(event.target.id === this.DropdownUserSearch.idInputText){
         let route = this.techpubStore.getWebRoute('api.user_search_model', {sc: event.target.value, limit:5});
         this.DropdownUserSearch.keypress(event, route);
       }
     },
+    // bisa langsung pakai DropdownBrexSearch@keypress di tag htmlnya, tanpa pakai fungsi searchBrexIni
     async searchBrex(event){
       if(event.target.id === this.DropdownBrexSearch.idInputText){
         let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
@@ -232,7 +234,9 @@ export default {
             <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexDmRef" class="block mb-0 w-full p-1" autocomplete="off" aria-autocomplete="none"/>
           </div>
           <div class="w-full" :id="DropdownBrexSearch.idDropdownListContainer">
-            <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" @click.prevent="DropdownBrexSearch.keypress($event)" @keyup.prevent="DropdownBrexSearch.keypress($event)">
+            <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" 
+              @click.prevent="DropdownBrexSearch.keypress($event)" 
+              @keyup.prevent="DropdownBrexSearch.keypress($event)">
               {{ dmc.filename}}
             </div>
           </div>

@@ -113,6 +113,9 @@ class DmlController extends Controller
     return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
   }
   
+  /**
+   * DEPRECIATED, karena diganti read_json
+   */
   public function read_html_content(Request $request, string $filename)
   {
     if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
@@ -125,6 +128,18 @@ class DmlController extends Controller
       return $this->ret2(200, [$error], ['model' => $DMLModel,'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
+    $json = CSDBStatic::xml_to_json($DMLModel->CSDBObject->document);        
+    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json ,'transformed' => '', 'mime' => 'text/html']); // ini yang dipakai vue
+  }
+
+  public function read_json(Request $request, string $filename)
+  {
+    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
+    $json = json_decode(CSDBStatic::xml_to_json($DMLModel->CSDBObject->document));
+    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json ]); // ini yang dipakai vue
   }
 
   public function dmlupdate(Request $request, string $filename)

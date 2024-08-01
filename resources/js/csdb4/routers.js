@@ -1,7 +1,7 @@
 import Welcome from './components/route/Welcome.vue';
 import Explorer from './components/route/Explorer.vue';
 import Deletion from './components/route/Deletion.vue';
-import ManagementData from './components/route/ManagementData.vue';
+// import ManagementData from './components/route/ManagementData.vue';
 
 export default [
   {
@@ -24,11 +24,11 @@ export default [
     path: '/csdb4/deletion',
     component: Deletion
   },
-  {
-    name: 'ManagementData',
-    path: '/csdb4/management/:filename?/:viewType?',
-    component: ManagementData
-  },
+  // {
+  //   name: 'ManagementData',
+  //   path: '/csdb4/management/:filename?/:viewType?',
+  //   component: ManagementData
+  // },
   // {
   //   name: 'Staging',
   //   path: '/csdb3/staging',
