@@ -70,24 +70,19 @@ async function back(path = undefined) {
 }
 
 function clickFolder(event, path){
-  if(!this.CbSelector.selectionMode) this.back(path);
-  else {
-    this.CbSelector.select();
-  }
+  // window.path = path; window.getObjs = this.getObjs;
+  if(!this.CB.selectionMode) this.back(path);
 }
 
 function clickFilename(event, filename){
-  if(!this.CbSelector.selectionMode){
+  if(!this.CB.selectionMode){
     this.techpubStore.currentObjectModel = Object.values(this.data.csdb).find((obj) => obj.filename === filename);
     this.$root.gotoExplorer(filename, 'pdf');
     this.emitter.emit('clickFilenameFromFolder', {filename: filename}) // key filename saja karena bisa diambil dari techpubstore atau server jika perlu
-  } else {
-    this.CbSelector.select();
   }
 }
 
 function sortTable(event){
-  console.log('sort');
   const getCellValue = function (row, index) {
     return $(row).children('td').eq(index).text();
   };
@@ -100,7 +95,6 @@ function sortTable(event){
   };
   let table = $(event.target).parents('table').eq(0);
   let th = $(event.target).parents('th').eq(0);
-  console.log(th.index());
   if(th.index() === 0){
     let filerows = table.find('.file-row').toArray().sort(comparer(th.index()));
     let folderrows = table.find('.folder-row').toArray().sort(comparer(th.index()));
@@ -140,10 +134,11 @@ function removeList(filename){
 
 async function dispatch(cond = 0){
   const emitName = !cond ? 'dispatchTo' : (cond === 1 ? 'AddDispatchTo' : (cond === 2 ? 'RemoveDispatchTo' : ('dispatchTo')));
-  const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue(this);
+  // const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue(this);
+  const csdbs = await this.CB.value();
+  console.log(csdbs);
   if(!csdbs) return;
   this.emitter.emit(emitName, csdbs);
-  this.CbSelector.isShowTriggerPanel = false;
 }
 
 /**
@@ -161,23 +156,29 @@ function select(event){
 }
 
 async function changePath(event){
+  // insert filenames to formdata
   const fd = new FormData(event.target)
-  const path = fd.get('path').toUpperCase();
+  const filenames = await this.CB.value();
+  fd.set('filename', filenames.join(","))
 
-  // change Path
-  let values = await this.CbSelector.changePath(event, {data: fd}, this.CbSelector.cancel); // output array contains filename
-  if(isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
-  else if(values instanceof FormData) values = formDataToObject(values);
-  if(isString(values.filename)) values.filename = values.filename.split(',');
+  // fetch
+  const response = await axios({
+    route:{
+      name: 'api.change_object_path',
+      data: fd
+    }
+  });
+  if(!(response.statusText === 'OK')) throw new Error(`Failed to change path of ${filename}`);
   
-  // hapus list di folder, tidak seperti listtree yang ada level dan list model
+  // handle changed csdb object
+  const path = fd.get('path').toUpperCase();
   const csdbChangedPath = [];
-  values.filename.forEach((filename) => {
+  filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
     this.data.folders.push(path);
     this.data.folders = array_unique(this.data.folders);
     csdb.path = path;
-    csdbChangedPath.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+    csdbChangedPath.push(isProxy(csdb) ? toRaw(csdb) : csdb); // nanti dicoba pakai proxy untuk menghemat memori
   });
 
   // emit

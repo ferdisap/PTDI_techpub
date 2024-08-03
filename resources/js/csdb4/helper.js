@@ -60,8 +60,14 @@ function isRightClick(evt){
   return (evt.which === 3) ? true : false;
 }
 
+function copy(text)
+{
+  if(text) navigator.clipboard.writeText(text);
+}
 
-export {array_unique, formDataToObject, isObject, isNumber, isEmpty, 
+export {
+  array_unique, formDataToObject, isObject, isNumber, isEmpty, 
   isString, isArray, isClassIntance, isFunction, findAncestor,
-  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick
+  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick,
+  copy
 };

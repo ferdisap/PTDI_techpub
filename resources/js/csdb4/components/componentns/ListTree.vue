@@ -2,7 +2,8 @@
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, pushList, refresh, remove} from './ListTreeVue';
-import {CbListTreeVue} from '../../Checkbox.js';
+import ListTreeVueCb from  './ListTreeVueCb.js';
+import RCMenu from '../../rightClickMenuComponents/RCMenu.vue';
 
 export default {
   data() {
@@ -37,8 +38,8 @@ export default {
     this.ContextMenu.register(this.contextMenuId);
     this.ContextMenu.toggle(false,this.contextMenuId);
 
-    this.CB = new CbListTreeVue('cbListTreeVue');
-    this.CB.display = 'inline';
+    this.CB = new ListTreeVueCb('cbListTreeVue');
+    this.CB.cbRoomDisplay = 'inline';
     
     this.data.open = JSON.parse(top.localStorage.getItem('expandCollapseListTree'))
 

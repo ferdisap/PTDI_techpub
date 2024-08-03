@@ -54,22 +54,26 @@ async function goto(type, page = undefined) {
  * data itu isinya path doang, lihat di WorkerListTree.js
  */
 function clickFolder(data) {
-  this.emitter.emit('clickFolderFromListTree', data);
+  if(!this.CB.selectionMode){
+    this.emitter.emit('clickFolderFromListTree', data);
+  }
 }
 
 /**
  * data itu isinya path, filename, viewType
  */
 function clickFilename(data) {
-  this.$router.push({
-    name: this.$props.routeName,
-    params: {
-      filename: data.filename,
-      viewType: data.viewType
-    },
-    query: this.$route.query
-  });
-  this.emitter.emit('clickFilenameFromListTree', data); // key path dan filename
+  if(!this.CB.selectionMode){
+    this.$router.push({
+      name: this.$props.routeName,
+      params: {
+        filename: data.filename,
+        viewType: data.viewType
+      },
+      query: this.$route.query
+    });
+    this.emitter.emit('clickFilenameFromListTree', data); // key path dan filename
+  }
 }
 
 /**

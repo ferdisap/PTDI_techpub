@@ -88,7 +88,7 @@ axios.interceptors.request.use(
   async (config) => {
     let headers = {};
     if (config.route) {
-      useTechpubStore().showLoadingBar = config.useMainLoadingBar == false ? false : true;
+      useTechpubStore().showLoadingBar = config.useMainLoadingBar ? true : false; // default false
       try {
         let data = config.route.data;
         // if(data && (data.updated_at || (data instanceof FormData && data.get('updated_at')))){

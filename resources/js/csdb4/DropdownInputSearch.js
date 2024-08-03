@@ -43,7 +43,7 @@ class DropdownInputSearch {
   }
 
   /**
-   * 
+   * Nanti diubah jangan pakai if-else tapi pakai switch biar lebih cepat
    * @param {Event} event 
    * @param {Object} techpubRoute 
    * @returns {array} index#1 event name, index#2 result

@@ -1,21 +1,21 @@
 <script>
-import RightClickMenu from '../RightClickMenu';
-import randomstring from 'randomstring';
+// import RightClickMenu from '../RightClickMenu';
+// import randomstring from 'randomstring';
 export default {
   data(){
     return{
-      name: randomstring.generate({charset:'alphabetic'}),
-      menu: undefined,
+      // name: randomstring.generate({charset:'alphabetic'}),
+      // menu: undefined,
     }
   },
-  computed(){
-    this.$props.show ? menu.toggleOn() : menu.toggleOff();
-  },
-  props: ['id', 'show'],
+  // computed(){
+    // this.$props.show ? menu.toggleOn() : menu.toggleOff();
+  // },
+  // props: ['id', 'show'],
   mounted(){
     // let menu = document.querySelector('.'+this.name);
-    let menu = document.querySelector('#'+this.name);
-    this.menu = RightClickMenu.instantiate(this.$props.id, this.name + ' right click menu', menu, menu.parentElement);
+    // let menu = document.querySelector('#'+this.name);
+    // this.menu = RightClickMenu.instantiate(this.$props.id, this.name + ' right click menu', menu, menu.parentElement);
   }
 }
 </script>

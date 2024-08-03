@@ -7,9 +7,11 @@ import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
 import {CsdbObjectCheckboxSelector} from "../../CheckboxSelector";
 import {getObjs, storingResponse, goto, back, clickFolder, clickFilename, 
   sortTable, search, removeList, dispatch, select, changePath, deleteObject, refresh} from './FolderVue'
+import FolderVueCb from "./FolderVueCb";
+import ContextMenu from "../subComponents/ContextMenu.vue";
 
 export default {
-  components:{ Sort, ContinuousLoadingCircle, RCMenu },
+  components:{ Sort, ContinuousLoadingCircle, RCMenu, ContextMenu },
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -17,13 +19,17 @@ export default {
       data: {},
       open: {},
       
-      type: '', // kayaknya ga perlu
+      // type: '', // kayaknya ga perlu
       showLoadingProgress: false,
       
-      CbSelector: new CsdbObjectCheckboxSelector(),
+      // CbSelector: new CsdbObjectCheckboxSelector(),
 
       // selection view (becasuse clicked by user)
-      selectedRow: undefined,
+      // selectedRow: undefined,
+
+      contextMenuId: 'cmFolderVue',
+      cbId: 'cbFolderVue',
+      CB: {},
     }
   },
   props: {
@@ -64,6 +70,13 @@ export default {
       return this.data.paginationInfo['next_page_url'];
       // return (this.data.paginationInfo['current_page'] < this.data.paginationInfo['last_page']) ? this.data.paginationInfo['current_page'] + 1 : this.data.paginationInfo['last_page']
     },
+    // pakai computed instead of put function in template html, karena ini tidak berjalan terus walau ada update pada path atau data folder
+    registerCB(){
+      this.CB.register();
+    },
+    tes(){
+      console.log('tes dulu');
+    }
   },
   methods: {
     getObjs: getObjs,
@@ -74,9 +87,9 @@ export default {
     clickFilename: clickFilename,
     sortTable: sortTable,
     search: search,
-    removeList: removeList,
+    removeList: removeList, // tidak perlu ditaruh disini
     dispatch: dispatch,
-    select: select,
+    select: select, // DEPRECIATED
     changePath: changePath,
     deleteObject: deleteObject,
     
@@ -84,7 +97,11 @@ export default {
     refresh: refresh,
   },
   mounted(){
-    window.cb = this.CbSelector;
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false,this.contextMenuId);
+
+    this.CB = new FolderVueCb(this.cbId)
+    this.CB.display = 'flex';
     
     // dari Listtree via Explorer/Management data data berisi path doang,
     let emitters =  this.emitter.all.get('Folder-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
@@ -109,7 +126,7 @@ export default {
 }
 </style>
 <template>
-  <div class="folder h-[100%] bg-white overflow-hidden"  @contextmenu.prevent="CbSelector.isShowTriggerPanel = true">
+  <div class="folder h-[100%] bg-white overflow-hidden">
     <div v-show="false">{{ setObject }}</div>
     <div class="folder h-[100%] w-full relative">
       <div class="h-[50px] relative text-center">
@@ -125,10 +142,10 @@ export default {
       </div>
 
       <div class="h-[75%] block relative overflow-scroll">
-        <table class="table" :id="CbSelector.id">
+        <table class="table" :id="cbId">
           <thead class="text-sm text-left">
             <tr class="leading-3 text-sm">
-              <th v-show="CbSelector.selectionMode"></th>
+              <th v-show="CB.selectionMode"></th>
               <th class="text-sm">Name <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort></th>
               <th class="text-sm">Created At <Sort :function="sortTable"></Sort></th>
@@ -137,9 +154,10 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFolder($event, path)" @mousemove="CbSelector.setCbHovered('cb'+path)" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300 cursor-pointer">
-              <td v-show="CbSelector.selectionMode" class="flex" @click.stop.prevent>
-                <input file="false" :id="'cb'+path" type="checkbox" :value="path">
+            <!-- <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFolder($event, path)" @mousemove="CbSelector.setCbHovered('cb'+path)" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300 cursor-pointer"> -->
+            <tr v-for="path in folders" cb-room="folder" @dblclick="clickFolder($event, path)" class="folder-row text-sm hover:bg-blue-300 cursor-pointer">
+              <td cb-window>
+                <input type="checkbox" :value="path">
               </td>
               <td class="leading-3 text-sm" colspan="6">
                 <span class="material-symbols-outlined text-sm mr-1">folder</span>
@@ -147,9 +165,9 @@ export default {
                 <!-- min -2 karena diujung folder ada '/' -->
               </td>
             </tr>
-            <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, obj.filename)" @mousemove="CbSelector.setCbHovered('cb'+obj.filename)" v-for="obj in models" class="file-row text-sm hover:bg-blue-300 cursor-pointer">
-              <td v-show="CbSelector.selectionMode" class="flex">
-                <input file="true" :id="'cb'+obj.filename" type="checkbox" :value="obj.filename">
+            <tr v-for="obj in models" cb-room @dblclick.prevent="clickFilename($event, obj.filename)" class="file-row text-sm hover:bg-blue-300 cursor-pointer">
+              <td cb-window>
+                <input file type="checkbox" :value="obj.filename">
               </td>
               <td class="leading-3 text-sm">
                 <span class="material-symbols-outlined text-sm mr-1">description</span>
@@ -178,8 +196,47 @@ export default {
     </div>
   
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
-    <!-- <RCMenu v-if="CbSelector.isShowTriggerPanel" id="Folder"> -->
-    <RCMenu :show="CbSelector.isShowTriggerPanel"  id="Folder">
+    <!-- RCMenu -->
+    <ContextMenu :id="contextMenuId">
+      <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select</div>
+      </div>
+      <div @click.stop.prevent="CB.pushAll(true)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select All</div>
+      </div>
+      <div @click.stop.prevent="CB.pushAll(false)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Deselect All</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.stop.prevent="dispatch(1)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Add Dispatch</div>
+      </div>
+      <div @click.stop.prevent="dispatch(2)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Remove Dispatch</div>
+      </div>
+      <div @click="dispatch(0)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Dispatch</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.stop.prevent="CB.copy" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Copy</div>
+      </div>
+      <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <form class="text-sm" @submit.prevent="changePath($event)">
+          <label class="text-sm">Move&#160;</label>
+          <input type="text" class="w-[65%] rounded-sm h-0" name="path" @keydown.enter.prevent/>
+          <button type="submit" class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
+        </form>
+      </div>
+      <!-- <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Delete</div>
+      </div> -->
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Cancel</div>
+      </div> 
+    </ContextMenu>
+    <!-- <RCMenu :show="CbSelector.isShowTriggerPanel"  id="Folder">
       <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
       </div>
@@ -189,7 +246,7 @@ export default {
       <div @click="CbSelector.selectAll(!CbSelector.isSelectAll, `.folder input[file='true']`)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
       </div>
-      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+    <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
       <div @click="dispatch(1)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Add Dispatch</div>
       </div>
@@ -217,6 +274,6 @@ export default {
       <div @click.prevent="CbSelector.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
       </div>
-    </RCMenu>
+    </RCMenu> -->
   </div>
 </template>

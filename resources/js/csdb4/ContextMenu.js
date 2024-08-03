@@ -19,9 +19,17 @@ class ContextMenu{
     // check di chrome engine berapa banyak listener di register => getEventListeners(document).click[0].listener
     // useCapture = true berarti tidak buble, source: https://stackoverflow.com/questions/7398290/unable-to-understand-usecapture-parameter-in-addeventlistener
     document.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.toggle(false,this.id);
-    },true);
+      // event.preventDefault(); // kalau di prevent, misal submit event tidak berjalan jika klik button
+      // event.stopPropagation(); // kalau pakai stopPropagation, maka tidak bisa click2 apapun di vue
+      switch (event.target.tagName) {
+        case 'INPUT':
+          break;
+        default:
+          this.toggle(false,this.id);
+          break;
+      }
+    },true); // kalau false, menu tidak menutup otomatis
+    // },false);
   }
 
   register(menuId, defaultDisplayOnTrue = 'block', defaultDisplayOnFalse = 'none'){
@@ -40,7 +48,7 @@ class ContextMenu{
     area.setAttribute('cm-target-id', menuId);
     area.addEventListener('contextmenu', this.#trig.bind(this));
 
-    console.log(`${menuId} has been registered.`);
+    // console.log(`${menuId} has been registered.`);
   }
 
   /**
@@ -65,8 +73,8 @@ class ContextMenu{
   }
 
   display(id){
-    // set display window
-    document.getElementById(id).style.display = this.#getDisplay(id);
+    const el = document.getElementById(id);
+    if(el) el.style.display = this.#getDisplay(id);
   }
 
   #getDisplay(id){
