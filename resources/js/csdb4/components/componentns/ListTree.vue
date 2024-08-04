@@ -3,7 +3,8 @@ import { useTechpubStore } from '../../../techpub/techpubStore';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, pushList, refresh, remove} from './ListTreeVue';
 import ListTreeVueCb from  './ListTreeVueCb.js';
-import RCMenu from '../../rightClickMenuComponents/RCMenu.vue';
+import ContextMenu from '../subComponents/ContextMenu.vue';
+import { copy } from '../../helper';
 
 export default {
   data() {
@@ -17,7 +18,7 @@ export default {
       CB: undefined,
     }
   },
-  components: {ContinuousLoadingCircle},
+  components: {ContinuousLoadingCircle, ContextMenu},
   props: {
     type: String,
     routeName: String,
@@ -33,6 +34,8 @@ export default {
     
     refresh: refresh,
     remove: remove,
+
+    copy: copy,
   },
   async mounted() {
     this.ContextMenu.register(this.contextMenuId);
@@ -116,16 +119,17 @@ export default {
       <component v-if="html" :is="tree" />
     </div>
 
-    <div :id="contextMenuId">
-      <div class="bg-white w-60 border border-gray-300 rounded-lg flex flex-col text-sm py-4 px-2 text-gray-500 shadow-lg">
-        <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-          <div class="text-sm">Select</div>
-        </div>
-        <div @click.stop.prevent="CB.cancel" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-          <div class="text-sm">Cancel</div>
-        </div>
+    <ContextMenu :id="contextMenuId">
+      <div @click.stop.prevent="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Copy</div>
       </div>
-    </div>
+      <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select</div>
+      </div>
+      <div @click.stop.prevent="CB.cancel" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Cancel</div>
+      </div>
+    </ContextMenu>
 
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
   </div>

@@ -1,12 +1,12 @@
 <script>
-import { sorter } from "../../../helper.js";
+import { copy } from "../../helper";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
 import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
 import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
 import {CsdbObjectCheckboxSelector} from "../../CheckboxSelector";
 import {getObjs, storingResponse, goto, back, clickFolder, clickFilename, 
-  sortTable, search, removeList, dispatch, select, changePath, deleteObject, refresh} from './FolderVue'
+  sortTable, search, removeList, pushFolder, dispatch, changePath, deleteObject, refresh} from './FolderVue'
 import FolderVueCb from "./FolderVueCb";
 import ContextMenu from "../subComponents/ContextMenu.vue";
 
@@ -43,7 +43,7 @@ export default {
   },
   computed: {
     setObject() {
-      if (this.$props.dataProps.path) {
+      if (this.$props.dataProps.path && (this.$props.dataProps.path !== this.data.current_path)) {
         this.getObjs({path: this.$props.dataProps.path});
       }
     },
@@ -64,19 +64,10 @@ export default {
     },
     pageless() {
       return this.data.paginationInfo['prev_page_url'];
-      // return this.data.paginationInfo['current_page'] > 1 ? this.data.paginationInfo['current_page'] - 1 : 1;
     },
     pagemore() {
       return this.data.paginationInfo['next_page_url'];
-      // return (this.data.paginationInfo['current_page'] < this.data.paginationInfo['last_page']) ? this.data.paginationInfo['current_page'] + 1 : this.data.paginationInfo['last_page']
     },
-    // pakai computed instead of put function in template html, karena ini tidak berjalan terus walau ada update pada path atau data folder
-    registerCB(){
-      this.CB.register();
-    },
-    tes(){
-      console.log('tes dulu');
-    }
   },
   methods: {
     getObjs: getObjs,
@@ -89,12 +80,15 @@ export default {
     search: search,
     removeList: removeList, // tidak perlu ditaruh disini
     dispatch: dispatch,
-    select: select, // DEPRECIATED
+    // select: select, // DEPRECIATED
     changePath: changePath,
     deleteObject: deleteObject,
+    pushFolder: pushFolder,
     
     // emit
     refresh: refresh,
+
+    copy: copy,
   },
   mounted(){
     this.ContextMenu.register(this.contextMenuId);
@@ -162,7 +156,6 @@ export default {
               <td class="leading-3 text-sm" colspan="6">
                 <span class="material-symbols-outlined text-sm mr-1">folder</span>
                 <span class="text-sm">{{ path.split("/").at(-1) }} </span> 
-                <!-- min -2 karena diujung folder ada '/' -->
               </td>
             </tr>
             <tr v-for="obj in models" cb-room @dblclick.prevent="clickFilename($event, obj.filename)" class="file-row text-sm hover:bg-blue-300 cursor-pointer">
@@ -218,62 +211,23 @@ export default {
         <div class="text-sm">Dispatch</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.stop.prevent="CB.copy" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.stop.prevent="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Copy</div>
       </div>
       <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <form class="text-sm" @submit.prevent="changePath($event)">
-          <label class="text-sm">Move&#160;</label>
+          <label class="text-sm">Move </label>
           <input type="text" class="w-[65%] rounded-sm h-0" name="path" @keydown.enter.prevent/>
           <button type="submit" class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
-        </form>
-      </div>
-      <!-- <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Delete</div>
-      </div> -->
-      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Cancel</div>
-      </div> 
-    </ContextMenu>
-    <!-- <RCMenu :show="CbSelector.isShowTriggerPanel"  id="Folder">
-      <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Select</div>
-      </div>
-      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All</div>
-      </div>
-      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll, `.folder input[file='true']`)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
-      </div>
-    <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click="dispatch(1)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Add Dispatch</div>
-      </div>
-      <div @click="dispatch(2)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Remove Dispatch</div>
-      </div>
-      <div @click="dispatch(0)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Dispatch</div>
-      </div>
-      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click="CbSelector.copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Copy</div>
-      </div>
-      <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <form class="text-sm" @submit.prevent="changePath($event)">
-          <label class="text-sm">Move&#160;</label>
-          <input type="text" class="w-[65%] rounded-sm h-0" name="path" @keydown.enter.prevent/>
-          <button class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
         </form>
       </div>
       <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Delete</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.prevent="CbSelector.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
-      </div>
-    </RCMenu> -->
+      </div> 
+    </ContextMenu>
   </div>
 </template>

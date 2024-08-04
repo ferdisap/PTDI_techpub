@@ -52,15 +52,6 @@ class Checkbox{
       cbRoom = cbRoom ? cbRoom : document.querySelectorAll(`#${this.homeId} *[cb-room]`);
       cbRoom.forEach(r => reg(r));
     }
-
-
-    // ### create MUTATION untuk menangani register ulang, misal ada remove/add/sort element
-    // if(this.domObserver) return;
-    // this.domObserver = new MutationObserver(()=>{
-    //   this.register();
-    // });
-    // // ### jika tidak pakai table, maka config tambahkan subtree:true, supaya ke detect jika ada perubahan di descendant element
-    // this.domObserver.observe(document.querySelector(this.CSSSelector_cbRoom(this.homeId)).parentElement,{childList:true})
   }
 
   setCbRoomId(event, cbRoom, prev_cbRoom){
@@ -113,12 +104,12 @@ class Checkbox{
   }
 
   pushAll(state){
-    const display = state ? this.cbRoomDisplay : 'none';
-    const cbWindows = document.querySelectorAll(`#${this.homeId} *[cb-window]`);
-    cbWindows.forEach(w => {
-      this.queryCbTarget(w).checked = state;
-      w.style.display = display;
-    });
+    const cbWindows = this.getCbWindows();
+      cbWindows.forEach(w => {
+        this.queryCbTarget(w).checked = state;
+      });
+    if(state) this.openSelectionMode(cbWindows);
+    else this.closeSelectionMode(cbWindows);
     return cbWindows;
   }
 
@@ -128,7 +119,8 @@ class Checkbox{
   }
 
   openSelectionMode(cbWindows = null){
-    cbWindows = cbWindows ? cbWindows : document.querySelectorAll(`#${this.homeId} *[cb-window]`);
+    // cbWindows = cbWindows ? cbWindows : document.querySelectorAll(`#${this.homeId} *[cb-window]`);
+    cbWindows = cbWindows ? cbWindows : this.getCbWindows();
     cbWindows.forEach(v => {
       v.style.display = this.cbRoomDisplay;
       this.selectionMode = true;
@@ -137,7 +129,8 @@ class Checkbox{
   }
   
   closeSelectionMode(cbWindows = null){
-    cbWindows = cbWindows ? cbWindows : document.querySelectorAll(this.CSSSelector_cbWindows());
+    // cbWindows = cbWindows ? cbWindows : document.querySelectorAll(this.CSSSelector_cbWindows());
+    cbWindows = cbWindows ? cbWindows : this.getCbWindows();
     cbWindows.forEach(v => {
       v.style.display = 'none';
       this.selectionMode = false;

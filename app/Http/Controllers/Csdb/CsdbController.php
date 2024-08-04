@@ -242,31 +242,31 @@ class CsdbController extends Controller
     
     $m = '';
     // menyiapkan folder
-    if ($CSDBModels->isNotEmpty()) {
-      if (isset($keywords['path'])) {
-        $folders = new Csdb();
-        $query = Helper::generateWhereRawQueryString($keywords,$folders->getTable());
-        $folders = $folders->whereRaw($query[0],$query[1]);
-        $folders = $folders->whereRaw($queryExecption[0],$queryExecption[1]);
-        $folders = $folders->get(['path'])->toArray();
-        $folders = array_unique($folders, SORT_REGULAR);
-        foreach($folders as $i => $v){
-          $folders[$i] = join("", $v); // saat didapat dari database, bentuknya array berisi satu path saja
-          foreach($keywords['path'] as $path){
-            if($folders[$i] === $path){
-              $folders[$i] = '';
-            } else {
-              $path = str_replace("/","\/",$path);
-              $folders[$i] = preg_replace("/({$path})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folders[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
-            }
+    if (isset($keywords['path'])) {
+      $folders = new Csdb();
+      $query = Helper::generateWhereRawQueryString($keywords,$folders->getTable());
+      $folders = $folders->whereRaw($query[0],$query[1]);
+      $folders = $folders->whereRaw($queryExecption[0],$queryExecption[1]);
+      $folders = $folders->get(['path'])->toArray();
+      $folders = array_unique($folders, SORT_REGULAR);
+      foreach($folders as $i => $v){
+        $folders[$i] = join("", $v); // saat didapat dari database, bentuknya array berisi satu path saja
+        foreach($keywords['path'] as $path){
+          if($folders[$i] === $path){
+            $folders[$i] = '';
+          } else {
+            $path = str_replace("/","\/",$path);
+            $folders[$i] = preg_replace("/({$path})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folders[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
           }
         }
-        $folders = array_unique($folders,SORT_STRING);
-        $folders = array_filter($folders, fn ($v) => ($v != null) || ($v != ''));
-        $folders = array_values($folders); // supaya tidak assoc atau supaya indexnya teratur
-        sort($folders);
       }
-    } else $m = "CSDB objects can not be found.";
+      $folders = array_unique($folders,SORT_STRING);
+      $folders = array_filter($folders, fn ($v) => ($v != null) || ($v != ''));
+      $folders = array_values($folders); // supaya tidak assoc atau supaya indexnya teratur
+      sort($folders);
+    }
+    // if ($CSDBModels->isNotEmpty()) {
+    // } else $m = "CSDB objects can not be found.";
 
     if (isset($keywords['path']) and count($keywords['path']) === 1) {
       $current_path = $keywords['path'][0];

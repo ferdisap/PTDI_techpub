@@ -1,8 +1,8 @@
-import {findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObject} from '../../helper';
+import { findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObject } from '../../helper';
 import { isProxy, toRaw } from "vue";
 import $ from 'jquery';
 
-async function getObjs(data = {}){
+async function getObjs(data = {}) {
   this.showLoadingProgress = true;
   if (!data.sc) data.sc = '';
   if (data.path) {
@@ -53,36 +53,36 @@ async function goto(url, page) {
   }
   if (url) {
     let response = await axios.get(url);
-    if(response.statusText === 'OK'){
+    if (response.statusText === 'OK') {
       this.storingResponse(response);
     }
   }
 }
 
 async function back(path = undefined) {
-  if(!this.selectionMode){
-    if(!path){
+  if (!this.selectionMode) {
+    if (!path) {
       path = this.currentPath.replace(/\/\w+\/?$/, "");
     }
-    this.getObjs({path: path});
+    this.getObjs({ path: path });
     this.data.current_path = path;
   }
 }
 
-function clickFolder(event, path){
+function clickFolder(event, path) {
   // window.path = path; window.getObjs = this.getObjs;
-  if(!this.CB.selectionMode) this.back(path);
+  if (!this.CB.selectionMode) this.back(path);
 }
 
-function clickFilename(event, filename){
-  if(!this.CB.selectionMode){
+function clickFilename(event, filename) {
+  if (!this.CB.selectionMode) {
     this.techpubStore.currentObjectModel = Object.values(this.data.csdb).find((obj) => obj.filename === filename);
     this.$root.gotoExplorer(filename, 'pdf');
-    this.emitter.emit('clickFilenameFromFolder', {filename: filename}) // key filename saja karena bisa diambil dari techpubstore atau server jika perlu
+    this.emitter.emit('clickFilenameFromFolder', { filename: filename }) // key filename saja karena bisa diambil dari techpubstore atau server jika perlu
   }
 }
 
-function sortTable(event){
+function sortTable(event) {
   const getCellValue = function (row, index) {
     return $(row).children('td').eq(index).text();
   };
@@ -95,7 +95,7 @@ function sortTable(event){
   };
   let table = $(event.target).parents('table').eq(0);
   let th = $(event.target).parents('th').eq(0);
-  if(th.index() === 0){
+  if (th.index() === 0) {
     let filerows = table.find('.file-row').toArray().sort(comparer(th.index()));
     let folderrows = table.find('.folder-row').toArray().sort(comparer(th.index()));
     this.asc = !this.asc;
@@ -121,96 +121,132 @@ function sortTable(event){
   }
 }
 
-function search(){
-  this.getObjs({sc: this.sc});
+function search() {
+  this.getObjs({ sc: this.sc });
 }
 
-function removeList(filename){
+function removeList(filename) {
   let csdb = this.data.csdb.find((obj) => obj.filename === filename);
   let index = this.data.csdb.indexOf(csdb);
-  this.data.csdb.splice(index,1);
+  this.data.csdb.splice(index, 1);
   return csdb;
 }
+function pushFolder(path) {
+  if (path.split("/").length > this.data.current_path.split("/").length) {
+    this.data.folders.push(path);
+    this.data.folders = array_unique(this.data.folders);
+  }
+}
 
-async function dispatch(cond = 0){
+async function dispatch(cond = 0) {
   const emitName = !cond ? 'dispatchTo' : (cond === 1 ? 'AddDispatchTo' : (cond === 2 ? 'RemoveDispatchTo' : ('dispatchTo')));
   // const csdbs = await this.CbSelector.getCsdbFilenameFromFolderVue(this);
   const csdbs = await this.CB.value();
-  console.log(csdbs);
-  if(!csdbs) return;
+  this.CB.cancel();
+  if (!csdbs) return;
   this.emitter.emit(emitName, csdbs);
 }
 
 /**
  * hanya untuk membirukan background table row
 */
-function select(event){
-  let el;
-  if(this.CbSelector.selectionMode) {
-    this.CbSelector.select();
-    el = document.getElementById(this.CbSelector.cbHovered);
-  } else el = event.target;
-  this.selectedRow ? this.selectedRow.classList.remove('bg-blue-300') : null;
-  this.selectedRow = findAncestor(el, 'tr');
-  this.selectedRow.classList.add('bg-blue-300');
-}
+// function select(event){
+//   let el;
+//   if(this.CbSelector.selectionMode) {
+//     this.CbSelector.select();
+//     el = document.getElementById(this.CbSelector.cbHovered);
+//   } else el = event.target;
+//   this.selectedRow ? this.selectedRow.classList.remove('bg-blue-300') : null;
+//   this.selectedRow = findAncestor(el, 'tr');
+//   this.selectedRow.classList.add('bg-blue-300');
+// }
 
-async function changePath(event){
+async function changePath(event) {
   // insert filenames to formdata
   const fd = new FormData(event.target)
   const filenames = await this.CB.value();
   fd.set('filename', filenames.join(","))
 
+  let path = fd.get('path').toUpperCase();
+  path = path.replace(/(\/{1,}$)|(\/{2,})/g, (m, p1, p2) => p2 ? '/' : ''); // p2 adalah multiple slash di tengah2 sentence, p1 adalah single or multiple slash di ujung. Penjelasan callback: jika di tengah sentence ketemu multiple slash (p1 exist) maka akan diganti '/'. Jika tidak makan diganti ''. Meskipun p2 captured, tetap diganti ''. eg: 'CSDB/AMM//CN235///' akan diganti 'CSDB/AMM/CN235'.
+  if (path === this.data.current_path) return;
+  else fd.set('path', path);
+
   // fetch
   const response = await axios({
-    route:{
+    route: {
       name: 'api.change_object_path',
       data: fd
     }
   });
-  if(!(response.statusText === 'OK')) throw new Error(`Failed to change path of ${filename}`);
-  
+  if (!(response.statusText === 'OK')) throw new Error(`Failed to change path ${join(", ", filenames)}`);
+  this.CB.cancel();
+
   // handle changed csdb object
-  const path = fd.get('path').toUpperCase();
   const csdbChangedPath = [];
   filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
-    this.data.folders.push(path);
-    this.data.folders = array_unique(this.data.folders);
+    this.pushFolder(path);
     csdb.path = path;
-    csdbChangedPath.push(isProxy(csdb) ? toRaw(csdb) : csdb); // nanti dicoba pakai proxy untuk menghemat memori
+    csdbChangedPath.push(csdb); // aman walau pakai csdb ada dalam proxy
   });
 
   // emit
-  this.emitter.emit('ChangePathCSDBObjectFromFolder',csdbChangedPath);
+  this.emitter.emit('ChangePathCSDBObjectFromFolder', csdbChangedPath);
 }
 
-async function deleteObject(){
-  let values = await this.CbSelector.delete(this.CbSelector.cancel); // output array contains filename
-  if(isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
-  else if(values instanceof FormData) values = formDataToObject(values);
-  if(isString(values.filename)) values.filename = values.filename.split(',');
-  
+async function deleteObject() {
+  const filenames = await this.CB.value();
+
+  // fetch
+  const response = await axios({
+    route: {
+      name: 'api.delete_objects',
+      data: {filename: filenames}
+    }
+  });
+  if (!(response.statusText === 'OK')) throw new Error(`Failed to delete ${join(", ", filenames)}`);
+  this.CB.cancel();
+
   // hapus list di folder, tidak seperti listtree yang ada level dan list model, dan emit csdbDelete
   const csdbDeleted = [];
-  values.filename.forEach((filename) => {
+  filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
-    csdbDeleted.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+    csdbDeleted.push(csdb); // aman walau pakai csdb ada dalam proxy
   });
 
   // emit
-  this.emitter.emit('DeleteCSDBObjectFromFolder',csdbDeleted);
+  this.emitter.emit('DeleteCSDBObjectFromFolder', csdbDeleted);
+
+  // return;
+
+  // let values = await this.CbSelector.delete(this.CbSelector.cancel); // output array contains filename
+  // if (isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
+  // else if (values instanceof FormData) values = formDataToObject(values);
+  // if (isString(values.filename)) values.filename = values.filename.split(',');
+
+  // // hapus list di folder, tidak seperti listtree yang ada level dan list model, dan emit csdbDelete
+  // const csdbDeleted = [];
+  // values.filename.forEach((filename) => {
+  //   let csdb = this.removeList(filename);
+  //   csdbDeleted.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+  // });
+
+  // // emit
+  // this.emitter.emit('DeleteCSDBObjectFromFolder', csdbDeleted);
 }
 
 /**
  * untuk emitter.on('Folder-refresh)
  * @param {Object} data 
  */
-function refresh(data){
-  if(data.path === this.data.current_path){
-    this.getObjs({path: data.current_path})
+function refresh(data) {
+  if (data.path === this.data.current_path) {
+    this.getObjs({ path: data.current_path })
   }
 }
 
-export {getObjs, storingResponse, goto, back, clickFolder, clickFilename, 
-  sortTable, search, removeList, dispatch, select, changePath, deleteObject, refresh};
+export {
+  getObjs, storingResponse, goto, back, clickFolder, clickFilename,
+  sortTable, search, removeList, pushFolder, dispatch, changePath, deleteObject, refresh
+};

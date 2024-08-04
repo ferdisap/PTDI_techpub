@@ -60,9 +60,43 @@ function isRightClick(evt){
   return (evt.which === 3) ? true : false;
 }
 
-function copy(text)
+/**
+ * Urutan:
+ * 1. jika ada text, maka text dicopy;
+ * 2. jika ada event, maka pakai text didalam event target
+ * 3. jika window selection type 'Range' maka pakai text dalam anchorNode nya
+ * 4. jika ada ContextMenu dan ada anchorNode nya, pakai text dalam anchorNode nya
+ * @param {*} event 
+ * @param {*} text 
+ * @returns 
+ */
+function copy(event, text)
 {
-  if(text) navigator.clipboard.writeText(text);
+  if(text) {
+    navigator.clipboard.writeText(text); // output promise
+    return;
+  }
+  let a;
+  const selection = window.getSelection();
+  if(event) a = event.target;
+  else if(selection.type === 'Range') a = selection.anchorNode;
+  else if(window.ContextMenu && window.ContextMenu.anchorNode) a = window.ContextMenu.anchorNode;
+  
+  if(a){
+    const range = new Range();
+  
+    // Start range at second paragraph
+    range.setStartBefore(a);
+  
+    // End range at third paragraph
+    range.setEndAfter(a);
+  
+    // Add range to window selection
+    selection.addRange(range);
+  
+    navigator.clipboard.writeText(range.toString()); // output promise
+  }
+  return;
 }
 
 export {

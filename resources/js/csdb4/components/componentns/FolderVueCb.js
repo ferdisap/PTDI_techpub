@@ -78,6 +78,7 @@ class FolderVueCb extends Checkbox {
   }
 
   copy() {
+    console.log(window.s = window.getSelection(), window.getSelection().type);
     return navigator.clipboard.writeText(super.value(this.cbRoomId));
   }
 }

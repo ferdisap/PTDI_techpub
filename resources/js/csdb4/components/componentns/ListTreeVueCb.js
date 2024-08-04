@@ -6,6 +6,20 @@ class ListTreeVueCb extends Checkbox{
     super(homeId);
   }
 
+  setCbRoomId(event, cbRoom, prev_cbRoom){
+    // handle previous cbRoom
+    if(prev_cbRoom || (prev_cbRoom = document.getElementById(this.cbRoomId))) {
+      if(prev_cbRoom.tagName === 'DETAILS') prev_cbRoom.firstElementChild.style.border = 'none'; // set supaya summary yang di unborder
+      else prev_cbRoom.style.border = 'none';
+    }
+
+    // handle current cbRoom
+    cbRoom = cbRoom ? cbRoom : event.target.closest(`*[cb-room]`);
+    if(cbRoom.tagName === 'DETAILS') cbRoom.firstElementChild.style.border = this.cbRoomBorder; // set supaya summary yang di border    
+    else cbRoom.style.border = this.cbRoomBorder;
+    this.cbRoomId = cbRoom.id;
+  }
+
   /**
    * jika path di checked, maka akan mengambil seluruh value checkbox didalamnya meskipun cb nya unchecked
    * @returns {Array}
