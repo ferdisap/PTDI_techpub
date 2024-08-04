@@ -80,7 +80,7 @@ function copy(event, text)
   const selection = window.getSelection();
   if(event) a = event.target;
   else if(selection.type === 'Range') a = selection.anchorNode;
-  else if(window.ContextMenu && window.ContextMenu.anchorNode) a = window.ContextMenu.anchorNode;
+  else if(this.ContextMenu && this.ContextMenu.anchorNode) a = this.ContextMenu.anchorNode;
   
   if(a){
     const range = new Range();

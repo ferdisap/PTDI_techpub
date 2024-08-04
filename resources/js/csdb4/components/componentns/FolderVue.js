@@ -1,6 +1,7 @@
 import { findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObject } from '../../helper';
-import { isProxy, toRaw } from "vue";
+// import { isProxy, toRaw } from "vue";
 import $ from 'jquery';
+import fileDownload from 'js-file-download';
 
 async function getObjs(data = {}) {
   this.showLoadingProgress = true;
@@ -187,17 +188,26 @@ async function changePath(event) {
   filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
     this.pushFolder(path);
-    csdb.path = path;
-    csdbChangedPath.push(csdb); // aman walau pakai csdb ada dalam proxy
+    if(csdb){
+      csdb.path = path;
+      csdbChangedPath.push(csdb); // aman walau pakai csdb ada dalam proxy
+    }
+    else {
+      csdbChangedPath.push({filename: filename, path: path});
+    }
+
   });
 
   // emit
   this.emitter.emit('ChangePathCSDBObjectFromFolder', csdbChangedPath);
 }
 
+/**
+ * saat ini, ketika menghapus sebuah folder, isinya kehapus, namun di frontend nya tidak. Karena saat ini hanya menghapus list object, bukan folder.
+ * Kedepannya nanti ambil checkbox/current cbRoomId untuk folder saja. Dicheck apakah checkbox checked atau tidak. jika checked maka hapus folder nya
+ */
 async function deleteObject() {
   const filenames = await this.CB.value();
-
   // fetch
   const response = await axios({
     route: {
@@ -212,9 +222,9 @@ async function deleteObject() {
   const csdbDeleted = [];
   filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
-    csdbDeleted.push(csdb); // aman walau pakai csdb ada dalam proxy
+    if(csdb) csdbDeleted.push(csdb); // aman walau pakai csdb ada dalam proxy
+    else csdbDeleted.push({filename: filename, path: ''}); // path TBD. karena CB.value() hanya mengembalikan value saja
   });
-
   // emit
   this.emitter.emit('DeleteCSDBObjectFromFolder', csdbDeleted);
 
@@ -246,7 +256,38 @@ function refresh(data) {
   }
 }
 
+async function download() {
+  let filenames = await this.CB.value();
+  let response = await axios({
+    route: {
+      name: 'api.download_objects',
+      data: { filename: filenames },
+    },
+    responseType: 'blob',
+  });
+  if (response.statusText === 'OK') {
+    const contentDisposition = response.headers.get('content-disposition');
+    if(contentDisposition.substr(0,10) === 'attachment'){
+      let i;
+      if((i = contentDisposition.indexOf('filename')) > -1){
+        fileDownload(
+          response.data,
+          contentDisposition.replace(/.+filename="?(\S+[^"])/g,(m,p1) => p1)
+        ); // jika ada banyak maka nanti otomatis ke downloa, misal dari server contentype nya zip ya otomatis downoad zip file
+      } else {
+        const url = URL.createObjectURL(await response.data); // asumsikan content-type = text/xml
+        const a = document.createElement('a');
+        a.target = '_blank';
+        a.href = url
+        a.click();
+        URL.revokeObjectURL(url); // memory management
+      }
+    }
+    this.CB.cancel();
+  }
+}
+
 export {
-  getObjs, storingResponse, goto, back, clickFolder, clickFilename,
+  getObjs, storingResponse, goto, back, clickFolder, clickFilename, download,
   sortTable, search, removeList, pushFolder, dispatch, changePath, deleteObject, refresh
 };

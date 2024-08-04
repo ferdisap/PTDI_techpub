@@ -1,14 +1,12 @@
 import Checkbox from "../../Checkbox";
-import Randomstring from "randomstring";
 import { array_unique } from "../../helper";
-import { resolve } from "path";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 
-let to_reg = 0; // dibuat diluar. karena kalau didalam klas, akan muncul error di vue '...maximum exceed...'
+// let to_reg = 0; // dibuat diluar. karena kalau didalam klas, akan muncul error di vue '...maximum exceed...'
 
 class FolderVueCb extends Checkbox {
 
-  to_register = 0;
+  // to_register = 0;
 
   constructor(homeId){
     super(homeId, false);
@@ -23,7 +21,6 @@ class FolderVueCb extends Checkbox {
           }
         };
       }
-      // this.register();
     });
     // ### jika tidak pakai table, maka config tambahkan subtree:true, supaya ke detect jika ada perubahan di descendant element
     this.domObserver.observe(document.querySelector('#'+homeId+' tbody'),{childList:true})
@@ -75,11 +72,6 @@ class FolderVueCb extends Checkbox {
       if (response.statusText === 'OK') return resolve(response.data.csdbs);
       else resolve([]);
     })
-  }
-
-  copy() {
-    console.log(window.s = window.getSelection(), window.getSelection().type);
-    return navigator.clipboard.writeText(super.value(this.cbRoomId));
   }
 }
 

@@ -32,7 +32,7 @@ class ContextMenu {
       }
     }, true); // kalau false, menu tidak menutup otomatis
     // },false);
-    window.ContextMenu = new Proxy(this,{});
+    // window.ContextMenu = new Proxy(this,{}); // tidak perlu dibuat di window, karena di vue sudah di instance di app.js
   }
 
   register(menuId, defaultDisplayOnTrue = 'block', defaultDisplayOnFalse = 'none') {

@@ -3,7 +3,12 @@ import Checkbox from "../../Checkbox";
 class ListTreeVueCb extends Checkbox{
 
   constructor(homeId){
-    super(homeId);
+    super(homeId,false);
+    this.domObserver = new MutationObserver((mutationList)=>{
+      this.register();
+    });
+    // ### jika tidak pakai table, maka config tambahkan subtree:true, supaya ke detect jika ada perubahan di descendant element
+    this.domObserver.observe(document.querySelector('#'+homeId),{childList:true, subtree:true})
   }
 
   setCbRoomId(event, cbRoom, prev_cbRoom){

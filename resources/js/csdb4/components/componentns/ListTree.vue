@@ -15,7 +15,7 @@ export default {
       showLoadingProgress: false,
 
       contextMenuId: 'cmListTreeVue',
-      CB: undefined,
+      CB: {},
     }
   },
   components: {ContinuousLoadingCircle, ContextMenu},
@@ -103,16 +103,22 @@ export default {
             top.localStorage.setItem('expandCollapseListTree', JSON.stringify(this.$parent.data.open))
           }
         },
-        mounted(){
-          this.CB.register();
-        }
+        // mounted(){
+        //   setTimeout(()=>{
+        //     this.CB.register();
+        //   },1000)
+        // }
       }
     }
   },
+  activated(){
+    this.CB.register();
+  }
 }
 </script>
 <template>
   <div class="listtree h-full relative">
+    {{ CB.selectionMode }}
     <!-- list -->
     <div id="cbListTreeVue" :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
       <!-- <component v-if="(this.data[`${this.$props.type}_list_level`] && this.data[`${this.$props.type}_list`])" :is="tree" /> -->

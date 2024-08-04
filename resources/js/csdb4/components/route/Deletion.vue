@@ -1,14 +1,18 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import {getObjs, storingResponse, goto, removeList, restore, permanentDelete, download, refresh, select, preview, clickFilename} from './DeletionVue.js';
+import {getObjs, storingResponse, goto, removeList, restore, permanentDelete, refresh, select, preview, clickFilename} from './DeletionVue.js';
 import {CsdbObjectCheckboxSelector} from '../../CheckboxSelector';
 import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
 import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
 import Sort from "../subComponents/Sort.vue";
+import { copy } from "../../helper";
+import ContextMenu from "../subComponents/ContextMenu.vue";
+import DeletionVueCb from "./DeletionVueCb.js"
+import { download } from '../componentns/FolderVue.js';
 
 export default {
   name: 'Deletion',
-  components: {ContinuousLoadingCircle, RCMenu, Sort},
+  components: {ContinuousLoadingCircle, RCMenu, Sort, ContextMenu},
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -18,7 +22,11 @@ export default {
       CbSelector: new CsdbObjectCheckboxSelector(),
 
       // selection view (becasuse clicked by user)
-      selectedRow: undefined,
+      // selectedRow: undefined,
+
+      contextMenuId: 'cmDeletionVue',
+      cbId: 'cbDeletionVue',
+      CB: {},
     }
   },
   computed: {
@@ -50,10 +58,23 @@ export default {
     refresh: refresh,
     select: select,
     preview: preview,
+
+    copy:copy,
   },
   mounted() {
+    window.em = this.emitter;
     this.getObjs({ filenameSearch: this.filenameSearch });
-    this.emitter.on('Deletion-refresh', refresh.bind(this))
+    // this.emitter.on('Deletion-refresh', refresh.bind(this));
+    let emitters =  this.emitter.all.get('Deletion-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check Explorer.vue
+    if(emitters){
+      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if(emitters.length < 1 && indexEmitter < 0) this.emitter.on('Deletion-refresh', this.refresh); 
+    } else this.emitter.on('Deletion-refresh', this.refresh); 
+
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false,this.contextMenuId);
+
+    this.CB = new DeletionVueCb(this.cbId)
   }
 }
 </script>
@@ -77,10 +98,10 @@ export default {
         </div>
 
         <div class="block relative oveflow-auto max-h-[80%] text-left">
-          <table class="table" :id="CbSelector.id">
+          <table class="table" :id="cbId">
             <thead class="text-sm">
               <tr>
-                <th v-show="CbSelector.selectionMode" class="w-[2%] text-sm"></th>
+                <th v-show="CB.selectionMode"></th>
                 <th class="w-[53%] text-sm">Filename <Sort/></th>
                 <th class="w-[15%] text-sm">Path</th>
                 <th class="w-[15%] text-sm">Last Update</th>
@@ -88,9 +109,10 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="object in list" @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, path)" @mousemove="CbSelector.setCbHovered('cbdell'+object.filename)" class="text-sm hover:cursor-pointer" >
-                <td v-show="CbSelector.selectionMode" class="flex p-2" @click.stop.prevent>
-                  <input file="false" :id="'cbdell'+object.filename" type="checkbox" :value="object.filename">
+              <!-- <tr v-for="object in list" @click.stop.prevent="select($event)" @dblclick.prevent="clickFilename($event, path)" @mousemove="CbSelector.setCbHovered('cbdell'+object.filename)" class="text-sm hover:cursor-pointer" > -->
+              <tr v-for="object in list" cb-room @dblclick="clickFilename($event, path)" class="text-sm hover:cursor-pointer">
+                <td cb-window class="flex p-2">
+                  <input type="checkbox" :value="object.filename">
                 </td>
                 <td class="text-sm">
                   <span class="material-symbols-outlined text-sm mr-1">description</span>
@@ -118,37 +140,37 @@ export default {
     </div>
 
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
-    <RCMenu v-if="CbSelector.isShowTriggerPanel">
-      <div @click="CbSelector.select()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+    <ContextMenu  :id="contextMenuId">
+      <div @click="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
       </div>
-      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All</div>
+      <div @click="CB.pushAll(true)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Select All</div>
       </div>
-      <div @click="CbSelector.selectAll(!CbSelector.isSelectAll, `.folder input[file='true']`)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">{{ CbSelector.isSelectAll ? 'Deselect' : 'Select' }} All Files</div>
+      <div @click="CB.pushAll(false)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Deselect All</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click="CbSelector.copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Copy</div>
       </div>
       <div @click="download()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Download</div>
       </div>
-      <div @click="preview()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <!-- <div @click="preview()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Preview</div>
-      </div>
+      </div> -->
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
       <div @click="restore()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Restore</div>
-      </div>
-      <div @click="permanentDelete()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      </div> 
+      <!-- <div @click="permanentDelete()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Permanent Delete</div>
-      </div>
+      </div> -->
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
-      <div @click.prevent="CbSelector.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
       </div>
-    </RCMenu>
+    </ContextMenu>
   </div>
 </template>

@@ -163,7 +163,7 @@ export default {
     });
 
     this.emitter.on('ChangePathCSDBObjectFromFolder', (data) => {
-      // data adalah array berisis model SQL CSDB Object
+      // data adalah array berisis model SQL CSDB Object. Bisa juga cuma filename saja karena saat delete, folder bisa saja tidak punya data csdb lengkap (path) karena yang di delete bukan file tapi folder
       this.emitter.emit('ListTree-refresh', data); // tidak perlu kirim data karena nanti request ke server
     })
 
@@ -186,7 +186,7 @@ export default {
     })
 
     this.emitter.on('DeleteCSDBObjectFromFolder', (data) => {
-      // data adalah array berisi csdb SQL CSDB Object
+      // data adalah array berisi csdb SQL CSDB Object. Bisa juga cuma filename saja karena saat delete, folder bisa saja tidak punya data csdb lengkap (path) karena yang di delete bukan file tapi folder
       this.emitter.emit('ListTree-remove', data);
       this.emitter.emit('Deletion-refresh', data);
     })

@@ -3,11 +3,10 @@
 namespace App\Http\Requests\Csdb;
 
 use App\Models\Csdb;
-use App\Rules\Csdb\Path;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CsdbChangePath extends FormRequest
+class Download extends FormRequest
 {
   /**
    * Determine if the user is authorized to make this request.
@@ -18,7 +17,6 @@ class CsdbChangePath extends FormRequest
   }
 
   /**
-   * sama/mirip dengan CsdbDelete
    * Get the validation rules that apply to the request.
    *
    * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -31,22 +29,14 @@ class CsdbChangePath extends FormRequest
           $l = count($filename);
           for ($k=0; $k < $l; $k++) { 
             if(!($this->CSDBModelArray[$k]) && ($this->CSDBModelArray[$k]->filename != $filename[$k])){ // jika null, maka $fail. Tidak mungkin !isset karena sudah di set di prepare
-              $fail("There is no such {$filename[$k]} or you are not authorize to change the path.");
+              $fail("There is no such {$filename[$k]}.");
             }
           }
         } else {
-          if(!($this->CSDBModelArray[0])) $fail("There is no such {$filename} or you are not authorize to change the path.");
+          if(!($this->CSDBModelArray[0])) $fail("There is no such {$filename}.");
         }
       }],
-      'CSDBModelArray' => [function(string $attribute, mixed $CSDBModelArray, Closure $fail){
-        $l = count($CSDBModelArray);
-        $f = [];
-        for ($i=0; $i < $l; $i++) { 
-          if(!$CSDBModelArray[$i]) $f[] = $CSDBModelArray[$i]->filename; // akan null saat di prepareForValidation
-        }
-        if(count($f) > 0) $fail("You are not authorize to change the path of " . join(", ", $f) . ".");
-      }],
-      'path' => ['required', new Path]
+      'CSDBModelArray' => '',
     ];
   }
 
@@ -57,15 +47,14 @@ class CsdbChangePath extends FormRequest
   {
     $CSDBModelArray = [];
     $filename = $this->get('filename');
-    if(is_array($filename) || ($filename = explode(",",$filename))){
-      foreach($filename as $i => $f){
+    if (is_array($filename) || ($filename = explode(",", $filename))) {
+      foreach ($filename as $i => $f) {
         // $m = Csdb::where('filename',$f)->where('initiator_id',$this->user()->id)->first();
-        $m = Csdb::getCsdb($f,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
+        $m = Csdb::getCsdb($f)->first();
         $CSDBModelArray[$i] = $m;
       }
     } else {
-      // $m = Csdb::where('filename',$filename)->where('initiator_id',$this->user()->id)->first();
-      $m = Csdb::getCsdb($filename,['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first();
+      $m = Csdb::getCsdb($filename)->first();
       array_push($CSDBModelArray, $m);
       $filename = [$filename];
     }

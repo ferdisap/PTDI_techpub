@@ -9,17 +9,20 @@ use App\Http\Requests\Csdb\CsdbDelete;
 use App\Http\Requests\Csdb\CsdbPermanentDelete;
 use App\Http\Requests\Csdb\CsdbRestore;
 use App\Http\Requests\Csdb\CsdbUpdateByXMLEditor;
+use App\Http\Requests\Csdb\Download;
 use App\Http\Requests\Csdb\UploadICN;
 use App\Models\Csdb;
 use App\Models\Csdb\History;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use PrettyXml\Formatter;
 use Ptdi\Mpub\Fop\Fop;
 use Ptdi\Mpub\Main\CSDBError;
 use Ptdi\Mpub\Main\CSDBObject;
 use Ptdi\Mpub\Main\CSDBStatic;
 use Ptdi\Mpub\Main\Helper;
+use ZipStream\ZipStream;
 
 class CsdbController extends Controller
 {
@@ -244,38 +247,39 @@ class CsdbController extends Controller
     // menyiapkan folder
     if (isset($keywords['path'])) {
       $folders = new Csdb();
-      $query = Helper::generateWhereRawQueryString($keywords,$folders->getTable());
+
+      // menambah slash pada ujung path agar bisa dicari sub folder nya
+      array_walk($keywords['path'], fn(&$v) => ((substr($keywords['path'][0], -1,1) !== '/') ? ($v = $v . "/") : ''));
+
+      // make query and get
+      $query = Helper::generateWhereRawQueryString(['path' => $keywords['path']],$folders->getTable());
+      $folders = $folders->where('storage_id', $request->user()->id);
       $folders = $folders->whereRaw($query[0],$query[1]);
       $folders = $folders->whereRaw($queryExecption[0],$queryExecption[1]);
       $folders = $folders->get(['path'])->toArray();
       $folders = array_unique($folders, SORT_REGULAR);
-      foreach($folders as $i => $v){
-        $folders[$i] = join("", $v); // saat didapat dari database, bentuknya array berisi satu path saja
-        foreach($keywords['path'] as $path){
-          if($folders[$i] === $path){
-            $folders[$i] = '';
-          } else {
-            $path = str_replace("/","\/",$path);
-            $folders[$i] = preg_replace("/({$path})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folders[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
-          }
-        }
+      array_walk($keywords['path'], fn(&$v) => $v = substr($keywords['path'][0],0,-1) ); // menghilangkan '/' di ujung path query yang ditambah sebelumnya
+
+      // menghilangkan sub-subfolder 
+      $l_folders = count($folders);
+      $allPath = join("|",$keywords['path']); // jika pencarian multiple path, maka dijoin pakai pipe symbol sesuai pencarian di regex;
+      $allPath = str_replace("/","\/",$allPath);
+      for ($i=0; $i < $l_folders; $i++) { 
+        // pengecekan terhadap setiap keyword paths tidak diperlukan lagi karena saat pencarian setiap path keyword sudah ditambah '/' sehingga pencarian spesifik untuk sub folder 
+        $folders[$i] = join("", $folders[$i]); // saat didapat dari database, bentuknya array berisi satu path saja
+        $folders[$i] = preg_replace("/({$allPath})(\/[a-zA-Z0-9]+)(\/.+)?/","$1$2",$folders[$i]); // menghilangkan subfolder. eg.: query path='csdb', result='csdb/cn235/amm'. Nah 'amm' nya dihilangkan
       }
       $folders = array_unique($folders,SORT_STRING);
       $folders = array_filter($folders, fn ($v) => ($v != null) || ($v != ''));
       $folders = array_values($folders); // supaya tidak assoc atau supaya indexnya teratur
       sort($folders);
     }
-    // if ($CSDBModels->isNotEmpty()) {
-    // } else $m = "CSDB objects can not be found.";
 
-    if (isset($keywords['path']) and count($keywords['path']) === 1) {
-      $current_path = $keywords['path'][0];
-    }
-
+    // return
+    if (isset($keywords['path']) and count($keywords['path']) === 1) $current_path = $keywords['path'][0];
     $CSDBModels = $CSDBModels->toArray();
     $CSDBModels['csdbs'] = $CSDBModels['data'];
     unset($CSDBModels['data']);
-
     return $this->ret2(200, $CSDBModels, ['message' => $m, 'infotype' => "caution", 'folders' => $folders ?? [], "current_path" => $current_path ?? '']);
   }
 
@@ -319,6 +323,47 @@ class CsdbController extends Controller
     $CSDBModels['csdbs'] = $CSDBModels['data'];
     unset($CSDBModels['data']);
     return $this->ret2(200, $CSDBModels);
+  }
+
+  /**
+   * belum bisa menangani banyak file untuk dibuatkan zip
+   */
+  public function download_objects(Download $request)
+  {
+    $validatedData = $request->validated();
+    $l = count($validatedData['CSDBModelArray']);    
+    if($l > 1){
+      // handle zipping file here
+      $zipName = $request->user()->storage . "_". now()->getTimestamp() . ".zip";
+      $zip = new ZipStream(
+        outputName: $zipName,
+        sendHttpHeaders: false,
+      );
+      $storage = $request->user()->storage;
+      for ($i=0; $i < $l; $i++) { 
+        $zip->addFileFromPath(
+          fileName: $validatedData['CSDBModelArray'][$i]->filename,
+          path: CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $storage . DIRECTORY_SEPARATOR . $validatedData['CSDBModelArray'][$i]->filename,
+        );
+      }
+      
+      $zip->finish();
+      return response()->streamDownload(fn() => $zip, $zipName,[
+        // 'Content-Type' => 'application/octet-stream',
+        // 'Content-Transfer-Encoding' => 'Binary',
+        // 'Content-disposition' => 'attachment; filename="'. $zipName .'"', // tidak diperlukan karena sidah di parameter @streamDownload()
+        'Content-Type' => 'application/zip', // biar bisa di buka di browser, bukan pakai 'application/octet-stream'
+      ]);
+    }
+    elseif($l === 1){
+      $name = $request->user()->storage . "/". $validatedData['CSDBModelArray'][0]->filename;
+      $file = Storage::disk('csdb')->get($name);
+      $mime = Storage::disk('csdb')->mimeType($name);
+      return response()->streamDownload(fn()=>$file,$validatedData['CSDBModelArray'][0]->filename,[
+        'Content-Type' => $mime,
+      ]);
+    }
+    abort(404);
   }
 
   /**
@@ -409,7 +454,6 @@ class CsdbController extends Controller
     $qtyCSDBs = count($CSDBModels);
     for ($i=0; $i < $qtyCSDBs; $i++) { 
       $CSDB_HISTORYModel = History::MAKE_CSDB_RSTR_History($CSDBModels[$i]);
-      // $OBJECT_HISTORYModel = History::MAKE_CSDB_RSTR_History($CSDBModels[$i]->object);
       $USER_HISTORYModel = History::MAKE_USER_RSTR_History($request->user(),'', $CSDBModels[$i]->filename);
       if(History::saveModel([$CSDB_HISTORYModel,$USER_HISTORYModel])){
         $result['success'][] = $CSDBModels[$i]->filename;

@@ -2,13 +2,21 @@ import Randomstring from "randomstring";
 import { isArray } from "./helper";
 /**
  * HOW TO USE
- * 
- * 1. attach attribute 'cb-window' on td or parent of cb, umumnya digunakan untuk display on/off
- * 2. attach attribute 'cb-room' on tr or grandparent of cb
- * 3. Instance new Checkbox() with id that has been attached to the element / table
- * 4. run method register()
- * 5. run method pushSingle(event) atau push()
+ * 1. attach attribute homeId to element, eg: table
+ * 2. attach attribute 'cb-window' on td or parent of cb, umumnya digunakan untuk display on/off
+ * 3. attach attribute 'cb-room' on tr or grandparent of cb
+ * 4. dont forget to put value in the input checkbox
+ * 5. Instance new Checkbox() with id that has been attached to the element / table
+ * 6. run method register()
+ * 7. run method pushSingle(event) atau push()
  */
+
+const reg = function(element) {
+  element.id = element.id ? element.id : Randomstring.generate({charset:'alphabetic'});
+  element.oncontextmenu = this.setCbRoomId.bind(this); // dibuat ga pakai '@addEventListner' agar tidak multiple jika dilihat dari fungsi getEventListeners(node) di console. Kalaupun pakai '@addEventListener' dan fungsi callback nya ditaruh di luar, maka ketika calling 'this' akan merever ke elemen dom, bukan ke class Checkbox ini
+  element.onclick = this.pushSingle.bind(this); // it will be checked if in selectedMode
+  this.queryCbWindow(element).style.display = 'none';
+}
 
 class Checkbox{
   
@@ -16,7 +24,7 @@ class Checkbox{
   selectionMode;
 
   cbRoomId; // current cbRoomId
-  cbRoomDisplay = 'block'; // default display on true
+  cbRoomDisplay = 'flex'; // default display on true
   cbRoomBorder = '2px solid black'
 
   domObserver = undefined;
@@ -38,19 +46,12 @@ class Checkbox{
    * @param {Node} cbRooms 
    * @returns {undefined}
    */
-  register(cbRoom = null){
-    // register event to checkbox room
-    const reg = (element) => {
-      element.id = element.id ? element.id : Randomstring.generate({charset:'alphabetic'});
-      element.oncontextmenu = this.setCbRoomId.bind(this); // dibuat ga pakai '@addEventListner' agar tidak multiple jika dilihat dari fungsi getEventListeners(node) di console. Kalaupun pakai '@addEventListener' dan fungsi callback nya ditaruh di luar, maka ketika calling 'this' akan merever ke elemen dom, bukan ke class Checkbox ini
-      element.onclick = this.pushSingle.bind(this); // it will be checked if in selectedMode
-      this.queryCbWindow(element).style.display = 'none';
-    }
+  register(cbRoom = null,a){
     if(cbRoom && !isArray(cbRoom)){
-      reg(cbRoom);
+      (reg.bind(this))(cbRoom);
     } else {
       cbRoom = cbRoom ? cbRoom : document.querySelectorAll(`#${this.homeId} *[cb-room]`);
-      cbRoom.forEach(r => reg(r));
+      cbRoom.forEach(r => (reg.bind(this))(r));
     }
   }
 
@@ -138,16 +139,30 @@ class Checkbox{
     return cbWindows
   }
 
+  /**
+   * 1. Jika ada param cbRoomId, maka akan mengambil sesuai cbRooomId, atau 2.
+   * 2. jika semua cbTarest tidak ada yang checked,  maka 3.
+   * 3. smbil value yang cbRoomId sesuai dengan current
+   * @param {String} cbRoomId 
+   * @returns 
+   */
   value(cbRoomId = ''){
     let cssSelector;
     if(cbRoomId) (cssSelector = this.CSSSelector_cbTargets(cbRoomId,'')); // to get value whether its checked or not
     else (cssSelector = this.CSSSelector_cbTargets()); // to get checked value
 
     let val = [];
-    document.querySelectorAll(cssSelector).forEach(c => {
-      val.push(c.value);
-    });
-    return val;
+    let inputs = document.querySelectorAll(cssSelector);
+    // jika tidak ada input checked, maka akan mengambil input sesuai current cbRoomId, whether checked or not
+    if(inputs.length > 0){
+      inputs.forEach(c => {
+        val.push(c.value);
+      });
+      return val;
+    } else {
+      inputs = this.getCbTarget();
+      return [inputs.value];
+    }
   }
 
   // helper function

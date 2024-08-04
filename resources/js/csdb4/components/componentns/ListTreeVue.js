@@ -142,7 +142,6 @@ function pushList(model) {
  * digunakan untuk emit.on('ListTree-refresh')
  */
 function refresh(data) {
-  console.log(data);
   //data adalah model SQL Csdb Object atau array contain csdb object (bukan meta objek nya)
   if(isArray(data)){
     data.forEach((obj) => {

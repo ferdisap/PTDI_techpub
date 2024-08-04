@@ -1,5 +1,4 @@
 import {formDataToObject, isEmpty, isString, isArray, findAncestor} from '../../helper';
-import { isProxy, toRaw } from "vue";
 
 async function getObjs(data = {}) {
   data = Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
@@ -41,31 +40,25 @@ function removeList(filename) {
   return csdb
 }
 
-async function restore(filename) {
-  // let response = await axios({
-  //   route: {
-  //     name: 'api.restore_object',
-  //     data: { filename: filename }
-  //   },
-  // })
-  // if (response.statusText === 'OK') {
-  //   this.removeList(filename);
-  //   this.emitter.emit('RestoreCSDBobejctFromDeletion', response.data.data);
-  // }
-  let values = await this.CbSelector.restore(this.CbSelector.cancel); // output array contains filename
-  if(isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
-  else if(values instanceof FormData) values = formDataToObject(values);
-  if(isString(values.filename)) values.filename = values.filename.split(',');
-
+async function restore() {
+  let filenames = this.CB.value();
+  let response = await axios({
+    route: {
+      name: 'api.restore_object',
+      data: { filename: filenames },
+    },
+  });
+  if (response.statusText != 'OK') return;
+  
   // hapus list di folder, tidak seperti listtree yang ada level dan list model, dan emit csdbDelete
-  const csdbDeleted = [];
-  values.filename.forEach((filename) => {
+  const csdbRestored = [];
+  filenames.forEach((filename) => {
     let csdb = this.removeList(filename);
-    csdbDeleted.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+    csdbRestored.push(csdb);
   });
 
   // emit
-  this.emitter.emit('RestoreCSDBobejctFromDeletion',csdbDeleted);
+  this.emitter.emit('RestoreCSDBobejctFromDeletion',csdbRestored);
 }
 
 async function permanentDelete(filename) {
@@ -82,31 +75,11 @@ async function permanentDelete(filename) {
   const csdbDeleted = [];
   values.filename.forEach((filename) => {
     let csdb = this.removeList(filename);
-    csdbDeleted.push(isProxy(csdb) ? toRaw(csdb) : csdb);
+    csdbDeleted.push(csdb);
   });
 }
 
-async function download(filename) {
-  let response = await axios({
-    route: {
-      name: 'api.get_deletion_object',
-      data: { filename: filename },
-    },
-    responseType: 'blob',
-  });
-  if (response.statusText === 'OK') {
-    let typeblob = response.headers.getContentType();
-    if (typeblob.includes('xml')) {
-      // let raw = await response.data.text(); // tidak dipakai
-      let srcblob = URL.createObjectURL(await response.data);
 
-      let a = $('<a/>')
-      a.attr('download', filename);
-      a.attr('href', srcblob);
-      a[0].click();
-    }
-  }
-}
 
 function refresh(data) {
   // data adalah Array contain csdb deleted Object
@@ -127,11 +100,13 @@ function select(event){
 }
 
 function clickFilename(event, filename){
-  this.CbSelector.select();
+  // stil nothing to do except to open CB selector for temporary until it has made decision
+  this.CB.push();
 }
 
 function preview(){
 
 }
 
-export {getObjs, storingResponse, goto, removeList, restore, permanentDelete, download, refresh, select, preview, clickFilename}
+
+export {getObjs, storingResponse, goto, removeList, restore, permanentDelete, refresh, select, preview, clickFilename}

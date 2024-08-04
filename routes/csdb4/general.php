@@ -50,6 +50,8 @@ Route::post('/api/object/path/change', [CsdbController::class, 'change_object_pa
 // search csdbs
 Route::get('/api/csdbssearch', [CsdbController::class, 'searchCsdbs'])->middleware('auth')->name('api.csdb_search');
 
+Route::post("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth')->name('api.download_objects');
+Route::get("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth');
 
 
 
@@ -113,7 +115,7 @@ Route::get("/api/identstatus/{filename}",[CsdbServiceController::class, 'get_tra
 // Route::get('/api/{filename}/change/path', [CsdbServiceController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
 
 // get deletion object
-Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
+// Route::get("/api/deletion/{filename}/get", [CsdbController::class, 'get_deletion_object'])->middleware('auth')->name('api.get_deletion_object');
 
 // get PDF
 // Route::get('/api/content/{csdb:filename}/pdf', [CsdbServiceController::class, 'get_pdf_object'])->middleware('auth')->name('api.get_pdf_object');

@@ -3,15 +3,13 @@ import { copy } from "../../helper";
 import { useTechpubStore } from "../../../techpub/techpubStore";
 import Sort from "../../../techpub/components/Sort.vue";
 import ContinuousLoadingCircle from "../../loadingProgress/ContinuousLoadingCircle.vue";
-import RCMenu from "../../rightClickMenuComponents/RCMenu.vue";
-import {CsdbObjectCheckboxSelector} from "../../CheckboxSelector";
-import {getObjs, storingResponse, goto, back, clickFolder, clickFilename, 
+import {getObjs, storingResponse, goto, back, clickFolder, clickFilename, download,
   sortTable, search, removeList, pushFolder, dispatch, changePath, deleteObject, refresh} from './FolderVue'
 import FolderVueCb from "./FolderVueCb";
 import ContextMenu from "../subComponents/ContextMenu.vue";
 
 export default {
-  components:{ Sort, ContinuousLoadingCircle, RCMenu, ContextMenu },
+  components:{ Sort, ContinuousLoadingCircle, ContextMenu },
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -84,19 +82,14 @@ export default {
     changePath: changePath,
     deleteObject: deleteObject,
     pushFolder: pushFolder,
+    download: download,
     
     // emit
     refresh: refresh,
 
     copy: copy,
   },
-  mounted(){
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false,this.contextMenuId);
-
-    this.CB = new FolderVueCb(this.cbId)
-    this.CB.display = 'flex';
-    
+  mounted(){    
     // dari Listtree via Explorer/Management data data berisi path doang,
     let emitters =  this.emitter.all.get('Folder-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
     if(emitters){
@@ -111,6 +104,11 @@ export default {
       this.getObjs({path: 'CSDB'});
       this.data.current_path = 'CSDB';
     }
+    
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false,this.contextMenuId);
+
+    this.CB = new FolderVueCb(this.cbId)
   },
 }
 </script>
@@ -223,6 +221,9 @@ export default {
       </div>
       <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Delete</div>
+      </div>
+      <div @click="download()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Download</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
       <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
