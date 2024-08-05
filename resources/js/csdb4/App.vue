@@ -105,6 +105,7 @@ export default {
   },
   mounted(){
     window.techpubStore = this.techpubStore;
+    window.app = this;
   }
 }
 </script>
