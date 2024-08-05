@@ -103,11 +103,6 @@ export default {
             top.localStorage.setItem('expandCollapseListTree', JSON.stringify(this.$parent.data.open))
           }
         },
-        // mounted(){
-        //   setTimeout(()=>{
-        //     this.CB.register();
-        //   },1000)
-        // }
       }
     }
   },
@@ -118,7 +113,6 @@ export default {
 </script>
 <template>
   <div class="listtree h-full relative">
-    {{ CB.selectionMode }}
     <!-- list -->
     <div id="cbListTreeVue" :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
       <!-- <component v-if="(this.data[`${this.$props.type}_list_level`] && this.data[`${this.$props.type}_list`])" :is="tree" /> -->

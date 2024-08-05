@@ -1,131 +1,55 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import { contentType } from 'es-mime-types';
 import path from 'path';
 import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
+import { refresh, renderFromBlob, render, blobRequestTransformed, switchView } from './PreviewVue.js';
+import ContextMenu from '../subComponents/ContextMenu.vue';
+
 export default {
-  data(){
+  data() {
     return {
       techpubStore: useTechpubStore(),
       pathHelper: path,
       showLoadingProgress: false,
       inIframe: undefined,
       mime: undefined, // ini bisa PDF, HTML, IMG, VIDEO, mungkin FLASH, etc
-      src: undefined
+      src: undefined,
+
+      contextMenuId: 'cmPreviewVue',
     }
   },
-  components:{ContinuousLoadingCircle},
-  methods:{
-    async render(filename, viewType){
-      URL.revokeObjectURL(this.src);
-      this.mime, this.src = undefined;
-      let routename;
-      let extension = filename.substring(filename.length,filename.length-4);
-      let doctype = filename.substring(0,3);
-
-      // eg. DMC viewtype == 'html' (ietm);
-      if(extension === '.xml' && viewType === 'html') {
-        routename = 'api.read_html_object';
-        this.mime = 'text/html';
-        this.inIframe = true;
-      }
-      // eg. DMC viewType == 'pdf'
-      else if(extension === '.xml' && viewType === 'pdf') {
-        routename = 'api.read_pdf_object';
-        this.mime = 'application/pdf';
-        this.inIframe = true;
-      }
-      // eg. ICN
-      else if(doctype === 'ICN' && (viewType === 'html' || viewType === 'other')) {
-        routename = 'api.get_icn_raw';
-        let path = this.pathHelper.extname(filename);
-        this.mime = contentType(path);
-        this.inIframe = false;
-      }
-      // eg. externalpubRef pdf
-      else if(doctype != 'ICN' && extension != '.xml' && viewType === 'pdf') {
-        routename = 'api.read_pdf_object';
-        this.mime = 'application/pdf';
-        this.inIframe = true;
-      }
-      // eg. external pubRef non pdf
-      else if(doctype != 'ICN' && extension != '.xml' && viewType != 'pdf') {
-        routename = 'api.read_other_object';
-        let path = this.pathHelper.extname(filename);
-        this.mime = contentType(path);
-        this.inIframe = false;
-      }
-      // eg. ICN tapi viewType === 'pdf'
-      else return Promise.reject(false);
-
-      let route = this.techpubStore.getWebRoute(routename, {filename: filename});
-      // ini untuk embed
-      if(!this.inIframe) this.src = route.url.toString();
-      // ini untuk iframe HTML dan PDF
-      else {
-        this.showLoadingProgress = true;
-        this.src = await this.blobRequestTransformed(routename, { filename: filename }, this.mime)
-        this.showLoadingProgress = false;
-      };
-      
-      return Promise.reject(true);
-    },
-    renderFromBlob(src, mime){
-      setTimeout(()=>{
-        this.src = src;
-        this.mime = mime;
-      },0);
-    },
+  computed:{
+    whatNextView(){
+      return (this.$route.params.viewType === 'html') ? 'pdf' : 'html';
+    }
+  },
+  components: { ContinuousLoadingCircle, ContextMenu },
+  methods: {
+    render: render,
+    renderFromBlob, renderFromBlob,
     /**
      * aat ini belum dipakai karena halaman untuk ietm(html) belum difungsikan
      */
-    switchView(name){
-      this.view = name;
-      this.datamoduleRenderer({filename: this.filename});
-      this.$router.push({
-          name: 'Explorer',
-          params: {
-              filename: this.$route.params.filename,
-              viewType: name
-          },
-          query: this.$route.query
-      });
-    },
+    switchView: switchView,
     /**
      * nanti ini diganti oleh worker
      * kalo worker cuma untuk fetch saja, tidak perlu pakai worker, kecuali ada proses pengolahan data response nya. Tapi karna blobURL yang dibuat di worker tidak bisa ditampilkan di window maka worker tidak perlu
     */
-    async blobRequestTransformed(routename, data, mime) {
-      data = Object.assign(data);
-      delete (data.update_at);
-      let responseType = !mime.includes('text') ? 'arraybuffer' : 'json';
-      // masukkan cache If-None-Match jika perlu, di server sudah siap
-      let response = await axios({
-        route: {
-          name: routename,
-          data: data,
-        },
-        useMainLoadingBar: false,
-        responseType: responseType,
-      });
-      if (response.statusText === 'OK') {
-        let blob = new Blob([response.data], { type: mime });
-        let url = URL.createObjectURL(blob);
-        return url;
-      } else {
-        return false
-      }
-    },
+    blobRequestTransformed: blobRequestTransformed,
+    refresh: refresh,
   },
-  mounted(){
+  mounted() {
     this.render(this.$route.params.filename, this.$route.params.viewType);
-    this.emitter.on('Preview-refresh', async (data) => {
-      if (data.sourceType === 'blobURL') {
-        this.renderFromBlob(data.src, data.mime)
-      } else {
-        this.render(data.filename, data.viewType ? data.viewType : this.$route.params.viewType);
-      }
-    });
+
+    // dari Listtree via Explorer/Management data data berisi path doang,
+    let emitters = this.emitter.all.get('Preview-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    if (emitters) {
+      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
+    } else this.emitter.on('Preview-refresh', this.refresh)
+
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false, this.contextMenuId);
   }
 }
 </script>
@@ -137,15 +61,14 @@ export default {
     <div class="flex justify-center w-full px-3 h-[95%]">
       <!-- untuk HTML dan PDF-->
       <div v-if="inIframe" id="datamodule-container" class="w-full h-full">
-        <iframe id="datamodule-frame" class="w-full h-full" :src="src" />
+        <iframe id="datamodule-frame" class="w-full h-full" :src="src" loading="lazy" referrerpolicy="same-origin"/>
       </div>
       <!-- untuk non HTML dan non PDF-->
       <div v-else id="icn-container">
         <embed class="w-full h-full" :src="src" :type="mime" />
       </div>
     </div>
-    <PreviewRCMenu>
-      <!-- view IETM or PDF -->
+    <!-- <PreviewRCMenu>
       <div v-if="inIframe" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div v-if="$route.params.viewType === 'html'" href="#" class="text-sm" @click="switchView('pdf')">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">book_2</span>
@@ -156,7 +79,6 @@ export default {
           Switch to HTML</div>        
       </div>
 
-      <!-- Action to be accomplished (delete, issue, commit) -->
       <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: filename})">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
@@ -172,7 +94,19 @@ export default {
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
           Commit</div>
       </div>      
-    </PreviewRCMenu>
-    <ContinuousLoadingCircle :show="showLoadingProgress"/>
+    </PreviewRCMenu> -->
+    <ContinuousLoadingCircle :show="showLoadingProgress" />
+    <ContextMenu :id="contextMenuId">
+      <div @click.stop.prevent="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Copy</div>
+      </div>
+      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <a class="text-sm" :href="src" target="_blank">Open in new tab</a>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid"/>
+      <div @click.stop.prevent="switchView(whatNextView)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Switch to {{ whatNextView }} </div>
+      </div>
+    </ContextMenu>
   </div>
 </template>
