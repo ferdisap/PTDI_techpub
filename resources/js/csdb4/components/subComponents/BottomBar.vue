@@ -38,7 +38,6 @@ export default {
       else {
         bbi = componentName
       }
-      console.log(bbi);
       this.$router.replace({
         path: this.$route.path,
         query: {

@@ -91,10 +91,10 @@ export default {
       this.bottomBarItems.Preview.isShow = true;
       setTimeout(() => this.emitter.emit('Preview-refresh', data), 0);
       this.bottomBarItems.History.isShow = false;
-      this.bottomBarItems.Analyzer.isShow = false;
+      // this.bottomBarItems.Analyzer.isShow = false;
     });
 
-    this.emitter.on('readTextFileFromEditor', () => {
+    this.emitter.on('readTextFileFromUploadICN', () => {
       this.bottomBarItems.Preview.isShow = false;
       this.bottomBarItems.History.isShow = false;
     });

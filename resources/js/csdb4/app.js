@@ -12,6 +12,8 @@ import mitt from 'mitt';
 import routes from '../../others/routes.json';
 
 import ContextMenu from './ContextMenu';
+import Dropdown from './components/Dropdown';
+import Modal from './Modal.js';
 // ####### start here
 
 /**
@@ -66,6 +68,8 @@ csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
 // csdb.config.globalProperties.copyText = copyText;
 csdb.config.globalProperties.ContextMenu = new ContextMenu();
+csdb.config.globalProperties.Dropdown = new Dropdown();
+csdb.config.globalProperties.Modal = new Modal();
 
 // ga bisa npm build jika pakai await 
 axios.get('/auth/check')

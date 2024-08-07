@@ -292,6 +292,12 @@ dialog a,
   }
 }
 
+@layer components {
+  .cm-editor {
+    @apply bg-white font-tahoma rounded-md
+  }
+}
+
 
 
 

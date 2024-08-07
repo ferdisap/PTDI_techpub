@@ -146,7 +146,6 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <!-- <tr @click.stop.prevent="select($event)" @dblclick.prevent="clickFolder($event, path)" @mousemove="CbSelector.setCbHovered('cb'+path)" v-for="path in folders" class="folder-row text-sm hover:bg-blue-300 cursor-pointer"> -->
             <tr v-for="path in folders" cb-room="folder" @dblclick="clickFolder($event, path)" class="folder-row text-sm hover:bg-blue-300 cursor-pointer">
               <td cb-window>
                 <input type="checkbox" :value="path">

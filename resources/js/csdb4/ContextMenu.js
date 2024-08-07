@@ -13,6 +13,7 @@ class ContextMenu {
   id; // current or last context menu
   collection;
   anchorNode; // berupa target node saat di #trig
+  triggerTarget; // DOMElement
 
   constructor() {
     this.collection = {};
@@ -82,7 +83,15 @@ class ContextMenu {
 
   display(id) {
     const el = document.getElementById(id);
-    if (el) el.style.display = this.#getDisplay(id);
+    const display = this.#getDisplay(id);
+    if (el) el.style.display = display;
+
+    // mungkin nanti dihapus supaya tidak memory leaks, tapi pakai clearTimeout agar..
+    // if(display === 'none'){
+    //   setTimeout(()=>{
+    //     this.triggerTarget = undefined;
+    //   },1000)
+    // }
   }
 
   #getDisplay(id) {
@@ -92,6 +101,8 @@ class ContextMenu {
   #trig(event) {
     event.preventDefault();
     event.stopPropagation();
+    this.triggerTarget = event.target;
+
     const id = event.target.closest("*[cm-target-id]").getAttribute('cm-target-id');
     this.#positionMenu(event, id);
     this.toggle(true, id);

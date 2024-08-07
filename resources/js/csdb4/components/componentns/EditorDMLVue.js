@@ -29,6 +29,9 @@ async function update(event){
   this.showLoadingProgress = false;
 }
 
+/**
+ * DEPRECATED, dipindah ke DMLVue.js
+ */
 async function showDMLContent(){
   this.showLoadingProgress = true;
   let response = await axios({

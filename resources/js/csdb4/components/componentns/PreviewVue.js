@@ -9,10 +9,13 @@ function refresh(data) {
 }
 
 function renderFromBlob(src, mime){
-  setTimeout(()=>{
-    this.src = src;
-    this.mime = mime;
-  },0);
+  const icnContainer = document.getElementById('icn-container');
+  const embed = `<embed src="${src}" type="${mime}"/>`
+  icnContainer.innerHTML = embed;
+  // setTimeout(()=>{
+  //   this.mime = mime;
+  //   this.src = src;
+  // },10);
 }
 
 async function blobRequestTransformed(routename, data, mime) {

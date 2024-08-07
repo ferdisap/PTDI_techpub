@@ -42,11 +42,12 @@ export default {
     this.render(this.$route.params.filename, this.$route.params.viewType);
 
     // dari Listtree via Explorer/Management data data berisi path doang,
-    let emitters = this.emitter.all.get('Preview-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
-    if (emitters) {
-      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-      if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
-    } else this.emitter.on('Preview-refresh', this.refresh)
+    // let emitters = this.emitter.all.get('Preview-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    // if (emitters) {
+    //   let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+    //   if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
+    // } else this.emitter.on('Preview-refresh', this.refresh)
+    this.emitter.on('Preview-refresh', this.refresh)
 
     this.ContextMenu.register(this.contextMenuId);
     this.ContextMenu.toggle(false, this.contextMenuId);

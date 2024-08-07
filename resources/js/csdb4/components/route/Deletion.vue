@@ -81,7 +81,7 @@ export default {
 <template>
   <div class="deletion overflow-auto h-full">
 
-    <div class="bg-white px-3 py-3 2xl:h-[92%] xl:h-[90%] lg:h-[88%] md:h-[90%] sm:h-[90%] h-full" @contextmenu.prevent="CbSelector.isShowTriggerPanel = true">
+    <div class="bg-white px-3 py-3 2xl:h-[92%] xl:h-[90%] lg:h-[88%] md:h-[90%] sm:h-[90%] h-full">
 
       <div class="2xl:h-[5%] xl:h-[6%] lg:h-[8%] md:h-[9%] sm:h-[11%]">
         <h1 class="text-blue-500">DELETION</h1>

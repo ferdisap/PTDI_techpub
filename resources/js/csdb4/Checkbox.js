@@ -28,6 +28,7 @@ class Checkbox{
   cbRoomBorder = '2px solid black'
 
   domObserver = undefined;
+  cbRoomAdditionalAttribute = {}; // jika bermasalah, coba pakai Proxy karena bisa jadi checkboxnya sudah diregister terlebih dahulu sebelum props ini di set
   
   constructor(homeId, useObserver = true){
     this.homeId = homeId;
@@ -46,12 +47,16 @@ class Checkbox{
    * @param {Node} cbRooms 
    * @returns {undefined}
    */
-  register(cbRoom = null,a){
+  register(cbRoom = null){
     if(cbRoom && !isArray(cbRoom)){
+      this.addAttributeOnCbRoom(cbRoom);
       (reg.bind(this))(cbRoom);
     } else {
       cbRoom = cbRoom ? cbRoom : document.querySelectorAll(`#${this.homeId} *[cb-room]`);
-      cbRoom.forEach(r => (reg.bind(this))(r));
+      cbRoom.forEach(r => {
+        this.addAttributeOnCbRoom(r);
+        (reg.bind(this))(r)
+      });
     }
   }
 
@@ -100,7 +105,6 @@ class Checkbox{
       const cbTarget = this.queryCbTarget(cbWindow);
       cbTarget.checked = !cbTarget.checked;
     }
-    else console.log('push', this.cbRoom);
     this.openSelectionMode();
   }
 
@@ -163,6 +167,13 @@ class Checkbox{
       inputs = this.getCbTarget();
       return [inputs.value];
     }
+  }
+
+  // additional function
+  addAttributeOnCbRoom(cbRoom){
+    Object.keys(this.cbRoomAdditionalAttribute).forEach(key => {
+      cbRoom.setAttribute(key, this.cbRoomAdditionalAttribute[key]);
+    })
   }
 
   // helper function

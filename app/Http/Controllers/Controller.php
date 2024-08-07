@@ -479,6 +479,7 @@ class Controller extends BaseController
       "Date" => now()->toString(),
       // "Cache-Control" => 'max-age=604800', // one week
       // "Cache-Control" => 'max-age=60', // one minute
+      "Cache-Control" => 'max-age=300', // five minute
     ]);
   }
   

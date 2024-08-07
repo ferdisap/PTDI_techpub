@@ -144,6 +144,7 @@ class DmlController extends Controller
 
   public function dmlupdate(Request $request, string $filename)
   {
+    dd($request->all());
     // #0. validation
     $DMLModel = Dml::where('filename', $filename)->first();
     if ($request->user()->id != $DMLModel->initiator_id) return $this->ret(400, ["Only Initiator DML can do an update."]);

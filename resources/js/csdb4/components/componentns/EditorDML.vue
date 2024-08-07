@@ -1,31 +1,29 @@
 <script>
-// import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
 import { submit, update, showDMLContent, searchBrex } from './EditorDMLVue.js';
-// import DynamicDML from '../subComponents/DynamicDML.js';
 import DropdownInputSearch from '../../DropdownInputSearch';
 import DML from '../subComponents/DML.vue';
+import ContextMenu from '../subComponents/ContextMenu.vue';
+
 export default {
   data(){
     return{
       techpubStore: useTechpubStore(),
       showLoadingProgress: false,
       DropdownBrexSearch: new DropdownInputSearch('filename'),
-      transformed: '',
-      json: '',
+      
+      // transformed: '',
+      // json: '',
+
+      isUpdate: '',
+
+      contextMenuId:'cmEditorDMLVue',
     }
   },
-  components:{Remarks, ContinuousLoadingCircle, DML},
+  components:{Remarks, ContinuousLoadingCircle, DML, ContextMenu},
   computed:{
-    isUpdate(){
-      if(this.$route.params.filename){
-        this.showDMLContent();
-        return true;
-      }
-    },
-    // dynamic: DynamicDML,
   },
   methods:{
     submit: submit,
@@ -33,14 +31,24 @@ export default {
     showDMLContent: showDMLContent,
     searchBrex: searchBrex,
   },
-  mounted(){}
+  mounted(){
+    if(this.$route.params.filename && (this.$route.params.filename.substring(0,3) === 'DML')) {
+      this.isUpdate = true;
+      // this.showDMLContent();
+    }
+    
+    this.ContextMenu.register(this.contextMenuId);
+    this.ContextMenu.toggle(false, this.contextMenuId);
+  }
 }
 </script>
 <template>
   <div class="EditorDML px-3 relative">
     <h1 class="mt-2 mb-4 text-center underline">{{ isUpdate ? 'Update DML' : 'Create DML' }}</h1>
     
-    <form @submit.prevent="submit($event)" v-if="!isUpdate">
+    <DML v-if="isUpdate" :filename="$route.params.filename"/>
+
+    <form v-else @submit.prevent="submit($event)">
       <!-- untuk DML Type -->
       <input type="hidden" value="p" name="dmlType"/>
 
@@ -98,17 +106,18 @@ export default {
       <button type="submit" class="button-violet">Submit</button>
     </form>
 
-    <!-- <form id="dml" v-if="isUpdate" @submit.prevent="update($event)">
-      <input type="hidden" name="filename" :value="$route.params.filename" />
-
-      <component :is="dynamic" v-if="transformed" />
-
-      <div class="w-full text-center mb-3 mt-3">
-        <button class="button-violet">Update</button>
-      </div>
-    </form> -->
-    <DML v-if="json" :json="json"/>
-
     <ContinuousLoadingCircle :show="showLoadingProgress"/>
+
+    <ContextMenu :id="contextMenuId">
+      <div @click.stop.prevent="$parent.editorComponent = 'EditorXML'"
+        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">XML Editor</div>
+      </div>
+      <div @click.stop.prevent="$parent.editorComponent = 'EditorICN'"
+        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Upload ICN</div>
+      </div>
+    </ContextMenu>
+
   </div>
 </template>

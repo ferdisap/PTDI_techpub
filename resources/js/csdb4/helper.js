@@ -13,8 +13,9 @@ const formDataToObject = (v) => {
   const obj = {};
   v.forEach((value,key,fd) => {
     if(key.substr(key.length-2) === '[]') {
-      obj[key.substr(0,key.length-2)] = obj[key.substr(0,key.length-2)] ?? [];
-      obj[key.substr(0,key.length-2)].push(value);
+      const key = key.substr(0,key.length-2);
+      obj[key] = obj[key] ?? [];
+      obj[key].push(value);
     }
     else obj[key] = value
   })
@@ -27,7 +28,7 @@ const isString = (v) => (v !== undefined) && (v !== null) && (v.constructor.name
 
 const isNumber = (v) => (v !== undefined) && (v !== null) && (v.constructor.name === 'Number');
 
-const isEmpty = (v) => (v !== undefined) && (v !== null) && (v !== '') && ((v.length | Object.keys(v).length) < 1);
+const isEmpty = (v) => (v == undefined) || (v == null) || (v == '') || ((v.length | Object.keys(v).length) < 1);
 
 const isArray = (v) => (v !== undefined) && (v !== null) && (v.constructor.name === 'Array');
 
@@ -35,9 +36,13 @@ const isClassIntance = (v) => (v !== undefined) && (v !== null) && (v.constructo
 
 const isFunction = (v) => (v !== undefined) && (v !== null) && (v.constructor.name === 'Function');
 
+// DOM
 const findAncestor = function(el, sel) {
   while ((el = el.parentElement) && !((el.matches || el.matchesSelector).call(el,sel)));
   return el;
+}
+const indexFromParent = function(el) {
+  return Array.prototype.slice.call(el.parentElement.children).indexOf(el);
 }
 
 // event
@@ -58,6 +63,21 @@ function isLeftClick(evt){
 }
 function isRightClick(evt){
   return (evt.which === 3) ? true : false;
+}
+function isCharacterKeyPress(evt) {
+  if (typeof evt.which == "undefined") {
+    // This is IE, which only fires keypress events for printable keys
+    return true;
+  } else if (typeof evt.which == "number" && evt.which > 0) {
+    // In other browsers except old versions of WebKit, evt.which is
+    // only greater than zero if the keypress is a printable key.
+    // We need to filter out backspace and ctrl/alt/meta key combinations
+    // return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8;
+    // modifan saya
+    return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8 
+    && (evt.which !== 1) && (evt.which !== 2) && (evt.which !== 3) && (evt.which !== 27) && (evt.which !== 13) && (evt.which !== 37) && (evt.which !== 38) && (evt.which !== 39) && (evt.which !== 40);
+  }
+  return false;
 }
 
 /**
@@ -100,8 +120,12 @@ function copy(event, text)
 }
 
 export {
-  array_unique, formDataToObject, isObject, isNumber, isEmpty, 
-  isString, isArray, isClassIntance, isFunction, findAncestor,
-  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick,
+  // general
+  array_unique, formDataToObject, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction, 
+  // DOM
+  findAncestor,indexFromParent,
+  // event
+  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick, isCharacterKeyPress,
+  // utilization
   copy
 };

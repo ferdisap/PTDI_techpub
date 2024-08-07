@@ -48,7 +48,7 @@ Route::post("/api/restore", [CsdbController::class, 'restore'])->middleware('aut
 Route::post('/api/object/path/change', [CsdbController::class, 'change_object_path'])->middleware('auth')->name('api.change_object_path');
 
 // search csdbs
-Route::get('/api/csdbssearch', [CsdbController::class, 'searchCsdbs'])->middleware('auth')->name('api.csdb_search');
+// Route::get('/api/csdbssearch', [CsdbController::class, 'searchCsdbs'])->middleware('auth')->name('api.csdb_search');
 
 Route::post("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth')->name('api.download_objects');
 Route::get("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth');

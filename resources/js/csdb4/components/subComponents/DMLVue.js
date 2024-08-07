@@ -41,58 +41,54 @@ function getAttributeValue(json, pathToElemen, attributeName) {
 };
 
 // dmlEntry
-function defaultTemplateEntry(entry = {}, cbValue) {
-  // let trId = 'tr' + Randomstring.generate({ charset: 'alphabetic' });
-  let cbId = 'cb' + Randomstring.generate({ charset: 'alphabetic' });
+function defaultTemplateEntry(entry = {}, trId, cbValue, no) {
+  let cbId = Randomstring.generate({ charset: 'alphabetic' });
   if(!cbValue) cbValue = entry.ident ? entry.ident : '';
-  let remarks = JSON.stringify(entry.remarks);
-  // let remarks = entry.remarks;
-  console.log(remarks, entry.remarks);
+  const rm = entry.remarks.join("<br/>");
   let str = `
-      <tr class="dmlEntry"
-        v-on:click.stop.prevent="CbSelector.select('${cbId}')"
-        v-on:mousemove.stop.prevent="CbSelector.setCbHovered('${cbId}')"
-        >
-        <td v-show="CbSelector.selectionMode">
+      <tr cb-room class="dmlEntry hover:bg-blue-300 cursor-pointer" id="${trId}">
+        <td modal-input-ref="no">${no}</td>
+        <td cb-window>
           <input file="true" id="${cbId}" value="${cbValue}" type="checkbox">
         </td>
-        <td class="dmlEntry-ident">
-          <textarea name="entryIdent[]" class="w-full">${entry.ident}</textarea>
-        </td>
+        <td modal-input-ref="entryIdent" class="dmlEntry-ident">${entry.ident}</td>
         <td>
-          <input class="dmlEntry-dmlEntryType w-2/5" name="dmlEntryType[]" value="${entry.dmlEntryType}"/> | <input class="dmlEntry-issueType w-2/5" name="issueType[]" value="${entry.issueType}"/>
+          <span modal-input-ref="dmlEntryType" class="text-sm">${entry.dmlEntryType}</span>
+          <span modal-input-ref="issueType" class="text-sm" >${entry.issueType}</span>
         </td>
+        <td modal-input-ref="securityClassification">${entry.securityClassification}</td>
         <td>
-          <input type="number" class="dmlEntry-securityClassification w-full" name="securityClassification[]" value="${entry.securityClassification}"/>
-        </td>
-        <td>
-          <input class="dmlEntry-enterpriseName w-2/5" name="enterpriseName[]" value="${entry.enterpriseName}"/> | <input class="dmlEntry-enterpriseCode w-2/5" name="enterpriseCode[]" value="${entry.enterpriseCode}"/>
-        </td>
+          <span modal-input-ref="enterpriseName" class="text-sm">${entry.enterpriseName}</span>   
+          <span modal-input-ref="enterpriseCode" class="text-sm italic">${entry.enterpriseCode}</span></td>
         <td>-</td>
-        <td>
-          <component is="Remarks" class_label="hidden" para='${remarks}' /> 
-        </td>
+        <td modal-input-ref="remarks[]">aaa<br/>bbbb</td>
       </tr>`;
-  window.s = str;
-  return str;
+  return str.replace(/\s{2,}/g,'');
+  // <td modal-input-ref="remarks[]">${rm}</td>
 }
-function entriesStringFromProps() {
-  const dmlContent = this.DMLObject.content;
-  window.dmlContent = dmlContent;
-  let str = '';
-  dmlContent.forEach(v => {
-    let entry = this.DMLObject.getEntryData(v['dmlEntry']);
-    str += defaultTemplateEntry({
+function createEntryData(DMLObject = {}){
+  let entryData = {};
+  DMLObject.content.forEach(v => {
+    let entry = DMLObject.getEntryData(v['dmlEntry']);
+    let trId = Randomstring.generate({ charset: 'alphabetic' })
+    entryData[trId] = {
       ident: entry.ident,
       issueType: entry.issueType,
       dmlEntryType: entry.dmlEntryType,
       securityClassification: entry.securityClassification,
       enterpriseName: entry.enterpriseName,
       enterpriseCode: entry.enterpriseCode,
-      remarks: entry.remarks,      
-    });
+      remarks: entry.remarks,
+    };
   })
-  return str;
+  return entryData;
+}
+function createEntryVueTemplate(entryData = {}) {
+  let entryTemplate = '';
+  Object.keys(entryData).forEach((trId,no) => {
+    entryTemplate += defaultTemplateEntry(entryData[trId],trId,'',no+1);
+  })
+  return entryTemplate;
 }
 function addEntry(){
   // this.entriesString = window.str;return;
@@ -125,6 +121,28 @@ function fetchDataFromRenderedEntries(){
     });
   });
   return data;
+}
+
+async function showDMLContent(filename){
+  this.showLoadingProgress = true;
+  let response = await axios({
+    route: {
+      name: 'api.read_json',
+      data: {filename: filename}
+    },
+    useMainLoadingBar: false,
+  });
+  if(response.statusText === 'OK'){
+    // handle or arrange json file
+    this.DMLObject = DML(response.data.json)
+
+    // create entries string
+    this.dmlEntryData = createEntryData(this.DMLObject);
+    this.dmlEntryVueTemplate = createEntryVueTemplate(this.dmlEntryData);
+
+    this.techpubStore.currentObjectModel = response.data.model;
+  }
+  this.showLoadingProgress = false;
 }
 
 
@@ -180,7 +198,4 @@ const DML = function (json) {
   }
 }
 
-export {
-  DML, entriesStringFromProps, defaultTemplateEntry, addEntry,
-  getAttributeValue, inWork, issueDate, securityClassification, remarks, dmlContent
-};
+export { showDMLContent, addEntry};
