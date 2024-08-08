@@ -61,10 +61,10 @@ function defaultTemplateEntry(entry = {}, trId, cbValue, no) {
           <span modal-input-ref="enterpriseName" class="text-sm">${entry.enterpriseName}</span>   
           <span modal-input-ref="enterpriseCode" class="text-sm italic">${entry.enterpriseCode}</span></td>
         <td>-</td>
-        <td modal-input-ref="remarks[]">aaa<br/>bbbb</td>
+        <td modal-input-ref="remarks[]">${rm}</td>
       </tr>`;
   return str.replace(/\s{2,}/g,'');
-  // <td modal-input-ref="remarks[]">${rm}</td>
+  // <td modal-input-ref="remarks[]">aaa<br/>bbbb</td>
 }
 function createEntryData(DMLObject = {}){
   let entryData = {};

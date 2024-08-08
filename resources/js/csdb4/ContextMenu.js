@@ -1,3 +1,4 @@
+import { findAncestor } from "./helper.js";
 /**
  * HOW TO USE
  * 
@@ -20,13 +21,19 @@ class ContextMenu {
     this.id = '';
     // check di chrome engine berapa banyak listener di register => getEventListeners(document).click[0].listener
     // useCapture = true berarti tidak buble, source: https://stackoverflow.com/questions/7398290/unable-to-understand-usecapture-parameter-in-addeventlistener
-    document.addEventListener('click', (event) => {
-      if (window.getSelection().type === 'Range') return;
+    // document.addEventListener('click', (event) => {
+    document.addEventListener('mousedown', (event) => {
+      // console.log(window.e = event)
+      // if (window.getSelection().type === 'Range') return;
       // event.preventDefault(); // kalau di prevent, misal submit event tidak berjalan jika klik button
       // event.stopPropagation(); // kalau pakai stopPropagation, maka tidak bisa click2 apapun di vue
       switch (event.target.tagName) {
         case 'INPUT':
-          break;
+          // console.log("case INPUT", findAncestor(event.target,"*[context-menu]"));
+          if(findAncestor(event.target,"*[context-menu]")) break;
+        case 'FORM':
+          if(findAncestor(event.target,"*[context-menu]")) break;
+          // break;
         default:
           this.toggle(false, this.id);
           break;
