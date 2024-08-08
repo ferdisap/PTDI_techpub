@@ -106,16 +106,19 @@ function createListTreeHTML() {
 
 /*
  * akan mendelete jika newModel tidak ada
+ * @returns {Object} csdbs 
  */
 function deleteList(filename) {
-  return Object.entries(this.data[`${this.$props.type}_list`]).find(arr => {
+  let csdb;
+  Object.entries(this.data[`${this.$props.type}_list`]).find(arr => {
     let find = arr[1].find(v => v.filename === filename);
     if (find) {
       let index = arr[1].indexOf(find);
       this.data[`${this.$props.type}_list`][arr[0]].splice(index, 1);
     }
-    return find;
-  });
+    return csdb = find;    
+  }); // ini akan mereturn Array: index#0 path, index#1 Array berisi csdb object
+  return csdb;
 }
 
 function pushList(model) {
@@ -166,5 +169,34 @@ function remove(data){
   this.createListTreeHTML();
 }
 
-export { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, pushList,
+
+async function deleteObject() {
+  const filenames = this.CB.value();
+  const response = await axios({
+    route: {
+      name: 'api.delete_objects',
+      data: {filename: filenames}
+    }
+  });
+  if (!(response.statusText === 'OK')) throw new Error(`Failed to delete ${join(", ", filenames)}`);
+  this.CB.cancel();
+
+  // hapus list di folder, tidak seperti listtree yang ada level dan list model, dan emit csdbDelete
+  const csdbDeleted = [];
+  filenames.forEach((filename) => {
+    let csdb = this.deleteList(filename);
+    if(csdb) csdbDeleted.push(csdb); // aman walau pakai csdb ada dalam proxy
+    else csdbDeleted.push({filename: filename, path: ''}); // path TBD. karena CB.value() hanya mengembalikan value saja
+  });
+  // emit
+  this.emitter.emit('DeleteCSDBObjectFromListTree', csdbDeleted);
+
+  // remove in list tree
+  this.CB.latestCbRoomQueried.forEach(cbRoom => {
+    cbRoom.remove();
+  });
+  this.CB.remove_latestCbRoomQueried();
+}
+
+export { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, deleteObject, pushList,
    refresh, remove}

@@ -91,53 +91,41 @@ th, td {
   border: 1px solid green;
 }
 
-h1 {
+/* h1 {
   font-weight: bold;
-  /* text-2xl */
   font-size: 1.5rem;
   line-height: 2rem;
-  /* end text-2xl */
 }
 
 h2 {
   font-weight: bold;
-  /* text-xl */
   font-size: 1.25rem;
   line-height: 1.75rem;
-  /* end text-xl */
 }
 
 h3 {
   font-weight: bold;
-  /* text-lg */
   font-size: 1.125rem;
   line-height: 1.75rem;
-  /* end text-lg */
 }
 
 h4 {
   font-weight: bold;
-  /* text-base */
   font-size: 1rem;
   line-height: 1.5rem;
-  /* end text-base */
 }
 
 h5 {
   font-weight: bold;
-  /* text-sm */
   font-size: 0.875rem;
   line-height: 1.25rem;
-  /* end text-sm */
 }
 
 h6 {
   font-weight: bold;
-  /* text-xs */
   font-size: 0.75rem;
   line-height: 1rem;
-  /* end text-xs */
-}
+} */
 
 .detail-container ol, 
 .detail-container ul, 
@@ -168,7 +156,7 @@ dialog a,
   -webkit-text-decoration: revert;
 }
 
-@layer components {
+/* @layer components {
   .hide {
     @apply hidden
   }
@@ -198,8 +186,9 @@ dialog a,
     dark:focus:ring-blue-500
     dark:focus:border-blue-500
   }
-}
+} */
 
+/* masih dipakai per 8 AUG 2024 */
 /* button */
 @layer components {
   .button-nav {
@@ -222,13 +211,14 @@ dialog a,
   }
 }
 
-.add_dmlEntry button{
+/* .add_dmlEntry button{
   display: none;
 }
 .add_dmlEntry:hover button{
   display: block;
-}
+} */
 
+/* masih dipakai per 8 AUG 2024 */
 /* Aside details */
 @layer components {
   .focus {
@@ -248,7 +238,7 @@ dialog a,
 }
 
 /* Dropdown */
-@layer componentns {
+/* @layer componentns {
   .dropdown {
     @apply relative inline-block
   }
@@ -258,7 +248,7 @@ dialog a,
   .dropdown-menu {
     @apply px-4 py-2 block hover:bg-blue-600 hover:text-white cursor-pointer
   }
-}
+} */
 
 /* Misc */
 @layer componentns {
@@ -280,6 +270,7 @@ dialog a,
   }
 }
 
+/* masih dipakai per 8 AUG 2024 */
 @layer components {
   .listtree summary {
     @apply text-base hover:bg-blue-500 hover:text-white pl-1
@@ -292,9 +283,54 @@ dialog a,
   }
 }
 
+/* masih dipakai per 8 AUG 2024 */
 @layer components {
   .cm-editor {
     @apply bg-white font-tahoma rounded-md
+  }
+}
+
+@layer components {
+  .listtree * {
+    @apply text-sm
+  }
+}
+
+/* masih dipakai per 8 AUG 2024 */
+@layer components {
+  .explorer .folder,
+  .explorer .history,
+  .explorer .editor,
+  .explorer .preview,
+  .explorer .dispatchto {
+    @apply p-2 border-2 shadow-md rounded-md m-2
+  }
+}
+
+/* masih dipakai per 8 AUG 2024 */
+@layer components {
+  h1 {
+    @apply font-bold text-xl    
+  }
+  table {
+    @apply w-full
+  }
+}
+
+/* masih dipakai per 8 AUG 2024 */
+@layer components {
+  .DML th, 
+  .DML td,
+  div,
+  label {
+    @apply text-sm
+  }
+}
+
+/* masih dipakai per 8 AUG 2024 */
+@layer components{
+  .DML .dmlEntry td {
+    @apply align-top
   }
 }
 

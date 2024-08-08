@@ -1,6 +1,9 @@
 import Checkbox from "../../Checkbox";
+import { findAncestor } from "../../helper";
 
 class ListTreeVueCb extends Checkbox{
+
+  latestCbRoomQueried = [];
 
   constructor(homeId){
     super(homeId,false);
@@ -31,7 +34,14 @@ class ListTreeVueCb extends Checkbox{
    */
   value(){
     let val = [];
-    document.querySelectorAll(`#${this.homeId} *[cb-window] input[type="checkbox"]:checked`).forEach(c => {
+    // const CSSSelector = `#${this.homeId} *[cb-window] input[type="checkbox"]:checked`;
+    let inputs = this.getCbTargets();
+    if (inputs.length < 1) {
+      inputs = [this.getCbTarget()];
+    }
+    this.latestCbRoomQueried = [];
+    inputs.forEach(c => {
+      this.latestCbRoomQueried.push(findAncestor(c,"*[cb-room]"));        
       if((!c.value)){
         c.closest('details').querySelectorAll("input[type='checkbox']").forEach(d => {
           val.push(d.value);
@@ -40,6 +50,10 @@ class ListTreeVueCb extends Checkbox{
       else val.push(c.value);
     });
     return val.filter(v => v && (v != ''));
+  }
+
+  remove_latestCbRoomQueried(){
+    this.latestCbRoomQueried = [];
   }
 }
 

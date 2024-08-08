@@ -56,8 +56,7 @@ export default {
     if (this.$route.params.filename) this.setUpdate(this.$route.params.filename);
     else if(this.getTextReadFromReadFile()) this.XMLEditor.changeText(this.getTextReadFromReadFile());
 
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false, this.contextMenuId);
+    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
   },
 }
 </script>

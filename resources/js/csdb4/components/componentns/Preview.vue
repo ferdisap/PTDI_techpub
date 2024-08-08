@@ -55,7 +55,7 @@ export default {
 }
 </script>
 <template>
-  <div class="Preview overflow-auto h-[93%] w-full relative">
+  <div class="preview overflow-auto h-[93%] w-full relative">
     <div class="h-[5%] flex mb-3">
       <h1 class="text-blue-500 w-full text-center">Preview</h1>
     </div>

@@ -2,6 +2,7 @@ import { findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObje
 // import { isProxy, toRaw } from "vue";
 import $ from 'jquery';
 import fileDownload from 'js-file-download';
+import { isArray } from '../../helper';
 
 async function getObjs(data = {}) {
   this.showLoadingProgress = true;
@@ -132,6 +133,7 @@ function removeList(filename) {
   this.data.csdb.splice(index, 1);
   return csdb;
 }
+
 function pushFolder(path) {
   if (path.split("/").length > this.data.current_path.split("/").length) {
     this.data.folders.push(path);
@@ -227,23 +229,6 @@ async function deleteObject() {
   });
   // emit
   this.emitter.emit('DeleteCSDBObjectFromFolder', csdbDeleted);
-
-  // return;
-
-  // let values = await this.CbSelector.delete(this.CbSelector.cancel); // output array contains filename
-  // if (isEmpty(values)) return; // jika fetch hasilnya reject (not resolve)
-  // else if (values instanceof FormData) values = formDataToObject(values);
-  // if (isString(values.filename)) values.filename = values.filename.split(',');
-
-  // // hapus list di folder, tidak seperti listtree yang ada level dan list model, dan emit csdbDelete
-  // const csdbDeleted = [];
-  // values.filename.forEach((filename) => {
-  //   let csdb = this.removeList(filename);
-  //   csdbDeleted.push(isProxy(csdb) ? toRaw(csdb) : csdb);
-  // });
-
-  // // emit
-  // this.emitter.emit('DeleteCSDBObjectFromFolder', csdbDeleted);
 }
 
 /**
@@ -251,8 +236,29 @@ async function deleteObject() {
  * @param {Object} data 
  */
 function refresh(data) {
-  if (data.path === this.data.current_path) {
-    this.getObjs({ path: data.current_path })
+  let to = 0;
+  if(isArray(data)){
+    data.forEach((obj) => {
+      if (obj.path === this.data.current_path){
+        clearTimeout(to);
+        to = setTimeout(()=>{
+          this.getObjs({ path: this.data.current_path })
+        },10);
+      }
+    });
+  } else{
+    if (data.path === this.data.current_path) this.getObjs({ path: this.data.current_path })
+  }
+}
+function remove(data) {
+  if(isArray(data)){
+    data.forEach((obj) => {
+      if (obj.path === this.data.current_path){
+        this.removeList(obj.filename);
+      }
+    });
+  } else{
+    if (data.path === this.data.current_path) this.getObjs({ path: this.data.current_path })
   }
 }
 
@@ -289,5 +295,5 @@ async function download() {
 
 export {
   getObjs, storingResponse, goto, back, clickFolder, clickFilename, download,
-  sortTable, search, removeList, pushFolder, dispatch, changePath, deleteObject, refresh
+  sortTable, search, removeList, remove, pushFolder, dispatch, changePath, deleteObject, refresh
 };

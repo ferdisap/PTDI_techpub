@@ -9,8 +9,6 @@ import ContextMenu from './ContextMenu.vue';
 import Remarks from './Remarks.vue';
 import Modal from './Modal.vue';
 import { findAncestor } from '../../helper';
-import Dropdown from '../Dropdown.js'
-
 
 export default {
   data() {
@@ -115,11 +113,13 @@ export default {
         },
         useMainLoadingBar: false,
       });
-      console.log(response);
       if (response.statusText === 'OK') {
         // this.emitter.emit('createDMLFromEditorDML', { model: response.data.data });
         // do something here
       }
+    },
+    newDML(){
+      this.$parent.isUpdate = false;
     }
   },
   computed: {
@@ -141,8 +141,7 @@ export default {
 
     // this.entriesString = this.entriesStringFromProps();
 
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false, this.contextMenuId);
+    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
 
     this.CB = new DMLVueCb(this.cbId)
     this.CB.cbRoomAdditionalAttribute = { "use-in-modal": this.dmlEntryModalId };
@@ -202,7 +201,7 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <component :is="entries" />
+          <component v-if="dmlEntryVueTemplate" :is="entries" />
         </tbody>
       </table>
     </div>
@@ -297,6 +296,9 @@ export default {
         <div class="text-sm">Remove</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
+      <div @click="newDML()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Create New</div>
+      </div>
       <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>
       </div>

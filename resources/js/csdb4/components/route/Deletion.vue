@@ -71,8 +71,7 @@ export default {
       if(emitters.length < 1 && indexEmitter < 0) this.emitter.on('Deletion-refresh', this.refresh); 
     } else this.emitter.on('Deletion-refresh', this.refresh); 
 
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false,this.contextMenuId);
+    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
 
     this.CB = new DeletionVueCb(this.cbId)
   }
@@ -120,7 +119,7 @@ export default {
                 </td>
                 <td class="text-sm">{{ object.path }}</td>
                 <td class="text-sm">{{ techpubStore.date(object.updated_at) }}</td>
-                <td class="text-sm">{{ techpubStore.date(object.last_history.created_at) }}</td>
+                <td class="text-sm">{{ object.last_history ? techpubStore.date(object.last_history.created_at) : '-' }}</td>
               </tr>
             </tbody>
           </table>

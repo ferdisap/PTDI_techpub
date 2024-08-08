@@ -173,7 +173,7 @@ export default {
 }
 </script>
 <template>
-  <div class="dispatchTo overflow-auto h-[93%] w-full relative px-3">
+  <div class="dispatchto overflow-auto h-[93%] w-full relative px-3">
 
     <form @submit.prevent="submit($event)">
       <!-- List of filename to dispatch -->

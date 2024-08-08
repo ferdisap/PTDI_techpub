@@ -60,7 +60,7 @@ const ListTree = {
       if (models) { // ada kemungkinan models undefined karena path "csdb/n219/amm", csdb/n219 nya tidak ada csdbobject nya
         for (const model of models) {
           const isICN = model.filename.substr(0, 3) === 'ICN';
-          const logo = isICN ? `<span class="material-symbols-outlined text-sm">mms</span>&#160;` : `<span class="material-symbols-outlined text-sm">description</span>&#160;`;
+          const logo = isICN ? `<span class="material-symbols-outlined">mms</span>&#160;` : `<span class="material-symbols-outlined">description</span>&#160;`;
           let href = isICN ? this.data.hrefForOther : this.data.hrefForPdf ;
           const cb = `<span cb-window class="mr-1"><input type="checkbox" value="${model.filename}"/></span>`;
           href = href.replace(':filename', model.filename);

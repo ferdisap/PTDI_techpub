@@ -12,7 +12,7 @@ export default {
     return{
       techpubStore: useTechpubStore(),
       showLoadingProgress: false,
-      DropdownBrexSearch: new DropdownInputSearch('filename'),
+      // DropdownBrexSearch: new DropdownInputSearch('filename'),
       
       // transformed: '',
       // json: '',
@@ -23,8 +23,7 @@ export default {
     }
   },
   components:{Remarks, ContinuousLoadingCircle, DML, ContextMenu},
-  computed:{
-  },
+  computed:{},
   methods:{
     submit: submit,
     update: update,
@@ -37,8 +36,8 @@ export default {
       // this.showDMLContent();
     }
     
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false, this.contextMenuId);
+    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
+    this.Dropdown.register('dmlForm')
   }
 }
 </script>
@@ -48,7 +47,7 @@ export default {
     
     <DML v-if="isUpdate" :filename="$route.params.filename"/>
 
-    <form v-else @submit.prevent="submit($event)">
+    <form v-show="!isUpdate" @submit.prevent="submit($event)" id="dmlForm">
       <!-- untuk DML Type -->
       <input type="hidden" value="p" name="dmlType"/>
 
@@ -82,25 +81,20 @@ export default {
       <!-- BREX -->
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
-          <label :for="DropdownBrexSearch.idInputText" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Brex:&#160;</label>
+          <label class="inline-block text-gray-900 dark:text-white text-lg font-bold">Brex: </label>
         </div>
         <div class="mr-2 w-80 relative">
           <div class="w-80">
-            <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[10px] top-[10px]"></div>
-            <input @keyup.prevent="searchBrex($event)" :id="DropdownBrexSearch.idInputText" name="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="w-full" autocomplete="off" aria-autocomplete="none"/>
+            <!-- <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[10px] top-[10px]"></div> -->
+            <input id="tes" dd-input="filename" dd-target="self" dd-type="csdbs" dd-route="api.get_object_csdbs" name="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="w-full" autocomplete="off" aria-autocomplete="none"/>
           </div>
           <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>  
-          <div class="w-full" :id="DropdownBrexSearch.idDropdownListContainer">
-            <div class="text-sm border-b px-2" v-show="DropdownBrexSearch.showList" v-for="(dmc) in DropdownBrexSearch.result" :filename="dmc.filename" @click.prevent="DropdownBrexSearch.keypress($event)" @keyup.prevent="DropdownBrexSearch.keypress($event)">
-              {{ dmc.filename}}
-            </div>
-          </div>
         </div>
       </div>
       
       <!-- Remarks -->
       <div class="mb-2">
-        <Remarks/>
+        <Remarks class="text-sm border-gray-300 border rounded-md p-2 bg-gray-50"/>
       </div>
 
       <button type="submit" class="button-violet">Submit</button>
@@ -116,6 +110,10 @@ export default {
       <div @click.stop.prevent="$parent.editorComponent = 'EditorICN'"
         class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Upload ICN</div>
+      </div>
+      <div v-if="$route.params.filename" @click.stop.prevent="isUpdate = true"
+        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Update DML</div>
       </div>
     </ContextMenu>
 

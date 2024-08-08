@@ -9,7 +9,7 @@ export default {
     return {
       // editorComponent: 'EditorXML',
       editorComponent: 'EditorXML',
-      contextMenuId: 'cmExplorerVue',
+      contextMenuId: 'cmEditorVue',
       text: '',
     }
   },
@@ -32,8 +32,7 @@ export default {
     },
   },
   mounted(){
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false,this.contextMenuId);
+    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
 
     switch (this.type) {
       case 'ICN':
@@ -43,7 +42,6 @@ export default {
         this.editorComponent = 'EditorDML';
         break;    
       default:
-        // this.editorComponent = 'EditorXML';
         this.editorComponent = 'EditorICN';
         break;
     }
@@ -51,7 +49,7 @@ export default {
 }
 </script>
 <template>
-  <div>
+  <div data-sort="1" class="editor">
     <component :is="editorComponent" v-if="editorComponent"/>
   
     <ContextMenu :id="contextMenuId">
@@ -61,7 +59,7 @@ export default {
       <div v-else-if="editorComponent !== 'EditorICN'"  @click="editorComponent = 'EditorICN'" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Switch to ICN Editor</div>
       </div>
-      <div v-else  @click="editorComponent = 'EditorXML'" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div v-else-if="editorComponent !== 'EditorXML'" @click="editorComponent = 'EditorXML'" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Switch to XML Editor</div>
       </div>
     </ContextMenu>

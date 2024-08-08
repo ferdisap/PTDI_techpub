@@ -33,8 +33,8 @@ const bottomBarItems = {
     'tooltipName': 'Dispatch To',
     isShow: false,
     data: {}
-  },
-};
+  }
+}
 
 const colWidth = {
   satu: { portion: 0.15 },
@@ -77,4 +77,4 @@ function turnOffSizing(callback) {
 }
 
 
-export { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing};
+export { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing };

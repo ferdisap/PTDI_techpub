@@ -1,7 +1,7 @@
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import ContinuousLoadingCircle from '../../loadingProgress/continuousLoadingCircle.vue';
-import { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, pushList, refresh, remove} from './ListTreeVue';
+import { get_list, goto, clickFolder, clickFilename, createListTreeHTML, deleteList, deleteObject, pushList, refresh, remove} from './ListTreeVue';
 import ListTreeVueCb from  './ListTreeVueCb.js';
 import ContextMenu from '../subComponents/ContextMenu.vue';
 import { copy } from '../../helper';
@@ -29,13 +29,18 @@ export default {
     clickFolder: clickFolder,
     clickFilename: clickFilename,
     createListTreeHTML: createListTreeHTML,
-    deleteList: deleteList,
-    pushList: pushList,
+    deleteList: deleteList, // tidak perlu ditampilkan disini
+    pushList: pushList, // // tidak perlu ditampilkan disini
     
     refresh: refresh,
     remove: remove,
 
     copy: copy,
+    deleteObject:deleteObject,
+    
+    // deleteObject(){
+    //   console.log(this.CB.value());
+    // }
   },
   async mounted() {
     this.ContextMenu.register(this.contextMenuId);
@@ -125,6 +130,9 @@ export default {
       </div>
       <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Select</div>
+      </div>
+      <div @click.stop.prevent="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Delete</div>
       </div>
       <div @click.stop.prevent="CB.cancel" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Cancel</div>

@@ -45,9 +45,9 @@ export default {
 }
 </script>
 <template>
-  <div class="history">
+  <div data-sort="3" class="history">
     <div class="h-[5%] flex mb-3">
-      <h1 class="text-blue-500 w-full text-center">History Log</h1>
+      <h1>History Log</h1>
     </div>
     <table>
       <thead>

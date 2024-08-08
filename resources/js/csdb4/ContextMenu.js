@@ -21,8 +21,9 @@ class ContextMenu {
     this.id = '';
     // check di chrome engine berapa banyak listener di register => getEventListeners(document).click[0].listener
     // useCapture = true berarti tidak buble, source: https://stackoverflow.com/questions/7398290/unable-to-understand-usecapture-parameter-in-addeventlistener
-    // document.addEventListener('click', (event) => {
-    document.addEventListener('mousedown', (event) => {
+    // sebenernya ini lebih baik pakai mousedown, tapi resikonya harus ubah di seluruh vue component yang pakai context menu. Eventnya bukan @click tapi @mousedown
+    document.addEventListener('click', (event) => {
+    // document.addEventListener('mousedown', (event) => {
       // console.log(window.e = event)
       // if (window.getSelection().type === 'Range') return;
       // event.preventDefault(); // kalau di prevent, misal submit event tidak berjalan jika klik button
@@ -43,7 +44,10 @@ class ContextMenu {
     // window.ContextMenu = new Proxy(this,{}); // tidak perlu dibuat di window, karena di vue sudah di instance di app.js
   }
 
-  register(menuId, defaultDisplayOnTrue = 'block', defaultDisplayOnFalse = 'none') {
+  register(menuId, defaultDisplayOnTrue = 'block', defaultDisplayOnFalse = 'none') {    
+    const menu = document.getElementById(menuId);
+    if(!menu) return;
+
     this.collection[menuId] = {
       state: false,
       displayOnFalse: defaultDisplayOnFalse,
@@ -51,7 +55,6 @@ class ContextMenu {
       // disabled: false,
     }
 
-    const menu = document.getElementById(menuId);
     menu.style.position = 'fixed';
     menu.style.zIndex = '100';
 
@@ -59,6 +62,7 @@ class ContextMenu {
     area.setAttribute('cm-target-id', menuId);
     area.addEventListener('contextmenu', this.#trig.bind(this));
 
+    return true;
     // console.log(`${menuId} has been registered.`);
   }
 

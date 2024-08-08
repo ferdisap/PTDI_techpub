@@ -27,6 +27,9 @@ export default {
     class_textarea: { // not applicable
       type: String,
     },
+    class: { // not applicable
+      type: String,
+    },
     placeholder: {
       type: String, // not applicable
       default: 'eg.: this document is intended for...',
@@ -75,6 +78,7 @@ export default {
     rm.editor = editor;
     rm.name = this.$props.nameAttr;    
     rm.setAttribute('name', this.$props.nameAttr);
+    rm.style.display = 'none';    
     if(this.$props.modalInputName) rm.setAttribute('modal-input-name', this.$props.modalInputName);
     document.getElementById(this.remarkId).appendChild(rm);
   },
@@ -84,9 +88,9 @@ export default {
 
 <template>
   <div class="RemarksVue">
-    <div :id="remarkId">
-      {{ remarksPara }}
-      <label for="remarks" :class="['inline-block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</label>
+    {{ remarksPara }}
+    <label for="remarks" :class="['inline-block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</label>
+    <div :id="remarkId" :class="$props.class">
     </div>
     <div class="text-red-600" v-html="techpubStore.error('remarks')"></div>
   </div>

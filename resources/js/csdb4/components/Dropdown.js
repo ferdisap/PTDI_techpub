@@ -93,9 +93,9 @@ const makeInner = function (config = { __element: '', __class: '', __style: '', 
  * HOW TO USE
  * 1. Add attribute 'dd-input="$key"' dimana $key adalah data yang akan didapan dari server, bisa multiple pakai separator ",". Key pertama adalah value yang nanti ditulis di input dan yang menjadi acuan query ke server. Misal '/?sc=filename::DMC' artinya key pertama harus filename
  * 2. Add attribute 'dd-target="$inputId"' dimana $inputId adalah target input saat result selected. Bisa multiple pakai comma, dimana urutannya sesuai dengan attribute dd-input. Kalau ''||'self' berarti targetnya self
- * 3. Add attribute 'dd-route="JSONObject"' dimana techpubroute object yang sudah JSON stringify
- * 4. Sunnah. Add attribute 'dd-type="csdbs"' atau 'dd-type="users"' dimana data dari server
- * 5. instance new Dropdown() in your app
+ * 3. Add attribute 'dd-route="techpubStoreRouteName"';
+ * 4. Add attribute 'dd-type="csdbs"' atau 'dd-type="users"' dimana key dari sebuah data/result dari server. defaultnya 'result' atau 'results'
+ * 5. run register method with scope/parent id;
  * 6. register each input
  */
 
@@ -219,7 +219,6 @@ class Dropdown {
   onKeyPress(event) {
     event.preventDefault();
     event.stopPropagation();
-
     let isSearch;
 
     switch (event.keyCode) {

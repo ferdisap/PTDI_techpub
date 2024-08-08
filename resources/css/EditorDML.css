@@ -1,20 +1,20 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @font-face {
   font-family: tahoma;
   src: url("./tahoma.ttf");
-}
+} */
 
-.add_dmlEntry button{
+/* .add_dmlEntry button{
   display: none;
 }
 .add_dmlEntry:hover button{
   display: block;
-}
+} */
 
-@layer components {
+/* @layer components {
   .DML th, 
   .DML td,
   div,
@@ -27,4 +27,4 @@
   .DML .dmlEntry td {
     @apply align-top
   }
-}
+} */
