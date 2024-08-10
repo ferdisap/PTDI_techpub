@@ -4,6 +4,7 @@ import path from 'path';
 import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
 import { refresh, renderFromBlob, render, blobRequestTransformed, switchView } from './PreviewVue.js';
 import ContextMenu from '../subComponents/ContextMenu.vue';
+import Comment from './Comment.vue';
 
 export default {
   data() {
@@ -23,7 +24,7 @@ export default {
       return (this.$route.params.viewType === 'html') ? 'pdf' : 'html';
     }
   },
-  components: { ContinuousLoadingCircle, ContextMenu },
+  components: { ContinuousLoadingCircle, ContextMenu, Comment },
   methods: {
     render: render,
     renderFromBlob, renderFromBlob,
@@ -70,7 +71,7 @@ export default {
       </div>
     </div>
     <!-- <PreviewRCMenu>
-      <div v-if="inIframe" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div v-if="inIframe" class="fTelex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div v-if="$route.params.viewType === 'html'" href="#" class="text-sm" @click="switchView('pdf')">
           <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">book_2</span>
           Switch to PDF
@@ -96,6 +97,9 @@ export default {
           Commit</div>
       </div>      
     </PreviewRCMenu> -->
+
+    <Comment/>
+
     <ContinuousLoadingCircle :show="showLoadingProgress" />
     <ContextMenu :id="contextMenuId">
       <div @click.stop.prevent="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">

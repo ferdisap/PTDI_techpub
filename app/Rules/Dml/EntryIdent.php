@@ -33,7 +33,6 @@ class EntryIdent implements ValidationRule
     return;
 
     // sementara ini validasi entry ident sampai disini saja, 16 juli 2024;
-
     $filename = $this->filename;
     // jika entryIdent == 'DML/CSL' maka tidak perlu ada language di namanya
     // jika filename yang diupdate == 'CSL' maka harus denga issueInfo dan language nya

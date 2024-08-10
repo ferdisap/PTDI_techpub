@@ -1,6 +1,6 @@
 <script>
 import {useTechpubStore} from '../../techpub/techpubStore';
-import ManagementData from './route/ManagementData.vue';
+// import ManagementData from './route/ManagementData.vue';
 import Explorer from './route/ManagementData.vue';
 import {joinFilename, deleteCSDBs, commitCSDBs, getCSDBObjectModel} from './MainVue';
 
@@ -12,7 +12,7 @@ export default {
       TO: 0,
     };
   },
-  components: {ManagementData,Explorer},
+  components: {Explorer},
   methods:{
     joinFilename: joinFilename,
     deleteCSDBs: deleteCSDBs,

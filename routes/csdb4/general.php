@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Csdb\CsdbController;
+use App\Http\Controllers\Csdb\HistoryController;
 use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\DmlController;
 use App\Http\Controllers\UserController;
@@ -52,6 +53,9 @@ Route::post('/api/object/path/change', [CsdbController::class, 'change_object_pa
 
 Route::post("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth')->name('api.download_objects');
 Route::get("/api/download", [CsdbController::class, 'download_objects'])->middleware('auth');
+
+// get all history
+Route::get("/api/histories/{filename}", [HistoryController::class, 'all'])->middleware('auth')->name('api.get_csdb_history');
 
 
 

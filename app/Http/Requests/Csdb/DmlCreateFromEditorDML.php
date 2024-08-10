@@ -45,7 +45,8 @@ class DmlCreateFromEditorDML extends FormRequest
   protected function prepareForValidation(): void
   {
     $this->merge([
-      'path' => $this->path ?? 'CSDB',
+      'path' => $this->path ?? 'CSDB',      
+      'remarks' => preg_split("/<br\/>|<br>|&#10;/m",$this->remarks),
     ]);
   }
 

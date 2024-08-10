@@ -2,20 +2,25 @@
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import { isString, isArray } from '../../helper';
 import Randomstring from "randomstring";
-import TextEditor from '../../TextEditor';
-import Rm from "../../element/Rm.js" ;
+// import TextEditor from '../../TextEditor';
+// import TextEditorElement from "../../element/TextEditorElement.js";
 
-// const add = function (event) {
-//   console.log('aaa');
+
+// class SomeClass extends HTMLInputElement {
+//   value = 'foo';
+//   constructor() {
+//     super();
+//   }
 // }
+
 
 export default {
   data() {
     return {
       techpubStore: useTechpubStore(),
-      remarkElementName: 'rm-el',
+      // remarkElementName: 'rm-el',
       remarkId: Randomstring.generate({ charset: 'alphabetic' }),
-      remarksEditor: {},
+      // remarksEditor: {},
       // remarksEditorId: Randomstring.generate({ charset: 'alphabetic' }),
     }
   },
@@ -41,47 +46,21 @@ export default {
     modalInputName: {
       type: String
     },
+    lineType: '',
     para: '',
   },
   computed: {
     remarksPara() {
-      if(this.$props.para){
-        const rm = document.querySelector('#'+this.remarkId + ' ' + this.remarkElementName);
-        if(rm) rm.value = this.$props.para;
+      if (this.$props.para) {
+        const rm = document.querySelector('#' + this.remarkId);
+        if (rm) rm.value = this.$props.para;
       }
       return;
     }
   },
   methods: {
-    getPara(){
-      let ret;
-      if (isString(this.$props.para)) {
-        try {
-          ret = JSON.parse(this.$props.para)
-          ret = ret.length ? ret : ['']
-        } catch (e) {
-          ret = [''];
-        }
-      }
-      else if (isArray(this.$props.para)) ret = this.$props.para;
-      else ret = [''];
-      return ret;
-    }
   },
-  mounted() {
-    const editor = new TextEditor(this.remarkId);
-    editor.attachEditor();
-    
-    // check if remark-editor has defined else define
-    customElements.get(this.remarkElementName) || customElements.define(this.remarkElementName, Rm);    
-    const rm = document.createElement(this.remarkElementName);
-    rm.editor = editor;
-    rm.name = this.$props.nameAttr;    
-    rm.setAttribute('name', this.$props.nameAttr);
-    rm.style.display = 'none';    
-    if(this.$props.modalInputName) rm.setAttribute('modal-input-name', this.$props.modalInputName);
-    document.getElementById(this.remarkId).appendChild(rm);
-  },
+  mounted() {},
 }
 </script>
 
@@ -89,9 +68,8 @@ export default {
 <template>
   <div class="RemarksVue">
     {{ remarksPara }}
-    <label for="remarks" :class="['inline-block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</label>
-    <div :id="remarkId" :class="$props.class">
-    </div>
+    <div :class="['block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</div>
+    <text-editor :line-type="$props.lineType" :name="$props.nameAttr" :class="[$props.class,'w-full block']" :id="remarkId" :modal-input-name="$props.modalInputName"/>
     <div class="text-red-600" v-html="techpubStore.error('remarks')"></div>
   </div>
 </template>

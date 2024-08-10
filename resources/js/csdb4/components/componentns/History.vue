@@ -1,10 +1,12 @@
 <script>
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
+import Pagination from '../subComponents/Pagination.vue';
+import { isArray } from '../../helper';
 
 export default {
   // props: ["filename", "history"],
-  props:{
+  props: {
     filename: {
       type: String
     },
@@ -12,35 +14,45 @@ export default {
       type: Object
     }
   },
-  data(){
+  data() {
     return {
-      H: [],
       techpubStore: useTechpubStore(),
+      histories: {},
+      pagination: {},
     }
   },
-  methods:{
-    async setHistoryFromXHR(filename){
+  components:{ Pagination },
+  methods: {
+    async setHistoryFromXHR(filename) {
       let response = await axios({
         route: {
           name: 'api.get_object_model',
-          data: {filename: filename}
+          data: { filename: filename }
         }
       })
-      if (response.statusText === 'OK'){
+      if (response.statusText === 'OK') {
         this.H = response.data.model.remarks.history;
       }
+    },
+    async fetchHistories(filename) {
+      let response = await axios({
+        route: {
+          name: 'api.get_csdb_history',
+          data: { filename: filename }
+        }
+      })
+      if (response.statusText === 'OK') {
+        this.storingResponse(response);
+      }
+    },
+    storingResponse(response){
+      this.histories = response.data.csdb.histories.data;
+      delete response.data.csdb.histories.data;
+      this.pagination = response.data.csdb.histories;
     }
   },
   mounted() {
-    if(this.$props.history){
-      this.H = this.$props.history;
-    }
-    else if(this.$props.filename){
-      this.setHistoryFromXHR(this.$props.filename);
-    }
-    else if(this.$route.params.filename){
-      this.setHistoryFromXHR(this.$route.params.filename);      
-    }
+    if (this.$route.params.filename) this.fetchHistories(this.$route.params.filename);
   },
 }
 </script>
@@ -49,29 +61,23 @@ export default {
     <div class="h-[5%] flex mb-3">
       <h1>History Log</h1>
     </div>
-    <table>
+    <table class="text-left">
       <thead>
         <tr>
-          <th class="text-base">Date/Time</th>
-          <th class="text-base">Code</th>
-          <th class="text-base">Message</th>
+          <th class="text-sm w-[5%]">No</th>
+          <th class="text-sm w-[20%]">Code</th>
+          <th class="text-sm">Message</th>
+          <th class="text-sm w-[20%]">Date/Time</th>
         </tr>
       </thead>
-      <tr v-for="history in H">
-        {{ (() => {
-          this.arrHistory = history.split(";")
-          let dt = arrHistory[0].split(" ");
-          this.historyDate = dt[0];
-          this.historyTime = dt[1];
-          return '';
-        })() }}
-        <td class="text-base text-nowrap text-center">{{ historyDate }}/<br/>{{historyTime}}</td>
-        <td class="text-base">{{ arrHistory[1] }}</td>
-        <td class="text-base">{{ arrHistory[2] }}</td>
+      <tr v-for="(history, no) in histories">
+        <td class="text-sm">{{ no + 1 }}</td>
+        <td class="text-sm">{{ history.code }}</td>
+        <td class="text-sm">{{ history.description }}</td>
+        <td class="text-sm">{{ techpubStore.date(history.created_at) }}</td>
       </tr>
     </table>
-    <!-- <ol>
-      <li v-for="history in H">{{ history }}</li>
-    </ol> -->
+
+    <Pagination :callback="storingResponse" :data="pagination"/>
   </div>
 </template>

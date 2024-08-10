@@ -34,7 +34,7 @@ export default {
 </script>
 
 <template>
-  <div class="px-3">
+  <div class="editoricn px-3">
     <h1 class="text-center">File Upload</h1>
     <div>
       <label for="icn-filename" class="text-sm font-bold">Filename</label><br />

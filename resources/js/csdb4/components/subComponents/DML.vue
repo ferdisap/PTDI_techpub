@@ -19,7 +19,7 @@ export default {
       CbSelector: new CheckboxSelector(),
       rand: Randomstring,
 
-      dmlEntryData: {},
+      dmlEntryData: {}, // depreciated
       dmlEntryVueTemplate: '',
 
       contextMenuId: 'cmDMLVue',
@@ -28,7 +28,7 @@ export default {
       dmlEntryModalId: 'modal_dmlEntry_form',
     }
   },
-  components: { Remarks, ContextMenu, Modal },
+  components: { ContextMenu, Modal, Remarks },
   props: ['filename'], // tidak mengambil langsung dari $route 
   methods: {
     showDMLContent: showDMLContent,
@@ -39,34 +39,7 @@ export default {
         this.Modal.start(etarget, etarget.getAttribute("use-in-modal"));
       }
     },
-    async add(next = true, duplicate = false) {
-      // create cloning element
-      let etarget = this.ContextMenu.triggerTarget;
-      let clonned;
-      if (etarget = findAncestor(etarget, "*[cb-room]")) {
-        clonned = etarget.cloneNode(true);
-        clonned.id = Randomstring.generate({ charset: 'alphabetic' });
-        if (!duplicate) {
-          clonned.querySelectorAll("*[modal-input-ref]").forEach(input => {
-            input.innerHTML = '';
-          });
-        }
-        const id = clonned.getAttribute("use-in-modal");
-        const modal = this.Modal.start(clonned, id, { manualUnset: true });
-
-        // wait the replace
-        if (!(await this.Modal.replace(await modal.data, id))) {
-          clonned = false;
-        };
-      }
-      // append clonned into DOM
-      if (clonned) {
-        next ? etarget.after(clonned) : etarget.before(clonned);
-        this.CB.setCbRoomId(null, clonned, null);
-      }
-      // unset the Modal collection;
-      this.Modal.unsetCollection(2);
-    },
+    add: addEntry,
     remove() {
       let etarget = this.ContextMenu.triggerTarget;
       if (etarget = findAncestor(etarget, "*[cb-room]")) {
@@ -132,8 +105,8 @@ export default {
   },
   mounted() {
     window.dml = this;
-    // window.th = this;
-    // window.jp = jp;
+    window.th = this;
+    window.jp = jp;
     // window.json = this.$props.json;
     if (this.$props.filename && (this.$props.filename.substring(0, 3) === 'DML')) {
       this.showDMLContent(this.$props.filename);
@@ -259,12 +232,20 @@ export default {
         </div>
         <div class="relative text-left mb-2">
           <label class="italic font-semibold ml-1">Enterprise:</label>
-          <!-- <input
-          dd-input="enterprise,path" dd-type="csdbs" dd-route="api.get_object_csdbs" dd-target="self,modal_enterpriseCode" -->
+          <!-- <input dd-input="enterprise,path" dd-type="csdbs" dd-route="api.get_object_csdbs" dd-target="self,modal_enterpriseCode" -->
           <input modal-input-name="enterpriseName" placeholder="find name" type="text"
             class="ml-1 w-80 p-2 inline bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <input modal-input-name="enterpriseCode" id="modal_enterpriseCode" placeholder="find code" type="text"
             class="ml-1 w-32 p-2 inline bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="relative text-left mb-2">
+          <label class="italic font-semibold ml-1">Answer to entry:</label>
+          <select modal-input-name="answerToEntry" class="ml-2 p-2 rounded-lg">
+            <option class="text-sm" value="">---</option>
+            <option class="text-sm" value="y">yes</option>
+            <option class="text-sm" value="n">no</option>
+          </select>
+          <text-editor modal-input-name="answer[]" class="w-full block mt-1"/>
         </div>
         <div class="relative text-left mb-2">
           <Remarks modalInputName="remarks[]" class_label="text-sm font-semibold italic" />

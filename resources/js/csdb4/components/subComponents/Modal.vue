@@ -11,9 +11,9 @@ export default {
     id: {type: String},
   },
   methods: {
-    async start(){
-      this.Modal = new Modal('modal_dmlEntry_form',document.querySelector(".dmlEntry"));
-    },
+    // async start(){
+    //   this.Modal = new Modal('modal_dmlEntry_form',document.querySelector(".dmlEntry"));
+    // },
     ok(){
       this.Modal.button(true);
     },

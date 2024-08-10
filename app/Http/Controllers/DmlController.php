@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Csdb\DmlCreateFromEditorDML;
+use App\Http\Requests\Csdb\DmlUpdateFromEditorDML;
 use App\Models\Csdb;
 use App\Models\Csdb\Dml;
 use App\Rules\Dml\EntryIdent;
@@ -40,59 +41,30 @@ class DmlController extends Controller
     $CSDBModel->storage_id = $request->user()->id;
     $CSDBModel->initiator_id = $request->user()->id;
 
-    if($CSDBModel->saveDOMandModel($request->user()->storage,[
-        ['MAKE_CSDB_CRBT_History',[Csdb::class]], 
-        ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
-    ])){
+    if ($CSDBModel->saveDOMandModel($request->user()->storage, [
+      ['MAKE_CSDB_CRBT_History', [Csdb::class]],
+      ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
+    ])) {
       return $this->ret2(200, ["{$CSDBModel->filename} has been created."], ['csdb' => $CSDBModel, 'infotype' => 'info']);
     }
     return $this->ret2(400, ["fail to create and save DML."]);
   }
-  // public function create(Request $request)
-  // {
-  //   $validator = Validator::make($request->all(), [
-  //     'modelIdentCode' => 'required',
-  //     'originator' => 'required',
-  //     'dmlType' => 'required',
-  //     'securityClassification' => 'required',
-  //     'brexDmRef' => ['required', new BrexDmRefRules],
-  //     'remarks' => 'array',
-  //   ]);
 
-  //   if ($validator->fails()) {
-  //     return $this->ret2(400, [$validator->getMessageBag()->getMessages()]);
-  //   }
+  public function update(DmlUpdateFromEditorDML $request, string $filename)
+  {    
+    // dd($request->DMLModel->csdb->id, $request->DMLModel->toArray());
+    // dd($request->validated());
+    $request->DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $request->user()->storage . DIRECTORY_SEPARATOR . $filename);
+    $request->DMLModel->fill_xml($request->validated());
 
-  //   $validator->validated();
-
-  //   $dml_model = new Dml();
-  //   $csdb = new Csdb();
-  //   $dml_model->setProtected([
-  //     'table' => $csdb->getProtected('table'),
-  //     'fillable'=> $csdb->getProtected('fillable'),
-  //     'casts'=> $csdb->getProtected('casts'),
-  //     'attributes'=> $csdb->getProtected('attributes'),
-  //   ]);
-  //   // $dml_model->setWith(['initiator']);
-  //   // $dml_model->direct_save = false;
-  //   $otherOptions = [];
-  //   $isCreated = $dml_model->create_xml($request->user()->storage,$request->get('modelIdentCode'), $request->get('originator'), $request->get('dmlType'), $request->get('securityClassification'), $request->get('brexDmRef'), $request->get('remarks'), $otherOptions);
-  //   if(!($isCreated)) return $this->ret2(400, ["fails to create DML."]);    
-
-  //   $ident = $dml_model->CSDBObject->document->getElementsByTagName('dmlIdent')[0];
-  //   $filename = CSDBStatic::resolve_dmlIdent($ident);
-  //   $dml_model->filename = $filename;
-  //   $dml_model->path = "csdb";
-  //   $dml_model->available_storage = $request->user()->storage;
-  //   $dml_model->initiator_id = $request->user()->id;
-    
-  //   if($dml_model->saveDOMandModel($request->user()->storage)){
-  //     $dml_model->initiator; // supaya ada initiator saat return
-  //     return $this->ret2(200, ["{$dml_model->filename} has been created."], ['model' => $dml_model, 'infotype' => 'info']);
-  //   } else {
-  //     return $this->ret2(400, ["fail to create and save DML."]);
-  //   }
-  // }
+    if ($request->DMLModel->saveDOMandModel($request->user()->storage, [
+      ['MAKE_CSDB_UPDT_History', [$request->DMLModel->csdb]],
+      ['MAKE_USER_UPDT_History', [$request->user(), '', $request->DMLModel->csdb->filename]]
+    ])) {
+      return $this->ret2(200, ["{$request->DMLModel->csdb->filename} has been updated."], ['csdb' => $request->DMLModel->csdb, 'infotype' => 'info']);
+    }
+    return $this->ret2(400, ["fail to update and save DML."]);
+  }
 
   /**
    * DEPRECIATED, karena semua object ditampilkan di listtree explorer
@@ -100,46 +72,45 @@ class DmlController extends Controller
    */
   public function get_dmrl_list(Request $request)
   {
-    if($request->get('listtree')){
+    if ($request->get('listtree')) {
       return $this->ret2(200, [
-        "data" => 
-        Dml::
-        where('filename', 'like', 'DML-%')
-        ->get(['filename', 'path'])
-        ->toArray()
+        "data" =>
+        Dml::where('filename', 'like', 'DML-%')
+          ->get(['filename', 'path'])
+          ->toArray()
       ]);
     }
     $this->model = Csdb::with('initiator')->where('filename', 'like', 'DML-%');
     return $this->ret2(200, ['data' => $this->model->get()->toArray()]);
   }
-  
+
   /**
    * DEPRECIATED, karena diganti read_json
    */
   public function read_html_content(Request $request, string $filename)
   {
-    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
-    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
+    if (!($DMLModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $request->user()->storage . "/" . $filename);
     $DMLModel->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
-    $transformed = $DMLModel->CSDBObject->transform_to_xml(CSDB_VIEW_PATH."/xsl/html_dml/dml.xsl", [
+    $transformed = $DMLModel->CSDBObject->transform_to_xml(CSDB_VIEW_PATH . "/xsl/html_dml/dml.xsl", [
       'filename' => $filename
     ]);
-    if($error = CSDBError::getErrors(false)){
-      return $this->ret2(200, [$error], ['model' => $DMLModel,'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
+    if ($error = CSDBError::getErrors(false)) {
+      return $this->ret2(200, [$error], ['model' => $DMLModel, 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
     }
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'transformed' => $transformed, 'mime' => 'text/html']); // ini yang dipakai vue
-    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
-    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
-    $json = CSDBStatic::xml_to_json($DMLModel->CSDBObject->document);        
-    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json ,'transformed' => '', 'mime' => 'text/html']); // ini yang dipakai vue
+    if (!($DMLModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $request->user()->storage . "/" . $filename);
+    $json = CSDBStatic::xml_to_json($DMLModel->CSDBObject->document);
+    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json, 'transformed' => '', 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
   public function read_json(Request $request, string $filename)
   {
-    if(!($DMLModel = Csdb::getObject($filename,['exception' => ['CSDB-DELL','CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
-    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH."/".$request->user()->storage."/".$filename);
+    if (!($DMLModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $request->user()->storage . "/" . $filename);
     $json = json_decode(CSDBStatic::xml_to_json($DMLModel->CSDBObject->document));
-    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json ]); // ini yang dipakai vue
+    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json]); // ini yang dipakai vue
   }
 
   public function dmlupdate(Request $request, string $filename)
@@ -184,9 +155,9 @@ class DmlController extends Controller
     $enterpriseNames = $request->get('enterpriseName');
     $enterpriseCodes = $request->get('enterpriseCode');
     $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan valida)i
-    
+
     // #1. remove all dmlEntry
-    if($entryIdents){
+    if ($entryIdents) {
       $dmlContent = $DMLModel->CSDBObject->document->getElementsByTagName("dmlContent")[0];
       while ($dmlContent->firstElementChild) {
         $dmlContent->firstElementChild->remove();
@@ -250,8 +221,8 @@ class DmlController extends Controller
     $obj32 = ["filename" => 'xbfooasa', "path" => 'xxx'];
     $obj31 = ["filename" => 'xfoo11', "path" => 'xxx/n219'];
 
-    $allobj = [$obj1, $obj1_1, $obj11, $obj12 ,$obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
-    return Response::make($allobj,200,['content-type' => 'application/json']);
+    $allobj = [$obj1, $obj1_1, $obj11, $obj12, $obj111, $obj21, $obj22, $obj3, $obj32, $obj31];
+    return Response::make($allobj, 200, ['content-type' => 'application/json']);
 
     // $obj1 = [
     //   "filename" => 'foo1',
@@ -364,7 +335,7 @@ class DmlController extends Controller
         'editable' => 1,
         'initiator_id' => $csdb_model->initiator_id,
       ]);
-      if($csdb_model->remarks["securityClassification"]){
+      if ($csdb_model->remarks["securityClassification"]) {
         $new_csdb_model->setRemarks('securityClassification', $csdb_model->remarks["securityClassification"]);
       }
       if ($new_csdb_model) {
@@ -606,7 +577,7 @@ class DmlController extends Controller
     $this->model = Csdb::with('initiator');
     $this->search($request->get('filenameSearch'));
     $this->model->where('filename', 'like', "CSL-%");
-    $this->model->where('remarks', 'like' ,'%"stage":"staging"%');
+    $this->model->where('remarks', 'like', '%"stage":"staging"%');
     $ret = $this->model->paginate(15);
     $ret->setPath($request->getUri());
     return $ret;
@@ -662,7 +633,7 @@ class DmlController extends Controller
     $remarkses = $request->get('remarks') ?? []; // harusnya tidak ada lagi isset disini. perbaiki nanti di frontend dan di sini lakukan validasi
 
     // #1. remove all dmlEntry
-    if($entryIdents){
+    if ($entryIdents) {
       $dmlContent = $dml_model->DOMDocument->getElementsByTagName("dmlContent")[0];
       while ($dmlContent->firstElementChild) {
         $dmlContent->firstElementChild->remove();

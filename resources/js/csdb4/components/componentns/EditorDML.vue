@@ -42,7 +42,7 @@ export default {
 }
 </script>
 <template>
-  <div class="EditorDML px-3 relative">
+  <div class="editordml px-3 relative">
     <h1 class="mt-2 mb-4 text-center underline">{{ isUpdate ? 'Update DML' : 'Create DML' }}</h1>
     
     <DML v-if="isUpdate" :filename="$route.params.filename"/>
@@ -53,27 +53,27 @@ export default {
 
       <!-- untuk Model Ident Code -->
       <div class="mb-2">
-        <label for="modelIdentCode" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Model Ident Code (Project): </label>
-        <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" class="ml-3"/>
+        <label for="modelIdentCode" class="inline-block text-gray-900 dark:text-white text-sm font-semibold">Model Ident Code (Project): </label>
+        <input type="text" value="" name="modelIdentCode" id="modelIdentCode" placeholder="eg.: MALE" class="ml-3 border p-1 rounded-md"/>
         <div class="text-red-600" v-html="techpubStore.error('modelIdentCode')"></div>
       </div>
 
       <!-- Originator -->
       <div class="mb-2">
-        <label for="originator" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Sender / Originator CAGE Code: </label>
-        <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" class="ml-3"/>
+        <label for="originator" class="inline-block text-gray-900 dark:text-white text-sm font-semibold">Sender / Originator CAGE Code: </label>
+        <input type="text" value="" name="originator" id="originator" placeholder="eg.: 0001Z" class="ml-3 border p-1 rounded-md"/>
         <div class="text-red-600" v-html="techpubStore.error('originator')"></div>
       </div>
   
       <!-- Security Classification -->
       <div class="mb-2">
-        <label for="securityClassification" class="inline-block text-gray-900 dark:text-white text-lg font-bold">Security Level: </label>
-        <select name="securityClassification" id="securityClassification" class="ml-3">
-          <option value="01">Unclassified</option>
-          <option value="02">Restricted</option>
-          <option value="03">Confidential</option>
-          <option value="04">Secret</option>
-          <option value="05">Top Secret</option>
+        <label for="securityClassification" class="inline-block text-gray-900 dark:text-white text-sm font-semibold">Security Class: </label>
+        <select name="securityClassification" id="securityClassification" class="ml-3 border p-1 rounded-md">
+          <option class="text-sm" value="01">Unclassified</option>
+          <option class="text-sm" value="02">Restricted</option>
+          <option class="text-sm" value="03">Confidential</option>
+          <option class="text-sm" value="04">Secret</option>
+          <option class="text-sm" value="05">Top Secret</option>
         </select>
         <div class="text-red-600" v-html="techpubStore.error('securityClassification')"></div>
       </div>
@@ -81,12 +81,12 @@ export default {
       <!-- BREX -->
       <div class="mb-2 mt-2 flex">
         <div class="mr-2">
-          <label class="inline-block text-gray-900 dark:text-white text-lg font-bold">Brex: </label>
+          <label class="inline-block text-gray-900 dark:text-white text-sm font-semibold">Brex: </label>
         </div>
         <div class="mr-2 w-80 relative">
           <div class="w-80">
             <!-- <div v-show="!DropdownBrexSearch.isDone" class="mini_loading_buffer_dark right-[10px] top-[10px]"></div> -->
-            <input id="tes" dd-input="filename" dd-target="self" dd-type="csdbs" dd-route="api.get_object_csdbs" name="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="w-full" autocomplete="off" aria-autocomplete="none"/>
+            <input dd-input="filename" dd-target="self" dd-type="csdbs" dd-route="api.get_object_csdbs" name="brexDmRef" placeholder="eg.: DMC-MALE-A-00-00-00-00A-022A-D_000-01_EN-EN" class="w-full border p-1 rounded-md" autocomplete="off" aria-autocomplete="none"/>
           </div>
           <div class="text-red-600" v-html="techpubStore.error('brexDmRef')"></div>  
         </div>
@@ -94,7 +94,7 @@ export default {
       
       <!-- Remarks -->
       <div class="mb-2">
-        <Remarks class="text-sm border-gray-300 border rounded-md p-2 bg-gray-50"/>
+        <Remarks class_label="text-sm font-semibold" class="text-sm border-gray-300 border rounded-md p-1"/>
       </div>
 
       <button type="submit" class="button-violet">Submit</button>

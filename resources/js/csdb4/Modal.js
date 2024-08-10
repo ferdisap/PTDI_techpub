@@ -56,7 +56,7 @@ class Modal {
 
   /**
    * processed config are: 1. manualUnset:boolean
-   * @param {DOMElement} referer 
+   * @param {DOMElement} referer // jika tidak ada maka nanti tidak akan di replace
    * @param {string} id of modal container
    * @param {Object} config 
    * @returns 
@@ -65,8 +65,12 @@ class Modal {
     if (id) this.id = id;
     this.collection[this.id].config = config;
 
-    if (referer.nodeType === Node.ELEMENT_NODE) this.referer = referer;
-    else this.referer = document.getElementById(this.referer);
+    // set referer
+    if (referer && referer.nodeType === Node.ELEMENT_NODE) {
+      this.referer = referer
+      this.collection[this.id].referer = referer;
+    };
+    // else this.referer = document.getElementById(this.referer);
 
     const container = document.getElementById(this.id);
     container.display = 'block';
@@ -81,9 +85,6 @@ class Modal {
     this.button = (state) => {
       return state ? resolve(this.getValue(container)) : resolve(false);
     }
-
-    // set referer
-    this.collection[this.id].referer = referer;
 
     // set isShow to display automatically by proxy
     this.collection[this.id].isShow = true;
@@ -133,10 +134,13 @@ class Modal {
    * untuk mengisi data dari modal ke referer
    * @param {DOMElement} referer 
    * @param {String} id of referer 
-   * @returns {bool}
+   * @returns {Promise.resolve}
    */
   async replace(data, id) {
     if (!id) id = this.id;
+
+    if(!this.collection[id].referer) return Promise.resolve(true);
+
     // jika sudah di replaced, tidak perlu di replaced lagi
     if (this.collection[id].replaced) return Promise.resolve(true);
     // get data
@@ -166,6 +170,8 @@ class Modal {
    * untuk mengisi data dari referer to modal
    */
   fill() {
+    if(!this.collection[this.id].referer) return false;
+
     // getting text from referer
     const data = {};
     this.collection[this.id].referer.querySelectorAll(`*[modal-input-ref]`).forEach(ref => {

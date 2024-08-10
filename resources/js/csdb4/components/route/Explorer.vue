@@ -186,10 +186,10 @@ export default {
 
         <!-- col 3 -->
         <div class="flex" :style="[col3Width]">
-          <!-- <div class="overflow-auto text-wrap relative h-full w-full">
+          <div class="overflow-auto text-wrap relative h-full w-full">
             <Preview v-if="bottomBarItems.Preview.isShow" :dataProps="bottomBarItems.Preview.data" />
             <DispatchTo v-if="bottomBarItems.DispatchTo.isShow" :objectsToDispatch="bottomBarItems.DispatchTo.data" />
-          </div> -->
+          </div>
         </div>
       </div>
 

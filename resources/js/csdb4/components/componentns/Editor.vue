@@ -42,14 +42,15 @@ export default {
         this.editorComponent = 'EditorDML';
         break;    
       default:
-        this.editorComponent = 'EditorICN';
+        // this.editorComponent = 'EditorXML';
+        this.editorComponent = 'EditorDML';
         break;
     }
   }
 }
 </script>
 <template>
-  <div data-sort="1" class="editor">
+  <div class="editor">
     <component :is="editorComponent" v-if="editorComponent"/>
   
     <ContextMenu :id="contextMenuId">

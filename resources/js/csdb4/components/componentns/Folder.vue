@@ -129,7 +129,7 @@ export default {
 }
 </style>
 <template>
-  <div data-sort="2" class="folder h-[100%] bg-white overflow-hidden">
+  <div class="folder h-[100%] bg-white overflow-hidden relative">
     <div v-show="false">{{ setObject }}</div>
     <div class="h-[100%] w-full relative">
       <div class="h-[50px] relative text-center">
@@ -156,10 +156,6 @@ export default {
               </th>
               <th class="text-sm">Path <Sort :function="sortTable"></Sort>
               </th>
-              <th class="text-sm">Created At <Sort :function="sortTable"></Sort>
-              </th>
-              <th class="text-sm">Updated At <Sort :function="sortTable"></Sort>
-              </th>
               <th class="text-sm">Last History <Sort :function="sortTable"></Sort>
               </th>
             </tr>
@@ -185,8 +181,6 @@ export default {
                 <span class="text-sm"> {{ obj.filename }} </span>
               </td>
               <td class="leading-3 text-sm"> {{ obj.path }} </td>
-              <td class="leading-3 text-sm"> {{ techpubStore.date(obj.created_at) }} </td>
-              <td class="leading-3 text-sm"> {{ techpubStore.date(obj.updated_at) }} </td>
               <td class="leading-3 text-sm"> {{ (obj.last_history.description) }}, {{
                 techpubStore.date(obj.last_history.created_at) }} </td>
             </tr>
@@ -196,11 +190,11 @@ export default {
 
       <!-- pagination -->
       <div class="w-full text-black absolute bottom-[10px] h-[30px] px-3 flex justify-center">
-        <div v-if="pagination" class="flex justify-center items-center text-lg bg-gray-100 rounded-lg px-2 w-[300px]">
+        <div v-if="pagination" class="flex justify-center items-center bg-gray-100 rounded-lg px-2 w-[300px]">
           <button @click="goto(pageless)" class="material-symbols-outlined">navigate_before</button>
           <form @submit.prevent="goto('', pagination['current_page'])" class="flex">
-            <input v-model="pagination['current_page']" class="w-6 border-none text-center bg-transparent font-bold" />
-            <span class="font-bold"> of {{ pagination['last_page'] }} </span>
+            <input v-model="pagination['current_page']" class="w-2 text-sm border-none text-center bg-transparent font-bold" />
+            <span class="font-bold text-sm"> of {{ pagination['last_page'] }} </span>
           </form>
           <button @click="goto(pagemore)" class="material-symbols-outlined">navigate_next</button>
         </div>
@@ -240,9 +234,8 @@ export default {
       <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <form class="text-sm" @submit.prevent="changePath($event)">
           <label class="text-sm">Move </label>
-          <input type="text" class="w-[65%] rounded-sm h-0" name="path" @keydown.enter.prevent />
-        <button type="submit"
-          class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
+          <input type="text" class="w-[65%] rounded-sm border px-1" placeholder="CSDB/..." name="path" @keydown.enter.prevent />
+        <button type="submit" class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
       </form>
     </div>
     <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">

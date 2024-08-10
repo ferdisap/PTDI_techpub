@@ -14,38 +14,19 @@ import routes from '../../others/routes.json';
 import ContextMenu from './ContextMenu';
 import Dropdown from './components/Dropdown';
 import Modal from './Modal.js';
+import TextEditorElement from './element/TextEditorElement';
 // ####### start here
 
-/**
- * @param {string} pattern 
- * @param {string} subject 
- * @returns [Array(match1, match2)] 
- */
-// function find(pattern, subject) {
-//   let match = [];
-//   let m;
-//   while ((m = pattern.exec(subject)) !== null) {
-//     if (m.index === pattern.lastIndex) {
-//       pattern.lastIndex++;
-//     }
-//     match.push(m);
-//   }
-//   return match;
-// }
+// dipakai untuk comment, remarks. Nanti dibuat lagi untuk xmlEditor
+customElements.get('text-editor') || customElements.define('text-editor', TextEditorElement);
 
-const createWorker = function (filename)
-{
-  if(window.Worker && filename){
-    return new Worker(`/worker/${filename}`, {type: "module"}); 
+const createWorker = function (filename) {
+  if (window.Worker && filename) {
+    return new Worker(`/worker/${filename}`, { type: "module" });
   } else {
     return false;
   }
 }
-
-// const copyText = function(text)
-// {
-//   if(text) navigator.clipboard.writeText(text);
-// }
 
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -64,9 +45,7 @@ csdb.use(pinia);
 csdb.use(router);
 csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
-// csdb.config.globalProperties.findText = find;
 csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
-// csdb.config.globalProperties.copyText = copyText;
 csdb.config.globalProperties.ContextMenu = new ContextMenu();
 csdb.config.globalProperties.Dropdown = new Dropdown();
 csdb.config.globalProperties.Modal = new Modal();
@@ -109,8 +88,8 @@ axios.interceptors.request.use(
         // throw new Error(error); 
       }
     }
-    for(const i in headers){
-      config.headers.set(i,headers[i]);
+    for (const i in headers) {
+      config.headers.set(i, headers[i]);
     }
     return config;
   },
@@ -124,7 +103,7 @@ axios.interceptors.response.use(
     //   csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
     // } else {
     // }
-    if(response.config.route){
+    if (response.config.route) {
       csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
     }
     csdb.config.globalProperties.emitter.emit('flash', {
@@ -136,7 +115,7 @@ axios.interceptors.response.use(
   (axiosError) => {
     window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
     useTechpubStore().showLoadingBar = false;
-    if (axiosError.code){
+    if (axiosError.code) {
       csdb.config.globalProperties.emitter.emit('flash', {
         type: axiosError.response.data.infotype,
         errors: axiosError.response.data.errors,

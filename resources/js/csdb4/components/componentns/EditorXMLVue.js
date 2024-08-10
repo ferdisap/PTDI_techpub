@@ -88,6 +88,7 @@ async function submitCreateXml(event) {
 }
 
 async function submitUpdateXml(event) {
+  window.e = event;
   const fd = new FormData(event.target);
   fd.set('xmleditor', this.XMLEditor.editor.state.doc.toString());
   const response = await axios({

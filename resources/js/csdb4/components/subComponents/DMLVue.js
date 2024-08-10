@@ -1,5 +1,6 @@
 import jp from 'jsonpath';
 import Randomstring from 'randomstring';
+import { findAncestor } from '../../helper';
 import {
   resolve_dmIdent, resolve_dmlIdent, resolve_pmIdent, resolve_commentIdent, resolve_infoEntityIdent,
   resolve_pmCode, resolve_dmCode, resolve_dmlCode, resolve_commentCode,
@@ -24,7 +25,11 @@ function securityClassification(json, path) {
 function remarks(json, path) {
   path += '..simplePara';
   let remarks = [];
-  jp.query(json, path).forEach(v => remarks.push(v[0]));
+  try {    
+    jp.query(json, path).forEach(v => remarks.push(v[0]));
+  } catch (error) {
+    console.error('cannot resolve remarks element.');
+  }
   return remarks;
 }
 function dmlContent(json) {
@@ -41,32 +46,36 @@ function getAttributeValue(json, pathToElemen, attributeName) {
 };
 
 // dmlEntry
-function defaultTemplateEntry(entry = {}, trId, cbValue, no) {
+function defaultTemplateEntry(entry = {}, trId = '', cbValue = '', no = '') {
   let cbId = Randomstring.generate({ charset: 'alphabetic' });
-  if(!cbValue) cbValue = entry.ident ? entry.ident : '';
-  const rm = entry.remarks.join("<br/>");
+  if (!cbValue) cbValue = entry.ident ? entry.ident : '';
+  const answer = entry.answer ? entry.answer.join("<br/>") : '';
+  const rm = entry.remarks ? entry.remarks.join("<br/>") : '';
   let str = `
-      <tr cb-room class="dmlEntry hover:bg-blue-300 cursor-pointer" id="${trId}">
+      <tr cb-room class="dmlEntry hover:bg-blue-300 cursor-pointer" ${trId ? 'id="' + trId + '"' : ''}>
         <td modal-input-ref="no">${no}</td>
         <td cb-window>
           <input file="true" id="${cbId}" value="${cbValue}" type="checkbox">
         </td>
-        <td modal-input-ref="entryIdent" class="dmlEntry-ident">${entry.ident}</td>
+        <td modal-input-ref="entryIdent" class="dmlEntry-ident">${entry.ident ?? ''}</td>
         <td>
-          <span modal-input-ref="dmlEntryType" class="text-sm">${entry.dmlEntryType}</span>
-          <span modal-input-ref="issueType" class="text-sm" >${entry.issueType}</span>
+          <span modal-input-ref="dmlEntryType" class="text-sm">${entry.dmlEntryType ?? ''}</span>
+          <span modal-input-ref="issueType" class="text-sm" >${entry.issueType ?? ''}</span>
         </td>
-        <td modal-input-ref="securityClassification">${entry.securityClassification}</td>
+        <td modal-input-ref="securityClassification">${entry.securityClassification ?? ''}</td>
         <td>
-          <span modal-input-ref="enterpriseName" class="text-sm">${entry.enterpriseName}</span>   
-          <span modal-input-ref="enterpriseCode" class="text-sm italic">${entry.enterpriseCode}</span></td>
-        <td>-</td>
+          <span modal-input-ref="enterpriseName" class="text-sm">${entry.enterpriseName ?? ''}</span>   
+          <span modal-input-ref="enterpriseCode" class="text-sm italic">${entry.enterpriseCode ?? ''}</span></td>
+        <td>
+          <span modal-input-ref="answerToEntry" style="display:none">${entry.answerToEntry}</span>
+          <div modal-input-ref="answer[]">${answer}</div>
+        </td>
         <td modal-input-ref="remarks[]">${rm}</td>
       </tr>`;
-  return str.replace(/\s{2,}/g,'');
+  return str.replace(/\s{2,}/g, '');
   // <td modal-input-ref="remarks[]">aaa<br/>bbbb</td>
 }
-function createEntryData(DMLObject = {}){
+function createEntryData(DMLObject = {}) {
   let entryData = {};
   DMLObject.content.forEach(v => {
     let entry = DMLObject.getEntryData(v['dmlEntry']);
@@ -78,6 +87,8 @@ function createEntryData(DMLObject = {}){
       securityClassification: entry.securityClassification,
       enterpriseName: entry.enterpriseName,
       enterpriseCode: entry.enterpriseCode,
+      answer: entry.answer,
+      answerToEntry: entry.answerToEntry,
       remarks: entry.remarks,
     };
   })
@@ -85,28 +96,28 @@ function createEntryData(DMLObject = {}){
 }
 function createEntryVueTemplate(entryData = {}) {
   let entryTemplate = '';
-  Object.keys(entryData).forEach((trId,no) => {
-    entryTemplate += defaultTemplateEntry(entryData[trId],trId,'',no+1);
+  Object.keys(entryData).forEach((trId, no) => {
+    entryTemplate += defaultTemplateEntry(entryData[trId], trId, '', no + 1);
   })
   return entryTemplate;
 }
-function addEntry(){
-  // this.entriesString = window.str;return;
-  const data = fetchDataFromRenderedEntries();
-  let str = '';
-  data.forEach(v => {
-    str += defaultTemplateEntry(v);
-  });
-  str += defaultTemplateEntry({});
-  this.entriesString = str;
-  // console.log(str);
-  return str;
-  // console.log(this.entriesString);
-  // console.log(window.str = str);
-}
-function fetchDataFromRenderedEntries(){
+// function addEntry(){
+//   // this.entriesString = window.str;return;
+//   const data = fetchDataFromRenderedEntries();
+//   let str = '';
+//   data.forEach(v => {
+//     str += defaultTemplateEntry(v);
+//   });
+//   str += defaultTemplateEntry({});
+//   this.entriesString = str;
+//   // console.log(str);
+//   return str;
+//   // console.log(this.entriesString);
+//   // console.log(window.str = str);
+// }
+function fetchDataFromRenderedEntries() {
   const data = [];
-  $('.dmlEntry').each((i,v) => {
+  $('.dmlEntry').each((i, v) => {
     data[i] = {};
     v = $(v);
     data[i].ident = v.find("*[name='entryIdent[]']").val();
@@ -116,29 +127,31 @@ function fetchDataFromRenderedEntries(){
     data[i].enterpriseName = v.find("*[name='enterpriseName[]']").val();
     data[i].enterpriseCode = v.find("*[name='enterpriseCode[]']").val();
     data[i].remarks = [];
-    $(v).find('.remarks textarea').each((n,v) => {
-      if(v.value) data[i].remarks.push(v.value)
+    $(v).find('.remarks textarea').each((n, v) => {
+      if (v.value) data[i].remarks.push(v.value)
     });
   });
   return data;
 }
 
-async function showDMLContent(filename){
+async function showDMLContent(filename) {
   this.showLoadingProgress = true;
   let response = await axios({
     route: {
       name: 'api.read_json',
-      data: {filename: filename}
+      data: { filename: filename }
     },
     useMainLoadingBar: false,
   });
-  if(response.statusText === 'OK'){
+  if (response.statusText === 'OK') {
     // handle or arrange json file
     this.DMLObject = DML(response.data.json)
 
     // create entries string
-    this.dmlEntryData = createEntryData(this.DMLObject);
-    this.dmlEntryVueTemplate = createEntryVueTemplate(this.dmlEntryData);
+    // this.dmlEntryData = createEntryData(this.DMLObject);
+    // this.dmlEntryVueTemplate = createEntryVueTemplate(this.dmlEntryData);
+    const dmlEntryData = createEntryData(this.DMLObject);
+    this.dmlEntryVueTemplate = createEntryVueTemplate(dmlEntryData);
 
     this.techpubStore.currentObjectModel = response.data.model;
   }
@@ -182,9 +195,10 @@ const DML = function (json) {
       let issueType; issueType = (issueType = dmlEntry.find(v => v['@issueType'])) ? issueType['@issueType'] : '';
       let entryType; entryType = (entryType = dmlEntry.find(v => v['@entryType'])) ? entryType['@entryType'] : '';
 
-      let enterpriseName = jp.query(dmlEntry, '$..responsiblePartnerCompany..enterpriseName')[0][0];
-      let enterpriseCode = getAttributeValue(dmlEntry, '$..responsiblePartnerCompany', 'enterpriseCode');
+      const enterpriseName = jp.query(dmlEntry, '$..responsiblePartnerCompany..enterpriseName')[0][0];
+      const enterpriseCode = getAttributeValue(dmlEntry, '$..responsiblePartnerCompany', 'enterpriseCode');
 
+      const answerToEntry = getAttributeValue(dmlEntry, '$..answer', 'answerToEntry');
       return {
         ident: ident,
         issueType: issueType,
@@ -192,10 +206,78 @@ const DML = function (json) {
         securityClassification: securityClassification(dmlEntry, '$..security'),
         enterpriseName: enterpriseName,
         enterpriseCode: enterpriseCode,
-        remarks: remarks(dmlEntry, '$..remarks'),
+        answer: remarks(dmlEntry, '$..answer..remarks'),
+        answerToEntry: answerToEntry,
+        // karena element <remarks> ada di dalam answer dan dmlEntry maka tidak bisa kasi path langsung seperti '$..remarks.simplePara' karena akan mengambil remarks parennya answer juga, padahal pengennya remarks yang parentnya dmlEntry
+        remarks: remarks(dmlEntry.find(v => v['remarks']), '$..remarks'), 
       }
     }
   }
 }
 
-export { showDMLContent, addEntry};
+async function addEntry(next = true, duplicate = false) {
+
+  // let clonned; let etarget;
+  // etarget = document.querySelector(`#${this.cbId} tbody`);
+  // const template = document.createElement('template');
+  // template.innerHTML = defaultTemplateEntry();
+  // clonned = template.content.cloneNode(true);
+  // etarget.appendChild(clonned);
+  // console.log(clonned);
+  // return;
+
+  // create cloning element
+  let etarget = this.ContextMenu.triggerTarget;
+  let clonned;
+  // jika saat contextmenu di klik maka akan cari yang ada cb-roomnya, lalu di clone
+  if (etarget = findAncestor(etarget, "*[cb-room]")) {
+    clonned = etarget.cloneNode(true);
+    clonned.id = Randomstring.generate({ charset: 'alphabetic' });
+    if (!duplicate) {
+      clonned.querySelectorAll("*[modal-input-ref]").forEach(input => {
+        input.innerHTML = '';
+      });
+    }
+
+    const id = clonned.getAttribute("use-in-modal");
+    const modal = this.Modal.start(clonned, id, { manualUnset: true });
+
+    // wait the replace
+    if (!(await this.Modal.replace(await modal.data, id))) clonned = false;
+
+    // append clonned into DOM
+    if (clonned) {
+      next ? etarget.after(clonned) : etarget.before(clonned);
+      this.CB.setCbRoomId(null, clonned, null);
+    }
+  } else {
+    const template = document.createElement('tbody');
+    template.innerHTML = defaultTemplateEntry();
+    clonned = template.firstElementChild.cloneNode(true);
+    clonned.setAttribute('use-in-modal', this.dmlEntryModalId);
+    
+    const modal = this.Modal.start(clonned, this.dmlEntryModalId, { manualUnset: true });
+    
+    // wait the replace
+    if (!(await this.Modal.replace(await modal.data, this.dmlEntryModalId)))  clonned = false;
+
+    // append clonned into DOM
+    if (clonned) {
+      document.querySelector(`#${this.cbId} tbody`).appendChild(clonned);
+      this.CB.setCbRoomId(null, clonned, null);
+    }
+  }
+
+
+
+  // unset the Modal collection;
+  this.Modal.unsetCollection(2);
+  // else {  
+  //   clonned = document.createElement('template');
+  //   clonned.innerHTML = defaultTemplateEntry();
+  //   clonned.addAttribute('use-in-modal', this.dmlEntryModalId);
+  //   if(!etarget) etarget = document.querySelector(`#${this.cbId} tbody`);
+  // }
+}
+
+export { showDMLContent, addEntry };

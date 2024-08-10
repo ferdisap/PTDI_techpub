@@ -50,6 +50,32 @@ class History extends Model
   }
 
   /**
+   * FUNGSI: untuk mendapatkan semua history dari sebuah eloquent model
+   * tinggal di get() saat selanjutnya
+   */
+  public static function getHistories(mixed $eloquentModel, array $code = [])
+  {
+    $ownerClass = addslashes(get_class($eloquentModel)); // jika tidak pakai bindParam, maka tambakan addSlashes pada class. Jadi bukan 'App\Csdb\Model' melainkan 'App\\Csdb\\Model'    
+    $id = $eloquentModel->id;
+    
+    $queryHistory = "(";
+    // $queryHistory = "history.code = '{$code}' AND ";
+    if(!empty($code)){
+      $queryHistory .= "(";
+      for ($i=0; $i < count($code); $i++) { 
+        $queryHistory .= "history.code LIKE '{$code[$i]}'";
+        if(isset($code[$i+1])) $queryHistory .= " OR ";
+      }
+      $queryHistory .= ") AND ";
+    }
+    $queryHistory .= "`history`.`owner_id` = {$id} AND `history`.`owner_class` = '{$ownerClass}'";
+    $queryHistory .= ")";
+    $HISTORYModel = new self();
+    $HISTORYModel = $HISTORYModel->whereRaw($queryHistory);
+    return $HISTORYModel;
+  }
+
+  /**
    * ### ini berfungsi untuk generate string dimana SQL model tidak terdapat dalam history dengan code tertentu, biasanya diguankan codenya ['CSDB-DELL', 'CSDB-PDEL'] yang artinya model tidak boleh ada history 'CSDB-DELL' atau CSDB-PDEL di history terakhir 
    * ### lawan dari fungsi ini adalah @generateWhereRawQueryString().
    * contoh kurang tepat =  eg: SELECT * FROM csdb WHERE id IN ( SELECT history.owner_id FROM history WHERE history.owner_class = 'App\\Models\\Csdb' AND (history.code <> 'CSDB-DELL' OR history.code <> 'CRBT-PDEL') AND history.created_at = (SELECT MAX(history.created_at) from history) )
@@ -174,6 +200,11 @@ class History extends Model
     $HISTORYModel->owner_class = $owner_class;
     $HISTORYModel->created_at = now()->format('Y-m-d H:i:s'); // format sama dengan class Csdb
     return $HISTORYModel;
+  }
+
+  private static function resolveIdAndOwnerClass(mixed $model)
+  {
+    
   }
 
   ############################# START of CSDB HISTORY FUNCTION #############################

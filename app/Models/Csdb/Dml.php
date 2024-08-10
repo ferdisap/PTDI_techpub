@@ -23,13 +23,13 @@ class Dml extends Csdb
 
   // protected $with = ['initiator'];
 
-    /**
+  /**
    * The attributes that should be hidden for serialization.
    *
    * @var array<int, string>
    */
   protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
-  
+
   /**
    * The table associated with the model.
    *
@@ -81,13 +81,116 @@ class Dml extends Csdb
     $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
     $this->CSDBObject->createDML($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
 
-    if(!$this->CSDBObject->document){
+    if (!$this->CSDBObject->document) {
       return false;
     }
     return true;
   }
 
   /**
+   * method ini akan menghapus semuanya baru diisi lagi.
+   */
+  public function fill_xml($data = [])
+  {
+    $domXpath = new \DOMXpath($this->CSDBObject->document);
+    $dmlType = $domXpath->evaluate("string(//dmlAddress/descendant::dmlCode/@dmlType)");
+
+    // fill ident security classification
+    if (isset($data['ident-securityClassification'])) {
+      $value = $data['ident-securityClassification'];
+      $security = $domXpath->evaluate("//identAndStatusSection/dmlStatus/security")[0];
+      $security->setAttribute('securityClassification', str_pad((int)$value, 2, '0', STR_PAD_LEFT));
+    }
+
+    // fill ident brexDmRef
+    if (isset($data['ident-brexDmRef'])) {
+      $value = $data['ident-brexDmRef'];
+      $new_dmRef_string = CSDBStatic::decode_dmIdent($value)['xml_string'];
+      $new_dmRef = new \DOMDocument(); // supaya jadi DOMElement
+      $new_dmRef->loadXML($new_dmRef_string);
+      $new_dmRef = $this->CSDBObject->document->importNode($new_dmRef->documentElement, true);
+      $old_dmRef = $domXpath->evaluate("//identAndStatusSection/dmlStatus/brexDmRef/dmRef")[0];
+      $old_dmRef->replaceWith($new_dmRef);
+    }
+
+    // fill ident remarks
+    if (isset($data['ident-remarks'])) {
+      if (is_array($data['ident-remarks']) && !empty($data['ident-remarks'])) {
+        $l = count($data['ident-remarks']);
+        $old_remarks = $domXpath->evaluate("//identAndStatusSection/dmlStatus/remarks")[0];
+        while ($old_remarks->firstElementChild) {
+          $old_remarks->firstElementChild->remove();
+        }
+        for ($i = 0; $i < $l; $i++) {
+          $simplePara = $this->CSDBObject->document->createElement('simplePara');
+          $simplePara->nodeValue = $data['ident-remarks'][$i];
+          $old_remarks->appendChild($simplePara);
+        }
+      }
+    }
+
+    // fill content
+    $dmlContent = $domXpath->evaluate("//dmlContent")[0];
+    while ($dmlContent->firstElementChild) {
+      $dmlContent->firstElementChild->remove();
+    }
+    $l = count($data['entryIdent']);
+    for ($i = 0; $i < $l; $i++) {
+      // create entryIdent
+      $data['entryIdent'][$i] = CSDBStatic::decode_ident($data['entryIdent'][$i])['xml_string'];
+      if ($dmlType !== 's') $data['entryIdent'][$i] = preg_replace('/<(language|issueInfo)[\w\d\s="]+\/>/m', '', $data['entryIdent'][$i]);
+
+      // create issueType
+      $data['issueType'][$i] = $data['issueType'][$i] ? (' issueType=' . '"' . $data['issueType'][$i] . '"') : '';
+
+      // create dmlEntryType
+      $data['dmlEntryType'][$i] = $data['dmlEntryType'][$i] ? (' dmlEntryType=' . '"' . $data['dmlEntryType'][$i] . '"') : '';
+
+      // create security
+      $data['securityClassification'][$i] = $data['securityClassification'][$i] ? ('<security' . (' securityClassification="' . $data['securityClassification'][$i] . '"') . '/>') : '';
+
+      // create responsiblePartnerCompany
+      $enterpriseName = $data['enterpriseName'][$i];
+      $data['enterpriseName'][$i] = '<responsiblePartnerCompany' . ($data['enterpriseCode'][$i] ? (' enterpriseCode="' . $data['enterpriseCode'][$i] . '"') : '') . '>';
+      $data['enterpriseName'][$i] .= '<enterpriseName>' . $enterpriseName . '</enterpriseName>';
+      $data['enterpriseName'][$i] .= '</responsiblePartnerCompany>';
+
+      // create answer, 
+      // di schemanya <remarks> minOccurs=0. Tapi disini remarks akan dibuat satu saja.
+      // not applicable, if need to be applicable, try this code (each answer contains array simplePara. Use <text-editor> in front-end)
+      $answer = $data['answer'][$i]; // array
+      $data['answer'][$i] = ('<answer' . ((isset($data['answerToEntry'][$i]) && $data['answerToEntry'][$i]) ? (' answerToEntry="' . $data['answerToEntry'][$i] . '"') : '') . '>');
+      $data['answer'][$i] .= "<remarks>";
+      $ll = count($answer);
+      for ($ii = 0; $ii < $ll; $ii++) {
+        $data['answer'][$i] .= '<simplePara>' . $answer[$ii] . '</simplePara>';
+      }
+      $data['answer'][$i] .= "</remarks></answer>";
+
+      // create remarks
+      $remarks = $data['remarks'][$i];
+      $data['remarks'][$i] = '<remarks>';
+      $ll = count($remarks);
+      for ($ii = 0; $ii < $ll; $ii++) {
+        $data['remarks'][$i] .= '<simplePara>' . $remarks[$ii] . '</simplePara>';
+      }
+      $data['remarks'][$i] .= '</remarks>';
+
+      // combine all
+      $dmlEntry = "<dmlEntry" . $data['issueType'][$i] . $data['dmlEntryType'][$i] . '>'
+        . $data['entryIdent'][$i] . $data['securityClassification'][$i] . $data['enterpriseName'][$i] . $data['answer'][$i] . $data['remarks'][$i]
+        . "</dmlEntry>";
+      $dom = new DOMDocument('1.0', 'UTF-8');
+      $dom->loadXML($dmlEntry);
+      $dmlEntry = $this->CSDBObject->document->importNode($dom->documentElement, true);
+      unset($dom);
+      
+      $dmlContent->appendChild($dmlEntry);
+    }
+  }
+
+  /**
+   * DEPRECATED at 10 AUG 2024, diganti dengan @fill_xml
    * selanjutnya masukan fungsi ini ke CSDBobject atau jangan ditaruh di model
    * untuk update identAndStatusSection
    */
@@ -99,7 +202,7 @@ class Dml extends Csdb
         $security = $domXpath->evaluate("//identAndStatusSection/dmlStatus/security")[0];
         $security->setAttribute('securityClassification', str_pad((int)$value, 2, '0', STR_PAD_LEFT));
       } elseif ($key == 'brexDmRef') {
-        $new_dmRef_string = Helper::decode_dmIdent($value)['xml_string'];
+        $new_dmRef_string = CSDBStatic::decode_dmIdent($value)['xml_string'];
         $new_dmRef = new \DOMDocument();
         $new_dmRef->loadXML($new_dmRef_string);
         $new_dmRef = $this->CSDBObject->document->importNode($new_dmRef->documentElement, true);
@@ -121,7 +224,7 @@ class Dml extends Csdb
       }
       $filename = CSDB::resolve_DocIdent($this->CSDBObject->document);
       if ($this->direct_save) {
-        if (Storage::disk('csdb')->put($filename,$this->CSDBObject->document->saveXML())) {
+        if (Storage::disk('csdb')->put($filename, $this->CSDBObject->document->saveXML())) {
           $this->save();
           return true;
         }
@@ -166,6 +269,7 @@ class Dml extends Csdb
   }
 
   /**
+   * DEPRECATED at 10 AUG 2024, akrena sudah tidak pakai lagi staged2 an.
    * BARU (19Feb2024), entryIdent tidak akan di check apakah sudah tertulis di dml lainnya karena akan bermasalah jika DML yang sudah 'staged' dan akan di openEdit sementara ada entry yang sama
    * element security belum bisa mengcover @commercialSecurityAttGroup dan @derivativeClassificationRefId
    * ada fitur check dmlEntry di setiap DML yang tersimpan, tapi hanya yang 'p' saja karena 's' itu adalah CSL yang digenerate setiap ada load/unload object ke CSDB
@@ -187,7 +291,7 @@ class Dml extends Csdb
     $dmlContent = $domxpath->evaluate("//dmlContent")[0];
 
     // #2. decode string filename entry into array
-    $ident = Helper::decode_ident($entryIdent);
+    $ident = CSDBStatic::decode_ident($entryIdent);
     if (!$ident) return [false, "{$entryIdent} cannot be decoded."];
 
     // #3. checking if duplicate dmlEntry (hanya dmltype='p' saja, tapi tidak dicheck jika entrynya ICN)
@@ -482,9 +586,9 @@ class Dml extends Csdb
     $brexDmRef = CSDBStatic::resolve_dmIdent($brexElement);
     $dmlRefElement = $domXpath->evaluate("//identAndStatusSection/descendant::dmlRef");
     $dmlRef = '';
-    foreach($dmlRefElement as $refElement){
+    foreach ($dmlRefElement as $refElement) {
       $ref = CSDBStatic::resolve_dmlIdent($refElement->firstElementChild);
-      if($ref) $dmlRef .= ", ".$ref;
+      if ($ref) $dmlRef .= ", " . $ref;
     }
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
@@ -513,7 +617,7 @@ class Dml extends Csdb
     ];
 
     $dml = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('Dml');
-    foreach($arr as $prop => $v){
+    foreach ($arr as $prop => $v) {
       $dml->$prop = $v;
     }
     return $dml->save();

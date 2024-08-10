@@ -232,13 +232,37 @@ class Csdb extends Model
   {
     return $this->belongsTo(User::class, 'storage_id', 'id');
   }
+  public function owner() :BelongsTo
+  {
+    return $this->belongsTo(User::class, 'storage_id', 'id');
+  }
   
   /**
-   * get models of history that sorted by first to end
+   * DEPRECIATED, diganti histories
+   * get models of all history that sorted by first to end
    */
   public function history() :MorphMany
   {
     return $this->morphMany(History::class, 'owner','owner_class'); //'owner' itu nanti dirender menjadi 'owner_id' 
+  }
+  public function histories() :MorphMany
+  {
+    return $this->morphMany(History::class, 'owner','owner_class'); //'owner' itu nanti dirender menjadi 'owner_id'
+  }
+  public function attachHistories(int $paginate, $type = '')
+  {
+    switch ($type) {
+      case 'simple':
+        $this->histories = History::getHistories($this)->orderByDesc('created_at')->simplePaginate($paginate);
+        break;
+      case 'cursor':
+        $this->histories = History::getHistories($this)->orderByDesc('created_at')->cursorPaginate($paginate);
+        break;
+      default:
+        $this->histories = History::getHistories($this)->orderByDesc('created_at')->paginate($paginate);
+        break;
+    }
+    
   }
 
   /**
@@ -545,12 +569,12 @@ class Csdb extends Model
       if($name = User::find($this->initiator_id)) $storageName = $name->storage;
       else return false;
     } 
-    $fileContents = Storage::disk('csdb')->get($storageName . "/" . $this->filename);
-    $save_file = fn () => Storage::disk('csdb')->put($storageName . "/" . $this->filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
+    $filename = $this->filename ?? $this->csdb->filename;
+    $save_file = fn () => Storage::disk('csdb')->put($storageName . "/" . $filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
     $revert_save_file =
-      fn () => $fileContents
-        ? Storage::disk('csdb')->put($storageName . "/" . $this->filename, $fileContents)
-        : Storage::disk('csdb')->delete($storageName . "/" . $this->filename);
+      fn () => ($fileContents = Storage::disk('csdb')->get($storageName . "/" . $filename))
+        ? Storage::disk('csdb')->put($storageName . "/" . $filename, $fileContents)
+        : Storage::disk('csdb')->delete($storageName . "/" . $filename);
     if ($save_file()) {
       if ($this->save()) {
         // sengaja menaruh code pengisian table csdb metafile karena table inti adalah table.csdb. Table metafile ini bisa di update kapanpun
@@ -560,7 +584,6 @@ class Csdb extends Model
           switch ($doctype) {
             case 'dmodule':
               $csdbobject = Dmc::fillTable($this->id, $this->CSDBObject);
-              // $csdbobject = true;
               break;
             case 'pm':
               $csdbobject = Pmc::fillTable($this->id, $this->CSDBObject);
@@ -573,9 +596,6 @@ class Csdb extends Model
               break;
             case 'comment':
               $csdbobject = Comment::fillTable($this->id, $this->CSDBObject);
-              break;
-            default:
-              # code...
               break;
           }
           if (!$csdbobject) {

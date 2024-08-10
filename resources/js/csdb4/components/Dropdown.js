@@ -60,7 +60,7 @@ const fromHTML = function (html, trim = true) {
 // dataResults = [o,...o]. o adalah {}, keysnya sesuai dengan hasil fetch backedn
 // config = [c,...c]. c adalah {}, keysnya adalah '__element','__class','__style', '__innerHTML[configsOrKey,...configsOrKey]',
 const getContainerResultTemplate = function (dataResults = [{}], configs = [{ __element: '', __class: '', __style: '', __innerHTML: [] }], inputId, targets = '') {
-  let html = `<div dd-container-result${targets ? '="' + targets + '"' : ''} class="w-full absolute z-50 bg-slate-100 border shadow-md rounded-md">`;
+  let html = `<div dd-container-result${targets ? '="' + targets + '"' : ''} class="w-full absolute z-50 bg-slate-100 shadow-md rounded-md">`;
   for (let o = 0; o < dataResults.length; o++) {
     html += `<div dd-list-from="${inputId}"  class="text-sm border-b px-2 cursor-pointer hover:bg-blue-300">`;
     for (let c = 0; c < configs.length; c++) {
@@ -296,7 +296,11 @@ class Dropdown {
 
   cancel(event) {
     event.target.tabIndex = -1;
-    findAncestor(event.target, "*[dd-container-result]").style.display = 'none';
+    if(event.target.getAttribute('dd-input') && event.target.nextElementSibling.getAttribute('dd-container-result')) {
+      event.target.nextElementSibling.style.display = 'none';
+    } else {
+      findAncestor(event.target, "*[dd-container-result]").style.display = 'none';
+    }
   }
 
   /**

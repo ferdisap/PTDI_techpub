@@ -50,6 +50,11 @@ export default {
     submitUpdateXml: submitUpdateXml,
 
     copy: copy,
+    switchTo(){
+      if(this.isUpdate) this.XMLEditor.changeText('');
+      else this.XMLEditor.fetchRaw();
+      this.isUpdate = !this.isUpdate;
+    }
   },
   mounted() {
     this.XMLEditor.attachEditor()
@@ -66,11 +71,12 @@ export default {
 }
 </style>
 <template>
-  <div class="editor px-3 relative">
+  <div class="editorxml px-3 relative h-full">
 
     <h1 class="text-blue-500 w-full text-center">Editor</h1>
 
     <form @submit.prevent="submit($event)">
+      <input v-if="isUpdate" name="filename" type="text" class="hidden" :value="$route.params.filename"/>
       <div>
         <div class="mb-1">
           <label for="object-path" class="text-sm font-bold mr-2">Path:</label>
@@ -81,10 +87,10 @@ export default {
         <div :id="XMLEditor.id" class="text-xl mb-2"></div>
         <div class="error text-sm text-red-600" v-html="techpubStore.error('xmleditor')"></div>
       </div>
-      <button v-if="!isUpdate" type="submit" name="button"
-        class="button bg-green-400 text-white hover:bg-green-600">Create</button>
-      <button v-else type="submit" name="button"
-        class="button bg-violet-400 text-white hover:bg-violet-600">Update</button>
+      <button type="submit" name="button" 
+        :class="['button text-white text-sm', !isUpdate ? 'bg-green-400 hover:bg-green-600' : 'bg-violet-400 hover:bg-violet-600']">{{ !isUpdate ? 'Create' : 'Update' }}</button>
+      <!-- <button v-if="!isUpdate" type="submit" name="button" class="button bg-green-400 text-white hover:bg-green-600">Create</button> -->
+      <!-- <button v-else type="submit" name="button" class="button bg-violet-400 text-white hover:bg-violet-600">Update</button> -->
     </form>
     <ContinuousLoadingCircle :show="showLoadingProgress" />
 
@@ -96,6 +102,11 @@ export default {
       <div @click.stop.prevent="$parent.editorComponent = 'EditorICN'"
         class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">Upload ICN</div>
+      </div>
+      <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
+      <div @click.stop.prevent="switchTo"
+        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">Switch to {{ isUpdate ? 'create' : 'update' }}</div>
       </div>
       <div @click.stop.prevent="copy(null, '')"
         class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">

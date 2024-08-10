@@ -1,3 +1,7 @@
+<!-- 
+  DEPRECATED,
+  tidak dipakai lagi
+ -->
 <script>
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import CommentField from './CommentField.vue';
