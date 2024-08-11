@@ -230,9 +230,9 @@ class Dropdown {
       case 46: isSearch = true; break; // delete
     }
     if (isCharacterKeyPress(event)) isSearch = true;
-    if(isSearch) {
+    if (isSearch) {
       clearTimeout(this.to_search);
-      this.to_search = setTimeout(this.searching.bind(this,event),300)
+      this.to_search = setTimeout(this.searching.bind(this, event), 300)
     }
   }
 
@@ -243,42 +243,28 @@ class Dropdown {
   }
 
   searching(event) {
-    const sc = this.collection[event.target.id].keys[0] + '::' + event.target.value;
+    this.collection[event.target.id]['targetSearchValue'] = event.target.value.replace(/.+,/gm, '').trim();
+    const sc = this.collection[event.target.id].keys[0] + '::' + this.collection[event.target.id]['targetSearchValue'];
     const techpubRoute = useTechpubStore().getWebRoute(this.collection[event.target.id].route, { sc: sc, limit: 5 });
-    return new Promise((r, j) => {
-      clearTimeout(this.timeout);
-      this.timeout = setTimeout(() => {
-        let worker;
-        if (window.Worker) {
-          worker = new Worker(`/worker/WorkerInputSearch.js`, { type: "module" });
-        }
-        if (!worker) return false;
-        worker.onmessage = (e) => {
-          if (e.data.error) { // error merupakan key dari worker js
-            j(false);
-            this.collection[event.target.id].results = [];
-          } else {
-            r(true);
-            // ambil sesuai collection type, kalau tidak ada, 'results','result',[] berurutan
-            this.collection[event.target.id].results = (
-              this.collection[event.target.id].type ? (
-                e.data[this.collection[event.target.id].type] ? e.data[this.collection[event.target.id].type] : (
-                  e.data.results ? e.data.results : (
-                    e.data.result ? e.data.result : []
-                  )
-                )
-              ): (
-                e.data.results ? e.data.results : (
-                  e.data.result ? e.data.result : []
-                )
-              )
-            );
-          }
-          worker.terminate();
-        }
-        worker.postMessage({ route: techpubRoute });
-      }, 500);
-    });
+    // kalau pakai axios, value input berubah lagi seperti di techpubstore walau sudah di set
+    fetch(techpubRoute.url)
+    .then(rsp => rsp.json())
+    .then(data => {
+      this.collection[event.target.id].results = (
+        this.collection[event.target.id].type ? (
+          data[this.collection[event.target.id].type] ? data[this.collection[event.target.id].type] : (
+            data.results ? data.results : (
+              data.result ? data.result : []
+            )
+          )
+        ) : (
+          data.results ? data.results : (
+            data.result ? data.result : []
+          )
+        )
+      );
+    })
+    return;
   }
 
   move(event, down = true) {
@@ -296,7 +282,7 @@ class Dropdown {
 
   cancel(event) {
     event.target.tabIndex = -1;
-    if(event.target.getAttribute('dd-input') && event.target.nextElementSibling.getAttribute('dd-container-result')) {
+    if (event.target.getAttribute('dd-input') && event.target.nextElementSibling.getAttribute('dd-container-result')) {
       event.target.nextElementSibling.style.display = 'none';
     } else {
       findAncestor(event.target, "*[dd-container-result]").style.display = 'none';
@@ -308,6 +294,7 @@ class Dropdown {
    * Misal: attribute dd-input="enterpriseName, enterpriseCode" dan dd-target="someId1, someId2". Input dengan id 'someId1' akan disi dengan enterprise dan seterusnya
    */
   select(event) {
+    console.log('select');
     const evtTarget = this.getEventTarget(event);
     if (!evtTarget) return;
 
@@ -315,14 +302,32 @@ class Dropdown {
     // untuk setiap target, akan di render value of keys nya
     for (let i = 0; i < this.collection[this.focusId].targets.length; i++) {
       let el;
-      if (this.collection[this.focusId].targets[i] === '' || this.collection[this.focusId].targets[i] === 'self') {
+      let selfTarget, append;
+      if (this.collection[this.focusId].targets[i].includes('-append')) append = true;
+
+      if (this.collection[this.focusId].targets[i] === '' || this.collection[this.focusId].targets[i].substr(0, 4) === 'self') {
         el = document.getElementById(this.focusId);
+        selfTarget = true;
       } else {
-        el = document.getElementById(this.collection[this.focusId].targets[i]);
+        el = (append ?
+          document.getElementById(this.collection[this.focusId].targets[i].replace('-append', '')) :
+          document.getElementById(this.collection[this.focusId].targets[i]));
       }
-      el.value = this.collection[this.focusId].results[indexInResults][
-        this.collection[this.focusId].keys[i]
-      ];
+      // el.value = this.collection[this.focusId].results[indexInResults][
+      //   this.collection[this.focusId].keys[i]
+      // ];
+
+      if (append) {
+        el.value = el.value.replace(/(.+,).+/gm, (m, p1) => p1); // akan menghilangkan value terakhir. Eg: 'DMC-saaksmas.xml, DMC-x, DMC-y' akan menghilangkan ' DMC-y'.
+        el.value += ' ' + this.collection[this.focusId].results[indexInResults][
+          this.collection[this.focusId].keys[i]
+        ];
+      } else {
+        el.value = this.collection[this.focusId].results[indexInResults][
+          this.collection[this.focusId].keys[i]
+        ];
+      }
+
     }
 
     // close/unshowed container here

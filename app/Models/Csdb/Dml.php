@@ -75,11 +75,11 @@ class Dml extends Csdb
     'xml',
   ];
 
-  public function create_xml(string $storagePath, string $modelIdentCode, string $originator, string $dmlType, string $securityClassification, string $brexDmRef, array $remarks = [], array $otherOptions = [])
+  public function create_xml(string $storagePath, Array $params)
   {
     $this->CSDBObject = new CSDBObject('5.0');
     $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
-    $this->CSDBObject->createDML($modelIdentCode, $originator, $dmlType, $securityClassification, $brexDmRef, $remarks, $otherOptions);
+    $this->CSDBObject->createDML($params);
 
     if (!$this->CSDBObject->document) {
       return false;

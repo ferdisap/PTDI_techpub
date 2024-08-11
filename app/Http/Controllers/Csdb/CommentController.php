@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Csdb;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Csdb\CommentCreate;
-use App\Models\Csdb as ModelsCsdb;
+use App\Models\Csdb;
 use App\Models\Csdb\Comment;
 use App\Models\Project;
 use App\Models\User;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Rules\File;
 use PhpParser\Node\Expr\Cast\Object_;
-use Ptdi\Mpub\CSDB;
+// use Ptdi\Mpub\CSDB;
 use Ptdi\Mpub\ICNDocument;
 use Ptdi\Mpub\Validation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -46,8 +46,24 @@ class CommentController extends Controller
    */
   public function create(CommentCreate $request)
   {
+    $CSDBModel = new Csdb();
+    $CSDBModel->CSDBObject = $request->CSDBObject[0];
+    $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
+    $CSDBModel->path = $request->validated()['path'];
+    $CSDBModel->storage_id = $request->user()->id;
+    $CSDBModel->initiator_id = $request->user()->id;
+
+    if ($CSDBModel->saveDOMandModel($request->user()->storage, [
+      ['MAKE_CSDB_CRBT_History', [Csdb::class]],
+      ['MAKE_USER_CRBT_History', [$request->user(), '', $CSDBModel->filename]]
+    ])) {
+      return $this->ret2(200, ["{$CSDBModel->filename} has been created."], ['csdb' => $CSDBModel, 'infotype' => 'info']);
+    }
+    return $this->ret2(400, ["fail to create and save COM."]);
+
+    dd($request);
     $COMModel = new Comment();
-    $csdb = new ModelsCsdb();
+    $csdb = new Csdb();
     $COMModel->setProtected([
       'table' => $csdb->getProtected('table'),
       'fillable'=> $csdb->getProtected('fillable'),

@@ -69,7 +69,7 @@ export default {
   <div class="RemarksVue">
     {{ remarksPara }}
     <div :class="['block mb-2 text-gray-900 dark:text-white', $props.class_label]">Remarks:</div>
-    <text-editor :line-type="$props.lineType" :name="$props.nameAttr" :class="[$props.class,'w-full block']" :id="remarkId" :modal-input-name="$props.modalInputName"/>
+    <text-editor v-pre :line-type="$props.lineType" :name="$props.nameAttr" :class="[$props.class,'w-full block']" :id="remarkId" :modal-input-name="$props.modalInputName"/>
     <div class="text-red-600" v-html="techpubStore.error('remarks')"></div>
   </div>
 </template>

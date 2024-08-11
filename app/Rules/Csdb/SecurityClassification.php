@@ -14,14 +14,10 @@ class SecurityClassification implements ValidationRule
    */
   public function validate(string $attribute, mixed $value, Closure $fail): void
   {
-    if(strlen($value) != 2 && (int)$value) $fail("$value must be number in two digits.");
-    // $allowed = ['01','02','03','04','05'];    
-    // if(!$this->required) $allowed[] = '';
-    // if(!in_array($value, $allowed)){
-    //   $allowed = array_map( fn($v) => $v == '' ? ("'no need to be fullfilled'") : $v,$allowed);
-    //   $last = count($allowed) - 1;
-    //   $allowed[$last] = 'or '. $allowed[$last];
-    //   $fail("The {$attribute} must be " . join(', ', $allowed) . ".");
-    // }
+    // if(strlen($value) != 2 && (int)$value) $fail("$value must be number in two digits.");
+
+    // harus dua digit, number, dan <=5
+    if(!(($value != '00') && (strlen($value) === 2) && (is_numeric($value))) && (((int) $value <= 5))) $fail("{$attribute} must be in two digits without number or none.");
+    
   }
 }

@@ -46,15 +46,16 @@ function getCSDBObjectModel(data){
   if(data.filename){
     clearTimeout(this.to);
     this.to = setTimeout(()=>{
-      const worker = this.createWorker('WorkerGetCsdbModel.js');
-      if(worker){
-        let route = this.techpubStore.getWebRoute('api.get_object_model', {filename: data.filename});
-        worker.onmessage = (e) => {
-          this.techpubStore.currentObjectModel = e.data.model;
-          worker.terminate();
+      axios({
+        route: {
+          name: 'api.get_object_model',
+          data: {filename: data.filename}        
+        },
+      }).then((rsp)=>{
+        if(rsp.statusText === 'OK'){
+          this.techpubStore.currentObjectModel = rsp.data.model;
         }
-        worker.postMessage({route: route});
-      }
+      })
     },1000);
   }
 }

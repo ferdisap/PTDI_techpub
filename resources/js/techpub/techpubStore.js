@@ -509,6 +509,16 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       this.showLoadingBar = false;
     },
 
+    getCurrentObjectModel(){
+      return this.currentDetailObject;
+    },
+
+    /**
+     * DEPRECATED, diganti getCurrentObjectModel
+     * @param {*} output 
+     * @param {*} object 
+     * @returns 
+     */
     // return src:blob untuk ICN atau blob.text() jika xml
     // return Promise
     async getCurrentDetailObject(output = '', object = {}) {
