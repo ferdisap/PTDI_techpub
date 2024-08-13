@@ -19,6 +19,7 @@ return new class extends Migration
 
       $table->tinyText('modelIdentCode'); // merujuk ke @modelIdentCode
       $table->tinyText('senderIdent'); // merujuk ke senderIdent code atau sudah di transform codenya, gunakan file config jika ingin transform
+      $table->tinyText('commentType'); // merujuk ke commentType
       $table->tinyText('yearOfDataIssue'); // merujuk ke @yearOfDataIssue
       $table->tinyText('seqNumber'); // merujuk ke @seqNumber
 

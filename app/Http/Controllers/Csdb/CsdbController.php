@@ -258,12 +258,14 @@ class CsdbController extends Controller
       $folders = $folders->whereRaw($queryExecption[0],$queryExecption[1]);
       $folders = $folders->get(['path'])->toArray();
       $folders = array_unique($folders, SORT_REGULAR);
+      $folders = array_values(($folders));
       array_walk($keywords['path'], fn(&$v) => $v = substr($keywords['path'][0],0,-1) ); // menghilangkan '/' di ujung path query yang ditambah sebelumnya
 
       // menghilangkan sub-subfolder 
       $l_folders = count($folders);
       $allPath = join("|",$keywords['path']); // jika pencarian multiple path, maka dijoin pakai pipe symbol sesuai pencarian di regex;
       $allPath = str_replace("/","\/",$allPath);
+      // dd($folders);
       for ($i=0; $i < $l_folders; $i++) { 
         // pengecekan terhadap setiap keyword paths tidak diperlukan lagi karena saat pencarian setiap path keyword sudah ditambah '/' sehingga pencarian spesifik untuk sub folder 
         $folders[$i] = join("", $folders[$i]); // saat didapat dari database, bentuknya array berisi satu path saja

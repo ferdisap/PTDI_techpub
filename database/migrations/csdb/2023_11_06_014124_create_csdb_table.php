@@ -21,7 +21,7 @@ return new class extends Migration
       $table->string('filename');
       $table->string('path');
       $table->text('storage_id');
-      $table->integer('initiator_id');
+      $table->integer('initiator_id'); // ini inititator, bukan creator juga buka author. Kalau mau lihat author, buka history
       // $table->timestampsTz();
       // $table->integer('deleter_id');
       // $table->dateTimeTz('deleted_at')->nullable();

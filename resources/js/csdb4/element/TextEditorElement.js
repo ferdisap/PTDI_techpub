@@ -20,7 +20,7 @@ class TextEditorElement extends HTMLElement {
     setTimeout(()=>{
       if(this.hasAttribute('line-type')) this.defaultLineType = this.getAttribute('line-type');
       if(this.hasAttribute('name')) this.name = this.getAttribute('name'); // kalau pakai getter, attributenya akan hilang
-      this.attachEditor(this.textContent);
+      this.attachEditor(this.textContent); // harus pakai timeout karena pembuatan custom element tidak bisa ada children
     },0);
   }
 
@@ -43,6 +43,14 @@ class TextEditorElement extends HTMLElement {
     this.changeText(text);
     this._internals.setFormValue(text);
     return text;
+  }
+
+  set name(v) {
+    this.setAttribute('name', v);
+  }
+
+  get name(){
+    return this.getAttribute('name');
   }
 
   _onKeyup(event){
@@ -74,7 +82,8 @@ class TextEditorElement extends HTMLElement {
     return line ? this.editor.state.doc.toString().replace(/\n/gm, line) : this.editor.state.doc.toString();
   }
 
-  changeText(text = '', from = 0, to = -1) {
+  async changeText(text = '', from = 0, to = -1) {
+    if(!this.editor) await (new Promise(r=>setTimeout(r.bind(this,true),0))); // menunggu editor di attach. Ketika di js docuemnt.createElement('text-editor'), editor tidak langsung di attach namun pakai timeout
     if (isArray(text)) text = text.join("\n");
     else if (!text && text != '') return;
     if (to < 0) to = this.getText().length; // harapannya jika to 0 maka akan nambah text di awal

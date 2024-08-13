@@ -37,9 +37,18 @@ const isClassIntance = (v) => (v !== undefined) && (v !== null) && (v.constructo
 const isFunction = (v) => (v !== undefined) && (v !== null) && (v.constructor.name === 'Function');
 
 // DOM
+/**
+ * null jika selector adalah self element
+ * @param {NodeElement} el 
+ * @param {String} CSS selector 
+ * @returns 
+ */
 const findAncestor = function(el, sel) {
   while ((el = el.parentElement) && !((el.matches || el.matchesSelector).call(el,sel)));
   return el;
+}
+const matchSel = function(el, sel){
+  return (el.matches || el.matchesSelector).call(el,sel);
 }
 const indexFromParent = function(el) {
   return Array.prototype.slice.call(el.parentElement.children).indexOf(el);
@@ -123,7 +132,7 @@ export {
   // general
   array_unique, formDataToObject, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction, 
   // DOM
-  findAncestor,indexFromParent,
+  findAncestor,matchSel,indexFromParent,
   // event
   isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick, isCharacterKeyPress,
   // utilization

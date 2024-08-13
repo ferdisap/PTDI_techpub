@@ -37,8 +37,9 @@ export default {
       }
     }, 10);
 
-    window.rt = this.$route;
-    window.rtr = this.$router;
+    if(this.$route.params.filename) this.getCSDBObjectModel({filename: this.$route.params.filename});
+    // window.rt = this.$route;
+    // window.rtr = this.$router;
 
   },
 }

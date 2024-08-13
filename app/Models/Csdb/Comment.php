@@ -2,6 +2,7 @@
 
 namespace App\Models\Csdb;
 
+use App\Casts\Csdb\Comment\CommentContentCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Csdb;
@@ -36,21 +37,25 @@ class Comment extends Csdb
    *
    * @var array<int, string>
    */
-  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+  // protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+  protected $hidden = ['csdb_id', 'json', 'xml'];
 
   /**
    * The attributes that should be cast.
    * @var array
    */
-  // protected $casts = [
-  //   'commentRefs' => 'array', // tidak perlu kalau columnnya json
-  // ];
+  protected $casts = [
+    'commentRefs' => 'json',
+    // 'commentContent' => 'array'
+    'commentContent' => CommentContentCast::class
+  ];
 
   protected $fillable = [
     'csdb_id',
 
     'modelIdentCode',
     'senderIdent',
+    'commentType',
     'yearOfDataIssue',
     'seqNumber',
 
@@ -85,21 +90,32 @@ class Comment extends Csdb
   protected function commentRefs(): Attribute
   {
     return Attribute::make(
-      set: fn($v) => is_array($v) ? json_encode($v) :(
-        $v && Helper::isJsonString($v) ? $v : json_encode($v ? [$v] : [])
+      set: fn ($v) => is_array($v) ? json_encode($v) : ($v && Helper::isJsonString($v) ? $v : json_encode($v ? [$v] : [])
       ),
-      get: fn($v) => json_decode($v, true),
+      get: fn ($v) => json_decode($v, true),
     );
   }
 
-  public function create_xml(string $storagePath, Array $params)
+  /**
+   * Get the attributes that should be cast.
+   *
+   * @return array<string, string>
+   */
+  // protected function casts(): array
+  // {
+  //   return [
+  //     'commentContent' => CommentContentCast::class
+  //   ];
+  // }
+
+  public function create_xml(string $storagePath, array $params)
   {
     $this->CSDBObject = new CSDBObject('5.0');
     $this->CSDBObject->setPath(CSDB_STORAGE_PATH . "/" . $storagePath);
     $this->CSDBObject->setConfigXML(CSDB_VIEW_PATH . DIRECTORY_SEPARATOR . "xsl" . DIRECTORY_SEPARATOR . "Config.xml"); // nanti diubah mungkin berbeda antara pdf dan html meskupun harusnya SAMA. Nanti ConfigXML mungkin tidak diperlukan jika fitur BREX sudah siap sepenuhnya.
     $this->CSDBObject->createCOM($params);
 
-    if($this->CSDBObject->document){
+    if ($this->CSDBObject->document) {
       return true;
     }
     return false;
@@ -112,6 +128,7 @@ class Comment extends Csdb
 
     $modelIdentCode = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@modelIdentCode)");
     $senderIdent = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@senderIdent)");
+    $commentType = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@commentType)");
     $yearOfDataIssue = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@yearOfDataIssue)");
     $seqNumber = $domXpath->evaluate("string(//commentAddress/commentIdent/commentCode/@seqNumber)");
 
@@ -126,9 +143,9 @@ class Comment extends Csdb
     $commentPriority = $domXpath->evaluate("string(//commentStatus/commentPriority/@commentPriorityCode)");
     $commentResponse = $domXpath->evaluate("string(//commentStatus/commentResponse/@responseType)");
     $commentRefs = $domXpath->evaluate("//commentStatus/commentRefs/*/*");
-    if(!empty($commentRefs)){
+    if (!empty($commentRefs)) {
       $r = [];
-      foreach($commentRefs as $refsGroup){
+      foreach ($commentRefs as $refsGroup) {
         $r[] = CSDBStatic::resolve_ident($refsGroup->firstElementChild);
       }
       $commentRefs = $r;
@@ -140,15 +157,15 @@ class Comment extends Csdb
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
     $commentContent = $domXpath->evaluate("//commentContent/*");
-    if(!empty($commentContent)){
+    if (!empty($commentContent)) {
       $r = '';
-      foreach($commentContent as $content){
+      foreach ($commentContent as $content) {
         switch ($content->tagName) {
           case 'simplePara':
-            $r .= $content->nodeValue;
+            $r .= '\n' . $content->nodeValue;
             break;
           case 'attachmentRef':
-            $r .= "\n\r Refer to attachment no. ".$filename."-".$content->getAttribute('attachmentNumber').".".strtolower($content->getAttribute('fileExtension'))."\n\r";
+            $r .= "\n Refer to attachment no. " . $filename . "-" . $content->getAttribute('attachmentNumber') . "." . strtolower($content->getAttribute('fileExtension')) . "\n";
             break;
         }
       }
@@ -156,12 +173,14 @@ class Comment extends Csdb
     } else {
       $commentContent = '';
     }
-    
+    $commentContent = trim($commentContent, '\n');
+
     $arr = [
       "csdb_id" => $csdb_id,
 
       'modelIdentCode' => $modelIdentCode,
       'senderIdent' => $senderIdent,
+      'commentType' => $commentType,
       'yearOfDataIssue' => $yearOfDataIssue,
       'seqNumber' => $seqNumber,
 
@@ -188,9 +207,9 @@ class Comment extends Csdb
 
     $comment = Csdb::getObject($filename)->first() ?? Csdb::getModelClass('comment');
     $comment->timestamps = false;
-    foreach($arr as $prop => $v){
+    foreach ($arr as $prop => $v) {
       $comment->$prop = $v;
     }
-    return $comment->save();    
+    return $comment->save();
   }
 }

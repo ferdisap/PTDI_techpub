@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Csdb\CommentController;
 use App\Http\Controllers\Csdb\CsdbController;
 use App\Http\Controllers\Csdb\HistoryController;
 use App\Http\Controllers\CsdbServiceController;
@@ -57,6 +58,8 @@ Route::get("/api/download", [CsdbController::class, 'download_objects'])->middle
 // get all history
 Route::get("/api/histories/{filename}", [HistoryController::class, 'all'])->middleware('auth')->name('api.get_csdb_history');
 
+// get list comment 
+Route::get("/api/comments/{filename}",[CommentController::class, 'all'])->middleware('auth')->name('api.get_csdb_comments');
 
 
 

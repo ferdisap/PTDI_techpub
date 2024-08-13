@@ -19,16 +19,29 @@ export default {
     },
     cancel(){
       this.Modal.button(false);
+    },
+    show(data = {}){
+      this.Modal.start(
+      (data.referer ? data.referer : undefined), 
+      (data.modalId ? data.modalId : this.$props.id)
+      );
     }
   },
   mounted() {
     this.Dropdown.register(this.$props.id);
     this.Modal.register(this.$props.id);
+
+    // dari Listtree via Explorer/Management data data berisi path doang,
+    let emitters = this.emitter.all.get('Modal-show'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    if (emitters) {
+      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound show')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Modal-show', this.show);
+    } else this.emitter.on('Modal-show', this.show)
   },
 }
 </script>
 <template>
-  <div :id="$props.id" v-show="Modal.getShow($props.id)" class="absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200">
+  <div :id="$props.id" v-show="Modal.getShow($props.id)" style="display:none" class="absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200">
     
     <slot name="title">
       <h1 class="text-center font-bold mb-2">Modal</h1>

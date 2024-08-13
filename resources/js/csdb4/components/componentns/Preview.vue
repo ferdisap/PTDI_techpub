@@ -43,12 +43,11 @@ export default {
     this.render(this.$route.params.filename, this.$route.params.viewType);
 
     // dari Listtree via Explorer/Management data data berisi path doang,
-    // let emitters = this.emitter.all.get('Preview-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
-    // if (emitters) {
-    //   let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
-    //   if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
-    // } else this.emitter.on('Preview-refresh', this.refresh)
-    this.emitter.on('Preview-refresh', this.refresh)
+    let emitters = this.emitter.all.get('Preview-refresh'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    if (emitters) {
+      let indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
+    } else this.emitter.on('Preview-refresh', this.refresh)
 
     this.ContextMenu.register(this.contextMenuId);
     this.ContextMenu.toggle(false, this.contextMenuId);
@@ -70,35 +69,8 @@ export default {
         <embed class="w-full h-full" :src="src" :type="mime" />
       </div>
     </div>
-    <!-- <PreviewRCMenu>
-      <div v-if="inIframe" class="fTelex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div v-if="$route.params.viewType === 'html'" href="#" class="text-sm" @click="switchView('pdf')">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">book_2</span>
-          Switch to PDF
-        </div>
-        <div v-else-if="$route.params.viewType === 'pdf'" href="#" class="text-sm" @click="switchView('html')">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">devices</span>
-          Switch to HTML</div>        
-      </div>
-
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm" @click="()=>this.emitter.emit('DeleteCSDBObjectFromEveryWhere', {filename: filename})">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-red-600">delete</span>
-          Delete</div>
-      </div>
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2 text-green-600">devices</span>
-          Issue</div>
-      </div>
-      <div class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm" @click="()=>this.emitter.emit('CommitCSDBObjectFromEveryWhere', {filename: filename})">
-          <span href="#" class="material-symbols-outlined bg-transparent text-sm mr-2">commit</span>
-          Commit</div>
-      </div>      
-    </PreviewRCMenu> -->
-
-    <Comment/>
+    
+    <Comment :csdbFilename="$route.params.filename"/>
 
     <ContinuousLoadingCircle :show="showLoadingProgress" />
     <ContextMenu :id="contextMenuId">

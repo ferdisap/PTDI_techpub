@@ -42,8 +42,8 @@ export default {
         this.editorComponent = 'EditorDML';
         break;    
       default:
-        // this.editorComponent = 'EditorXML';
-        this.editorComponent = 'EditorDML';
+        this.editorComponent = 'EditorXML';
+        // this.editorComponent = 'EditorDML';
         break;
     }
   }

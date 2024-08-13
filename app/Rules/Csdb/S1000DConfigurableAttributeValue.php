@@ -20,6 +20,8 @@ class S1000DConfigurableAttributeValue implements ValidationRule
    */
   public function validate(string $attribute, mixed $value, Closure $fail): void
   {
+    if($value === '') return; // artinya tidak perlu di validasi
+
     // misal $value = 'cp01'; artinya type harus diset 'cp'
     $l = strlen($this->type);
     $a = substr($value, 0, $l); // cp

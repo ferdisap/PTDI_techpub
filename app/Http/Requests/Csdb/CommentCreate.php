@@ -83,7 +83,7 @@ class CommentCreate extends FormRequest
       'commentRemarks' => ['array'],
 
       // content
-      'commentContentSimplePara' => ['array'],      
+      'commentContentSimplePara' => ['array'],
     ];
   }
 
@@ -114,33 +114,26 @@ class CommentCreate extends FormRequest
     }
 
     $parentCommentFilename = $this->get('parentCommentFilename');
-    if ($parentCommentFilename) {
-      $previousCommentFilename = $this->get('previousCommentFilename');
-      if ($previousCommentFilename) {
-        // jika ada previous comment, maka tinggal tambahkan increment last two digit seqNumber
-        $previousCommentDecoded = CSDBStatic::decode_commentIdent($previousCommentFilename);
-        $threeDigitFirst_seqNumber = substr($previousCommentDecoded['commentCode']['seqNumber'], 0, 3);
-        $twoDigitLast_seqNumber = substr($previousCommentDecoded['commentCode']['seqNumber'], 3);
-        $twoDigitLast_seqNumber++;
-        $twoDigitLast_seqNumber = str_pad($twoDigitLast_seqNumber, 2, '0', STR_PAD_LEFT);
-        $modelIdentCode = $modelIdentCode ?? $previousCommentDecoded['commentCode']['modelIdentCode'];
-      } else {
-        // else pakai parentComment untuk last two digit seqNumber
-        $parentCommentDecoded = CSDBStatic::decode_commentIdent($parentCommentFilename);
-        $threeDigitFirst_seqNumber = substr($parentCommentDecoded['commentCode']['seqNumber'], 0, 3);
-        $twoDigitLast_seqNumber = substr($parentCommentDecoded['commentCode']['seqNumber'], 3);
-        $modelIdentCode = $modelIdentCode ?? $parentCommentDecoded['commentCode']['modelIdentCode'];
-      }
+    $commentType = $this->get('commentType');
+    $position = $this->get('position');
+    // dd($parentCommentFilename, $commentType, $position);
+    if ($parentCommentFilename && ($commentType === 'i' | $commentType === 'r')) {
+      $parentCommentDecoded = CSDBStatic::decode_commentIdent($parentCommentFilename);
+      $threeDigitFirst_seqNumber = substr($parentCommentDecoded['commentCode']['seqNumber'], 0, 3);
+      $twoDigitLast_seqNumber = substr($parentCommentDecoded['commentCode']['seqNumber'], 3);
+      if ($position) ($twoDigitLast_seqNumber = ((int) $twoDigitLast_seqNumber + (int) $position));
+      $twoDigitLast_seqNumber = str_pad($twoDigitLast_seqNumber, 2, '0', STR_PAD_LEFT);
       $seqNumber = $threeDigitFirst_seqNumber . $twoDigitLast_seqNumber;
-      $commentType = $this->get('commentType') ?? 'i';
+      $modelIdentCode = $modelIdentCode ?? $parentCommentDecoded['commentCode']['modelIdentCode'];
     } else {
-      $seqNumber = rand(1,999) . '00';
+      $seqNumber = rand(1, 999) . '00';
       $seqNumber = str_pad($seqNumber, 5, '0', STR_PAD_LEFT);
       $commentType = $this->get('commentType') ?? 'q';
     }
+    // dd($commentType, $seqNumber);
 
     $this->merge([
-      'path' => $this->get('path') ?? 'CSDB',
+      'path' => $this->get('path') ?? 'CSDB/COMMENTS',
       // ident
       'modelIdentCode' => $modelIdentCode,
       'senderIdent' => $senderIdent,
@@ -184,7 +177,7 @@ class CommentCreate extends FormRequest
       'remarks' => $this->get('commentRemarks'),
 
       // content
-      'commentContentSimplePara' => preg_split("/<br\/>|<br>|&#10;/m",$this->get('commentContentSimplePara')),
+      'commentContentSimplePara' => preg_split("/<br\/>|<br>|&#10;/m", $this->get('commentContentSimplePara')),
     ]);
   }
 
@@ -196,7 +189,7 @@ class CommentCreate extends FormRequest
     $this->merge([
       // harus array atau scalar, entah kenapa
       // Expected a scalar, or an array as a 2nd argument to \"Symfony\\Component\\HttpFoundation\\InputBag::set()\", \"Ptdi\\Mpub\\Main\\CSDBObject\" given.
-      'CSDBObject' => [$COMModel->CSDBObject], 
+      'CSDBObject' => [$COMModel->CSDBObject],
     ]);
   }
 }

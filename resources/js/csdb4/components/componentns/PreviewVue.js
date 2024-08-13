@@ -35,9 +35,7 @@ async function blobRequestTransformed(routename, data, mime) {
     let blob = new Blob([response.data], { type: mime });
     let url = URL.createObjectURL(blob);
     return url;
-  } else {
-    return false
-  }
+  } 
 }
 
 async function render(filename, viewType){

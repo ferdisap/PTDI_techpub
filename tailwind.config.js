@@ -18,8 +18,13 @@ export default {
   ],
   theme: {
     extend: {
-      width: {
-        'foo': '100%'
+      // width: {
+      //   'foo': '100%'
+      // }
+      fontSize: {
+        '2xs' : ['0.5rem', {
+          lineHeight: '0.75rem'
+        }], 
       }
     },
     fontFamily: {

@@ -111,6 +111,12 @@ class Csdb extends Model
   protected $with = [];
 
   /**
+   * digunakan untuk function getCsdb, getCsdbs, getObject, getObjects
+   * jika null maka tidak pakai query storage_id, jika 0 maka pakai request()->user()->id
+   */
+  public static $storage_user_id = 0;
+
+  /**
    * Set the model created_at touse current timezone.
    */
   protected function createdAt(): Attribute
@@ -267,10 +273,11 @@ class Csdb extends Model
 
   /**
    * get the last history
+   * ini digunakan untuk model csdb, bukan object
    */
   public function lastHistory() :MorphOne
   {
-    return $this->morphOne(History::class,'owner' ,'owner_class')->latestOfMany('created_at');
+    return $this->morphOne(History::class,'owner' ,'owner_class')->latestOfMany('created_at');    
   }
 
   /**
@@ -289,7 +296,9 @@ class Csdb extends Model
     $CSDBModel = $CSDBModel->whereRaw('(filename = ? )',[$filename]);
     
     // filter by storage
-    $CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[request()->user()->id]);
+    // $CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[request()->user()->id]);
+    if(self::$storage_user_id === 0) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[request()->user()->id]));
+    elseif(self::$storage_user_id) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[self::$storage_user_id]));
 
     // filter by last history
     if(!empty($historyCode)){
@@ -318,7 +327,9 @@ class Csdb extends Model
     $class = self::class;
     
     // filter by storage
-    $CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[request()->user()->id]);
+    // $CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[request()->user()->id]);
+    if(self::$storage_user_id === 0) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[request()->user()->id]));
+    elseif(self::$storage_user_id) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[self::$storage_user_id]));
 
     // filter by last history
     if(!empty($historyCode)){
@@ -344,7 +355,9 @@ class Csdb extends Model
     $OBJECTModel = new $eloquentClassModel();
     $OBJECTModel = $OBJECTModel->with(['csdb'])->whereHas('csdb', function(Builder $query) use($historyCode,$filename){
       $query->where('filename',$filename);
-      $query->where('storage_id', request()->user()->id);
+      // $query->where('storage_id', self::$storage_user_id ?? request()->user()->id);
+      if(self::$storage_user_id === 0) ($query->where('storage_id',request()->user()->id));
+      elseif(self::$storage_user_id) ($query->where('storage_id',self::$storage_user_id));
       if(!empty($historyCode)){
         if(isset($historyCode['code'])){
           $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));
@@ -368,8 +381,10 @@ class Csdb extends Model
     $eloquentClassModel = new $eloquentClassModel;
     $OBJECTModels = new $eloquentClassModel();
     $OBJECTModels = $OBJECTModels->with(['csdb'])->whereHas('csdb', function(Builder $query) use($historyCode){
-    // $OBJECTModels = $OBJECTModels->whereHas('csdb', function(Builder $query) use($historyCode){
-      $query->where('storage_id', request()->user()->id);
+      // $query->where('storage_id', self::$storage_user_id ?? request()->user()->id);
+      if(self::$storage_user_id === 0) ($query->where('storage_id',request()->user()->id));
+      elseif(self::$storage_user_id) ($query->where('storage_id',self::$storage_user_id));
+
       if(!empty($historyCode)){
         if(isset($historyCode['code'])){
           $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));

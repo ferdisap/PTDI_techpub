@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Csdb\CommentCreate;
 use App\Models\Csdb;
 use App\Models\Csdb\Comment;
+use App\Models\Csdb\History;
 use App\Models\Project;
 use App\Models\User;
 use App\Rules\Csdb\BrexDmRef as BrexDmRefRules;
@@ -15,6 +16,7 @@ use DOMElement;
 use DOMNode;
 use DOMXPath;
 use Gumlet\ImageResize;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -49,6 +51,7 @@ class CommentController extends Controller
     $CSDBModel = new Csdb();
     $CSDBModel->CSDBObject = $request->CSDBObject[0];
     $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
+    if(Csdb::where('filename', $CSDBModel->filename)->first()) $this->ret2(400, ["Cannot create COM due to duplicate filename."]);
     $CSDBModel->path = $request->validated()['path'];
     $CSDBModel->storage_id = $request->user()->id;
     $CSDBModel->initiator_id = $request->user()->id;
@@ -60,31 +63,20 @@ class CommentController extends Controller
       return $this->ret2(200, ["{$CSDBModel->filename} has been created."], ['csdb' => $CSDBModel, 'infotype' => 'info']);
     }
     return $this->ret2(400, ["fail to create and save COM."]);
+  }
 
-    dd($request);
-    $COMModel = new Comment();
-    $csdb = new Csdb();
-    $COMModel->setProtected([
-      'table' => $csdb->getProtected('table'),
-      'fillable'=> $csdb->getProtected('fillable'),
-      'casts'=> $csdb->getProtected('casts'),
-      'attributes'=> $csdb->getProtected('attributes'),
-    ]);
-    $isCreated = $COMModel->create_xml($request->user()->storage, $request->validated());
-    if(!($isCreated)) return $this->ret2(400, ["fails to create DDN."]);    
-    $ident = $COMModel->CSDBObject->document->getElementsByTagName('commentIdent')[0];
-    $filename = CSDBStatic::resolve_commentIdent($ident);
-    $COMModel->filename = $filename;
-    $COMModel->path = 'csdb';
-    $COMModel->available_storage = $request->user()->storage;
-    $COMModel->initiator_id = $request->user()->id;    
-
-    if($COMModel->saveDOMandModel($request->user()->storage)){
-      $COMModel->initiator; // supaya ada initiator saat return
-      // jalankan event untuk kirim email ke dispatchTo person
-      return $this->ret2(200, ["{$COMModel->filename} has been created."], ['model' => $COMModel, 'infotype' => 'info']);
-    } else {
-      return $this->ret2(400, ["fail to create and save COM."]);
-    }
+  /**
+   * since the Csdb table is not unique filename, all the records will be associated with comments wheter they are different initiator, not creator
+   */
+  public function all(Request $request, string $filename)
+  {
+    Csdb::$storage_user_id = null;
+    $COMModels = Csdb::getObjects(Comment::class, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])
+      ->where('commentRefs','like', "%{$filename}%")->with('csdb.lastHistory')->get();
+    $COMModels->map(function($com){
+      $com->csdb->initiator->makeHidden(['first_name', 'middle_name', 'last_name', 'job_title','storage','address', 'work_enterprise']);
+      $com->csdb->lastHistory->makeHidden(['code','description']);
+    });
+    return $this->ret2(200, ['comments' => $COMModels->toArray()]);    
   }
 }
