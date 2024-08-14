@@ -127,8 +127,4 @@ async function submit(event) {
   })
 }
 
-function preferences() {
-  this.Modal.start(undefined, this.comments.modalId)
-}
-
-export { fetch, submit, preferences };
+export { fetch, submit };

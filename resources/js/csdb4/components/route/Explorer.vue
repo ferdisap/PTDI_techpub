@@ -11,7 +11,7 @@ import Editor from '../componentns/Editor.vue';
 import History from '../componentns/History.vue';
 import DispatchTo from '../componentns/DispatchTo.vue';
 import ContextMenu from '../subComponents/ContextMenu.vue';
-import { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing } from './ExplorerVue.js';
+import { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing, colSize } from './ExplorerVue.js';
 import { getCSDBObjectModel } from '../MainVue';
 
 export default {
@@ -32,9 +32,15 @@ export default {
   methods: {
     turnOnSizing: turnOnSizing,
     turnOffSizing: turnOffSizing,
+    colSize: colSize,
   },
   mounted() {
-    // window.ex = this;
+    let emitters = this.emitter.all.get('Explorer-column-size'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
+    if (emitters) {
+      const indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound colSize')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
+      if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Explorer-column-size', this.colSize);
+    } else this.emitter.on('Explorer-column-size', this.colSize);
+
     if (top.localStorage.colWidthExplorer) {
       this.colWidth = JSON.parse(top.localStorage.colWidthExplorer);
     }
@@ -171,7 +177,7 @@ export default {
           <div class="overflow-auto text-nowrap relative h-full w-full">
             <ListTree type="allobjects" routeName="Explorer" />
           </div>
-          <div class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
+          <div id="v-line-1" class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
             @mousedown.prevent="turnOnSizing($event, 'satu')"></div>
         </div>
 
@@ -190,7 +196,7 @@ export default {
             <History v-if="bottomBarItems.History.isShow" :filename="bottomBarItems.History.data.filename" />
           </div>
         </div>
-        <div class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
+        <div id="v-line-2" class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
           @mousedown.prevent="turnOnSizing($event, 'dua')"></div>
 
         <!-- col 3 -->

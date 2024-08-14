@@ -1,4 +1,6 @@
 <script>
+import { col2, col3 } from '../route/ExplorerVue';
+
 export default {
   data() {
     return {}
@@ -31,6 +33,22 @@ export default {
           bbi: bbi.join(","),
         }
       });
+
+      // arrange column width
+      let hideCol2, hideCol3 = true;
+      col2.forEach(componentName => {
+        if (bbi.indexOf(componentName) >= 0) hideCol2 = false;
+      })
+      col3.forEach(componentName => {
+        if (bbi.indexOf(componentName) >= 0) hideCol3 = false;
+      })
+      if(hideCol2 !== hideCol3){
+        if (hideCol2) this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 1});
+        else if (hideCol3) this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 1});
+      } else {
+        this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 0.5});
+        this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 0.5});
+      }
 
       // sort view;
       if (show) this.sort(bbi, componentName);

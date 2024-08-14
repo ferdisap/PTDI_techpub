@@ -1,7 +1,7 @@
 <script>
 import Modal from '../subComponents/Modal.vue';
 import { useTechpubStore } from '../../../techpub/techpubStore';
-import { fetch, submit, preferences } from './CommentVue';
+import { fetch, submit } from './CommentVue';
 import Randomstring from 'randomstring';
 import CommentVueCb from './CommentsVueCb';
 import ContextMenu from '../subComponents/ContextMenu.vue';
@@ -33,19 +33,10 @@ export default {
   methods: {
     fetch: fetch,
     submit: submit,
-    preferences: preferences, //deprecated
   },
   mounted() {
     this.comments.CB = new CommentVueCb(this.comments.cbHomeId);
     this.ContextMenu.register(this.comments.cmId);
-    window.Modal = this.Modal;
-    window.modalId = this.comments.modalId;
-    window.th = this;
-    // document.getElementById(this.comments.cbHomeId).addEventListener('submit', this.submit);
-    // document.getElementById(this.comments.cbHomeId).addEventListener('submit', (e)=>{
-    //   e.preventDefault();
-    //   alert('submitting');
-    // });
   }
 }
 </script>
@@ -57,7 +48,7 @@ export default {
     <div class="comment-list">
       <h5>Comments</h5>
       <form :id="comments.cbHomeId" @submit.prevent="submit">
-        <component :is="listComment" />
+        <component :is="listComment" v-if="$props.csdbFilename && comments.template" />
       </form>
     </div>
     <!-- modal preferences -->
@@ -66,9 +57,11 @@ export default {
         <h1 class="text-center font-bold mb-2 text-lg">Submit Preferences</h1>
       </template>
       <input class="text-sm hidden" modal-input-name="parentCommentFilename" name="parentCommentFilename" value="" />
+
       <!-- <input class="text-sm hidden" modal-input-name="previousCommentFilename" name="previousCommentFilename" value="" /> -->
       <input class="text-sm hidden" modal-input-name="position" name="position" value="" />
       <input class="text-sm hidden" modal-input-name="commentType" name="commentType" value="" />
+
       <div class="w-full text-center mb-2 relative">
         <!-- comment title -->
         <div class="relative text-left mb-2">
@@ -76,9 +69,6 @@ export default {
           <input placeholder="comment title" type="text" class="p-2 w-full ml-1 inline text-sm rounded-md border">
         </div>
         <div class="error text-sm text-red-600 text-left" v-html="techpubStore.error('commentTitle')"></div>
-        <!-- commentType, nanti ini sesuai apakah ada parent comment (yang typenya Q) atau jika tidak value 'I' default.-->
-        <!-- <input modal-input-name="commentType" name="commentType" value="q" class="hidden" /> -->
-        <!-- comment language/countryIsoCode -->
         <div class="flex items-center mt-1 text-left mb-2">
           <div class="w-1/2 mr-1">
             <label for="languageIsoCode" class="text-sm mr-2 font-semibold italic">Lang:</label>
@@ -158,15 +148,15 @@ export default {
         class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">reply</div>
       </div>
-      <!-- <div v-if="comments.CB.containerEditorId" @click.stop.prevent="comments.CB.preferences(Modal, comments.modalId)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900"> -->
       <div v-if="comments.CB.containerEditorId"
         @click.stop.prevent="emitter.emit('Modal-show', { modalId: comments.modalId })"
         class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
         <div class="text-sm">preferences</div>
       </div>
-    <div v-if="comments.CB.containerEditorId" @click.stop.prevent="comments.CB.cancel"
-      class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-      <div class="text-sm">cancel</div>
-    </div>
-  </ContextMenu>
-</div></template>
+      <div v-if="comments.CB.containerEditorId" @click.stop.prevent="comments.CB.cancel"
+        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        <div class="text-sm">cancel</div>
+      </div>
+    </ContextMenu>
+  </div>
+</template>
