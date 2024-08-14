@@ -12,6 +12,7 @@ import History from '../componentns/History.vue';
 import DispatchTo from '../componentns/DispatchTo.vue';
 import ContextMenu from '../subComponents/ContextMenu.vue';
 import { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing } from './ExplorerVue.js';
+import { getCSDBObjectModel } from '../MainVue';
 
 export default {
   name: 'Explorer',
@@ -46,6 +47,7 @@ export default {
       this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : (this.bottomBarItems.Preview.isShow = true);
       this.bottomBarItems.Editor.data = data;
       this.bottomBarItems.History.data = data;
+      getCSDBObjectModel.call(this, data);
     });
 
     this.emitter.on('clickFolderFromListTree', (data) => {
@@ -59,6 +61,7 @@ export default {
       this.emitter.emit('Preview-refresh', data);
       this.bottomBarItems.Preview.isShow = true;
       this.bottomBarItems.History.data = data;
+      getCSDBObjectModel.call(this, data);
     });
 
     this.emitter.on('createObjectFromEditor', (data) => {
@@ -142,6 +145,12 @@ export default {
     this.emitter.on('RestoreCSDBobejctFromDeletion', (data) => {
       // data adalah model SQL CSDB Object
       this.emitter.emit('ListTree-refresh', data);
+    })
+
+    this.emitter.on('CreateCOMFromPreviewComment', (data) => {
+      // data adalah model SQL CSDB Object
+      this.emitter.emit('ListTree-refresh', data);
+      this.emitter.emit('Folder-refresh', data);
     })
 
   }

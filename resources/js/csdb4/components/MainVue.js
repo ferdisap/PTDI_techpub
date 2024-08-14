@@ -1,3 +1,4 @@
+import { useTechpubStore } from '../../techpub/techpubStore';
 // available action towards CSDB
 /**
  * @param {*} data; if data.filenames is array then it'll be joined, otherwise data.filename is choosen 
@@ -39,11 +40,12 @@ async function commitCSDBs(data){
 }
 
 /**
+ * jika ingin pakai fungsi ini di component lain, pakai getCSDBObjectModel.call(this, data)
  * data must contain filename
  * @param {Object} data 
  */
 function getCSDBObjectModel(data){
-  if(data.filename){
+  if(data.filename !== (useTechpubStore().currentObjectModel.csdb ? useTechpubStore().currentObjectModel.csdb.filename : '')){
     clearTimeout(this.to);
     this.to = setTimeout(()=>{
       axios({
@@ -53,7 +55,7 @@ function getCSDBObjectModel(data){
         },
       }).then((rsp)=>{
         if(rsp.statusText === 'OK'){
-          this.techpubStore.currentObjectModel = rsp.data.model;
+          useTechpubStore().currentObjectModel = rsp.data.model;
         }
       })
     },1000);

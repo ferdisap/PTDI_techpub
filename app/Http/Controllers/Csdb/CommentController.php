@@ -51,7 +51,7 @@ class CommentController extends Controller
     $CSDBModel = new Csdb();
     $CSDBModel->CSDBObject = $request->CSDBObject[0];
     $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
-    if(Csdb::where('filename', $CSDBModel->filename)->first()) $this->ret2(400, ["Cannot create COM due to duplicate filename."]);
+    if(Csdb::where('filename', $CSDBModel->filename)->first()) return $this->ret2(400, ["Cannot create COM due to duplicate filename."]);
     $CSDBModel->path = $request->validated()['path'];
     $CSDBModel->storage_id = $request->user()->id;
     $CSDBModel->initiator_id = $request->user()->id;

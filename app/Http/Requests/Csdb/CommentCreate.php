@@ -16,6 +16,7 @@ use App\Rules\EnterpriseCode;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Ptdi\Mpub\Main\CSDBStatic;
 use Illuminate\Support\Str;
 
@@ -126,7 +127,10 @@ class CommentCreate extends FormRequest
       $seqNumber = $threeDigitFirst_seqNumber . $twoDigitLast_seqNumber;
       $modelIdentCode = $modelIdentCode ?? $parentCommentDecoded['commentCode']['modelIdentCode'];
     } else {
-      $seqNumber = rand(1, 999) . '00';
+      $seqNumber = DB::table(env('DB_TABLE_COM', 'comment'))->select('seqNumber')->orderBy('seqNumber', 'desc')->first()->seqNumber ?? '00000';
+      $threeDigitFirst_seqNumber = substr($seqNumber,0,3);
+      $threeDigitFirst_seqNumber++;
+      $seqNumber = $threeDigitFirst_seqNumber . '00';
       $seqNumber = str_pad($seqNumber, 5, '0', STR_PAD_LEFT);
       $commentType = $this->get('commentType') ?? 'q';
     }

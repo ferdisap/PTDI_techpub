@@ -31,9 +31,10 @@ class CommentVueCb extends Checkbox{
   pushSingle(event){}
 
   reply(modalId){
+    let containerEditor;
     const cbRoom = this.getCbRoom();
-    if (this.containerEditorId) {
-      cbRoom.appendChild(document.getElementById(this.containerEditorId));
+    if (cbRoom && this.containerEditorId && (containerEditor = document.getElementById(this.containerEditorId))) {
+      cbRoom.appendChild(containerEditor);
     } else {
       this.createEditor(cbRoom);
     }
@@ -46,21 +47,36 @@ class CommentVueCb extends Checkbox{
           input.value = (ancestorOrSelf ? ancestorOrSelf.querySelector('input[type="checkbox"]').value : '') ;
           break;
         case 'position': 
-          let index = 0;
-          const ancestor = findAncestor(cbRoom, "*[cb-room].type-q");
-          console.log(ancestor, window.cbRoom = cbRoom);
-          if(ancestor) index = [...cbRoom.parentElement.querySelectorAll("*[cb-room]")].indexOf(cbRoom) + 1;
+          const type = (cbRoom.closest("*[cb-room].type-q") ? 'i' : 'q');
+          let index;
+          switch (type) {
+            case 'q': index = [...cbRoom.querySelectorAll("*[cb-room].type-i, *[cb-room].type-r")].length + 1;break;          
+            default: index = [...cbRoom.parentElement.querySelectorAll("*[cb-room].type-i, *[cb-room].type-r")].length; break;
+          }
           input.value = index;break;
-        case 'commentType': 
-          input.value = (cbRoom.closest("*[cb-room].type-q") ? 'i' : 'q');break;
-        case 'commentPriorityCode':
-          input.value = input.firstElementChild.value; break;
-        case 'responseType':
-          input.value = input.firstElementChild.value; break;
-        case 'remarks':
-          input.value = ''; break;
+        case 'commentType': input.value = 'i';break;
+        case 'commentPriorityCode':input.value = input.firstElementChild.value; break;
+        case 'responseType': input.value = input.firstElementChild.value; break;
+        case 'remarks': input.value = ''; break;
       }
     })
+  }
+  
+  createNewComment(modalId){
+    const cbRoom = document.getElementById(this.homeId);
+    this.createEditor(cbRoom);
+    
+    // ngosongin input yang ada di modal
+    document.querySelectorAll(`#${modalId} *[name]`).forEach(input => {
+      switch (input.name) {
+        case 'parentCommentFilename': input.value = '';break;
+        case 'position': input.value = [...cbRoom.querySelectorAll("*[cb-room].type-q")].length + 1; break;
+        case 'commentType': input.value = 'q';break;
+        case 'commentPriorityCode':input.value = input.firstElementChild.value; break;
+        case 'responseType':input.value = input.firstElementChild.value; break;
+        case 'remarks':input.value = ''; break;
+      }
+    });
   }
 
   cancel(){
@@ -68,15 +84,24 @@ class CommentVueCb extends Checkbox{
     this.containerEditorId = '';
   }
 
-  createEditor(cbRoom){
-    this.containerEditorId = Randomstring.generate({ 'charset': 'alphabetic' });
-    const div = document.createElement('div');
-    div.id = this.containerEditorId;
-    div.setAttribute('class', 'editor-container');
+  createEditor(cbRoom = null){
+    // if(!cbRoom && !(this.containerEditorId)) cbRoom = document.getElementById(this.homeId);
+    if(!cbRoom){
+      cbRoom = document.getElementById(this.homeId);
+    } 
+    let div;
+    if(!(this.containerEditorId)){
+      div = document.createElement('div');
+      this.containerEditorId = Randomstring.generate({ 'charset': 'alphabetic' });
+      div.id = this.containerEditorId;
+      div.setAttribute('class', 'editor-container');      
+  
+      div.innerHTML = `<text-editor name="commentContentSimplePara"></text-editor>
+      <button id="sendBtn" type="submit" class="material-icons send">send</button>`;
+    } else {
+      div = document.getElementById(this.containerEditorId);
+    }
     cbRoom.appendChild(div);
-
-    div.innerHTML = `<text-editor name="commentContentSimplePara"></text-editor>
-    <button id="sendBtn" type="submit" class="material-icons send">send</button>`;
   }
 }
 export default CommentVueCb;

@@ -41,7 +41,10 @@ export default {
 }
 </script>
 <template>
-  <div :id="$props.id" v-show="Modal.getShow($props.id)" style="display:none" class="absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200">
+  <div :id="$props.id" v-show="Modal.getShow($props.id)" class="absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200">
+  <!-- <div :id="$props.id" v-show="Modal.getShow($props.id)" style="display:none" class="absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200"> -->
+  <!-- <div :id="$props.id" style="display:none" class="modal absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200"> -->
+  <!-- <div style="display:none" class="modal absolute top-[25%] w-[80%] h-max-[70%] left-[10%] border-8 border-black rounded-lg p-8 bg-slate-200"> -->
     
     <slot name="title">
       <h1 class="text-center font-bold mb-2">Modal</h1>

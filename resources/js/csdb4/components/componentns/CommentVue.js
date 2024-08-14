@@ -86,8 +86,8 @@ function htmlString(coms) {
 }
 
 
-function fetch(csdbFilename) {
-  if (this.comments.csdbFilename === csdbFilename) return;
+function fetch(csdbFilename, force = true) {
+  if ((this.comments.csdbFilename === csdbFilename) && !(force)) return;
   axios({
     route: {
       name: 'api.get_csdb_comments',
@@ -101,7 +101,6 @@ function fetch(csdbFilename) {
 }
 
 async function submit(event) {
-
   // get data from modal id
   const data = this.Modal.getValue(document.getElementById(this.comments.modalId));
 
@@ -119,6 +118,9 @@ async function submit(event) {
   .then(rsp => {
     if(rsp.statusText === 'OK'){
       // do something
+      this.fetch(this.$props.csdbFilename);
+      this.emitter.emit('CreateCOMFromPreviewComment', rsp.data.csdb);
+      this.comments.CB.cancel();
     } else {
       this.emitter.emit('Modal-show', {modalId: this.comments.modalId});
     }
@@ -126,9 +128,6 @@ async function submit(event) {
 }
 
 function preferences() {
-  // isi previousComment dan parentComment filename
-  // const previousCommentFilename = 
-
   this.Modal.start(undefined, this.comments.modalId)
 }
 

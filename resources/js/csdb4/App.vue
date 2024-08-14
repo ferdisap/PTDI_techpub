@@ -104,8 +104,8 @@ export default {
     this.References.defaultStore = useTechpubStore();
   },
   mounted(){
-    window.techpubStore = this.techpubStore;
-    window.app = this;
+    // window.techpubStore = this.techpubStore;
+    // window.app = this;
   }
 }
 </script>
