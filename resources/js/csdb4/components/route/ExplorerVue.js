@@ -124,6 +124,7 @@ function colSize(data = {}){
       this.colWidth.dua.portion  = (1 - this.colWidth['satu']['portion'] - data.size);
       break;
   }
+  top.localStorage.setItem('colWidthExplorer', JSON.stringify(this.colWidth));
 }
 
 export { bottomBarItems, colWidth, col1Width, col2Width, col3Width, turnOnSizing, turnOffSizing, colSize, col2, col3 };

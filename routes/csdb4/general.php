@@ -1,15 +1,20 @@
 <?php
 
+use App\Events\Csdb\DdnCreated;
 use App\Http\Controllers\Csdb\CommentController;
 use App\Http\Controllers\Csdb\CsdbController;
 use App\Http\Controllers\Csdb\HistoryController;
 use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\DmlController;
 use App\Http\Controllers\UserController;
+use App\Mail\Csdb\DataDispatchNote;
 use App\Models\Csdb;
+use App\Models\Csdb\Ddn;
 use App\Models\Enterprise;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Ptdi\Mpub\Main\CSDBStatic;
 use Ptdi\Mpub\Main\Helper;
 
 // ### Route utama ###
@@ -149,6 +154,40 @@ Route::get('/tes_get_model',function(){
 });
 
 Route::get('/tesapaja',function(){
+
+
+  // $dom = new \DOMDocument();
+  // $dom->load(CSDB_STORAGE_PATH."/E6IkA/DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml");
+  // $json = CSDBStatic::simple_xml_to_json($dom);
+  // CSDBStatic::simple_decode_element($dom->firstElementChild, $element);
+  // $element = json_encode($element);
+  // dd($element, $json);
+  // return;
+
+  // $dom = new \DOMDocument();
+  // $dom->load(CSDB_STORAGE_PATH."/E6IkA/DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml");
+  // $json = CSDBStatic::xml_to_json($dom);
+  // CSDBStatic::decode_element($dom->firstElementChild, $element);
+  // $element = json_encode($element);
+  // $xml = CSDBStatic::json_to_xml($json);
+  // dd($element, $json, $xml);
+  // return;
+
+
+  // Mail::to('ferdisaptoo@gmail.com')->send(new DataDispatchNote());
+  // Mail::to('ferdiarrahman@indonesian-aerospace.com')->send(new DataDispatchNote());
+  // Mail::to('ferdiarrahman@indonesian-aerospace.com')->send(new DataDispatchNote());
+  // Mail::to('luffy@example.com')->send(new DataDispatchNote());
+  // Mail::send(new DataDispatchNote());
+  $DDNModel = Ddn::find(1);
+  Mail::send(new DataDispatchNote($DDNModel));
+  // dd($DDNModel);
+  // DdnCreated::dispatch($DDNModel);
+  return;
+  dd(DdnCreated::dispatch(Csdb::find(1)));
+  $csdb = Csdb::find(1);
+  event(new DdnCreated($csdb));
+
   // $json_str = '{"foo":"bar"}';
   // $arr = ["foo" => "bar"];
   // $json_str2 = '"{\"foo\": \"bar\"}"';

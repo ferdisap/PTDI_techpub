@@ -73,6 +73,8 @@ class Enterprise extends Model
    * harus json string
    * set value akan menjadi json string curly atau json string array []
    * get value akan menjadi array
+   * json di sini bentuk/schemanya sama seperti jika menggunakan CSDBStatic::simple_decode_element (harusnya)
+   * CSDBStatic::simple_decode_element($DDNModel->csdb->CSDBObject->evaluate("//dispatchTo/dispatchAddress/address")[0], $d); $d = $d['address'];
    */
   protected function address(): Attribute
   {

@@ -3,13 +3,18 @@
 namespace App\Http\Requests\Csdb;
 
 use App\Models\Csdb;
+use App\Models\Csdb\Ddn;
 use App\Models\User;
 use App\Rules\Csdb\BrexDmRef;
+use App\Rules\Csdb\Path;
 use App\Rules\Csdb\SecurityClassification;
+use App\Rules\Csdb\SeqNumber;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Ptdi\Mpub\Main\CSDBStatic;
 
 class DdnCreate extends FormRequest
 {
@@ -31,6 +36,9 @@ class DdnCreate extends FormRequest
   public function rules(): array
   {
     return [
+      'path' => [new Path],
+      
+      'seqNumber' => [new SeqNumber],
       'modelIdentCode' => ['required'],
       'senderIdent' => 'required',
       'receiverIdent' => 'required',
@@ -103,17 +111,21 @@ class DdnCreate extends FormRequest
    */
   protected function prepareForValidation(): void
   {
+    $seqNumber = DB::table(env('DB_TABLE_DDN', 'ddn'))->select('seqNumber')->orderBy('seqNumber', 'desc')->first()->seqNumber ?? '00000';
+    $seqNumber++;
+    $seqNumber = str_pad($seqNumber, 5, '0', STR_PAD_LEFT);
+
     $dispatchFromPersonModel = $this->user(); // lihat di fungsi authorize calss ini, bisa apaki this request atau Auth::
     $dispatchFromEnterpriseModel = $dispatchFromPersonModel->work_enterprise;
-    $senderIdent = $dispatchFromEnterpriseModel->code;
+    $senderIdent = $dispatchFromEnterpriseModel->code->name;
     
     $dispatchToPersonModel = User::where('email', $this->get('dispatchToPersonEmail'))->first();
     $dispatchToEnterpriseModel = $dispatchToPersonModel->work_enterprise;
-    $receiverIdent = $dispatchToEnterpriseModel->code;
+    $receiverIdent = $dispatchToEnterpriseModel->code->name;
     
-    // $brexModel = Csdb::where('filename', $this->get('brexFilename'))->where('available_storage', $dispatchFromEnterpriseModel->storage)->first();
-    $brexModel = Csdb::where('filename', $this->get('brexDmRef'))->first();
-    $modelIdentCode = $brexModel->meta->modelIdentCode;    
+    $brexDmRef = $this->get('brexDmRef');
+    $brexDmRefDecoded = CSDBStatic::decode_dmIdent($brexDmRef);
+    $modelIdentCode = $brexDmRefDecoded['dmCode']['modelIdentCode'];
     
     $remarks = $this->get('remarks');
     if(!is_array($remarks) AND is_string($remarks)){
@@ -126,15 +138,19 @@ class DdnCreate extends FormRequest
     // $dispatchToEnterpriseRemarks = $dispatchToEnterpriseModel->remarks ?? [];
 
     $this->merge([
+      'path' => $this->path ?? "CSDB/DDN",
+
+      'seqNumber' => $seqNumber,
       'modelIdentCode' => $modelIdentCode,
       'senderIdent' => $senderIdent,
       'receiverIdent' => $receiverIdent,
       
       'securityClassification' => $this->get('securityClassification'),
       'authorization' => $this->get('authorization') ?? 'undefined',
-      'brexDmRef' => $this->get('brexDmRef'),
+      'brexDmRef' => $brexDmRef,
       'remarks' => $remarks,
       
+      // untuk <address> diisi dengan address enterprise
       'dispatchTo_enterpriseName' => $dispatchToEnterpriseModel->name,
       'dispatchTo_division' => $dispatchToEnterpriseModel->remarks['division'] ?? '',
       'dispatchTo_enterpriseUnit' => $dispatchToEnterpriseModel->remarks['enterpriseUnit'] ?? '',
@@ -157,6 +173,7 @@ class DdnCreate extends FormRequest
       'dispatchTo_internet' => $dispatchToEnterpriseModel->address['internet'] ?? [],
       'dispatchTo_SITA' => $dispatchToEnterpriseModel->address['SITA'] ?? '',
 
+      // untuk <address> diisi dengan address enterprise
       'dispatchFrom_enterpriseName' => $dispatchFromEnterpriseModel->name,
       'dispatchFrom_division' => $dispatchFromEnterpriseModel->remarks['division'] ?? '',
       'dispatchFrom_enterpriseUnit' => $dispatchFromEnterpriseModel->remarks['enterpriseUnit'] ?? '',
@@ -180,6 +197,18 @@ class DdnCreate extends FormRequest
       'dispatchFrom_SITA' => $dispatchFromEnterpriseModel->address['SITA'] ?? '',
 
       'deliveryListItemsFilename' => $this->get('deliveryListItemsFilename')
+    ]);
+  }
+
+  protected function passedValidation()
+  {
+    $DDNModel = new Ddn();
+    $DDNModel->create_xml($this->user()->storage, $this->validated());
+
+    $this->merge([
+      // harus array atau scalar, entah kenapa
+      // Expected a scalar, or an array as a 2nd argument to \"Symfony\\Component\\HttpFoundation\\InputBag::set()\", \"Ptdi\\Mpub\\Main\\CSDBObject\" given.
+      'CSDBObject' => [$DDNModel->CSDBObject],
     ]);
   }
 }

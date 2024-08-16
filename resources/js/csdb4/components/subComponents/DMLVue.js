@@ -8,19 +8,19 @@ import {
 } from '../../S1000DHelper';
 
 function inWork(json) {
-  return json[1]['dml'][1]['identAndStatusSection'][0]['dmlAddress'][0]['dmlIdent'][1]['issueInfo'][0]['@inWork'];
+  return json[1]['dml'][1]['identAndStatusSection'][0]['dmlAddress'][0]['dmlIdent'][1]['issueInfo'][0]['at_inWork'];
 }
 function issueDate(json) {
   let iss = jp.query(json, '$..dmlAddressItems..issueDate')[0];
-  return iss.find(v => v['@day'])['@day'] + "/" +
-    iss.find(v => v['@month'])['@month'] + "/" +
-    iss.find(v => v['@year'])['@year'];
+  return iss.find(v => v['at_day'])['at_day'] + "/" +
+    iss.find(v => v['at_month'])['at_month'] + "/" +
+    iss.find(v => v['at_year'])['at_year'];
 }
 function securityClassification(json, path) {
   let sc;
   return (sc =
-    ((sc = jp.query(json, path)[0]) ? sc.find(v => v['@securityClassification']) : '')
-  ) ? sc['@securityClassification'] : '';
+    ((sc = jp.query(json, path)[0]) ? sc.find(v => v['at_securityClassification']) : '')
+  ) ? sc['at_securityClassification'] : '';
 }
 function remarks(json, path) {
   path += '..simplePara';
@@ -39,7 +39,7 @@ function dmlContent(json) {
 function getAttributeValue(json, pathToElemen, attributeName) {
   let attrValue; (attrValue =
     ((attrValue = jp.query(json, pathToElemen)[0]) ? (
-      ((attrValue = attrValue.find(v => v['@' + attributeName])) ? attrValue['@' + attributeName] : '')
+      ((attrValue = attrValue.find(v => v['at_' + attributeName])) ? attrValue['at_' + attributeName] : '')
     ) : '')
   )
   return attrValue;
@@ -167,7 +167,7 @@ const DML = function (json) {
   return {
     code: resolve_dmlCode(jp.query(json, '$..identAndStatusSection..dmlAddress..dmlIdent..dmlCode')[0], '').toUpperCase(),
     inWork: inWork(json),
-    issueNumber: jp.query(json, '$..dmlIdent..issueInfo')[0].find(v => v['@issueNumber'])['@issueNumber'].toUpperCase(),
+    issueNumber: jp.query(json, '$..dmlIdent..issueInfo')[0].find(v => v['at_issueNumber'])['at_issueNumber'].toUpperCase(),
     issueDate: resolve_issueDate(jp.query(json, '$..dmlAddressItems..issueDate')[0]),
     securityClassification: securityClassification(json, '$..dmlStatus..security'),
     BREX: resolve_dmIdent(jp.query(json, '$..dmlStatus..brexDmRef..dmRefIdent')[0]),
@@ -188,12 +188,12 @@ const DML = function (json) {
             if (ident = jp.query(dmlEntry, "$..commentRefIdent")[0]) {
               ident = resolve_commentIdent(ident);
             } else
-              if (ident = dmlEntry.find(v => v['@infoEntityRefIdent'])) {
-                ident = resolve_infoEntityIdent(ident['@infoEntityRefIdent']);
+              if (ident = dmlEntry.find(v => v['at_infoEntityRefIdent'])) {
+                ident = resolve_infoEntityIdent(ident['at_infoEntityRefIdent']);
               }
 
-      let issueType; issueType = (issueType = dmlEntry.find(v => v['@issueType'])) ? issueType['@issueType'] : '';
-      let entryType; entryType = (entryType = dmlEntry.find(v => v['@entryType'])) ? entryType['@entryType'] : '';
+      let issueType; issueType = (issueType = dmlEntry.find(v => v['at_issueType'])) ? issueType['at_issueType'] : '';
+      let entryType; entryType = (entryType = dmlEntry.find(v => v['at_entryType'])) ? entryType['at_entryType'] : '';
 
       const enterpriseName = jp.query(dmlEntry, '$..responsiblePartnerCompany..enterpriseName')[0][0];
       const enterpriseCode = getAttributeValue(dmlEntry, '$..responsiblePartnerCompany', 'enterpriseCode');

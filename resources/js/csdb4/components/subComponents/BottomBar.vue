@@ -35,7 +35,8 @@ export default {
       });
 
       // arrange column width
-      let hideCol2, hideCol3 = true;
+      let hideCol2 = true;
+      let hideCol3 = true;
       col2.forEach(componentName => {
         if (bbi.indexOf(componentName) >= 0) hideCol2 = false;
       })

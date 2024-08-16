@@ -17,7 +17,6 @@ return new class extends Migration
     Schema::create('enterprises', function (Blueprint $table) {
       $table->id();
       $table->string('name');
-      // $table->string('code')->unique();
       $table->integer('code_id')->unique();
       $table->json('address');
       $table->json('remarks')->nullable();

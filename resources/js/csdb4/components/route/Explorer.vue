@@ -35,6 +35,7 @@ export default {
     colSize: colSize,
   },
   mounted() {
+    // window.ex = this;
     let emitters = this.emitter.all.get('Explorer-column-size'); // 'emitter.length < 2' artinya emitter max. hanya dua kali di instance atau baru sekali di emit, check ManagementData.vue
     if (emitters) {
       const indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound colSize')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
@@ -50,7 +51,7 @@ export default {
     this.emitter.on('clickFilenameFromListTree', (data) => {
       // hanya ada filename dan path di data
       this.bottomBarItems.Folder.data = data;
-      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : (this.bottomBarItems.Preview.isShow = true);
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.Editor.data = data;
       this.bottomBarItems.History.data = data;
       getCSDBObjectModel.call(this, data);
@@ -121,7 +122,7 @@ export default {
     this.emitter.on('dispatchTo', (data) => {
       // data adalah array contains models
       this.bottomBarItems.DispatchTo.data = data;
-      this.bottomBarItems.DispatchTo.isShow = true;
+      if(!this.bottomBarItems.DispatchTo.isShow) this.emitter.emit('bottom-bar-switch', 'DispatchTo');
     })
 
     this.emitter.on('AddDispatchTo', (data) => {

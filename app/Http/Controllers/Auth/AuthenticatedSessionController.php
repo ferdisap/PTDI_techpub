@@ -34,15 +34,15 @@ class AuthenticatedSessionController extends Controller
       return $this->ret2(200, ["Login success"],['redirect' => '']);
     }
 
-    $previous_route = app('router')->getRoutes()->match($request->create(url()->previous()));
-    if(in_array('guest', $previous_route->gatherMiddleware())){
-      // return redirect()->intended(RouteServiceProvider::HOME);
-      // return redirect()->intended(RouteServiceProvider::WELCOME);
-      // return redirect()->intended(RouteServiceProvider::CSDB);
-      return redirect()->route("welcome");
-    } else {
-      return back()->withInput();
-    }
+    // return back()->withInput(); // kalau ini balik lagi ke view auth.login, sementara auth.login itu untuk yang belum login, sehingga nanti akan error karena recursive
+    return redirect()->intended('defaultpage');
+    
+    // $previous_route = app('router')->getRoutes()->match($request->create(url()->previous()));
+    // if(in_array('guest', $previous_route->gatherMiddleware())){
+    //   return redirect()->route("welcome");
+    // } else {
+    //   return back()->withInput(); // kalau ini balik lagi ke view auth.login, sementara auth.login itu untuk yang belum login, sehingga nanti akan error karena recursive
+    // }
   }
 
   /**

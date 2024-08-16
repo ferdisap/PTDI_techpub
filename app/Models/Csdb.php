@@ -194,17 +194,19 @@ class Csdb extends Model
 
   /**
    * relationship untuk csdb
-   * tidak bisa dipakai untuk eager loading karena filename blum diketahui
+   * tidak bisa dipakai untuk eager loading, kecuali static attribute objectClass sudah di instantiate atau ada param/query filename
    */
+  public string $objectClass;
   public function object() :hasOne
   {
-    $filename = $this->filename ?? request()->route()->parameter('filename') ?? request()->get('filename');
+    $filename = self::$objectClass ?? $this->filename ?? request()->route()->parameter('filename') ?? request()->get('filename');
     if($filename) $class = self::getClassObjectByFilename($filename);
     else $class = self::class; // nanti jadinya null kalau pakai $class self
     return $this->hasOne($class);
   }
   
   /**
+   * DEPRECATED
    * return many objects
    */
   public function objects(): HasOne
@@ -232,12 +234,17 @@ class Csdb extends Model
   }
 
   /**
+   * DEPRECATED
    * relationship untuk csdb
    */
   public function storager() :BelongsTo
   {
     return $this->belongsTo(User::class, 'storage_id', 'id');
   }
+
+  /**
+   * relationship untuk csdb
+   */
   public function owner() :BelongsTo
   {
     return $this->belongsTo(User::class, 'storage_id', 'id');
@@ -448,6 +455,15 @@ class Csdb extends Model
   {
     $this->usesUniqueIds = true; // agar sama jika pakai/tanpa __construct
     $this->CSDBObject = new CSDBObject("5.0");
+  }
+
+  public function loadCSDBObject() :bool
+  {
+    if($this->filename){
+      $this->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $this->owner->storage . DIRECTORY_SEPARATOR . $this->filename);
+      return true;
+    }
+    return false;
   }
 
   /**

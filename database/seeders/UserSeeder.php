@@ -33,22 +33,22 @@ class UserSeeder extends Seeder
     //   $table->timestamps();
     // });
 
-    Schema::dropIfExists('users');
-    Schema::create('users', function (Blueprint $table) {
-      $table->id();
-      $table->string('first_name')->nullable();
-      $table->string('middle_name')->nullable();
-      $table->string('last_name');
-      $table->string('job_title');
-      $table->integer('work_enterprise_id')->nullable();
-      $table->string('email')->unique();
-      $table->timestamp('email_verified_at')->nullable();
-      $table->string('password');
-      $table->string('storage');
-      $table->json('address');
-      $table->rememberToken();
-      $table->timestamps();
-    });
+    // Schema::dropIfExists('users');
+    // Schema::create('users', function (Blueprint $table) {
+    //   $table->id();
+    //   $table->string('first_name')->nullable();
+    //   $table->string('middle_name')->nullable();
+    //   $table->string('last_name');
+    //   $table->string('job_title');
+    //   $table->integer('work_enterprise_id')->nullable();
+    //   $table->string('email')->unique();
+    //   $table->timestamp('email_verified_at')->nullable();
+    //   $table->string('password');
+    //   $table->string('storage');
+    //   $table->json('address');
+    //   $table->rememberToken();
+    //   $table->timestamps();
+    // });
     
     \App\Models\User::factory()->create([
       'first_name' => 'Luffy',

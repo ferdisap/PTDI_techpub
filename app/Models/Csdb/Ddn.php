@@ -3,9 +3,11 @@
 namespace App\Models\Csdb;
 
 use App\Models\Csdb;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Ptdi\Mpub\Main\CSDBStatic;
 use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\Main\CSDBObject;
@@ -27,6 +29,9 @@ class Ddn extends Csdb
     "year",
     "month",
     "day",
+
+    "dispatchTo_id",
+    "dispatchFrom_id",
 
     'securityClassification',
     'brexDmRef',
@@ -67,6 +72,22 @@ class Ddn extends Csdb
       ),
       get: fn($v) => json_decode($v, true),
     );
+  }
+
+  /**
+   * relationship untuk user
+   */
+  public function dispatchTo() :BelongsTo
+  {
+    return $this->belongsTo(User::class,'dispatchTo_id', 'id');
+  }
+
+  /**
+   * relationship untuk user
+   */
+  public function dispatchFrom() :BelongsTo
+  {
+    return $this->belongsTo(User::class,'dispatchFrom_id');
   }
 
   public function create_xml(string $storagePath, Array $params)
@@ -113,12 +134,22 @@ class Ddn extends Csdb
     $authorization = $domXpath->evaluate("string(//identAndStatusSection/descendant::authorization)");
     $remarks = $CSDBObject->getRemarks($domXpath->evaluate("//identAndStatusSection/descendant::remarks")[0]);
 
-    $ddnContent = $domXpath->evaluate("//ddnContent/descendant::dispatchFilename|//ddnContent/mediaIdent");
+    $dispatchTo_id = User::where('last_name', $domXpath->evaluate("string(//ddnAddressItems/dispatchTo/dispatchAddress/dispatchPerson/lastName)"));
+    if($firstName = $domXpath->evaluate("string(//ddnAddressItems/dispatchTo/dispatchAddress/dispatchPerson/firstName)")) $dispatchTo_id->where('first_name', $firstName);
+    if(count(($dispatchTo_id = $dispatchTo_id->get('id'))) > 1) $dispatchTo_id = 0;
+    else $dispatchTo_id = $dispatchTo_id[0]->id;
+
+    $dispatchFrom_id = User::where('last_name', $domXpath->evaluate("string(//ddnAddressItems/dispatchFrom/dispatchAddress/dispatchPerson/lastName)"));
+    if($firstName = $domXpath->evaluate("string(//ddnAddressItems/dispatchFrom/dispatchAddress/dispatchPerson/firstName)")) $dispatchFrom_id->where('first_name', $firstName);
+    if(count(($dispatchFrom_id = $dispatchFrom_id->get('id'))) > 1) $dispatchFrom_id = 0;
+    else $dispatchFrom_id = $dispatchFrom_id[0]->id;
+
+    $ddnContent = $domXpath->evaluate("//ddnContent/descendant::dispatchFileName|//ddnContent/mediaIdent");
     if(!empty($ddnContent)){
       $r = [];
       foreach($ddnContent as $content){
         switch ($content->tagName) {
-          case 'dispatchFilename':
+          case 'dispatchFileName':
             $r[] = $content->nodeValue;
             break;
           case 'mediaIdent':
@@ -143,6 +174,9 @@ class Ddn extends Csdb
       "year" => $year,
       "month" => $month,
       "day" => $day,
+
+      "dispatchTo_id" => $dispatchTo_id,
+      "dispatchFrom_id" => $dispatchFrom_id,
       
       'securityClassification' => $securityClassification,
       'brexDmRef' => $brexDmRef,

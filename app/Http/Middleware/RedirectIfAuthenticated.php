@@ -26,6 +26,10 @@ class RedirectIfAuthenticated
       }
     }
 
+    // if(Auth::check()){
+    //   return back()->withInput(); // akan kembali ke login
+    // }
+
     return $next($request);
   }
 }

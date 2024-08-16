@@ -25,9 +25,9 @@ return new class extends Migration
       $table->tinyText('year');
       $table->tinyText('month');
       $table->tinyText('day');
-      
-      $table->json('dispatchTo');
-      $table->json('dispatchFrom');     
+        
+      $table->bigInteger('dispatchTo_id');
+      $table->bigInteger('dispatchFrom_id');
       
       $table->string('securityClassification');
       $table->string('brexDmRef'); // merujuk filename brex yang sama dengan table csdb
