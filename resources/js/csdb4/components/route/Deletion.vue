@@ -71,7 +71,7 @@ export default {
       if(emitters.length < 1 && indexEmitter < 0) this.emitter.on('Deletion-refresh', this.refresh); 
     } else this.emitter.on('Deletion-refresh', this.refresh); 
 
-    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
+    // if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
 
     this.CB = new DeletionVueCb(this.cbId)
   }

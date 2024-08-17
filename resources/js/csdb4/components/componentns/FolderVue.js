@@ -4,7 +4,7 @@ import $ from 'jquery';
 import fileDownload from 'js-file-download';
 import { isArray } from '../../helper';
 
-async function getObjs(data = {}) {
+function getObjs(data = {}) {
   this.showLoadingProgress = true;
   if (!data.sc) data.sc = '';
   if (data.path) {
@@ -12,26 +12,18 @@ async function getObjs(data = {}) {
     else data.sc = data.sc.replace(/path::\S+\s/, "path::" + data.path + " "); // mengganti 'path::... ' dengan path data.path
     delete data.path;
   }
-  // ini dicancel. Semua CSDBObject akan di fetch ditampilkan Explorer.vue
-  // switch (this.$props.routeName) {
-  //   case 'Explorer':
-  //     data.sc += " typeonly::DMC,PMC,ICN";
-  //     break;
-  //   case 'ManagementData':
-  //     data.sc += " typeonly::DML";
-  //     break;
-  //   default:
-  //     break;
-  // }
-  let response = await axios({
+  const routeName = data.routeName ?? 'api.requestbyfolder.get_allobject_list';
+  delete data.routeName;
+  axios({
     route: {
-      name: 'api.requestbyfolder.get_allobject_list',
+      name: routeName,
       data: data// akan receive data: [model1, model2, ...]
     },
-    useMainLoadingBar: false,
-  });
-  this.storingResponse(response);
-  this.showLoadingProgress = false;
+  })
+  .then(response => {
+    this.storingResponse(response);
+    this.showLoadingProgress = false;
+  })
 }
 
 function storingResponse(response) {

@@ -5,6 +5,9 @@ export default {
   methods: {
     copy: copy
   },
+  mounted(){
+    if (this.ContextMenu.register(this.$props.id)) this.ContextMenu.toggle(false, this.$props.id);
+  }
 }
 </script>
 <template>

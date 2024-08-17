@@ -46,7 +46,7 @@ export default {
       this.colWidth = JSON.parse(top.localStorage.colWidthExplorer);
     }
 
-    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
+    // if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false,this.contextMenuId);
 
     this.emitter.on('clickFilenameFromListTree', (data) => {
       // hanya ada filename dan path di data
@@ -66,7 +66,7 @@ export default {
     this.emitter.on('clickFilenameFromFolder', (data) => {
       // hanya ada filename di data, bisa berguna jika perlu ambil data terbaru dari server
       this.emitter.emit('Preview-refresh', data);
-      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.History.data = data;
       getCSDBObjectModel.call(this, data);
     });
@@ -75,7 +75,7 @@ export default {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
       this.$root.gotoExplorer(data.filename);
-      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.Preview.data = data;
       this.bottomBarItems.History.data = data;
     })
@@ -84,7 +84,7 @@ export default {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
       this.$root.gotoExplorer(data.filename);
-      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.Preview.data = data;
       this.bottomBarItems.History.data = data.model;
     })
@@ -103,7 +103,7 @@ export default {
 
     this.emitter.on('readFileURLFromEditor', (data) => {
       // data berisi mime, source, sourceType
-      this.bottomBarItems.Preview.isShow = true;
+      this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       setTimeout(() => this.emitter.emit('Preview-refresh', data), 0);
       this.bottomBarItems.History.isShow = false;
       // this.bottomBarItems.Analyzer.isShow = false;
@@ -185,7 +185,7 @@ export default {
         <!-- col 2 -->
         <div class="flex" :style="[col2Width]">
           <!-- <div class="overflow-auto" id="col2tes"> -->
-          <div id="col2tes" class="overflow-auto text-wrap relative h-full w-full">
+          <div class="overflow-auto text-wrap relative h-full w-full">
             <!-- <div v-for="(component, seq) in bottomBarItems.col2" class="overflow-auto text-wrap relative h-full w-full">
               <component v-if="component.isShow" :is="component.name" :data-props="component.data" :filename="component.data.filename"/>
             </div> -->

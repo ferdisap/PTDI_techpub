@@ -28,7 +28,7 @@ const bottomBarItems = {
     data: {}
   },
   DispatchTo: {
-    iconName: 'local_shipping',
+    iconName: 'upload_file',
     'tooltipName': 'Dispatch To',
     isShow: false,
     data: {}
@@ -63,7 +63,7 @@ function col3Width() {
 //   top.localStorage.setItem('colWidthExplorer', JSON.stringify(this.colWidth));
 // }
 
-function turnOnSizing(event, colnum) {
+function turnOnSizing(event, colnum, name = 'colWidthExplorer') {
   // let ex = event.target.getBoundingClientRect().left; // 272.466
   // let ewidth = event.target.getBoundingClientRect().width; // 3.5714
   const parentLeft = event.target.parentElement.getBoundingClientRect().left; //86.741
@@ -77,11 +77,12 @@ function turnOnSizing(event, colnum) {
     if (colnum === 'dua') {
       this.colWidth['tiga']['portion'] = 1 - this.colWidth['dua']['portion'];
     }
-    top.localStorage.setItem('colWidthExplorer', JSON.stringify(this.colWidth));
+    top.localStorage.setItem(name, JSON.stringify(this.colWidth));
   }
   document.addEventListener('mousemove', sizing);
   document.addEventListener('mouseup', this.turnOffSizing.bind(this, sizing), { once: true });
 }
+
 function turnOffSizing(callback) {
   document.removeEventListener('mousemove', callback, false)
 }

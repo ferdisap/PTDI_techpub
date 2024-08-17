@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Rules\Csdb\BrexDmRef as BrexDmRefRules;
 use Closure;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Ptdi\Mpub\Main\CSDBStatic;
 
@@ -31,32 +32,20 @@ class DdnController extends Controller
       return $this->ret2(200, ["{$CSDBModel->filename} has been created."], ['csdb' => $CSDBModel, 'infotype' => 'info']);
     }
     return $this->ret2(400, ["fail to create and save DDN."]);
+  }
 
-
-    // $DDNModel = new Ddn();
-    // $csdb = new Csdb();
-    // $DDNModel->setProtected([
-    //   'table' => $csdb->getProtected('table'),
-    //   'fillable'=> $csdb->getProtected('fillable'),
-    //   'casts'=> $csdb->getProtected('casts'),
-    //   'attributes'=> $csdb->getProtected('attributes'),
-    // ]);
-    // $isCreated = $DDNModel->create_xml($request->user()->storage, $request->validated());
-    // if(!($isCreated)) return $this->ret2(400, ["fails to create DDN."]);    
-
-    // $ident = $DDNModel->CSDBObject->document->getElementsByTagName('ddnIdent')[0];
-    // $filename = CSDBStatic::resolve_ddnIdent($ident);
-    // $DDNModel->filename = $filename;
-    // $DDNModel->path = 'csdb';
-    // $DDNModel->storage_id = $request->user()->id;
-    // $DDNModel->initiator_id = $request->user()->id;
-
-    // if($DDNModel->saveDOMandModel($request->user()->storage)){
-    //   $DDNModel->initiator; // supaya ada initiator saat return
-    //   // jalankan event untuk kirim email ke dispatchTo person
-    //   return $this->ret2(200, ["{$DDNModel->filename} has been created."], ['model' => $DDNModel, 'infotype' => 'info']);
-    // } else {
-    //   return $this->ret2(400, ["fail to create and save DDN."]);
-    // }
+  public function list(Request $request)
+  {
+    $DDNModels = Ddn::with(['csdb' => function(Builder $query){
+      $query->select(['id', 'filename', 'storage_id']);
+      $query->with(['owner' => function(Builder $query){
+        $query->select(['id', 'first_name', 'middle_name', 'last_name', 'job_title', 'email', 'work_enterprise_id']);
+        $query->with(['work_enterprise' => function(Builder $query){
+          $query->without('code');
+          $query->select(['id', 'name']);
+        }]);
+      }]);
+    }])->where('dispatchTo_id', 2)->orderBy('id', 'desc')->paginate(100);
+    return $DDNModels;
   }
 }

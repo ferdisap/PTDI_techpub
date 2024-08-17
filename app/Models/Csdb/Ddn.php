@@ -2,6 +2,8 @@
 
 namespace App\Models\Csdb;
 
+use App\Casts\Csdb\Ddn\DdnContentCast;
+use App\Casts\Csdb\RemarksCast;
 use App\Models\Csdb;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -55,24 +57,18 @@ class Ddn extends Csdb
    *
    * @var array<int, string>
    */
-  protected $hidden = ['id', 'csdb_id', 'json', 'xml'];
+  protected $hidden = ['id', 'csdb_id', 'dispatchTo_id', 'dispatchFrom_id' ,'json', 'xml'];
 
   public $timestamps = false;
 
   /**
-   * harus json string
-   * set value akan menjadi json string curly atau json string array []
-   * get value akan menjadi array
+   * The attributes that should be cast.
+   * @var array
    */
-  protected function ddnContent(): Attribute
-  {
-    return Attribute::make(
-      set: fn($v) => is_array($v) ? json_encode($v) :(
-        $v && Helper::isJsonString($v) ? $v : json_encode($v ? [$v] : [])
-      ),
-      get: fn($v) => json_decode($v, true),
-    );
-  }
+  protected $casts = [
+    'ddnContent' => DdnContentCast::class,
+    'remarks' => RemarksCast::class,
+  ];
 
   /**
    * relationship untuk user

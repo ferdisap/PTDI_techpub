@@ -36,7 +36,7 @@ export default {
       // this.showDMLContent();
     }
     
-    if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
+    // if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
     this.Dropdown.register('dmlForm')
   }
 }

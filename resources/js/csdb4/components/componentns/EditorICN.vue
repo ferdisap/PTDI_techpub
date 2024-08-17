@@ -27,8 +27,8 @@ export default {
     readEntity: readEntity,
   },
   mounted() {
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false, this.contextMenuId);
+    // this.ContextMenu.register(this.contextMenuId);
+    // this.ContextMenu.toggle(false, this.contextMenuId);
   }
 }
 </script>

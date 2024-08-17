@@ -129,8 +129,9 @@ class Checkbox{
     cbWindows = cbWindows ? cbWindows : this.getCbWindows();
     cbWindows.forEach(v => {
       v.style.display = this.cbRoomDisplay;
-      this.selectionMode = true;
+      // this.selectionMode = true;
     });
+    this.selectionMode = true;
     return cbWindows;
   }
   
@@ -139,8 +140,9 @@ class Checkbox{
     cbWindows = cbWindows ? cbWindows : this.getCbWindows();
     cbWindows.forEach(v => {
       v.style.display = 'none';
-      this.selectionMode = false;
+      // this.selectionMode = false;
     });
+    this.selectionMode = false;
     return cbWindows
   }
 

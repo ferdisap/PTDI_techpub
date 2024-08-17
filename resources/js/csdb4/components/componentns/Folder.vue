@@ -116,7 +116,7 @@ export default {
       this.data.current_path = 'CSDB';
     }
 
-    if (this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
+    // if (this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
 
     this.CB = new FolderVueCb(this.cbId)
   },

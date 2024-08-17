@@ -85,8 +85,10 @@ class ContextMenu {
       // kalau 'state' FALSE dan 'id' TRUE maka akan turn OFF the id.
       // kalau 'state' FALSE dam 'id' FALSE maka akan turn OFF current ID;
       if (id) this.id = id;
-      this.collection[this.id].state = state;
-      this.display(this.id);
+      if(this.collection[this.id]){
+        this.collection[this.id].state = state;
+        this.display(this.id);
+      };
     }
     // sengaja dibuat pakai setTimeout agar setiap event terkait bisa dijalankan sebeleum document mentup context menu, contohnya fitur copy di helper;
     if(!state) setTimeout(()=>this.anchorNode = '',0);

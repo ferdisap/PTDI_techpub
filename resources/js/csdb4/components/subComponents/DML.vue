@@ -104,9 +104,9 @@ export default {
     }
   },
   mounted() {
-    window.dml = this;
-    window.th = this;
-    window.jp = jp;
+    // window.dml = this;
+    // window.th = this;
+    // window.jp = jp;
     // window.json = this.$props.json;
     if (this.$props.filename && (this.$props.filename.substring(0, 3) === 'DML')) {
       this.showDMLContent(this.$props.filename);
@@ -245,7 +245,7 @@ export default {
             <option class="text-sm" value="y">yes</option>
             <option class="text-sm" value="n">no</option>
           </select>
-          <text-editor modal-input-name="answer[]" class="w-full block mt-1"/>
+          <text-editor v-pre modal-input-name="answer[]" class="w-full block mt-1"/>
         </div>
         <div class="relative text-left mb-2">
           <Remarks modalInputName="remarks[]" class_label="text-sm font-semibold italic" />

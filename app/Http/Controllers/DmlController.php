@@ -51,9 +51,7 @@ class DmlController extends Controller
   }
 
   public function update(DmlUpdateFromEditorDML $request, string $filename)
-  {    
-    // dd($request->DMLModel->csdb->id, $request->DMLModel->toArray());
-    // dd($request->validated());
+  { 
     $request->DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $request->user()->storage . DIRECTORY_SEPARATOR . $filename);
     $request->DMLModel->fill_xml($request->validated());
 

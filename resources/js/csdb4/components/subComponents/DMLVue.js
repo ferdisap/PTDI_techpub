@@ -2,6 +2,7 @@ import jp from 'jsonpath';
 import Randomstring from 'randomstring';
 import { findAncestor } from '../../helper';
 import {
+  fetchJsonFile,
   resolve_dmIdent, resolve_dmlIdent, resolve_pmIdent, resolve_commentIdent, resolve_infoEntityIdent,
   resolve_pmCode, resolve_dmCode, resolve_dmlCode, resolve_commentCode,
   resolve_issueInfo, resolve_issueDate, resolve_language
@@ -136,16 +137,17 @@ function fetchDataFromRenderedEntries() {
 
 async function showDMLContent(filename) {
   this.showLoadingProgress = true;
-  let response = await axios({
-    route: {
-      name: 'api.read_json',
-      data: { filename: filename }
-    },
-    useMainLoadingBar: false,
-  });
+  const response = await fetchJsonFile({ filename: filename });
+  // let response = await axios({
+  //   route: {
+  //     name: 'api.read_json',
+  //     data: { filename: filename }
+  //   },
+  //   useMainLoadingBar: false,
+  // });
   if (response.statusText === 'OK') {
     // handle or arrange json file
-    this.DMLObject = DML(response.data.json)
+    this.DMLObject = DML(response.data.json);
 
     // create entries string
     // this.dmlEntryData = createEntryData(this.DMLObject);

@@ -10,9 +10,10 @@ export default {
     return {
       techpubStore: useTechpubStore(),
       hrefs:{
+        Welcome: '',
         Explorer: '',
         Deletion: '',
-        Welcome: '',
+        Dispatch: '',
       },
     }
   },
@@ -51,6 +52,7 @@ export default {
     this.hrefs.Welcome = this.href('Welcome');
     this.hrefs.Deletion = this.href('Deletion')
     this.hrefs.Explorer = this.href('Explorer',{filename:'',viewType:''})
+    this.hrefs.Dispatch = this.href('Dispatch',{filename:'',viewType:''})
   },
 }
 </script>
@@ -76,8 +78,8 @@ export default {
     </div>
 
     <div class="relative p-2 flex items-center space-x-3 mb-3">
-      <a href="#" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
-        data-tooltip="Repository">room_service</a>
+      <a @click.prevent="to('Dispatch')" href="#" class="material-symbols-outlined bg-transparent text-blue-500 p-2 rounded-md has-tooltip-arrow"
+        data-tooltip="Dispatch">sim_card_download</a>
     </div>
 
   </div>

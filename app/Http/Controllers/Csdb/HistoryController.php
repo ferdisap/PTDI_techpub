@@ -17,7 +17,6 @@ class HistoryController extends Controller
       $CSDBModel->attachHistories(50);
       $CSDBModel = $CSDBModel->toArray();
   
-      // nanti yang forfolder di controller CsdbController diubah seperti ini returnnya
       return $this->ret2(200, ['csdb' => $CSDBModel]);
     }
     return abort(404);

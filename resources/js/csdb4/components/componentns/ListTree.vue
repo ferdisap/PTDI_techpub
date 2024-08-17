@@ -43,8 +43,8 @@ export default {
     // }
   },
   async mounted() {
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false,this.contextMenuId);
+    // this.ContextMenu.register(this.contextMenuId);
+    // this.ContextMenu.toggle(false,this.contextMenuId);
 
     this.CB = new ListTreeVueCb('cbListTreeVue');
     this.CB.cbRoomDisplay = 'inline';

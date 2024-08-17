@@ -98,7 +98,7 @@ export default {
           viewType:  viewType||this.$route.params.viewType||'html',
         }
       });
-    }
+    },
   },
   beforeCreate() {
     this.References.defaultStore = useTechpubStore();

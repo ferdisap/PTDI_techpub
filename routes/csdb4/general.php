@@ -180,7 +180,8 @@ Route::get('/tesapaja',function(){
   // Mail::to('luffy@example.com')->send(new DataDispatchNote());
   // Mail::send(new DataDispatchNote());
   $DDNModel = Ddn::find(1);
-  Mail::send(new DataDispatchNote($DDNModel));
+  // Mail::send(new DataDispatchNote($DDNModel));
+  Mail::queue(new DataDispatchNote($DDNModel));
   // dd($DDNModel);
   // DdnCreated::dispatch($DDNModel);
   return;

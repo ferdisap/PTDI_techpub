@@ -2,7 +2,7 @@
 import Modal from '../subComponents/Modal.vue';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import { fetch, submit } from './CommentVue';
-import Randomstring from 'randomstring';
+// import Randomstring from 'randomstring';
 import CommentVueCb from './CommentsVueCb';
 import ContextMenu from '../subComponents/ContextMenu.vue';
 
@@ -36,7 +36,7 @@ export default {
   },
   mounted() {
     this.comments.CB = new CommentVueCb(this.comments.cbHomeId);
-    this.ContextMenu.register(this.comments.cmId);
+    // this.ContextMenu.register(this.comments.cmId);
   }
 }
 </script>

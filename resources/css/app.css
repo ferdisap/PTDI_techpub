@@ -306,7 +306,8 @@ dialog a,
   .explorer .history,
   .explorer .editor,
   .explorer .preview,
-  .explorer .dispatchto {
+  .explorer .dispatchto,
+  .listtree {
     @apply p-2 border-2 shadow-md rounded-md m-2
   }
 }

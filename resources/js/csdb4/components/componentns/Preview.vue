@@ -49,8 +49,8 @@ export default {
       if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('Preview-refresh', this.refresh);
     } else this.emitter.on('Preview-refresh', this.refresh)
 
-    this.ContextMenu.register(this.contextMenuId);
-    this.ContextMenu.toggle(false, this.contextMenuId);
+    // this.ContextMenu.register(this.contextMenuId);
+    // this.ContextMenu.toggle(false, this.contextMenuId);
   }
 }
 </script>
