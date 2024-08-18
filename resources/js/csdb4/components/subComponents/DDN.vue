@@ -1,4 +1,5 @@
 <script>
+import RoutesWeb from '../../RoutesWeb';
 import jp from 'jsonpath';
 import Remarks from './Remarks.vue';
 import {showDDNContent, refresh} from './DDNVue';
@@ -13,6 +14,9 @@ export default {
   methods:{
     showDDNContent: showDDNContent,
     refresh: refresh,
+    href(config = {}){
+      return RoutesWeb.get('Explorer', )
+    }
   },
   mounted(){
     window.ddn = this;
@@ -65,12 +69,16 @@ export default {
     <div >
       <ol v-if="DDNObject.dispatchFileNames && DDNObject.dispatchFileNames.length">
         <li v-for="(filename) in DDNObject.dispatchFileNames">
-          {{ filename }}
-        </li>
-      </ol>
-      <ol v-if="DDNObject.mediaIdents && DDNObject.mediaIdents.length">
-        <li v-for="(filename) in DDNObject.dispatchFileNames">
-          {{ filename }}
+          <router-link :to="$router.resolve({
+            name: 'Explorer',
+            params: {
+              filename: filename,
+              type: 'pdf'
+            },
+            query: {
+              ddn: $route.params.filename
+            }
+          })['fullPath']">{{ filename }}</router-link>
         </li>
       </ol>
     </div>

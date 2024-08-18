@@ -48,4 +48,9 @@ class DdnController extends Controller
     }])->where('dispatchTo_id', 2)->orderBy('id', 'desc')->paginate(100);
     return $DDNModels;
   }
+
+  public function import(Request $request)
+  {
+
+  }
 }

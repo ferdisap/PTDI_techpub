@@ -36,8 +36,10 @@ export default {
     },
     
     /*
+     * DEPRECATED
+     * diganti dengan vue routers @resolve
      * fill the href attribute with a url comes from vueroutename 
-    */
+    */   
     href(vueroutename, data = {}){
       return this.techpubStore.getWebRoute('',data,Object.assign({},this.$router.getRoutes().find(r => r.name === vueroutename)))['path'];
     },
@@ -49,10 +51,16 @@ export default {
     },
   },
   mounted() {
-    this.hrefs.Welcome = this.href('Welcome');
-    this.hrefs.Deletion = this.href('Deletion')
-    this.hrefs.Explorer = this.href('Explorer',{filename:'',viewType:''})
-    this.hrefs.Dispatch = this.href('Dispatch',{filename:'',viewType:''})
+    this.hrefs.Welcome = this.$router.resolve({name: 'Welcome'})['fullPath'];
+    this.hrefs.Deletion = this.$router.resolve({name: 'Deletion'})['fullPath'];
+    this.hrefs.Explorer = this.$router.resolve({name: 'Explorer', 
+      params: {
+        filename: '', viewType: ''
+      }})['fullPath'];
+    this.hrefs.Dispatch = this.$router.resolve({name: 'Dispatch', 
+      params: {
+        filename: ''
+      }})['fullPath'];
   },
 }
 </script>

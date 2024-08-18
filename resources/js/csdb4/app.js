@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from "./App.vue";
-import Routes from "./routers.js";
+import Routes from "./RoutesVue.js";
 
 import axios from 'axios';
 import { createPinia } from 'pinia';

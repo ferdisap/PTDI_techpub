@@ -98,14 +98,14 @@ export default {
           viewType:  viewType||this.$route.params.viewType||'html',
         }
       });
-    },
+    },    
   },
   beforeCreate() {
     this.References.defaultStore = useTechpubStore();
   },
   mounted(){
-    // window.techpubStore = this.techpubStore;
-    // window.app = this;
+    window.techpubStore = this.techpubStore;
+    window.app = this;
   }
 }
 </script>

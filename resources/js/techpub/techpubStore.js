@@ -313,6 +313,8 @@ export const useTechpubStore = defineStore('useTechpubStore', {
     },
 
     /**
+     * DEPRECATED
+     * diganti dengan
      * @param {*} name 
      * @param {*} params 
      * @param {*} Plain Object which get same from this.WebRoute[`${name}`]

@@ -28,7 +28,6 @@ async function blobRequestTransformed(routename, data, mime) {
       name: routename,
       data: data,
     },
-    useMainLoadingBar: false,
     responseType: responseType,
   });
   if (response.statusText === 'OK') {
