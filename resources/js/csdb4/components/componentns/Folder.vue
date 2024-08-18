@@ -129,7 +129,8 @@ export default {
 }
 </style>
 <template>
-  <div class="folder h-[100%] bg-white overflow-hidden relative">
+  <!-- <div class="folder h-[100%] bg-white overflow-hidden relative"></div> -->
+  <div class="folder">
     <div v-show="false">{{ setObject }}</div>
     <div class="h-[100%] w-full relative">
       <div class="h-[50px] relative text-center">
@@ -189,7 +190,7 @@ export default {
       </div>
 
       <!-- pagination -->
-      <div class="w-full text-black absolute bottom-[10px] h-[30px] px-3 flex justify-center">
+      <div class="w-full text-black bottom-[10px] h-[30px] px-3 flex justify-center">
         <div v-if="pagination" class="flex justify-center items-center bg-gray-100 rounded-lg px-2 w-[300px]">
           <button @click="goto(pageless)" class="material-symbols-outlined">navigate_before</button>
           <form @submit.prevent="goto('', pagination['current_page'])" class="flex">

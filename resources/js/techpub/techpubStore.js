@@ -1,3 +1,5 @@
+// per 18 AUG 2024, sepertinya techpubStore yang dipakai adalah untuk Auth dan Error message, currentObjectModel, showLoadingBar, date() saja
+
 /**, csdb3
  * WebRoutes: {
     "passw,
@@ -32,6 +34,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
   state: () => {
     return {
       Auth: {},
+
+      /**
+       * DEPRECATED
+       * diganti dengan RoutesWeb.js
+       */
       WebRoutes: {},
 
       /**
@@ -314,7 +321,7 @@ export const useTechpubStore = defineStore('useTechpubStore', {
 
     /**
      * DEPRECATED
-     * diganti dengan
+     * diganti dengan RouteWeb.js @get()
      * @param {*} name 
      * @param {*} params 
      * @param {*} Plain Object which get same from this.WebRoute[`${name}`]
@@ -504,6 +511,11 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       this.isSuccess = false;
       this.showLoadingBar = false;
     },
+
+    /**
+     * DEPRECATED
+     * tidak diperukan lagi. Cek di Flash.vue
+     */
     set_success(response, isSuccess = true) {
       this.errors = undefined;
       this.isSuccess = true;
@@ -511,6 +523,10 @@ export const useTechpubStore = defineStore('useTechpubStore', {
       this.showLoadingBar = false;
     },
 
+    /**
+     * DEPRECAED
+     * tidak diperlukan karena bisa get langsung
+     */
     getCurrentObjectModel(){
       return this.currentDetailObject;
     },

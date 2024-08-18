@@ -3,6 +3,7 @@ import { findAncestor, isNumber, isEmpty, array_unique, isString, formDataToObje
 import $ from 'jquery';
 import fileDownload from 'js-file-download';
 import { isArray } from '../../helper';
+import axios from 'axios';
 
 function getObjs(data = {}) {
   this.showLoadingProgress = true;
@@ -68,10 +69,16 @@ function clickFolder(event, path) {
   if (!this.CB.selectionMode) this.back(path);
 }
 
-function clickFilename(event, filename) {
+async function clickFilename(event, filename) {
   if (!this.CB.selectionMode) {
     this.techpubStore.currentObjectModel = Object.values(this.data.csdb).find((obj) => obj.filename === filename);
-    this.$root.gotoExplorer(filename, 'pdf');
+    await this.$router.push({
+      name: 'Explorer',
+      params: {
+        filename: filename,
+        viewType: 'pdf'
+      },
+    })
     this.emitter.emit('clickFilenameFromFolder', { filename: filename }) // key filename saja karena bisa diambil dari techpubstore atau server jika perlu
   }
 }

@@ -1,5 +1,7 @@
 import { isProxy, toRaw } from 'vue';
 import { isArray } from '../../helper';
+import RoutesWeb from '../../RoutesWeb';
+import axios from 'axios';
 /**
   * require array_move and sorter from helper.js
   * @param {string} type 'dml','csl', 'brex', 'brdp'
@@ -10,7 +12,8 @@ async function get_list(type, params = {}) {
 
   const worker = this.createWorker("WorkerListTree.js");
   if (worker) {
-    let route = this.techpubStore.getWebRoute(`api.get_${type}_list`, params); // $type = allobjects, jadi routeName = 'api.get_allobjects_list'
+    // let route = this.techpubStore.getWebRoute(`api.get_${type}_list`, params); // $type = allobjects, jadi routeName = 'api.get_allobjects_list'
+    let route = RoutesWeb.get(`api.get_${type}_list`, params); // $type = allobjects, jadi routeName = 'api.get_allobjects_list'
     let prom = new Promise((resolve, reject) => {
       worker.onmessage = (e) => {
         this.data[`${type}_list`] = e.data[0];

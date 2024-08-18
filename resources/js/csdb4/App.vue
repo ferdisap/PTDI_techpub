@@ -90,6 +90,10 @@ export default {
       return this.alertData.result;
     },
     
+    /**
+     * DEPRECATED
+     * diganti langsung pakai this.$router.push
+    */
     gotoExplorer(filename, viewType = undefined){
       this.$router.push({
         name: 'Explorer',

@@ -4,16 +4,16 @@
 // return (typeof str === 'string' || str instanceof String);
 // return Array.isArray(arr);
 // const isClass = Function.prototype.call.bind(Object.prototype.toString); // [object Function] or [object FormData] or [object Array] or dll
-const array_unique = (arr) => arr.filter((value,index,a) => a.indexOf(value) === index);
+const array_unique = (arr) => arr.filter((value, index, a) => a.indexOf(value) === index);
 
 /**
  * sudah dicoba, hasilnya sama seperti di laravel request yang ubah fd ke array
  */
 const formDataToObject = (v) => {
   const obj = {};
-  v.forEach((value,key,fd) => {
-    if(key.substr(key.length-2) === '[]') {
-      const key = key.substr(0,key.length-2);
+  v.forEach((value, key, fd) => {
+    if (key.substr(key.length - 2) === '[]') {
+      const key = key.substr(0, key.length - 2);
       obj[key] = obj[key] ?? [];
       obj[key].push(value);
     }
@@ -43,34 +43,34 @@ const isFunction = (v) => (v !== undefined) && (v !== null) && (v.constructor.na
  * @param {String} CSS selector 
  * @returns 
  */
-const findAncestor = function(el, sel) {
-  while ((el = el.parentElement) && !((el.matches || el.matchesSelector).call(el,sel)));
+const findAncestor = function (el, sel) {
+  while ((el = el.parentElement) && !((el.matches || el.matchesSelector).call(el, sel)));
   return el;
 }
-const matchSel = function(el, sel){
-  return (el.matches || el.matchesSelector).call(el,sel);
+const matchSel = function (el, sel) {
+  return (el.matches || el.matchesSelector).call(el, sel);
 }
-const indexFromParent = function(el) {
+const indexFromParent = function (el) {
   return Array.prototype.slice.call(el.parentElement.children).indexOf(el);
 }
 
 // event
-function isArrowDownKeyPress(evt){
+function isArrowDownKeyPress(evt) {
   return (evt.keyCode === 40) ? true : false;
 }
-function isArrowUpKeyPress(evt){
+function isArrowUpKeyPress(evt) {
   return (evt.keyCode === 38) ? true : false;
 }
-function isEnterKeyPress(evt){
+function isEnterKeyPress(evt) {
   return (evt.keyCode === 13) ? true : false;
 }
-function isEscapeKeyPress(evt){
+function isEscapeKeyPress(evt) {
   return (evt.which === 27) ? true : false;
 }
-function isLeftClick(evt){
+function isLeftClick(evt) {
   return (evt.which === 1) ? true : false;
 }
-function isRightClick(evt){
+function isRightClick(evt) {
   return (evt.which === 3) ? true : false;
 }
 function isCharacterKeyPress(evt) {
@@ -83,8 +83,8 @@ function isCharacterKeyPress(evt) {
     // We need to filter out backspace and ctrl/alt/meta key combinations
     // return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8;
     // modifan saya
-    return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8 
-    && (evt.which !== 1) && (evt.which !== 2) && (evt.which !== 3) && (evt.which !== 27) && (evt.which !== 13) && (evt.which !== 37) && (evt.which !== 38) && (evt.which !== 39) && (evt.which !== 40);
+    return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8
+      && (evt.which !== 1) && (evt.which !== 2) && (evt.which !== 3) && (evt.which !== 27) && (evt.which !== 13) && (evt.which !== 37) && (evt.which !== 38) && (evt.which !== 39) && (evt.which !== 40);
   }
   return false;
 }
@@ -99,30 +99,29 @@ function isCharacterKeyPress(evt) {
  * @param {*} text 
  * @returns 
  */
-function copy(event, text)
-{
-  if(text) {
+function copy(event, text) {
+  if (text) {
     navigator.clipboard.writeText(text); // output promise
     return;
   }
   let a;
   const selection = window.getSelection();
-  if(event) a = event.target;
-  else if(selection.type === 'Range') a = selection.anchorNode;
-  else if(this.ContextMenu && this.ContextMenu.anchorNode) a = this.ContextMenu.anchorNode;
-  
-  if(a){
+  if (event) a = event.target;
+  else if (selection.type === 'Range') a = selection.anchorNode;
+  else if (this.ContextMenu && this.ContextMenu.anchorNode) a = this.ContextMenu.anchorNode;
+
+  if (a) {
     const range = new Range();
-  
+
     // Start range at second paragraph
     range.setStartBefore(a);
-  
+
     // End range at third paragraph
     range.setEndAfter(a);
-  
+
     // Add range to window selection
     selection.addRange(range);
-  
+
     navigator.clipboard.writeText(range.toString()); // output promise
   }
   return;
@@ -130,11 +129,11 @@ function copy(event, text)
 
 export {
   // general
-  array_unique, formDataToObject, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction, 
+  array_unique, formDataToObject, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction,
   // DOM
-  findAncestor,matchSel,indexFromParent,
+  findAncestor, matchSel, indexFromParent,
   // event
-  isArrowDownKeyPress, isArrowUpKeyPress,isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick, isCharacterKeyPress,
+  isArrowDownKeyPress, isArrowUpKeyPress, isEnterKeyPress, isEscapeKeyPress, isLeftClick, isRightClick, isCharacterKeyPress,
   // utilization
   copy
 };

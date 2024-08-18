@@ -1,4 +1,6 @@
 import { contentType } from 'es-mime-types';
+import RoutesWeb from '../../RoutesWeb';
+import axios from 'axios';
 
 function refresh(data) {
   if (data.sourceType === 'blobURL') {
@@ -79,7 +81,8 @@ async function render(filename, viewType){
   // eg. ICN tapi viewType === 'pdf'
   else return Promise.reject(false);
 
-  let route = this.techpubStore.getWebRoute(routename, {filename: filename});
+  // let route = this.techpubStore.getWebRoute(routename, {filename: filename});
+  const route = RoutesWeb.get(routename, {filename: filename});
   // ini untuk embed
   if(!this.inIframe) this.src = route.url.toString();
   // ini untuk iframe HTML dan PDF

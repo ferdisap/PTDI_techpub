@@ -308,7 +308,7 @@ dialog a,
   .explorer .preview,
   .explorer .dispatchto,
   .listtree {
-    @apply p-2 border-2 shadow-md rounded-md m-2
+    @apply p-2 border-2 shadow-md rounded-md m-2 relative overflow-auto
   }
 }
 

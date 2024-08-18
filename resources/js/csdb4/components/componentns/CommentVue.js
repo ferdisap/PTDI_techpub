@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useTechpubStore } from '../../../techpub/techpubStore';
 
 function arrangeComments(coms) {
   const comTypeQ = [];

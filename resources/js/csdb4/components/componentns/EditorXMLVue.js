@@ -1,7 +1,10 @@
+import RoutesWeb from "../../RoutesWeb";
+import axios from 'axios';
+
 function setUpdate(filename) {
   this.isUpdate = true;
   if (filename) {
-    this.XMLEditor.setRoute(this.techpubStore.getWebRoute('api.get_object_raw', { filename: filename }));
+    this.XMLEditor.setRoute(RoutesWeb.get('api.get_object_raw',{filename: filename}));
     this.XMLEditor.fetchRaw();
   }
 }

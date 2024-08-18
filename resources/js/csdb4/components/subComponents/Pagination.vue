@@ -27,7 +27,7 @@ export default {
 }
 </script>
 <template>
-  <div class="pagination w-full text-black absolute bottom-[10px] h-[30px] px-3 flex justify-center">
+  <div class="pagination w-full text-black bottom-[10px] h-[30px] px-3 flex justify-center">
     <div v-if="$props.data" class="flex justify-center items-center bg-gray-100 rounded-lg px-2 w-[300px]">
       <button @click="goto($props.data['prev_page_url'])" class="material-symbols-outlined">navigate_before</button>
       <form @submit.prevent="goto('', $props.data['current_page'])" class="flex">

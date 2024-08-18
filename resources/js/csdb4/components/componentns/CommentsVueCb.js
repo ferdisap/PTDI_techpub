@@ -1,7 +1,5 @@
 import Checkbox from "../../Checkbox";
 import Randomstring from "randomstring";
-import { findAncestor, matchSel } from "../../helper";
-import axios from 'axios';
 
 class CommentVueCb extends Checkbox{
 

@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Pagination from '../subComponents/Pagination.vue';
-import { isArray } from '../../helper';
 
 export default {
   // props: ["filename", "history"],

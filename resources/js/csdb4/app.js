@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from "./App.vue";
 import Routes from "./RoutesVue.js";
+import RoutesWeb from './RoutesWeb';
 
 import axios from 'axios';
 import { createPinia } from 'pinia';
@@ -9,7 +10,7 @@ import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
-import routes from '../../others/routes.json';
+// import routes from '../../others/routes.json';
 
 import ContextMenu from './ContextMenu';
 import Dropdown from './components/Dropdown';
@@ -32,7 +33,7 @@ const createWorker = function (filename) {
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['X-CSRF-Token'] = document.querySelector("meta[name='csrf-token']").content;
 axios.defaults.withCredentials = true;
-window.axios = axios;
+// window.axios = axios;
 
 const csdb = createApp(App);
 const router = createRouter({
@@ -55,7 +56,7 @@ axios.get('/auth/check')
   .then(response => useTechpubStore().Auth = response.data)
   .catch(response => window.location.href = "/login");
 // sebelum mounting app, akan request all Routes dulu
-useTechpubStore().WebRoutes = routes;
+// useTechpubStore().WebRoutes = routes;
 
 /**
  * cara menggunakan axios
@@ -71,22 +72,10 @@ axios.interceptors.request.use(
   async (config) => {
     let headers = {};
     if (config.route) {
-      useTechpubStore().showLoadingBar = config.useMainLoadingBar ? true : false; // default false
-      try {
-        let data = config.route.data;
-        // if(data && (data.updated_at || (data instanceof FormData && data.get('updated_at')))){
-        //   headers['If-Modified-Since'] = data.updated_at;
-        //   // headers['If-Unmodified-Since'] = data.updated_at;
-        //   data.delete ? data.delete('updated_at') : delete data.updated_at;
-        // }
-        const route = useTechpubStore().getWebRoute(config.route.name, data);
-        config.url = route.url;
-        config.method = route.method[0];
-        config.data = route.params;
-      } catch (error) {
-        console.error(error);
-        // throw new Error(error); 
-      }
+      const route = RoutesWeb.get(config.route.name, config.route.data);
+      config.url = route.url;
+      config.method = route.method[0];
+      config.data = route.data;
     }
     for (const i in headers) {
       config.headers.set(i, headers[i]);
@@ -96,16 +85,7 @@ axios.interceptors.request.use(
 );
 axios.interceptors.response.use(
   (response) => {
-    // console.log(window.response = response);
-    useTechpubStore().showLoadingBar = false;
     useTechpubStore().Errors = [];
-    // if(response.config.event && response.config.event.name) {
-    //   csdb.config.globalProperties.emitter.emit(response.config.event.name, Object.assign(response.config.event, response.config.route.data));
-    // } else {
-    // }
-    if (response.config.route) {
-      csdb.config.globalProperties.emitter.emit(response.config.route.name, response.config.route.data);
-    }
     csdb.config.globalProperties.emitter.emit('flash', {
       type: response.data.infotype,
       message: response.data.message
@@ -113,7 +93,7 @@ axios.interceptors.response.use(
     return response;
   },
   (axiosError) => {
-    window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
+    // window.axiosError = axiosError; // jangan dihapus. Untuk dumping jika error pada user
     useTechpubStore().showLoadingBar = false;
     if (axiosError.code) {
       csdb.config.globalProperties.emitter.emit('flash', {
@@ -128,7 +108,7 @@ axios.interceptors.response.use(
   }
 );
 
-window.csdb = csdb;
+// window.csdb = csdb;
 csdb.mount('#body');
 
 // ####### end here

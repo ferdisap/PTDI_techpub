@@ -117,9 +117,9 @@ export default {
 }
 </script>
 <template>
-  <div class="listtree h-full relative">
+  <div class="listtree h-full">
     <!-- list -->
-    <div id="cbListTreeVue" :class="['listtree-list', $props.isRoot ? 'h-[90%] overflow-auto' : '']">
+    <div id="cbListTreeVue" class="listtree-list">
       <!-- <component v-if="(this.data[`${this.$props.type}_list_level`] && this.data[`${this.$props.type}_list`])" :is="tree" /> -->
       <component v-if="html" :is="tree" />
     </div>

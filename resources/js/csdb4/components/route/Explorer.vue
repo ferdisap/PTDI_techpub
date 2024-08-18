@@ -175,7 +175,7 @@ export default {
       <div class="explorer-content flex 2xl:h-[95%] xl:h-[94%] lg:h-[92%] md:h-[91%] sm:h-[89%]">
         <!-- col 1 -->
         <div class="flex" :style="[col1Width]">
-          <div class="overflow-auto text-nowrap relative h-full w-full">
+          <div class="text-nowrap relative h-full w-full">
             <ListTree type="allobjects" routeName="Explorer" />
           </div>
           <div id="v-line-1" class="v-line h-full border-l-4 border-blue-500 cursor-ew-resize"
