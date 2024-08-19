@@ -40,7 +40,8 @@ class Checkbox{
       });
       // ### jika tidak pakai table, maka config tambahkan subtree:true, supaya ke detect jika ada perubahan di descendant element
       // this.domObserver.observe(document.querySelector(this.CSSSelector_cbRoom(this.homeId)).parentElement,{childList:true})
-      this.domObserver.observe(document.getElementById(this.homeId),{childList:true})
+      // this.domObserver.observe(document.getElementById(this.homeId),{childList:true})
+      this.domObserver.observe(document.getElementById(this.homeId),{childList:true, subtree:true});
     }
   }
 

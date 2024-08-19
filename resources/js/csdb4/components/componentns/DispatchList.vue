@@ -5,6 +5,7 @@ import { storingResponse, clickFilename } from './DispatchListVue';
 import DispatchListVueCb from './DispatchListVueCb.js';
 import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
 import ContextMenu from '../subComponents/ContextMenu.vue';
+import Pagination from '../subComponents/Pagination.vue';
 
 export default {
   data(){
@@ -18,7 +19,7 @@ export default {
       CB: {}
     }
   },
-  components:{ Sort, ContextMenu, ContinuousLoadingCircle },
+  components:{ Sort, ContextMenu, ContinuousLoadingCircle, Pagination },
   methods:{
     getObjs: getObjs,
     storingResponse: storingResponse,
@@ -29,13 +30,18 @@ export default {
 
     this.CB = new DispatchListVueCb(this.cbId)
     this.CB.register();
+
+    if(this.$route.params.filename) setTimeout(()=>{
+      this.emitter.emit('DDN-refresh', {filename: this.$route.params.filename})
+    },0);
   }
 }
 </script>
 <template>
-  <div class="h-[100%] w-full relative">
+  <!-- <div class="dispatchlist h-[100%] w-full relative border border-gray-400"> -->
+  <div class="dispatchlist">
 
-    <h1>Dispatch Note List</h1>
+    <h1 class="text-blue-500 w-full text-center my-2">List</h1>
 
     <div class="h-[75%] block relative overflow-scroll">
       <table class="table" :id="cbId">
@@ -74,18 +80,17 @@ export default {
           </tr>
         </tbody>
       </table>
+
+      <Pagination :data="data.paginationInfo"/>
     </div>
 
     <ContinuousLoadingCircle :show="showLoadingProgress" />
 
     <ContextMenu :id="contextMenuId">
-      <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.stop.prevent="CB.push" class="list">
         <div class="text-sm">Select</div>
       </div>
-      <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
-      <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
-        <div class="text-sm">Cancel</div>
-      </div>
+      <hr/>
     </ContextMenu>
   </div>
 </template>

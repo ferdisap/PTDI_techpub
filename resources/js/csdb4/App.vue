@@ -4,9 +4,7 @@ import Flash from '../techpub/components/Flash.vue';
 import Aside from './components/Aside.vue';
 import Main from './components/Main.vue';
 import { useTechpubStore } from '../techpub/techpubStore';
-import { markdown } from 'markdown';
-import createAlert from '../alert';
-
+import {info, alert} from './AppVue'
 
 
 export default {
@@ -26,71 +24,9 @@ export default {
   },
   components: { Topbar, Flash, Aside, Main },
   methods: {
-    /**
-     * required data.filename 
-     */
-    async info(data = {}) {
-      let config = {
-        route: {
-          name: 'api.info',
-          data: data,
-        },
-        responseType: 'text'
-      };
-      let md = await axios(config);
-      // membuat <div> dulu agar didalam MD bisa ada tag HTML. Ini dicontohkan dalam README.md punya laravel (basic);
-      let text = md.data;
-      let div = $('<div/>').html(text);
-      div.contents().each((i, e) => {
-        if (e.nodeType === 3) {
-          $(e).replaceWith(markdown.toHTML(e.textContent));
-        }
-      })
-      this.infoData.message = div[0].innerHTML;
-      this.infoData.show = true;
-      this.infoData.name = name;
-    },
-    /**
-     * required data.filename, data.objectame
-     * diutamakan request filename.md. Jika request error, maka akan pakai data.message
-     */
-    async alert(data = {}) {
-      // get MD file
-      let response = await axios({
-        route: {
-          name: 'api.alert',
-          data : data,
-        }
-      });
-      if(response.statusText !== 'OK'){
-        return;
-      }
-      let text = response.data;
-      if(!text){
-        text = data.message;
-      }
-      delete data.name; // dihapus data.name agar tidak tertukar antara 'filename' dan 'name'. 'name' adalah nama alert
-      delete data.message;
-      // replace all variable in MD file with params 'data'
-      this.$root.findText(/`\${([\S]+)}`/gm, text).forEach(v => {
-        let replaced = v[0].replace(/(?<=`\${)([\S]+)(?=}`)/gm, 'data.$1')
-        text = text.replace(v[0], eval(replaced));
-      })
-
-      // escaping text jikalau ada html didalam MD file
-      let div = $('<div/>').html(text);
-      div.contents().each((i, e) => {
-        if (e.nodeType === 3) {
-          $(e).replaceWith(markdown.toHTML(e.textContent));
-        }
-      })
-      data.message = div[0].innerHTML;
-      // finish by creating Alert;
-      this.alertData = createAlert(data);
-      return this.alertData.result;
-    },
-    
-    /**
+    info: info,
+    alert: alert,
+        /**
      * DEPRECATED
      * diganti langsung pakai this.$router.push
     */
@@ -102,13 +38,10 @@ export default {
           viewType:  viewType||this.$route.params.viewType||'html',
         }
       });
-    },    
-  },
-  beforeCreate() {
-    this.References.defaultStore = useTechpubStore();
+    },   
   },
   mounted(){
-    window.techpubStore = this.techpubStore;
+    // window.techpubStore = this.techpubStore;
     window.app = this;
   }
 }
@@ -151,7 +84,9 @@ body {
     </div>
   </div>
 
-  <!-- alert modal -->
+  <!-- 
+    alert modal 
+  -->
   <div v-if="alertData.show" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
     width: 100%;
@@ -174,7 +109,9 @@ body {
     </div>
   </div>
 
-  <!-- info modal -->
+  <!-- 
+    info modal 
+  -->
   <div v-if="infoData.show" id="info" class="fixed top-0 left-0 h-[100vh] w-[100%] z-50 bg-[rgba(255,0,0,00)] font-mono">
     <div style="
     width: 100%;
@@ -195,36 +132,4 @@ body {
       </div>
     </div>
   </div>
-
-  <!-- <div class="w-1/2 h-1/2 bg-white opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-red-500 border-dashed">
-    <h1 class="text-center mt-3 mb-3">ALERT !</h1>
-    <hr class="border-2"/>
-    <div v-html="Alert.message" class="max-h-[65%] overflow-auto px-10"></div>
-    <div class="w-full text-center bottom-3 absolute">
-      <button class="button-danger" @click="reject()">X</button>
-      <button class="button-safe" @click="resolve()">O</button>
-      <button class="button-violet" @click="emitter.emit('alert',{message: 'messages tesmessages', fn: fun})">tes emit</button>
-    </div>
-  </div> -->
-
-
-  <!-- <dialog open class="fixed top-0 left-0 h-[100vh] w-[100%] z-50">
-    <div style="
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background:rgba(0,0,0,0.5);
-    ">
-      <div id="#dialog" class="w-1/2 h-1/2 bg-white opacity-100 absolute top-1/4 left-1/4 rounded-xl border-[15px] border-red-500 border-dashed">
-        <h1 class="text-center mt-3 mb-3">ALERT !</h1>
-        <hr class="border-2"/>
-        <div class="max-h-[65%] overflow-auto px-10" message>message</div>
-        <div class="w-full text-center bottom-3 absolute">
-          <button class="button-danger" onclick=run.getresult(0)>X</button>
-          <button class="button-safe" onclick="run.getresult(1)">O</button>
-        </div>
-      </div>
-    </div>
-  </dialog> --></template>
+</template>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Csdb\HistoryController;
 use App\Http\Controllers\CsdbServiceController;
 use App\Http\Controllers\DmlController;
 use App\Http\Controllers\UserController;
+use App\Jobs\Csdb\FillObjectTable;
 use App\Mail\Csdb\DataDispatchNote;
 use App\Models\Csdb;
 use App\Models\Csdb\Ddn;
@@ -66,6 +67,7 @@ Route::get("/api/histories/{filename}", [HistoryController::class, 'all'])->midd
 // get list comment 
 Route::get("/api/comments/{filename}",[CommentController::class, 'all'])->middleware('auth')->name('api.get_csdb_comments');
 
+Route::get("/api/json/{filename}",[CsdbController::class, 'read_json'])->middleware('auth')->name('api.read_json');
 
 
 // ### percobaan ###
@@ -154,7 +156,10 @@ Route::get('/tes_get_model',function(){
 });
 
 Route::get('/tesapaja',function(){
-
+  $CSDBModel = Csdb::find(17);
+  // FillObjectTable::dispatch(request()->user(), $CSDBModel, true);
+  FillObjectTable::dispatchSync(request()->user(), $CSDBModel, true);
+  return;
 
   // $dom = new \DOMDocument();
   // $dom->load(CSDB_STORAGE_PATH."/E6IkA/DMC-MALE-A-15-00-01-00A-018A-A_000-01_EN-EN.xml");

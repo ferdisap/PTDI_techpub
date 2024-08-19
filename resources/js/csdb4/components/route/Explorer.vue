@@ -74,7 +74,7 @@ export default {
     this.emitter.on('createObjectFromEditor', (data) => {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
-      this.$root.gotoExplorer(data.filename);
+      this.$router.push({name: 'Explorer', params: {filename: data.filename, viewType: 'pdf'}});
       this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.Preview.data = data;
       this.bottomBarItems.History.data = data;
@@ -83,7 +83,7 @@ export default {
     this.emitter.on('createDMLFromEditorDML', (data) => {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
-      this.$root.gotoExplorer(data.filename);
+      this.$router.push({name: 'Explorer', params: {filename: data.filename, viewType: 'pdf'}});
       this.bottomBarItems.Preview.isShow ? this.emitter.emit('Preview-refresh', data) : this.emitter.emit('bottom-bar-switch', 'Preview');
       this.bottomBarItems.Preview.data = data;
       this.bottomBarItems.History.data = data.model;
@@ -92,8 +92,13 @@ export default {
     this.emitter.on('uploadICNFromEditor', (data) => {
       // data adalah csdb file sql, bukan model/meta object
       this.emitter.emit('ListTree-refresh', data);
-      this.$root.gotoExplorer(data.filename);
+      this.$router.push({name: 'Explorer', params: {filename: data.filename, viewType: 'pdf'}});
     });
+
+    this.emitter.on('createDDNFromDispatchTo', (data) => {
+      // data adalah csdb file sql, bukan model/meta object
+      this.emitter.emit('ListTree-refresh', data);
+    })
 
     this.emitter.on('updateObjectFromEditor', (data) => {
       // data adalah csdb file sql, bukan model/meta object

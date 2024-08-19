@@ -28,19 +28,19 @@ export default {
 
 <template>
   <nav class="bg-blue-500 text-white h-full relative flex justify-between items-center">
-    <div class="pl-3 text-sm">
+    <div class="pl-3 text-sm flex">
       <a href="/" class="text-sm">Technical Publication</a>
 
-      <div class="ml-3 dropdown text-sm" v-if="techpubStore.Auth.name">
+      <div class="ml-3 dropdown text-sm relative" v-if="techpubStore.Auth.first_name">
         <button @click="openDropdown = !openDropdown" class="text-sm">
-          <span class="text-xs">{{ techpubStore.Auth.name }}</span> <span class="material-symbols-outlined align-middle text-sm ">keyboard_arrow_down</span>
+          <span class="text-xs">{{ techpubStore.Auth.first_name }}</span> <span class="material-symbols-outlined align-middle text-sm ">keyboard_arrow_down</span>
         </button>
-        <div v-show="openDropdown" class="dropdown-content text-black text-sm">
-          <div class="dropdown-menu"><a class="block w-full" href="/profile">Profile</a></div>
-          <div class="dropdown-menu"><a class="block w-full" href="/dashboard">Dashboard</a></div>
-          <div class="dropdown-menu"><a class="block w-full" href="/csdb3">CSDB</a></div>
+        <div v-show="openDropdown" class="dropdown-content text-black absolute z-[100] bg-white p-2 rounded-sm shadow-md">
+          <a class="block w-full text-sm" href="/profile">Profile</a>
+          <a class="block w-full text-sm" href="/dashboard">Dashboard</a>
+          <a class="block w-full text-sm" href="/csdb3">CSDB</a>
           <hr />
-          <div class="dropdown-menu"><a class="block w-full" href="/logout">Logout</a></div>
+          <a class="block w-full text-sm" href="/logout">Logout</a>
         </div>
       </div>
       <!-- <a class="ml-3" v-else :href="techpubStore.getWebRoute('login')['path']"> login here..</a> -->

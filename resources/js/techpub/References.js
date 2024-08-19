@@ -1,5 +1,7 @@
-
-
+/**
+ * DEPRECATED
+ * karena belum membuat IETM
+ */
 const References = {
   defaultStore: undefined,
   clickImg: () => {

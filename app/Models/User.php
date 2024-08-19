@@ -90,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ($this->first_name ? $this->first_name . " " : '').
         ($this->middle_name);
       }
-      return $this->name;
+      return $this->name ?? $this->first_name;
     }
 
 

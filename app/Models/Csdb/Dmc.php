@@ -166,6 +166,6 @@ class Dmc extends Csdb
     foreach($arr as $prop => $v){
       $dmc->$prop = $v;
     }
-    return $dmc->save();
+    return $dmc->save() ? $dmc : false;
   }
 }

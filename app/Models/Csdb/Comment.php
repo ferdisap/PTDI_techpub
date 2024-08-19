@@ -210,6 +210,6 @@ class Comment extends Csdb
     foreach ($arr as $prop => $v) {
       $comment->$prop = $v;
     }
-    return $comment->save();
+    return $comment->save() ? $comment : false;
   }
 }

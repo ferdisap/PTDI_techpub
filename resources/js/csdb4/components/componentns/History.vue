@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Pagination from '../subComponents/Pagination.vue';
+import ContinuousLoadingCircle from '../../loadingProgress/ContinuousLoadingCircle.vue';
 
 export default {
   // props: ["filename", "history"],
@@ -18,22 +19,13 @@ export default {
       techpubStore: useTechpubStore(),
       histories: {},
       pagination: {},
+      showLoadingProgress: false,
     }
   },
-  components:{ Pagination },
+  components:{ Pagination, ContinuousLoadingCircle },
   methods: {
-    async setHistoryFromXHR(filename) {
-      let response = await axios({
-        route: {
-          name: 'api.get_object_model',
-          data: { filename: filename }
-        }
-      })
-      if (response.statusText === 'OK') {
-        this.H = response.data.model.remarks.history;
-      }
-    },
     async fetchHistories(filename) {
+      this.showLoadingProgress = true;
       let response = await axios({
         route: {
           name: 'api.get_csdb_history',
@@ -43,6 +35,7 @@ export default {
       if (response.statusText === 'OK') {
         this.storingResponse(response);
       }
+      this.showLoadingProgress = false;
     },
     storingResponse(response){
       this.histories = response.data.csdb.histories.data;
@@ -78,5 +71,7 @@ export default {
     </table>
 
     <Pagination :callback="storingResponse" :data="pagination"/>
+
+    <ContinuousLoadingCircle :show="showLoadingProgress" />
   </div>
 </template>

@@ -139,6 +139,6 @@ class Pmc extends Csdb
     foreach($arr as $prop => $v){
       $pmc->$prop = $v;
     }
-    return self::create($arr);
+    return $pmc->save() ? $pmc : false;
   }
 }

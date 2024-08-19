@@ -6,7 +6,8 @@ import {
 } from '../../S1000DHelper';
 import jp from 'jsonpath';
 import Randomstring from 'randomstring';
-import { findAncestor } from '../../helper';
+import { array_unique, findAncestor } from '../../helper';
+import axios from 'axios';
 
 function DDN(json){
   return {
@@ -26,7 +27,7 @@ async function showDDNContent(filename){
   if(response.statusText === 'OK'){
     // handle and arrange json file
     this.DDNObject = DDN(response.data.json);
-    window.json = response.data.json;
+    // window.json = response.data.json;
 
     // createEntriesString
     // do create string here
@@ -36,8 +37,63 @@ async function showDDNContent(filename){
   }
 }
 
+function explorerConfig(filename){
+  return {
+    name: 'Explorer',
+    params: {
+      filename: filename,
+      viewType: 'pdf'
+    },
+    query: {
+      ddn: this.$route.params.filename,
+      bbi: 'Preview'
+    }
+  }
+}
+
+function importObject(){
+  // check duplicated file
+  const filenames = this.CB.value();
+  const post = (overwrite = false) => {
+    return axios({
+      route: {
+        name: 'api.import_ddn_list',
+        data: {
+          filename: this.$route.params.filename,
+          filenames: filenames,
+          overwrite: overwrite,
+        }
+      },
+    })
+    .then(async (response) => {
+      if(response.statusText === 'OK'){
+        if(response.data.duplicatedCsdb){
+          const duplicatedFilename = [];
+          let duplicatedPath = [];
+          response.data.duplicatedCsdb.forEach(csdb => {
+            duplicatedFilename.push(csdb.filename);
+            duplicatedPath.push(csdb.path);
+          });
+          duplicatedPath = array_unique(duplicatedPath);
+          if(await this.$root.alert({
+            name: 'beforeImportCsdbObject', 
+            filename: duplicatedFilename.join(", "),
+            previousObjectPath: duplicatedPath.join(", "),
+          })){
+            post(true);
+          }
+        }
+      }
+    })
+  };
+  post();
+
+  
+  return;
+}
+
 function refresh(data){
   this.showDDNContent(data.filename);
 }
 
-export {showDDNContent, refresh}
+export {showDDNContent, explorerConfig, importObject, refresh}

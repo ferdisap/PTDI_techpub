@@ -13,13 +13,25 @@ const formDataToObject = (v) => {
   const obj = {};
   v.forEach((value, key, fd) => {
     if (key.substr(key.length - 2) === '[]') {
-      const key = key.substr(0, key.length - 2);
+      key = key.substr(0, key.length - 2);
       obj[key] = obj[key] ?? [];
       obj[key].push(value);
     }
     else obj[key] = value
   })
   return obj;
+}
+
+const findText = (pattern, subject) => {
+  let match = [];
+  let m;
+  while ((m = pattern.exec(subject)) !== null) {
+    if (m.index === pattern.lastIndex) {
+      pattern.lastIndex++;
+    }
+    match.push(m);
+  }
+  return match;
 }
 
 const isObject = (v) => (v !== undefined) && (v !== null) && (v.constructor.name === 'Object') && (!Array.isArray(v));
@@ -129,7 +141,7 @@ function copy(event, text) {
 
 export {
   // general
-  array_unique, formDataToObject, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction,
+  array_unique, formDataToObject, findText, isObject, isNumber, isEmpty, isString, isArray, isClassIntance, isFunction,
   // DOM
   findAncestor, matchSel, indexFromParent,
   // event

@@ -27,29 +27,17 @@ export default {
       else bbi = [];
 
       (show ? bbi.unshift(componentName) : bbi.splice(bbi.indexOf(componentName), 1));
-      this.$router.replace({
-        path: this.$route.path,
-        query: {
-          bbi: bbi.join(","),
-        }
-      });
+      setTimeout(() => {      
+        this.$router.replace({
+          path: this.$route.path,
+          query: {
+            bbi: bbi.join(","),
+          }
+        });
+      }, 0);
 
       // arrange column width
-      let hideCol2 = true;
-      let hideCol3 = true;
-      col2.forEach(componentName => {
-        if (bbi.indexOf(componentName) >= 0) hideCol2 = false;
-      })
-      col3.forEach(componentName => {
-        if (bbi.indexOf(componentName) >= 0) hideCol3 = false;
-      })
-      if(hideCol2 !== hideCol3){
-        if (hideCol2) this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 1});
-        else if (hideCol3) this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 1});
-      } else {
-        this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 0.5});
-        this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 0.5});
-      }
+      this.hide(bbi);
 
       // sort view;
       if (show) this.sort(bbi, componentName);
@@ -65,6 +53,23 @@ export default {
           if (item && (item.parentElement == target.parentElement)) target.parentElement.appendChild(item);
         })
       });
+    },
+    hide(bbi){
+      let hideCol2 = true;
+      let hideCol3 = true;
+      col2.forEach(componentName => {
+        if (bbi.indexOf(componentName) >= 0) hideCol2 = false;
+      })
+      col3.forEach(componentName => {
+        if (bbi.indexOf(componentName) >= 0) hideCol3 = false;
+      })
+      if(hideCol2 !== hideCol3){
+        if (hideCol2) this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 1});
+        else if (hideCol3) this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 1});
+      } else {
+        this.emitter.emit('Explorer-column-size', {colnum: 'tiga', 'size': 0.5});
+        this.emitter.emit('Explorer-column-size', {colnum: 'dua', 'size': 0.5});
+      }      
     }
   },
   activated() {
@@ -72,9 +77,9 @@ export default {
     if (!bbi) return;
     bbi = bbi.split(",");
     for (let i = 0; i < bbi.length; i++) {
-      // this.$props.items[bbi[i]]['isShow'] = true;
       if (this.$props.items[bbi[i]]) this.$props.items[bbi[i]]['isShow'] = true;
     }
+    this.hide(bbi);
   },
   mounted() {
 

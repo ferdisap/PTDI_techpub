@@ -41,7 +41,6 @@ export default {
         <div id="v-line-2" class="v-line h-full border-l-[4px] border-blue-500 w-0 cursor-ew-resize"
             @mousedown.prevent="turnOnSizing($event, 'satu', 'colWidthDispatch')"></div>
         <div :style="[col2Width]" class="overflow-auto text-wrap relative h-full w-full">
-          <h1 class="text-blue-500 w-full text-center">DDN View</h1>
           <DDN/>
         </div>
       </div>

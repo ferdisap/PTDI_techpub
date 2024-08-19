@@ -3,6 +3,7 @@
 namespace App\Events\Csdb;
 
 use App\Models\Csdb;
+use App\Models\Csdb\Ddn;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -18,9 +19,7 @@ class DdnCreated
   /**
    * Create a new event instance.
    */
-  public function __construct(public Csdb $csdb)
-  // protected Csdb $csdb;
-  // public function __construct(Csdb $csdb)
+  public function __construct(public Ddn $DDNOBJECTModel)
   {
     // $this->csdb = $csdb;
     // dd($this->csdb);

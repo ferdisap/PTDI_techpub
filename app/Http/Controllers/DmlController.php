@@ -103,14 +103,6 @@ class DmlController extends Controller
     return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json, 'transformed' => '', 'mime' => 'text/html']); // ini yang dipakai vue
   }
 
-  public function read_json(Request $request, string $filename)
-  {
-    if (!($DMLModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
-    $DMLModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $request->user()->storage . "/" . $filename);
-    $json = json_decode(CSDBStatic::xml_to_json($DMLModel->CSDBObject->document));
-    return $this->ret2(200, ['model' => $DMLModel->makeHidden(['id']), 'json' => $json]); // ini yang dipakai vue
-  }
-
   public function dmlupdate(Request $request, string $filename)
   {
     dd($request->all());

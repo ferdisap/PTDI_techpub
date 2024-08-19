@@ -31,7 +31,7 @@ const bottomBarItems = {
     iconName: 'upload_file',
     'tooltipName': 'Dispatch To',
     isShow: false,
-    data: {}
+    data: []
   }
 }
 

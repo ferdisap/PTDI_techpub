@@ -620,6 +620,6 @@ class Dml extends Csdb
     foreach ($arr as $prop => $v) {
       $dml->$prop = $v;
     }
-    return $dml->save();
+    return $dml->save() ? $dml : false;
   }
 }

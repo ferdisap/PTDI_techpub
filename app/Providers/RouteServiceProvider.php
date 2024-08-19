@@ -17,11 +17,11 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/dashboard';
+    public const DASHBOARD = '/dashboard';
 
-    public const CSDB = '/csdb3';
+    public const CSDB = '/csdb4';
 
-    public const WELCOME = '/';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

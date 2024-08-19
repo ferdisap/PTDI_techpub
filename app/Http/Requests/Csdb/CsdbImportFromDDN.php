@@ -8,12 +8,14 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CsdbImportFromDDN extends FormRequest
 {
+  public $duplicatedCSDBModels = [];
+
   /**
    * Determine if the user is authorized to make this request.
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -24,12 +26,14 @@ class CsdbImportFromDDN extends FormRequest
   public function rules(): array
   {
     return [
-      'CSDBModel' => [function(string $a, mixed $v, Closure $fail){
+      'path' => '',
+      'DDNCSDBModel' => [function(string $a, mixed $v, Closure $fail){
         if($this->user()->id !== $v->object->dispatchTo_id) $fail("You are not allowed access the {$v->filename}");
       }],
       'filenames' => ['array'],
       'filenames.*' => [function(string $a, mixed $v, Closure $fail){
-        if(!in_array($v, $this->CSDBModel->object->ddnContent)) $fail("{$v} is not covered by the {$this->CSDBModel->filename}");
+        if(!in_array($v, $this->DDNCSDBModel->object->ddnContent)) $fail("{$v} is not covered by the {$this->CSDBModel->filename}");
+        $this->duplicatedCSDBModels[] = Csdb::getCsdb($v)->first();
       }]
     ];
   }
@@ -37,10 +41,11 @@ class CsdbImportFromDDN extends FormRequest
   protected function prepareForValidation(): void
   {
     Csdb::$storage_user_id = null;
-    $CSDBModel = Csdb::getObject($this->route()->parameter('filename'),["exception" => ["CSDB-DELL", "CSDB_PDEL"]])->with('object');
+    $CSDBModel = Csdb::getCsdb($this->route()->parameter('filename'),["exception" => ["CSDB-DELL", "CSDB_PDEL"]])->with('object')->first();
 
     $this->merge([
-      'CSDBModel' => $CSDBModel
+      'path' => 'CSDB/IMPORTED',
+      'DDNCSDBModel' => $CSDBModel
     ]);
   }
 

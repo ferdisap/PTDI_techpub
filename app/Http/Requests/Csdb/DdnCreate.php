@@ -48,7 +48,7 @@ class DdnCreate extends FormRequest
       'brexDmRef' => ['required', new BrexDmRef],
       'remarks' => '',
       
-      'dispatchTo_enterpriseName' => '',
+      'dispatchTo_enterpriseName' => 'required',
       'dispatchTo_division' => '',
       'dispatchTo_enterpriseUnit' => '',
       'dispatchTo_lastName' => 'required',
@@ -70,7 +70,7 @@ class DdnCreate extends FormRequest
       'dispatchTo_internet' => '',
       'dispatchTo_SITA' => '',
 
-      'dispatchFrom_enterpriseName' => '',
+      'dispatchFrom_enterpriseName' => 'required',
       'dispatchFrom_division' => '',
       'dispatchFrom_enterpriseUnit' => '',
       'dispatchFrom_lastName' => 'required',
@@ -111,7 +111,11 @@ class DdnCreate extends FormRequest
    */
   protected function prepareForValidation(): void
   {
-    $seqNumber = DB::table(env('DB_TABLE_DDN', 'ddn'))->select('seqNumber')->orderBy('seqNumber', 'desc')->first()->seqNumber ?? '00000';
+    // $seqNumber = DB::table(env('DB_TABLE_DDN', 'ddn'))->select('seqNumber')->orderBy('seqNumber', 'desc')->first()->seqNumber ?? '00000';
+    $previous_csdb_ddn = DB::table(env('DB_TABLE_CSDB', 'csdb'))->where('filename',  'like', 'DDN-%')->orderBy('filename', 'desc')->first();
+    if($previous_csdb_ddn && $previous_csdb_ddn->filename){
+      $seqNumber = CSDBStatic::decode_ddnIdent($previous_csdb_ddn->filename)['ddnCode']['seqNumber'];
+    } else $seqNumber = '00000';
     $seqNumber++;
     $seqNumber = str_pad($seqNumber, 5, '0', STR_PAD_LEFT);
 
@@ -119,13 +123,15 @@ class DdnCreate extends FormRequest
     $dispatchFromEnterpriseModel = $dispatchFromPersonModel->work_enterprise;
     $senderIdent = $dispatchFromEnterpriseModel->code->name;
     
-    $dispatchToPersonModel = User::where('email', $this->get('dispatchToPersonEmail'))->first();
-    $dispatchToEnterpriseModel = $dispatchToPersonModel->work_enterprise;
-    $receiverIdent = $dispatchToEnterpriseModel->code->name;
+    if($dispatchToPersonModel = User::where('email', $this->get('dispatchToPersonEmail'))->first()){
+      $dispatchToEnterpriseModel = $dispatchToPersonModel->work_enterprise;
+      $receiverIdent = $dispatchToEnterpriseModel->code->name;
+    }
     
-    $brexDmRef = $this->get('brexDmRef');
-    $brexDmRefDecoded = CSDBStatic::decode_dmIdent($brexDmRef);
-    $modelIdentCode = $brexDmRefDecoded['dmCode']['modelIdentCode'];
+    if($brexDmRef = $this->get('brexDmRef')){
+      $brexDmRefDecoded = CSDBStatic::decode_dmIdent($brexDmRef);
+      $modelIdentCode = $brexDmRefDecoded['dmCode']['modelIdentCode'];
+    }
     
     $remarks = $this->get('remarks');
     if(!is_array($remarks) AND is_string($remarks)){
@@ -140,10 +146,10 @@ class DdnCreate extends FormRequest
     $this->merge([
       'path' => $this->path ?? "CSDB/DDN",
 
-      'seqNumber' => $seqNumber,
-      'modelIdentCode' => $modelIdentCode,
-      'senderIdent' => $senderIdent,
-      'receiverIdent' => $receiverIdent,
+      'seqNumber' => $seqNumber ?? '',
+      'modelIdentCode' => $modelIdentCode ?? '',
+      'senderIdent' => $senderIdent ?? '',
+      'receiverIdent' => $receiverIdent ?? '',
       
       'securityClassification' => $this->get('securityClassification'),
       'authorization' => $this->get('authorization') ?? 'undefined',
@@ -151,12 +157,12 @@ class DdnCreate extends FormRequest
       'remarks' => $remarks,
       
       // untuk <address> diisi dengan address enterprise
-      'dispatchTo_enterpriseName' => $dispatchToEnterpriseModel->name,
+      'dispatchTo_enterpriseName' => $dispatchToEnterpriseModel->name ?? '',
       'dispatchTo_division' => $dispatchToEnterpriseModel->remarks['division'] ?? '',
       'dispatchTo_enterpriseUnit' => $dispatchToEnterpriseModel->remarks['enterpriseUnit'] ?? '',
-      'dispatchTo_lastName' => $dispatchToPersonModel->last_name,
-      'dispatchTo_firstName' => $dispatchToPersonModel->first_name,
-      'dispatchTo_jobTitle' => $dispatchToPersonModel->job_title,
+      'dispatchTo_lastName' => $dispatchToPersonModel->last_name ?? '',
+      'dispatchTo_firstName' => $dispatchToPersonModel->first_name ?? '',
+      'dispatchTo_jobTitle' => $dispatchToPersonModel->job_title ?? '',
       'dispatchTo_department' => $dispatchToEnterpriseModel->address['department'] ?? '',
       'dispatchTo_street' => $dispatchToEnterpriseModel->address['street'] ?? '',
       'dispatchTo_postOfficeBox' => $dispatchToEnterpriseModel->address['postOfficeBox'] ?? '',

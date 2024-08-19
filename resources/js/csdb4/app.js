@@ -6,7 +6,7 @@ import RoutesWeb from './RoutesWeb';
 
 import axios from 'axios';
 import { createPinia } from 'pinia';
-import References from '../techpub/References';
+// import References from '../techpub/References';
 import { useTechpubStore } from '../techpub/techpubStore';
 
 import mitt from 'mitt';
@@ -44,7 +44,7 @@ const pinia = createPinia();
 
 csdb.use(pinia);
 csdb.use(router);
-csdb.config.globalProperties.References = References;
+// csdb.config.globalProperties.References = References;
 csdb.config.globalProperties.emitter = mitt();
 csdb.config.globalProperties.createWorker = createWorker; // ini sudah menjalankan fungsinya createWorker nya, aneh
 csdb.config.globalProperties.ContextMenu = new ContextMenu();
@@ -72,7 +72,14 @@ axios.interceptors.request.use(
   async (config) => {
     let headers = {};
     if (config.route) {
-      const route = RoutesWeb.get(config.route.name, config.route.data);
+      let route;
+      try {
+        route = RoutesWeb.get(config.route.name, config.route.data);
+      } catch (error) {
+        console.error(error);
+        console.trace();
+        return;
+      }
       config.url = route.url;
       config.method = route.method[0];
       config.data = route.data;

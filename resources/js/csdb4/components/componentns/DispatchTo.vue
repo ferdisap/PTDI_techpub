@@ -6,6 +6,8 @@ import DropdownInputSearch from '../../DropdownInputSearch';
 import { useTechpubStore } from '../../../techpub/techpubStore';
 import Remarks from '../subComponents/Remarks.vue';
 import {isObject} from '../../helper'
+import RoutesWeb from '../../RoutesWeb';
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -32,25 +34,7 @@ export default {
     }
   },
   methods: {
-    async getDDNList() {
-      // this.showLoadingProgress = true;
-      // let response = await axios({
-      //   route: {
-      //     name: 'api.get_ddn_list',
-      //   },
-      //   useMainLoadingBar: false,
-      // });
-
-      // if (response.statusText === 'OK') {
-      //   // do something here
-      //   // this.model = response.data.model;
-      // }
-      // this.showLoadingProgress = false;
-    },
     async submit(event){
-      window.e = event;
-      // console.log('submit');
-      // this.showLoadingProgress = true;
       let fd = new FormData(event.target);
 
       fd.set('dispatchFromPersonEmail', this.techpubStore.Auth.email);
@@ -58,23 +42,19 @@ export default {
       for (var i = 0; i < this.objects.length; i++) {
         fd.append('deliveryListItemsFilename[]', this.objects[i]);
       }
-      // let deliveryListItemsFilename = [];
-      // this.objects.forEach(filename => {
-      //   deliveryListItemsFilename.push(filename);
-      // });
-      // if(deliveryListItemsFilename.length > 0) fd.set('deliveryListItemsFilename[]',this.objects);
-
+      
       let response = await axios({
         route: {
           name: 'api.create_ddn',
           data: fd,
         },
-        useMainLoadingBar: false,
       });
 
       if (response.statusText === 'OK') {
         // do something here
         // this.model = response.data.model;
+        this.emitter.emit('createDDNFromDispatchTo', response.data.csdb);
+
       }
       // this.showLoadingProgress = false;
     },
@@ -106,14 +86,16 @@ export default {
     // bisa langsung pakai DropdownBrexSearch@keypress di tag htmlnya, tanpa pakai fungsi searchUser ini
     async searchUser(event){
       if(event.target.id === this.DropdownUserSearch.idInputText){
-        let route = this.techpubStore.getWebRoute('api.user_search_model', {sc: event.target.value, limit:5});
+        // let route = this.techpubStore.getWebRoute('api.user_search_model', {sc: event.target.value, limit:5});
+        const route = RoutesWeb.get('api.user_search_model', {sc: event.target.value, limit:5});
         this.DropdownUserSearch.keypress(event, route);
       }
     },
     // bisa langsung pakai DropdownBrexSearch@keypress di tag htmlnya, tanpa pakai fungsi searchBrexIni
     async searchBrex(event){
       if(event.target.id === this.DropdownBrexSearch.idInputText){
-        let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
+        // let route = this.techpubStore.getWebRoute('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
+        const route = RoutesWeb.get('api.dmc_search_model', {sc: "filename::" + event.target.value, limit:5});
         this.DropdownBrexSearch.keypress(event, route);
       }
     },

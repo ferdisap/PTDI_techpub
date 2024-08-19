@@ -70,6 +70,14 @@ class CsdbController extends Controller
     return $this->ret2(400, ["{$CSDBModel->filename} failed to update."], CSDBError::getErrors(), ['csdb' => $CSDBModel]);
   }
 
+  public function read_json(Request $request, string $filename)
+  {
+    if (!($OBJECTModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+    $OBJECTModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $request->user()->storage . "/" . $filename);
+    $json = json_decode(CSDBStatic::xml_to_json($OBJECTModel->CSDBObject->document));
+    return $this->ret2(200, ['model' => $OBJECTModel->makeHidden(['id']), 'json' => $json]); // ini yang dipakai vue
+  }
+
   public function read_pdf_object(Request $request, Csdb $CSDBModel)
   {
     // $modelIdentCode = Helper::get_attribute_from_filename($CSDBModel->filename, 'modelIdentCode');  

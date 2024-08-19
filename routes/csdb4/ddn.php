@@ -9,4 +9,4 @@ Route::post("/api/ddn/create",[DdnCOntroller::class, 'create'])->middleware('aut
 Route::get("/api/ddn/dispatched",[DdnController::class, 'list'])->middleware('auth')->name('api.get_ddn_list');
 
 // import csdb object
-Route::post('/api/ddn/import', [DdnController::class, 'import'])->middleware('auth')->name('api.import_ddn_list');
+Route::post('/api/ddn-import/{filename}', [DdnController::class, 'import'])->middleware('auth')->name('api.import_ddn_list');

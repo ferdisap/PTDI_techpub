@@ -1,26 +1,31 @@
 <script>
-import RoutesWeb from '../../RoutesWeb';
-import jp from 'jsonpath';
+// import RoutesWeb from '../../RoutesWeb';
+// import jp from 'jsonpath';
 import Remarks from './Remarks.vue';
-import {showDDNContent, refresh} from './DDNVue';
+import ContextMenu from './ContextMenu.vue';
+import {showDDNContent, explorerConfig, importObject, refresh} from './DDNVue';
+import Checkbox from '../../Checkbox';
+
 export default {
   data(){
     return {
       showLoadingProgress: false,
       DDNObject: {},
+      cbId: "cbDdnVue",
+      cmId: 'cmDdnVue',
+      CB: {},
     }
   },
-  components:{Remarks},
+  components:{Remarks, ContextMenu},
   methods:{
     showDDNContent: showDDNContent,
+    explorerConfig: explorerConfig,
+    importObject: importObject,
     refresh: refresh,
-    href(config = {}){
-      return RoutesWeb.get('Explorer', )
-    }
   },
   mounted(){
-    window.ddn = this;
-    window.jp = jp;
+    // window.ddn = this;
+    // window.jp = jp;
     if (this.$props.filename && (this.$props.filename.substring(0, 3) === 'DDN')) {
       this.showDDNContent(this.$props.filename);
     }
@@ -30,13 +35,16 @@ export default {
       const indexEmitter = emitters.indexOf(emitters.find((v) => v.name === 'bound refresh')) // 'bound addObjects' adalah fungsi, lihat scrit dibawah ini. Jika fungsi anonymous, maka output = ''
       if (emitters.length < 1 && indexEmitter < 0) this.emitter.on('DDN-refresh', this.refresh);
     } else this.emitter.on('DDN-refresh', this.refresh);
+
+    this.CB = new Checkbox(this.cbId);
+    this.CB.cbRoomDisplay = 'block';
+    this.CB.register();
   }
 }
 </script>
 <template>
-  {{ DDNObject.dispatchFileNames }}
   <div class="ddn">
-    <h1>Ident and Status Section</h1>
+    <h1 class="text-blue-500 w-full text-center my-2">DDN View</h1>
     <div class="mb-2 flex">
       <div class="mr-2">
         <div class=" font-bold italic">Code: </div>
@@ -65,22 +73,33 @@ export default {
       <Remarks :para="DDNObject.remarks" class_label="text-sm font-bold italic"/>
     </div>
     
-    <h1>Content Section</h1>
-    <div >
-      <ol v-if="DDNObject.dispatchFileNames && DDNObject.dispatchFileNames.length">
-        <li v-for="(filename) in DDNObject.dispatchFileNames">
-          <router-link :to="$router.resolve({
-            name: 'Explorer',
-            params: {
-              filename: filename,
-              type: 'pdf'
-            },
-            query: {
-              ddn: $route.params.filename
-            }
-          })['fullPath']">{{ filename }}</router-link>
-        </li>
-      </ol>
-    </div>
+    <table :id="cbId">
+      <thead>
+        <tr>
+          <th v-show="CB.selectionMode"></th>
+          <th>Filename</th>
+        </tr>
+      </thead>
+      <tbody v-if="DDNObject.dispatchFileNames && DDNObject.dispatchFileNames.length">
+        <tr cb-room v-for="(filename) in DDNObject.dispatchFileNames">
+          <td cb-window>
+            <input type="checkbox" :value="filename">
+          </td>
+          <td>
+            <a class="text-sm" :href="$router.resolve(explorerConfig(filename))['fullPath']">{{ filename }}</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ContextMenu :id="cmId">
+      <div class="list" @click.prevent="$router.push(explorerConfig(CB.value()[0]))">
+        <div class="text-sm">preview</div>
+      </div>
+      <div class="list" @click.prevent="importObject">
+        <div class="text-sm">import</div>
+      </div>
+    </ContextMenu>
+    
   </div>
 </template>

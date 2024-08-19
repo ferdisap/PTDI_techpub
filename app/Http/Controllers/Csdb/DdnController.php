@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Csdb;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Csdb\CsdbImportFromDDN;
 use App\Http\Requests\Csdb\DdnCreate;
 use App\Models\Csdb;
 use App\Models\Csdb\Ddn;
@@ -45,12 +46,41 @@ class DdnController extends Controller
           $query->select(['id', 'name']);
         }]);
       }]);
-    }])->where('dispatchTo_id', 2)->orderBy('id', 'desc')->paginate(100);
+    }])->where('dispatchTo_id', $request->user()->id)->orderBy('id', 'desc')->paginate(100);
     return $DDNModels;
   }
 
-  public function import(Request $request)
+  public function import(CsdbImportFromDDN $request)
   {
+    // check duplicated file
+    if(!($request->overwrite) && $request->duplicatedCSDBModels){
+      return $this->ret2(200, [
+        'duplicatedCsdb' => $request->duplicatedCSDBModels,
+      ]);
+    } else {
+      $success = [];
+      $fail = [];
+      foreach ($request->validated('filenames') as $filename) {
+        $CSDBModel = new Csdb();
+        $CSDBModel->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $request->validated('DDNCSDBModel')->owner->storage . DIRECTORY_SEPARATOR . $filename);
+        $CSDBModel->filename = $filename;
+        $CSDBModel->path = $request->validated('path');
+        $CSDBModel->storage_id = $request->user()->id;
+        $CSDBModel->initiator_id = $request->user()->id;
 
+
+        if ($CSDBModel->saveDOMandModel($request->user()->storage, [
+          ['MAKE_CSDB_IMPT_History', [Csdb::class]],
+          ['MAKE_USER_IMPT_History', [$request->user(), '', $CSDBModel->filename]]
+        ])) {
+          $success[] = $CSDBModel->filename;
+        } else $fail[] = $CSDBModel->filename;
+      }
+    }
+    $message = "Success to import " . join(", ", $success) . (!empty($fail) ? " and fail to import " . join(", ", $fail) : '.');
+    return $this->ret2(200, [
+      'info' => (empty($fail) ? 'info' : (!empty($success) ? 'warning' : '')),
+      'message' => $message,
+    ]);
   }
 }

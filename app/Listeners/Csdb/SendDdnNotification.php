@@ -3,8 +3,10 @@
 namespace App\Listeners\Csdb;
 
 use App\Events\Csdb\DdnCreated;
+use App\Mail\Csdb\DataDispatchNote;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Mail;
 
 class SendDdnNotification
 {
@@ -20,12 +22,6 @@ class SendDdnNotification
    */
   public function handle(DdnCreated $event): void
   {
-    dd('bb');
-    // $csdb = $event->csdb;
-    // $csdb->path = 'FOO';
-    // $csdb->save();
-    // dd('bb');
-    // \App\Models\User::factory()->count(3)->create();
-    // dd($event);
+    Mail::queue(new DataDispatchNote($event->DDNOBJECTModel));
   }
 }

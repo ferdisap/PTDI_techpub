@@ -189,6 +189,6 @@ class Ddn extends Csdb
     foreach($arr as $prop => $v){
       $ddn->$prop = $v;
     }
-    return $ddn->save();
+    return $ddn->save() ? $ddn : false;
   }
 }

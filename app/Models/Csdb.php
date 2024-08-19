@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\Csdb\DmcTableFiller;
+use App\Jobs\Csdb\FillObjectTable;
 use App\Models\Csdb\Comment;
 use App\Models\Csdb\Ddn;
 use App\Models\Csdb\Dmc;
@@ -73,7 +74,7 @@ class Csdb extends Model
    */
   // protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleter_id', 'deleted_at'];
   // protected $fillable = ['filename', 'path', 'available_storage','initiator_id', 'deleted_at'];
-  protected $fillable = ['filename', 'path', 'storage_id','initiator_id'];
+  protected $fillable = ['filename', 'path', 'storage_id', 'initiator_id'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -154,7 +155,7 @@ class Csdb extends Model
       set: fn (string $v) => strtoupper(substr($v, -1, 1) === '/' ? rtrim($v, "/") : $v),
       // set: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
       // get: fn(string $v) => substr($v,-1,1) === '/' ? $v : $v . "/",
-      get: fn(string $v) => strtoupper($v),
+      get: fn (string $v) => strtoupper($v),
     );
     // dd(substr($str,-1,1 ));
   }
@@ -179,7 +180,7 @@ class Csdb extends Model
   /**
    * relationship untuk csdb
    */
-  public function initiator() :BelongsTo
+  public function initiator(): BelongsTo
   {
     return $this->belongsTo(User::class);
   }
@@ -187,9 +188,9 @@ class Csdb extends Model
   /**
    * relationship untuk object
    */
-  public function csdb() :BelongsTo
+  public function csdb(): BelongsTo
   {
-    return $this->belongsTo(Csdb::class,'csdb_id','id');
+    return $this->belongsTo(Csdb::class, 'csdb_id', 'id');
   }
 
   /**
@@ -197,47 +198,47 @@ class Csdb extends Model
    * tidak bisa dipakai untuk eager loading, kecuali static attribute objectClass sudah di instantiate atau ada param/query filename
    */
   public string $objectClass;
-  public function object() :hasOne
+  public function object(): hasOne
   {
     $filename = self::$objectClass ?? $this->filename ?? request()->route()->parameter('filename') ?? request()->get('filename');
-    if($filename) $class = self::getClassObjectByFilename($filename);
+    if ($filename) $class = self::getClassObjectByFilename($filename);
     else $class = self::class; // nanti jadinya null kalau pakai $class self
     return $this->hasOne($class);
   }
-  
+
   /**
    * DEPRECATED
    * return many objects
    */
   public function objects(): HasOne
   {
-    $type = substr($this->filename,0,3);
-    $class= '';
-    switch ($type) { 
+    $type = substr($this->filename, 0, 3);
+    $class = '';
+    switch ($type) {
       case 'DML':
         $class = Dml::class;
-        break;  
+        break;
       case 'COM':
         $class = Com::class;
-        break;  
+        break;
       case 'DDN':
         $class = Ddn::class;
         break;
       case 'PMC':
         $class = Pmc::class;
-        break; 
+        break;
       default:
         $class = Dmc::class;
         break;
     }
-    return $this->hasOne($class,'filename','filename');
+    return $this->hasOne($class, 'filename', 'filename');
   }
 
   /**
    * DEPRECATED
    * relationship untuk csdb
    */
-  public function storager() :BelongsTo
+  public function storager(): BelongsTo
   {
     return $this->belongsTo(User::class, 'storage_id', 'id');
   }
@@ -245,22 +246,22 @@ class Csdb extends Model
   /**
    * relationship untuk csdb
    */
-  public function owner() :BelongsTo
+  public function owner(): BelongsTo
   {
     return $this->belongsTo(User::class, 'storage_id', 'id');
   }
-  
+
   /**
    * DEPRECIATED, diganti histories
    * get models of all history that sorted by first to end
    */
-  public function history() :MorphMany
+  public function history(): MorphMany
   {
-    return $this->morphMany(History::class, 'owner','owner_class'); //'owner' itu nanti dirender menjadi 'owner_id' 
+    return $this->morphMany(History::class, 'owner', 'owner_class'); //'owner' itu nanti dirender menjadi 'owner_id' 
   }
-  public function histories() :MorphMany
+  public function histories(): MorphMany
   {
-    return $this->morphMany(History::class, 'owner','owner_class'); //'owner' itu nanti dirender menjadi 'owner_id'
+    return $this->morphMany(History::class, 'owner', 'owner_class'); //'owner' itu nanti dirender menjadi 'owner_id'
   }
   public function attachHistories(int $paginate, $type = '')
   {
@@ -275,16 +276,15 @@ class Csdb extends Model
         $this->histories = History::getHistories($this)->orderByDesc('created_at')->paginate($paginate);
         break;
     }
-    
   }
 
   /**
    * get the last history
    * ini digunakan untuk model csdb, bukan object
    */
-  public function lastHistory() :MorphOne
+  public function lastHistory(): MorphOne
   {
-    return $this->morphOne(History::class,'owner' ,'owner_class')->latestOfMany('created_at');    
+    return $this->morphOne(History::class, 'owner', 'owner_class')->latestOfMany('created_at');
   }
 
   /**
@@ -300,20 +300,19 @@ class Csdb extends Model
     $class = self::class;
 
     // filter by filename
-    $CSDBModel = $CSDBModel->whereRaw('(filename = ? )',[$filename]);
-    
+    $CSDBModel = $CSDBModel->whereRaw('(filename = ? )', [$filename]);
+
     // filter by storage
     // $CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[request()->user()->id]);
-    if(self::$storage_user_id === 0) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[request()->user()->id]));
-    elseif(self::$storage_user_id) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )',[self::$storage_user_id]));
+    if (self::$storage_user_id === 0) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )', [request()->user()->id]));
+    elseif (self::$storage_user_id) ($CSDBModel = $CSDBModel->whereRaw('(storage_id = ? )', [self::$storage_user_id]));
 
     // filter by last history
-    if(!empty($historyCode)){
-      if(isset($historyCode['code'])){
+    if (!empty($historyCode)) {
+      if (isset($historyCode['code'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], $class, $table);
         $CSDBModel = $CSDBModel->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
-      }
-      elseif(isset($historyCode['exception'])){
+      } elseif (isset($historyCode['exception'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString_historyException($historyCode['exception'], $class, $table);
         $CSDBModel = $CSDBModel->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
       }
@@ -332,19 +331,18 @@ class Csdb extends Model
 
     $table = $CSDBModels->getTable();
     $class = self::class;
-    
+
     // filter by storage
     // $CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[request()->user()->id]);
-    if(self::$storage_user_id === 0) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[request()->user()->id]));
-    elseif(self::$storage_user_id) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )",[self::$storage_user_id]));
+    if (self::$storage_user_id === 0) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )", [request()->user()->id]));
+    elseif (self::$storage_user_id) ($CSDBModels = $CSDBModels->whereRaw("({$table}.storage_id = ? )", [self::$storage_user_id]));
 
     // filter by last history
-    if(!empty($historyCode)){
-      if(isset($historyCode['code'])){
+    if (!empty($historyCode)) {
+      if (isset($historyCode['code'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], $class, $table);
         $CSDBModels = $CSDBModels->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
-      }
-      elseif(isset($historyCode['exception'])){
+      } elseif (isset($historyCode['exception'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString_historyException($historyCode['exception'], $class, $table);
         $CSDBModels = $CSDBModels->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
       }
@@ -360,17 +358,16 @@ class Csdb extends Model
   {
     $eloquentClassModel = self::getClassObjectByFilename($filename);
     $OBJECTModel = new $eloquentClassModel();
-    $OBJECTModel = $OBJECTModel->with(['csdb'])->whereHas('csdb', function(Builder $query) use($historyCode,$filename){
-      $query->where('filename',$filename);
+    $OBJECTModel = $OBJECTModel->with(['csdb'])->whereHas('csdb', function (Builder $query) use ($historyCode, $filename) {
+      $query->where('filename', $filename);
       // $query->where('storage_id', self::$storage_user_id ?? request()->user()->id);
-      if(self::$storage_user_id === 0) ($query->where('storage_id',request()->user()->id));
-      elseif(self::$storage_user_id) ($query->where('storage_id',self::$storage_user_id));
-      if(!empty($historyCode)){
-        if(isset($historyCode['code'])){
+      if (self::$storage_user_id === 0) ($query->where('storage_id', request()->user()->id));
+      elseif (self::$storage_user_id) ($query->where('storage_id', self::$storage_user_id));
+      if (!empty($historyCode)) {
+        if (isset($historyCode['code'])) {
           $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));
           $query->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
-        }
-        elseif(isset($historyCode['exception'])){
+        } elseif (isset($historyCode['exception'])) {
           $queryWhereRawHistory = History::generateWhereRawQueryString_historyException($historyCode['exception'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));
           $query->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
         }
@@ -387,17 +384,16 @@ class Csdb extends Model
   {
     $eloquentClassModel = new $eloquentClassModel;
     $OBJECTModels = new $eloquentClassModel();
-    $OBJECTModels = $OBJECTModels->with(['csdb'])->whereHas('csdb', function(Builder $query) use($historyCode){
+    $OBJECTModels = $OBJECTModels->with(['csdb'])->whereHas('csdb', function (Builder $query) use ($historyCode) {
       // $query->where('storage_id', self::$storage_user_id ?? request()->user()->id);
-      if(self::$storage_user_id === 0) ($query->where('storage_id',request()->user()->id));
-      elseif(self::$storage_user_id) ($query->where('storage_id',self::$storage_user_id));
+      if (self::$storage_user_id === 0) ($query->where('storage_id', request()->user()->id));
+      elseif (self::$storage_user_id) ($query->where('storage_id', self::$storage_user_id));
 
-      if(!empty($historyCode)){
-        if(isset($historyCode['code'])){
+      if (!empty($historyCode)) {
+        if (isset($historyCode['code'])) {
           $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));
           $query->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
-        }
-        elseif(isset($historyCode['exception'])){
+        } elseif (isset($historyCode['exception'])) {
           $queryWhereRawHistory = History::generateWhereRawQueryString_historyException($historyCode['exception'], Csdb::class, env('DB_TABLE_CSDB', 'csdb'));
           $query->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
         }
@@ -418,17 +414,16 @@ class Csdb extends Model
     $class = self::class;
 
     $query = Helper::generateWhereRawQueryString($keywords, $CSDBModels->getTable());
-    if($query[0]){
+    if ($query[0]) {
       $CSDBModels = $CSDBModels->whereRaw($query[0], $query[1]);
     }
 
     // filter by last history
-    if(!empty($historyCode)){
-      if(isset($historyCode['code'])){
+    if (!empty($historyCode)) {
+      if (isset($historyCode['code'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString($historyCode['code'],  $class, $table);
         $CSDBModels = $CSDBModels->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
-      }
-      elseif(isset($historyCode['exception'])){
+      } elseif (isset($historyCode['exception'])) {
         $queryWhereRawHistory = History::generateWhereRawQueryString_historyException($historyCode['exception'], $class, $table);
         $CSDBModels = $CSDBModels->whereRaw($queryWhereRawHistory[0], $queryWhereRawHistory[1]);
       }
@@ -446,7 +441,7 @@ class Csdb extends Model
     return $this->belongsTo(Project::class, 'project_name');
   }
 
-  
+
 
   ###### CUSTOM #######
   public CSDBObject $CSDBObject;
@@ -457,9 +452,9 @@ class Csdb extends Model
     $this->CSDBObject = new CSDBObject("5.0");
   }
 
-  public function loadCSDBObject() :bool
+  public function loadCSDBObject(): bool
   {
-    if($this->filename){
+    if ($this->filename) {
       $this->CSDBObject->load(CSDB_STORAGE_PATH . DIRECTORY_SEPARATOR . $this->owner->storage . DIRECTORY_SEPARATOR . $this->filename);
       return true;
     }
@@ -596,10 +591,10 @@ class Csdb extends Model
    */
   public function saveDOMandModel(string $storageName = '', $historyStaticFunction = [])
   {
-    if(!$storageName) {
-      if($name = User::find($this->initiator_id)) $storageName = $name->storage;
+    if (!$storageName) {
+      if ($name = User::find($this->initiator_id)) $storageName = $name->storage;
       else return false;
-    } 
+    }
     $filename = $this->filename ?? $this->csdb->filename;
     $save_file = fn () => Storage::disk('csdb')->put($storageName . "/" . $filename, ($this->CSDBObject->document instanceof \DOMDocument ? $this->CSDBObject->document->saveXML() : $this->CSDBObject->document->getFile()));
     $revert_save_file =
@@ -608,55 +603,27 @@ class Csdb extends Model
         : Storage::disk('csdb')->delete($storageName . "/" . $filename);
     if ($save_file()) {
       if ($this->save()) {
-        // sengaja menaruh code pengisian table csdb metafile karena table inti adalah table.csdb. Table metafile ini bisa di update kapanpun
-        if ($this->CSDBObject->document instanceof \DOMDocument) {
-          $doctype = $this->CSDBObject->document->doctype->nodeName;
-          $csdbobject = false;
-          switch ($doctype) {
-            case 'dmodule':
-              $csdbobject = Dmc::fillTable($this->id, $this->CSDBObject);
-              break;
-            case 'pm':
-              $csdbobject = Pmc::fillTable($this->id, $this->CSDBObject);
-              break;
-            case 'dml':
-              $csdbobject = Dml::fillTable($this->id, $this->CSDBObject);
-              break;
-            case 'ddn':
-              $csdbobject = Ddn::fillTable($this->id, $this->CSDBObject);
-              break;
-            case 'comment':
-              $csdbobject = Comment::fillTable($this->id, $this->CSDBObject);
-              break;
-          }
-          if (!$csdbobject) {
-            $this->delete();
-            $revert_save_file();
-            return false;
-          }
-        }
-        elseif($this->CSDBObject->document instanceof ICNDocument){
-          // do something to fillTable for meta
-          return true;
-        }
+        // fill object dilakukan oleh worker
+        // FillObjectTable::dispatch(request()->user(), $CSDBModel, true); // using queue
+        FillObjectTable::dispatchSync(request()->user(), $this, true); // dispatch not using queue but mailto nya pakai queue
 
         // create history
         $HISTORYModels = [];
-        foreach($historyStaticFunction as $history){
-          if($history instanceof History){
+        foreach ($historyStaticFunction as $history) {
+          if ($history instanceof History) {
             $HISTORYModels[] = $history;
           } else {
             $method = $history[0];
             $params = $history[1];
-            foreach($params as $i => $p){
-              if($p === self::class){
+            foreach ($params as $i => $p) {
+              if ($p === self::class) {
                 $params[$i] = $this;
               };
             }
-            $HISTORYModels[] = call_user_func_array(array(History::class, $method),$params);
+            $HISTORYModels[] = call_user_func_array(array(History::class, $method), $params);
           }
         }
-        if(!(History::saveModel($HISTORYModels))){
+        if (!(History::saveModel($HISTORYModels))) {
           $this->delete();
           $revert_save_file();
           return false;
@@ -674,20 +641,22 @@ class Csdb extends Model
    */
   public function appendAvailableStorage(string $storage)
   {
-    if(!($this->available_storage)) $this->available_storage = $storage;
-    elseif(!str_contains($this->available_storage, $storage)) $this->available_storage .= ",".$storage;
+    if (!($this->available_storage)) $this->available_storage = $storage;
+    elseif (!str_contains($this->available_storage, $storage)) $this->available_storage .= "," . $storage;
   }
 
   /**
    * awalnya diperlukan untuk Dmc@fillTable
    */
-  public function setProtected(array $props){
-    foreach($props as $prop => $v){
+  public function setProtected(array $props)
+  {
+    foreach ($props as $prop => $v) {
       $this->$prop = $v;
     }
   }
 
-  public function getProtected(string $props){
+  public function getProtected(string $props)
+  {
     return $this->$props;
   }
 
@@ -696,8 +665,8 @@ class Csdb extends Model
    */
   public static function getModelClass(string $model)
   {
-    $class = "\App\Models\Csdb\\".$model;
-    if(class_exists($class)){
+    $class = "\App\Models\Csdb\\" . $model;
+    if (class_exists($class)) {
       $self = new $class;
       $self->setProtected([
         'table' => $self->getProtected('table') ?? [],
@@ -714,28 +683,28 @@ class Csdb extends Model
   /** @return {string} of class object by type filename */
   public static function getClassObjectByFilename(string $filename)
   {
-    $type = substr($filename, 0,3);
+    $type = substr($filename, 0, 3);
     $class = "\App\Models\Csdb\\";
     switch ($type) {
       case 'DMC':
         $class .= 'Dmc';
-        break;      
+        break;
       case 'PMC':
         $class .= 'Pmc';
-        break;      
+        break;
       case 'DML':
         $class .= 'Dml';
-        break;      
+        break;
       case 'DDN':
         $class .= 'Ddn';
-        break;      
+        break;
       case 'COM':
         $class .= 'Comment';
-        break;      
+        break;
     }
     return $class;
   }
-  
+
   /**
    * DEPRECIATED Tidak diperlukan lagi karena sudah di instance di class ini @getModelClass
    */

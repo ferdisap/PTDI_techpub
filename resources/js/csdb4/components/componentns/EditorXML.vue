@@ -62,6 +62,7 @@ export default {
     else if(this.getTextReadFromReadFile()) this.XMLEditor.changeText(this.getTextReadFromReadFile());
 
     // if(this.ContextMenu.register(this.contextMenuId)) this.ContextMenu.toggle(false, this.contextMenuId);
+    window.ed = this;
   },
 }
 </script>

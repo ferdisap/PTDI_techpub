@@ -205,31 +205,31 @@ export default {
     <ContinuousLoadingCircle :show="showLoadingProgress" />
     <!-- RCMenu -->
     <ContextMenu :id="contextMenuId">
-      <div @click.stop.prevent="CB.push" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.stop.prevent="CB.push" class="list">
         <div class="text-sm">Select</div>
       </div>
       <div @click.stop.prevent="CB.pushAll(true)"
-        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        class="list">
         <div class="text-sm">Select All</div>
       </div>
       <div @click.stop.prevent="CB.pushAll(false)"
-        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        class="list">
         <div class="text-sm">Deselect All</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
       <div @click.stop.prevent="dispatch(1)"
-        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        class="list">
         <div class="text-sm">Add Dispatch</div>
       </div>
       <div @click.stop.prevent="dispatch(2)"
-        class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+        class="list">
         <div class="text-sm">Remove Dispatch</div>
       </div>
-      <div @click="dispatch(0)" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click="dispatch(0)" class="list">
         <div class="text-sm">Dispatch</div>
       </div>
       <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
-      <div @click.stop.prevent="copy()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+      <div @click.stop.prevent="copy()" class="list">
         <div class="text-sm">Copy</div>
       </div>
       <div class="flex flex-col hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
@@ -239,14 +239,14 @@ export default {
         <button type="submit" class="material-icons text-sm ml-2 hover:bg-blue-300 hover:border rounded-full px-1">send</button>
       </form>
     </div>
-    <div @click="deleteObject()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+    <div @click="deleteObject()" class="list">
       <div class="text-sm">Delete</div>
     </div>
-    <div @click="download()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+    <div @click="download()" class="list">
       <div class="text-sm">Download</div>
     </div>
     <hr class="border border-gray-300 block mt-1 my-1 border-solid" />
-    <div @click.prevent="CB.cancel()" class="flex hover:bg-gray-100 py-1 px-2 rounded cursor-pointer text-gray-900">
+    <div @click.prevent="CB.cancel()" class="list">
       <div class="text-sm">Cancel</div>
     </div>
   </ContextMenu>
