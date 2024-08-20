@@ -21,7 +21,7 @@ function renderFromBlob(src, mime){
 }
 
 async function blobRequestTransformed(routename, data, mime) {
-  data = Object.assign(data);
+  data = Object.assign(data, this.$route.query);
   delete (data.update_at);
   let responseType = !mime.includes('text') ? 'arraybuffer' : 'json';
   // masukkan cache If-None-Match jika perlu, di server sudah siap

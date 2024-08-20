@@ -38,7 +38,7 @@ class DdnCreate extends FormRequest
     return [
       'path' => [new Path],
       
-      'seqNumber' => [new SeqNumber],
+      'seqNumber' => [new SeqNumber(true, 'ddn')],
       'modelIdentCode' => ['required'],
       'senderIdent' => 'required',
       'receiverIdent' => 'required',

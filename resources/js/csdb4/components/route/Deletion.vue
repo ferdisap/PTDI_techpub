@@ -8,11 +8,12 @@ import Sort from "../subComponents/Sort.vue";
 import { copy } from "../../helper";
 import ContextMenu from "../subComponents/ContextMenu.vue";
 import DeletionVueCb from "./DeletionVueCb.js"
+import Pagination from '../subComponents/Pagination.vue';
 import { download } from '../componentns/FolderVue.js';
 
 export default {
   name: 'Deletion',
-  components: {ContinuousLoadingCircle, RCMenu, Sort, ContextMenu},
+  components: {ContinuousLoadingCircle, RCMenu, Sort, ContextMenu, Pagination},
   data() {
     return {
       techpubStore: useTechpubStore(),
@@ -89,13 +90,6 @@ export default {
 
       <div class="2xl:h-[95%] xl:h-[94%] lg:h-[92%] md:h-[91%] sm:h-[89%]">
 
-        <div class="flex max-h-[10%]">
-          <input @change="get_list()" placeholder="find filename" type="text"
-            class="w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-          <button class="material-icons mx-3 text-gray-500 text-sm has-tooltip-arrow" data-tooltip="info"
-            @click="$root.info({ name: 'searchCsdbObject' })">info</button>
-        </div>
-
         <div class="block relative oveflow-auto max-h-[80%] text-left">
           <table class="table" :id="cbId">
             <thead class="text-sm">
@@ -125,16 +119,7 @@ export default {
           </table>
         </div>
 
-        <div class="max-h-[10%] w-full mt-3">
-          <div v-if="pagination" class="flex justify-center items-center mt-2 h-[5%]">
-            <button @click="goto(pageless)" class="material-symbols-outlined text-sm">navigate_before</button>
-            <form @submit.prevent="goto('', pagination['current_page'])" class="flex">
-              <input v-model="pagination['current_page']" class="w-6 border-none text-sm text-center bg-transparent" />
-              <span class="text-sm"> of {{ pagination['last_page'] }} </span>
-            </form>
-            <button @click="goto(pagemore)" class="material-symbols-outlined text-sm">navigate_next</button>
-          </div>
-        </div>
+        <Pagination :data="data.paginationInfo"/>
       </div>
     </div>
 

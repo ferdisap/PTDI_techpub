@@ -22,7 +22,7 @@ class DdnController extends Controller
     $CSDBModel = new Csdb();
     $CSDBModel->CSDBObject = $request->CSDBObject[0];
     $CSDBModel->filename = $CSDBModel->CSDBObject->filename;
-    $CSDBModel->path = $request->validated()['path'];
+    $CSDBModel->path = $request->validated('path');
     $CSDBModel->storage_id = $request->user()->id;
     $CSDBModel->initiator_id = $request->user()->id;
 
@@ -53,7 +53,7 @@ class DdnController extends Controller
   public function import(CsdbImportFromDDN $request)
   {
     // check duplicated file
-    if(!($request->overwrite) && $request->duplicatedCSDBModels){
+    if(!($request->overwrite) && !empty($request->duplicatedCSDBModels)){
       return $this->ret2(200, [
         'duplicatedCsdb' => $request->duplicatedCSDBModels,
       ]);
@@ -68,7 +68,6 @@ class DdnController extends Controller
         $CSDBModel->storage_id = $request->user()->id;
         $CSDBModel->initiator_id = $request->user()->id;
 
-
         if ($CSDBModel->saveDOMandModel($request->user()->storage, [
           ['MAKE_CSDB_IMPT_History', [Csdb::class]],
           ['MAKE_USER_IMPT_History', [$request->user(), '', $CSDBModel->filename]]
@@ -79,8 +78,22 @@ class DdnController extends Controller
     }
     $message = "Success to import " . join(", ", $success) . (!empty($fail) ? " and fail to import " . join(", ", $fail) : '.');
     return $this->ret2(200, [
-      'info' => (empty($fail) ? 'info' : (!empty($success) ? 'warning' : '')),
+      'infotype' => (empty($fail) ? 'info' : (!empty($success) ? 'warning' : '')),
       'message' => $message,
     ]);
+  }
+
+  public function read_json(Request $request, string $filename)
+  {
+    Csdb::$storage_user_id = null;
+    if (!($OBJECTModel = Csdb::getObject($filename, ['exception' => ['CSDB-DELL', 'CSDB-PDEL']])->first())) return $this->ret2(400, ["{$filename} fails to be showed."]);
+
+    // determine if request user is in dispatchTo
+    if($OBJECTModel->dispatchTo_id != $request->user()->id) return $this->ret2(200, ['infotype' => 'warning', 'message' => "You are not allowed access the {$filename}."]);
+
+    // load json
+    $OBJECTModel->CSDBObject->load(CSDB_STORAGE_PATH . "/" . $OBJECTModel->csdb->owner->storage . "/" . $filename);
+    $json = json_decode(CSDBStatic::xml_to_json($OBJECTModel->CSDBObject->document));
+    return $this->ret2(200, ['model' => $OBJECTModel->makeHidden(['id']), 'json' => $json]); // ini yang dipakai vue
   }
 }

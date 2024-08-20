@@ -45,7 +45,7 @@ class CommentCreate extends FormRequest
       // ident
       'modelIdentCode' => 'required',
       'senderIdent' => [new EnterpriseCode(true)],
-      'seqNumber' => [new SeqNumber],
+      'seqNumber' => [new SeqNumber(true, 'comment')],
       'commentType' => [new CommentType],
       'yearOfDataIssue' => '',
       'languageIsoCode' => [new Language],

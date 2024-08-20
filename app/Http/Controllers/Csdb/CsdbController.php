@@ -248,6 +248,7 @@ class CsdbController extends Controller
     $queryExecption = History::generateWhereRawQueryString_historyException(['CSDB-DELL', 'CSDB-PDEL'],Csdb::class,$CSDBModels->getModel()->getTable());
     $CSDBModels = $CSDBModels->whereRaw($query[0], $query[1]);
     $CSDBModels = $CSDBModels->whereRaw($queryExecption[0], $queryExecption[1]);
+    $CSDBModels = $CSDBModels->where('storage_id', $request->user()->id);
     $CSDBModels = $CSDBModels->orderBy('filename')->paginate(100);
     $CSDBModels->setPath($request->getUri());
     

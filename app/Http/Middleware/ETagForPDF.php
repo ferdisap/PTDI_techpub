@@ -32,7 +32,7 @@ class ETagForPDF
     $filename = $request->route()->parameter('filename');
     $CSDBModel = Csdb::getCsdb($filename,['exception' => ['CSDB-DELL', 'CSDB-PDEL']]);
     $CSDBModel = $CSDBModel->with(['lastHistory'])->first(); // return null if match history exception;
-    if(!$CSDBModel) abort(410,$filename . " has been deleted");
+    if(!$CSDBModel) abort(410,$filename . " not found or has been deleted.");
     
     // set ETag
     $etag = '"'.md5($CSDBModel->filename."___".$CSDBModel->lastHistory->created_at).'"';

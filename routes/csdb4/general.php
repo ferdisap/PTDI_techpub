@@ -32,7 +32,8 @@ Route::get("/api/byfolder-allobjects",[CsdbController::class, 'forfolder_get_all
 
 Route::get('/api/object/raw/{CSDBModel:filename}', [CsdbController::class, 'get_object_raw'])->middleware('auth')->name('api.get_object_raw');
 // Route::get('/api/content/{CSDBModel:filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth','ETagCsdbPDF'])->name('api.read_pdf_object');
-Route::get('/api/content/{filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth','ETagCsdbPDF'])->name('api.read_pdf_object');
+// Route::get('/api/content/{filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth', 'ViaDDN','ETagCsdbPDF'])->name('api.read_pdf_object');
+Route::get('/api/content/{filename}/pdf', [CsdbController::class, 'read_pdf_object'])->middleware(['auth', 'ViaDDN','ETagCsdbPDF'])->name('api.read_pdf_object');
 Route::get("/api/content/{CSDBModel:filename}/html",[CsdbController::class, 'read_html_object'])->middleware('auth')->name('api.read_html_object');
 Route::get("/api/content/{CSDBModel:filename}/other",[CsdbController::class, 'read_html_object'])->middleware('auth')->name('api.read_other_object');
 Route::get("/api/icn/raw/{CSDBModel:filename}", [CsdbController::class, 'get_icn_raw'])->middleware('auth')->name('api.get_icn_raw');
@@ -156,7 +157,7 @@ Route::get('/tes_get_model',function(){
 });
 
 Route::get('/tesapaja',function(){
-  $CSDBModel = Csdb::find(17);
+  $CSDBModel = Csdb::find(23);
   // FillObjectTable::dispatch(request()->user(), $CSDBModel, true);
   FillObjectTable::dispatchSync(request()->user(), $CSDBModel, true);
   return;

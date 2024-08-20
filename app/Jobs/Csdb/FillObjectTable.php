@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Csdb;
 
+use App\Events\Csdb\CommentCreated;
 use App\Events\Csdb\DdnCreated;
 use App\Mail\Csdb\DataDispatchNote;
 use App\Models\Csdb;
@@ -52,15 +53,13 @@ class FillObjectTable implements ShouldQueue
           $csdbobject = Dml::fillTable($this->CSDBModel->id, $this->CSDBModel->CSDBObject);
           break;
         case 'ddn':
-          $csdbobject = Ddn::fillTable($this->CSDBModel->id, $this->CSDBModel->CSDBObject);
+          $csdbobject = Ddn::fillTable($this->CSDBModel->id, $this->CSDBModel->CSDBObject);          
+          if($csdbobject && $this->mailTo) event(new DdnCreated($csdbobject));
           break;
         case 'comment':
           $csdbobject = Comment::fillTable($this->CSDBModel->id, $this->CSDBModel->CSDBObject);
+          if($csdbobject && $this->mailTo) event(new CommentCreated($csdbobject));
           break;
-      }
-
-      if($csdbobject && $this->mailTo){
-        event(new DdnCreated($csdbobject));
       }
     }
     Csdb::$storage_user_id = $previousStatic_storage_user_id;

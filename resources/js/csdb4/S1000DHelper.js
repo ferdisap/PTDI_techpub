@@ -1,10 +1,10 @@
 import jp from 'jsonpath';
 import axios from 'axios';
 
-async function fetchJsonFile(data = {}){
+async function fetchJsonFile(data = {}, routename){
   return await axios({
     route: {
-      name: 'api.read_json',
+      name: routename ?? 'api.read_json',
       data: data
     },
   });

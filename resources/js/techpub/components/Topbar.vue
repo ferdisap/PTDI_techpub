@@ -36,9 +36,7 @@ export default {
           <span class="text-xs">{{ techpubStore.Auth.first_name }}</span> <span class="material-symbols-outlined align-middle text-sm ">keyboard_arrow_down</span>
         </button>
         <div v-show="openDropdown" class="dropdown-content text-black absolute z-[100] bg-white p-2 rounded-sm shadow-md">
-          <a class="block w-full text-sm" href="/profile">Profile</a>
-          <a class="block w-full text-sm" href="/dashboard">Dashboard</a>
-          <a class="block w-full text-sm" href="/csdb3">CSDB</a>
+          <a class="block w-full text-sm" href="/csdb4">CSDB</a>
           <hr />
           <a class="block w-full text-sm" href="/logout">Logout</a>
         </div>

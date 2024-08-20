@@ -23,7 +23,7 @@ function DDN(json){
 }
 
 async function showDDNContent(filename){
-  const response = await fetchJsonFile({ filename: filename });
+  const response = await fetchJsonFile({ filename: filename }, 'api.read_ddnjson');
   if(response.statusText === 'OK'){
     // handle and arrange json file
     this.DDNObject = DDN(response.data.json);

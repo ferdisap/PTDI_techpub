@@ -603,10 +603,6 @@ class Csdb extends Model
         : Storage::disk('csdb')->delete($storageName . "/" . $filename);
     if ($save_file()) {
       if ($this->save()) {
-        // fill object dilakukan oleh worker
-        // FillObjectTable::dispatch(request()->user(), $CSDBModel, true); // using queue
-        FillObjectTable::dispatchSync(request()->user(), $this, true); // dispatch not using queue but mailto nya pakai queue
-
         // create history
         $HISTORYModels = [];
         foreach ($historyStaticFunction as $history) {
@@ -628,6 +624,11 @@ class Csdb extends Model
           $revert_save_file();
           return false;
         }
+        
+        // fill object dilakukan oleh worker
+        // FillObjectTable::dispatch(request()->user(), $CSDBModel, true); // using queue
+        FillObjectTable::dispatchSync(request()->user(), $this, true); // dispatch not using queue but mailto nya pakai queue
+        
         return true;
       }
       $revert_save_file();

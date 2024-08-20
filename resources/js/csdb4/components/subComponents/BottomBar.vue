@@ -47,7 +47,9 @@ export default {
         bbi = bbi.map(v => v = v.toLowerCase());
         const target = document.querySelector("." + componentName.toLowerCase());
         const CSSSelector = Object.keys(this.$props.items).map(componentName => "." + componentName.toLowerCase()).join(", "); // ".folder .explorer .preview ...etc"
-        [...document.querySelectorAll(CSSSelector)].sort(function (a, b) {
+        const collection = [...document.querySelectorAll(CSSSelector)];
+        if(!collection.length < 2) return;
+        collection.sort(function (a, b) {
           return bbi.indexOf(a.classList[0]) - bbi.indexOf(b.classList[0])
         }).forEach(function (item) {
           if (item && (item.parentElement == target.parentElement)) target.parentElement.appendChild(item);

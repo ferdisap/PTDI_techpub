@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\AddHeaderToResponse;
+use App\Http\Middleware\Csdb\ViaDDN;
 use App\Http\Middleware\LastModifiedCache;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Werk365\EtagConditionals\Middleware\SetEtag;
@@ -25,11 +26,12 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         // AddHeaderToResponse::class,
+        // ViaDDN::class,
     ];
 
     /**
      * The application's route middleware groups.
-     *
+    //  *
      * @var array<string, array<int, class-string|string>>
      */
     protected $middlewareGroups = [
@@ -73,5 +75,7 @@ class Kernel extends HttpKernel
 
         'ETagGeneralContent' => SetEtag::class,
         'ETagCsdbPDF' => \App\Http\Middleware\ETagForPDF::class,
+
+        'ViaDDN' => ViaDDN::class
     ];
 }

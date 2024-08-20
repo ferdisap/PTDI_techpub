@@ -10,6 +10,10 @@ use Ptdi\Mpub\Main\CSDBStatic;
 
 class BrexDmRef implements ValidationRule
 {
+  public function __construct(public bool $required = true)
+  {
+    
+  }
   /**
    * Run the validation rule.
    *
@@ -17,6 +21,11 @@ class BrexDmRef implements ValidationRule
    */
   public function validate(string $attribute, mixed $value, Closure $fail): void
   {
+    if($this->required && !$value) {
+      $fail("$attribute is required.");
+      return;
+    }
+
     if(substr($value,0,3) !== 'DMC') $fail('BREX filename must be an DMC.');
     if (count(explode("_", $value)) < 3) $fail("The {$attribute} must contain IssueInfo and Language.");
     $decode = CSDBStatic::decode_dmIdent($value);
