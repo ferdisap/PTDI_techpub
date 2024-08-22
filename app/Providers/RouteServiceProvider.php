@@ -19,7 +19,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const DASHBOARD = '/dashboard';
 
-    public const CSDB = '/csdb4';
+    public const CSDB = '/csdb';
 
     public const HOME = '/';
 

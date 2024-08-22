@@ -28,7 +28,7 @@ class CsdbController extends Controller
 {
   public function app()
   {
-    return view('csdb4.app');
+    return view('csdb.app');
   }
 
   public function create(CsdbCreateByXMLEditor $request)

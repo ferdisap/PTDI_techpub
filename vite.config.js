@@ -33,13 +33,13 @@ export default defineConfig({
       input: [
         // 'resources/js/csdb/detail.js',
         'resources/css/app.css',
-        'resources/css/loadingbar.css',
-        'resources/css/dmodule.css',
-        'resources/js/csdb/CsdbReader.js',
-        'resources/js/ietm/app.js',
+        // 'resources/css/loadingbar.css',
+        // 'resources/css/dmodule.css',
+        // 'resources/js/csdb/CsdbReader.js',
+        // 'resources/js/ietm/app.js',
         // 'resources/views/**/*.vue',
         // 'resources/views/**/*.js',
-        'resources/js/csdb4/app.js',
+        'resources/js/csdb/app.js',
         // 'resources/js/csdb4/worker.js',
         // 'resources/js/csdb4/tes.js',
         
@@ -47,7 +47,7 @@ export default defineConfig({
         // 'resources/scss/style.scss',
         // 'resources/css/app2.css',
         'resources/js/alert.js',
-        'resources/css/csdb.css',
+        // 'resources/css/csdb.css',
       ],
       buildDirectory: process.env.VITE_BUILD_DIR,
       refresh: true

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Csdb;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
@@ -25,7 +26,8 @@ class Controller extends BaseController
   public function index(Request $request)
   {
     // return view('welcome');
-    return view('techpub.app');
+    // return view('techpub.app');
+    return redirect(RouteServiceProvider::CSDB);
   }
 
   public function authcheck()
@@ -473,7 +475,7 @@ class Controller extends BaseController
    */
   public function getWorker(Request $request, string $filename)
   {
-    $content = file_get_contents(resource_path("js/csdb4/worker/{$filename}"));
+    $content = file_get_contents(resource_path("js/csdb/worker/{$filename}"));
     return response($content,200,[
       "Content-Type" => "text/javascript",
       "Date" => now()->toString(),

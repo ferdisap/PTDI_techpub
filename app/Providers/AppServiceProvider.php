@@ -35,13 +35,13 @@ class AppServiceProvider extends ServiceProvider
    */
   public function boot(): void
   {
-    $path_included = base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR;
-    set_include_path(get_include_path() . PATH_SEPARATOR . $path_included);
+    // $path_included = base_path() . DIRECTORY_SEPARATOR . 'ietp_n219' . DIRECTORY_SEPARATOR;
+    // set_include_path(get_include_path() . PATH_SEPARATOR . $path_included);
 
     Vite::useBuildDirectory(env('VITE_BUILD_DIR', 'build'));
 
     try {
-      define("CSDB_VIEW_PATH", $this->wp_normalize_path(resource_path('views/csdb4')));
+      define("CSDB_VIEW_PATH", $this->wp_normalize_path(resource_path('views/csdb')));
       define("CSDB_STORAGE_PATH", storage_path('csdb'));
     } catch (\Throwable $e) {
     }

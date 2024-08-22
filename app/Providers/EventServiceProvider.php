@@ -9,7 +9,7 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Listeners\Csdb\SendDdnNotification;
 use App\Events\Csdb\DdnCreated;
-use App\Listeners\SendCommentNotification;
+use App\Listeners\Csdb\SendCommentNotification;
 
 class EventServiceProvider extends ServiceProvider
 {
